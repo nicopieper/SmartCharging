@@ -39,7 +39,7 @@ sccprj/
 # Matlab code generation folders
 codegen/
 
-# Simulink autosave extension
+# Simulink autosave extension 
 *.autosave
 
 # Simulink cache files
