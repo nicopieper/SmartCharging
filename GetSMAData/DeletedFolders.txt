@@ -1,0 +1,361 @@
+DevTools listening on ws://127.0.0.1:55312/devtools/browser/0d8d0ded-8394-4cb8-9e8c-023155e0583d
+  0%                                                                                                   0/236 [00:00<?, ?it/s]Start to crawl data for plant d5c4295e-c4f7-4ae3-9ac5-9114bc6a2160 from 2019-10-10 00:00:00 to 2020-05-31 00:00:00
+An error occured with plant d5c4295e-c4f7-4ae3-9ac5-9114bc6a2160 at Date 10.10.2019. NumberHeaderCells==2
+  0%                                                                                          1/236 [00:00<02:49,  1.39it/s]
+0it [00:00, ?it/s]
+Plant d5c4295e-c4f7-4ae3-9ac5-9114bc6a2160 deleted.
+  0%                                                                                                   0/706 [00:00<?, ?it/s]Start to crawl data for plant e0b53166-f383-42e0-bd7f-682cdc88f564 from 2018-06-27 00:00:00 to 2020-05-31 00:00:00
+An error occured with plant e0b53166-f383-42e0-bd7f-682cdc88f564 at Date 27.06.2018. NumberHeaderCells==2
+  0%                                                                                          1/706 [00:00<06:50,  1.72it/s]
+0it [00:00, ?it/s]
+Plant e0b53166-f383-42e0-bd7f-682cdc88f564 deleted.
+  0%                                                                                                   0/882 [00:00<?, ?it/s]Start to crawl data for plant e5b3cdba-14bf-4573-b3e0-4ab29883f9c9 from 2018-01-02 00:00:00 to 2020-05-31 00:00:00
+An error occured with plant e5b3cdba-14bf-4573-b3e0-4ab29883f9c9 at Date 02.01.2018. NumberHeaderCells==2
+Search for the error
+  0%                                                                                          2/882 [00:00<03:04,  4.77it/sA 
+n error occured with plant e5b3cdba-14bf-4573-b3e0-4ab29883f9c9 at Date 03.01.2018. NumberHeaderCells==2
+Search for the error
+  0%                                                                                          3/882 [00:00<03:54,  3.75it/sA 
+n error occured with plant e5b3cdba-14bf-4573-b3e0-4ab29883f9c9 at Date 04.01.2018. NumberHeaderCells==2
+  0%                                                                                          3/882 [00:01<06:46,  2.16it/s]
+0it [00:00, ?it/s]
+Plant e5b3cdba-14bf-4573-b3e0-4ab29883f9c9 deleted.
+  0%                                                                                                   0/882 [00:00<?, ?it/s]Start to crawl data for plant e5b721cb-58bb-4dd9-bc28-81afbaeef109 from 2018-01-02 00:00:00 to 2020-05-31 00:00:00
+An error occured with plant e5b721cb-58bb-4dd9-bc28-81afbaeef109 at Date 02.01.2018. NumberHeaderCells==2
+Search for the error
+  0%                                                                                          2/882 [00:04<30:10,  2.06s/itA 
+n error occured with plant e5b721cb-58bb-4dd9-bc28-81afbaeef109 at Date 03.01.2018. NumberHeaderCells==2
+Search for the error
+  0%                                                                                          3/882 [00:05<25:13,  1.72s/itA 
+n error occured with plant e5b721cb-58bb-4dd9-bc28-81afbaeef109 at Date 04.01.2018. NumberHeaderCells==2
+  0%                                                                                          3/882 [00:07<36:57,  2.52s/it]
+0it [00:00, ?it/s]
+Plant e5b721cb-58bb-4dd9-bc28-81afbaeef109 deleted.
+  0%                                                                                                   0/882 [00:00<?, ?it/s]Start to crawl data for plant e9ca344f-b04a-4101-8601-ccdfaa2456ad from 2018-01-02 00:00:00 to 2020-05-31 00:00:00
+An error occured with plant e9ca344f-b04a-4101-8601-ccdfaa2456ad at Date 02.01.2018. NumberHeaderCells==2
+Search for the error
+  0%                                                                                          2/882 [00:00<04:10,  3.52it/sA 
+n error occured with plant e9ca344f-b04a-4101-8601-ccdfaa2456ad at Date 03.01.2018. NumberHeaderCells==2
+Search for the error
+  0%                                                                                          3/882 [00:01<06:16,  2.33it/sA 
+n error occured with plant e9ca344f-b04a-4101-8601-ccdfaa2456ad at Date 04.01.2018. NumberHeaderCells==2
+  0%                                                                                          3/882 [00:02<13:20,  1.10it/s]
+0it [00:00, ?it/s]
+Plant e9ca344f-b04a-4101-8601-ccdfaa2456ad deleted.
+  0%                                                                                                   0/882 [00:00<?, ?it/s]Start to crawl data for plant ea381f08-ee38-401c-a935-986444eccb85 from 2018-01-02 00:00:00 to 2020-05-31 00:00:00
+An error occured with plant ea381f08-ee38-401c-a935-986444eccb85 at Date 02.01.2018. NumberHeaderCells==3
+  0%                                                                                           1/882 [00:02<41:49,  2.85s/it]
+0it [00:00, ?it/s]
+Plant ea381f08-ee38-401c-a935-986444eccb85 deleted.
+  0%                                                                                                   0/882 [00:00<?, ?it/s]Start to crawl data for plant ebeab3a4-c2b7-4f66-bab7-0e9673d2b73e from 2018-01-02 00:00:00 to 2020-05-31 00:00:00
+An error occured with plant ebeab3a4-c2b7-4f66-bab7-0e9673d2b73e at Date 02.01.2018. NumberHeaderCells==2
+Search for the error
+  0%                                                                                          2/882 [00:00<04:45,  3.08it/sA 
+n error occured with plant ebeab3a4-c2b7-4f66-bab7-0e9673d2b73e at Date 03.01.2018. NumberHeaderCells==2
+Search for the error
+  0%                                                                                          3/882 [00:01<06:45,  2.17it/sA 
+n error occured with plant ebeab3a4-c2b7-4f66-bab7-0e9673d2b73e at Date 04.01.2018. NumberHeaderCells==2
+  0%                                                                                          3/882 [00:01<09:02,  1.62it/s]
+0it [00:00, ?it/s]
+Plant ebeab3a4-c2b7-4f66-bab7-0e9673d2b73e deleted.
+  0%                                                                                                   0/882 [00:00<?, ?it/s]Start to crawl data for plant ec4638b4-469f-4fd8-964c-d53eb12d1d15 from 2018-01-02 00:00:00 to 2020-05-31 00:00:00
+An error occured with plant ec4638b4-469f-4fd8-964c-d53eb12d1d15 at Date 02.01.2018. NumberHeaderCells==2
+Search for the error
+  0%                                                                                          2/882 [00:00<03:51,  3.81it/sA 
+n error occured with plant ec4638b4-469f-4fd8-964c-d53eb12d1d15 at Date 03.01.2018. NumberHeaderCells==2
+Search for the error
+  0%                                                                                          3/882 [00:01<05:28,  2.67it/sA 
+n error occured with plant ec4638b4-469f-4fd8-964c-d53eb12d1d15 at Date 04.01.2018. NumberHeaderCells==2
+  0%                                                                                          3/882 [00:01<08:22,  1.75it/s]
+0it [00:00, ?it/s]
+Plant ec4638b4-469f-4fd8-964c-d53eb12d1d15 deleted.
+  0%                                                                                                   0/882 [00:00<?, ?it/s]Start to crawl data for plant ecb088a7-8a3f-4712-a2b4-d33075bc1aab from 2018-01-02 00:00:00 to 2020-05-31 00:00:00
+An error occured with plant ecb088a7-8a3f-4712-a2b4-d33075bc1aab at Date 02.01.2018. NumberHeaderCells==2
+Search for the error
+  0%                                                                                          2/882 [00:00<02:58,  4.93it/sA 
+n error occured with plant ecb088a7-8a3f-4712-a2b4-d33075bc1aab at Date 03.01.2018. NumberHeaderCells==2
+Search for the error
+  0%                                                                                          3/882 [00:01<06:57,  2.10it/sA 
+n error occured with plant ecb088a7-8a3f-4712-a2b4-d33075bc1aab at Date 04.01.2018. NumberHeaderCells==2
+  0%                                                                                          3/882 [00:02<10:06,  1.45it/s]
+0it [00:00, ?it/s]
+Plant ecb088a7-8a3f-4712-a2b4-d33075bc1aab deleted.
+  0%                                                                                                   0/882 [00:00<?, ?it/s]Start to crawl data for plant efb3c03b-95e5-4383-96c6-6bcac0432780 from 2018-01-02 00:00:00 to 2020-05-31 00:00:00
+An error occured with plant efb3c03b-95e5-4383-96c6-6bcac0432780 at Date 02.01.2018. NumberHeaderCells==2
+Search for the error
+  0%                                                                                          2/882 [00:00<05:58,  2.45it/sA 
+n error occured with plant efb3c03b-95e5-4383-96c6-6bcac0432780 at Date 03.01.2018. NumberHeaderCells==2
+Search for the error
+  0%                                                                                          3/882 [00:01<06:08,  2.38it/sA 
+n error occured with plant efb3c03b-95e5-4383-96c6-6bcac0432780 at Date 04.01.2018. NumberHeaderCells==2
+  0%                                                                                          3/882 [00:01<08:57,  1.64it/s]
+0it [00:00, ?it/s]
+Plant efb3c03b-95e5-4383-96c6-6bcac0432780 deleted.
+  0%                                                                                                   0/882 [00:00<?, ?it/s]Start to crawl data for plant f24b2d15-07d7-4a79-b0dd-64e35bf8fe7a from 2018-01-02 00:00:00 to 2020-05-31 00:00:00
+  6%                                                                                    55/882 [00:21<04:16,  3.22it/s]An error occured with plant f24b2d15-07d7-4a79-b0dd-64e35bf8fe7a at Date 25.02.2018. NumberHeaderCells==0
+  6%                                                                                    55/882 [00:22<05:44,  2.40it/s]
+0it [00:00, ?it/s]
+Plant f24b2d15-07d7-4a79-b0dd-64e35bf8fe7a deleted.
+  0%                                                                                                   0/882 [00:00<?, ?it/s]Start to crawl data for plant f26c4cc8-49af-4f2a-9303-ab54049291c0 from 2018-01-02 00:00:00 to 2020-05-31 00:00:00
+An error occured with plant f26c4cc8-49af-4f2a-9303-ab54049291c0 at Date 02.01.2018. NumberHeaderCells==2
+Search for the error
+  0%                                                                                          2/882 [00:00<05:51,  2.51it/sA 
+n error occured with plant f26c4cc8-49af-4f2a-9303-ab54049291c0 at Date 03.01.2018. NumberHeaderCells==2
+Search for the error
+  0%                                                                                          3/882 [00:01<08:00,  1.83it/sA 
+n error occured with plant f26c4cc8-49af-4f2a-9303-ab54049291c0 at Date 04.01.2018. NumberHeaderCells==2
+  0%                                                                                          3/882 [00:02<10:08,  1.45it/s]
+0it [00:00, ?it/s]
+Plant f26c4cc8-49af-4f2a-9303-ab54049291c0 deleted.
+  0%                                                                                                   0/882 [00:00<?, ?it/s]Start to crawl data for plant f60ce5d8-9625-42b9-8048-d33e07e0f514 from 2018-01-02 00:00:00 to 2020-05-31 00:00:00
+An error occured with plant f60ce5d8-9625-42b9-8048-d33e07e0f514 at Date 02.01.2018. NumberHeaderCells==2
+Search for the error
+  0%                                                                                          2/882 [00:00<05:38,  2.60it/sA 
+n error occured with plant f60ce5d8-9625-42b9-8048-d33e07e0f514 at Date 03.01.2018. NumberHeaderCells==2
+Search for the error
+  0%                                                                                          3/882 [00:01<06:19,  2.32it/sA 
+n error occured with plant f60ce5d8-9625-42b9-8048-d33e07e0f514 at Date 04.01.2018. NumberHeaderCells==2
+  0%                                                                                          3/882 [00:02<09:57,  1.47it/s]
+0it [00:00, ?it/s]
+Plant f60ce5d8-9625-42b9-8048-d33e07e0f514 deleted.
+  0%                                                                                                   0/882 [00:00<?, ?it/s]Start to crawl data for plant f716a054-9f1b-413e-97dd-ed5bb431311a from 2018-01-02 00:00:00 to 2020-05-31 00:00:00
+An error occured with plant f716a054-9f1b-413e-97dd-ed5bb431311a at Date 02.01.2018. NumberHeaderCells==2
+Search for the error
+  0%                                                                                          2/882 [00:01<09:49,  1.49it/sA 
+n error occured with plant f716a054-9f1b-413e-97dd-ed5bb431311a at Date 03.01.2018. NumberHeaderCells==2
+Search for the error
+  0%                                                                                          3/882 [00:01<09:28,  1.55it/sA 
+n error occured with plant f716a054-9f1b-413e-97dd-ed5bb431311a at Date 04.01.2018. NumberHeaderCells==2
+  0%                                                                                          3/882 [00:02<11:52,  1.23it/s]
+0it [00:00, ?it/s]
+Plant f716a054-9f1b-413e-97dd-ed5bb431311a deleted.
+  0%                                                                                                   0/882 [00:00<?, ?it/s]Start to crawl data for plant f7a388ee-2d85-4083-94d2-97bee6244d8f from 2018-01-02 00:00:00 to 2020-05-31 00:00:00
+An error occured with plant f7a388ee-2d85-4083-94d2-97bee6244d8f at Date 02.01.2018. NumberHeaderCells==2
+Search for the error
+  0%                                                                                          2/882 [00:00<06:01,  2.43it/sA 
+n error occured with plant f7a388ee-2d85-4083-94d2-97bee6244d8f at Date 03.01.2018. NumberHeaderCells==2
+Search for the error
+  0%                                                                                          3/882 [00:01<06:20,  2.31it/sA 
+n error occured with plant f7a388ee-2d85-4083-94d2-97bee6244d8f at Date 04.01.2018. NumberHeaderCells==2
+  0%                                                                                          3/882 [00:01<08:40,  1.69it/s]
+0it [00:00, ?it/s]
+Plant f7a388ee-2d85-4083-94d2-97bee6244d8f deleted.
+  0%                                                                                                   0/882 [00:00<?, ?it/s]Start to crawl data for plant f8ecb7cb-81de-4d66-82ae-8b35eb0be8e7 from 2018-01-02 00:00:00 to 2020-05-31 00:00:00
+An error occured with plant f8ecb7cb-81de-4d66-82ae-8b35eb0be8e7 at Date 02.01.2018. NumberHeaderCells==3
+  0%                                                                                           1/882 [00:00<10:52,  1.35it/s]
+0it [00:00, ?it/s]
+Plant f8ecb7cb-81de-4d66-82ae-8b35eb0be8e7 deleted.
+  0%                                                                                                   0/882 [00:00<?, ?it/s]Start to crawl data for plant f9b95e77-e7c3-4e9a-ad09-83bd19e5195d from 2018-01-02 00:00:00 to 2020-05-31 00:00:00
+An error occured with plant f9b95e77-e7c3-4e9a-ad09-83bd19e5195d at Date 02.01.2018. NumberHeaderCells==3
+  0%                                                                                           1/882 [00:00<06:25,  2.29it/s]
+0it [00:00, ?it/s]
+Plant f9b95e77-e7c3-4e9a-ad09-83bd19e5195d deleted.
+  0%                                                                                                   0/882 [00:00<?, ?it/s]Start to crawl data for plant fbdb30ab-781a-4c42-b68b-c56758da4a1a from 2018-01-02 00:00:00 to 2020-05-31 00:00:00
+An error occured with plant fbdb30ab-781a-4c42-b68b-c56758da4a1a at Date 02.01.2018. NumberHeaderCells==2
+Search for the error
+  0%                                                                                          2/882 [00:00<03:50,  3.82it/sA 
+n error occured with plant fbdb30ab-781a-4c42-b68b-c56758da4a1a at Date 03.01.2018. NumberHeaderCells==2
+Search for the error
+  0%                                                                                          3/882 [00:00<04:36,  3.18it/sA 
+n error occured with plant fbdb30ab-781a-4c42-b68b-c56758da4a1a at Date 04.01.2018. NumberHeaderCells==2
+  0%                                                                                          3/882 [00:02<11:18,  1.30it/s]
+0it [00:00, ?it/s]
+Plant fbdb30ab-781a-4c42-b68b-c56758da4a1a deleted.
+  0%                                                                                                   0/882 [00:00<?, ?it/s]Start to crawl data for plant fcd949ae-49c7-49c0-8b62-d8e6c0b2f004 from 2018-01-02 00:00:00 to 2020-05-31 00:00:00
+An error occured with plant fcd949ae-49c7-49c0-8b62-d8e6c0b2f004 at Date 02.01.2018. NumberHeaderCells==2
+Search for the error
+  0%                                                                                          2/882 [00:00<03:31,  4.15it/sA 
+n error occured with plant fcd949ae-49c7-49c0-8b62-d8e6c0b2f004 at Date 03.01.2018. NumberHeaderCells==2
+Search for the error
+  0%                                                                                          3/882 [00:02<10:39,  1.38it/sA 
+n error occured with plant fcd949ae-49c7-49c0-8b62-d8e6c0b2f004 at Date 04.01.2018. NumberHeaderCells==2
+  0%                                                                                          3/882 [00:02<13:53,  1.06it/s] 
+0it [00:00, ?it/s]
+Plant fcd949ae-49c7-49c0-8b62-d8e6c0b2f004 deleted.
+
+
+DevTools listening on ws://127.0.0.1:55356/devtools/browser/ae080dc4-86ba-4977-a4a2-ea0a701bf850
+  0%                                                                                                   0/671 [00:00<?, ?it/s]Start to crawl data for plant b7513591-84f4-43ee-8ee0-f58b1a67ed0b from 2018-08-01 00:00:00 to 2020-05-31 00:00:00
+An error occured with plant b7513591-84f4-43ee-8ee0-f58b1a67ed0b at Date 01.08.2018. NumberHeaderCells==3
+  0%                                                                                          1/671 [00:00<05:28,  2.04it/s]
+0it [00:00, ?it/s]
+Plant b7513591-84f4-43ee-8ee0-f58b1a67ed0b deleted.
+  0%                                                                                                   0/883 [00:00<?, ?it/s]Start to crawl data for plant b80f5471-9ed3-4758-9405-1685d9b2de98 from 2018-01-01 00:00:00 to 2020-05-31 00:00:00
+An error occured with plant b80f5471-9ed3-4758-9405-1685d9b2de98 at Date 01.01.2018. NumberHeaderCells==4
+  0%                                                                                           1/883 [00:02<40:33,  2.76s/it]
+0it [00:00, ?it/s]
+Plant b80f5471-9ed3-4758-9405-1685d9b2de98 deleted.
+  0%                                                                                                   0/883 [00:00<?, ?it/s]Start to crawl data for plant b8b3c427-97a3-466d-9c22-0da3ade35fd0 from 2018-01-01 00:00:00 to 2020-05-31 00:00:00
+An error occured with plant b8b3c427-97a3-466d-9c22-0da3ade35fd0 at Date 01.01.2018. NumberHeaderCells==2
+  0%                                                                                           1/883 [00:00<06:41,  2.20it/s]
+0it [00:00, ?it/s]
+Plant b8b3c427-97a3-466d-9c22-0da3ade35fd0 deleted.
+  0%                                                                                                   0/883 [00:00<?, ?it/s]Start to crawl data for plant ba6ca4ff-8d9b-4a0a-a1db-d700c5ee940f from 2018-01-01 00:00:00 to 2020-05-31 00:00:00
+An error occured with plant ba6ca4ff-8d9b-4a0a-a1db-d700c5ee940f at Date 01.01.2018. NumberHeaderCells==2
+  0%                                                                                         1/883 [00:07<1:45:23,  7.17s/it]
+0it [00:00, ?it/s]
+Plant ba6ca4ff-8d9b-4a0a-a1db-d700c5ee940f deleted.
+  0%                                                                                                   0/883 [00:00<?, ?it/s]Start to crawl data for plant bcf73b39-73de-4480-acde-c5b6bd9e1bc2 from 2018-01-01 00:00:00 to 2020-05-31 00:00:00
+An error occured with plant bcf73b39-73de-4480-acde-c5b6bd9e1bc2 at Date 01.01.2018. NumberHeaderCells==3
+  0%                                                                                           1/883 [00:00<08:10,  1.80it/s]
+0it [00:00, ?it/s]
+Plant bcf73b39-73de-4480-acde-c5b6bd9e1bc2 deleted.
+  0%                                                                                                   0/883 [00:00<?, ?it/s]Start to crawl data for plant be78ada5-e1e1-44c0-9ef2-ed01c4e5c200 from 2018-01-01 00:00:00 to 2020-05-31 00:00:00
+An error occured with plant be78ada5-e1e1-44c0-9ef2-ed01c4e5c200 at Date 01.01.2018. NumberHeaderCells==3
+  0%                                                                                           1/883 [00:00<06:52,  2.14it/s]
+0it [00:00, ?it/s]
+Plant be78ada5-e1e1-44c0-9ef2-ed01c4e5c200 deleted.
+  0%                                                                                                   0/883 [00:00<?, ?it/s]Start to crawl data for plant bf36601e-b85b-4b22-ba79-0eaec8e70f31 from 2018-01-01 00:00:00 to 2020-05-31 00:00:00
+An error occured with plant bf36601e-b85b-4b22-ba79-0eaec8e70f31 at Date 01.01.2018. NumberHeaderCells==3
+  0%                                                                                           1/883 [00:00<05:59,  2.45it/s]
+0it [00:00, ?it/s]
+Plant bf36601e-b85b-4b22-ba79-0eaec8e70f31 deleted.
+  0%                                                                                                   0/882 [00:00<?, ?it/s]Start to crawl data for plant cb116876-7147-4521-91b9-efbd3b4c5518 from 2018-01-02 00:00:00 to 2020-05-31 00:00:00
+An error occured with plant cb116876-7147-4521-91b9-efbd3b4c5518 at Date 02.01.2018. NumberHeaderCells==2
+Search for the error
+  0%                                                                                          2/882 [00:00<03:10,  4.62it/sA 
+n error occured with plant cb116876-7147-4521-91b9-efbd3b4c5518 at Date 03.01.2018. NumberHeaderCells==2
+Search for the error
+  0%                                                                                          3/882 [00:01<04:48,  3.05it/sA 
+n error occured with plant cb116876-7147-4521-91b9-efbd3b4c5518 at Date 04.01.2018. NumberHeaderCells==2
+  0%                                                                                          3/882 [00:01<08:58,  1.63it/s]
+0it [00:00, ?it/s]
+Plant cb116876-7147-4521-91b9-efbd3b4c5518 deleted.
+  0%                                                                                                   0/882 [00:00<?, ?it/s]Start to crawl data for plant d046db08-2287-44de-a8b1-1e05e2fbdc14 from 2018-01-02 00:00:00 to 2020-05-31 00:00:00
+An error occured with plant d046db08-2287-44de-a8b1-1e05e2fbdc14 at Date 02.01.2018. NumberHeaderCells==2
+Search for the error
+  0%                                                                                          2/882 [00:00<03:53,  3.76it/sA 
+n error occured with plant d046db08-2287-44de-a8b1-1e05e2fbdc14 at Date 03.01.2018. NumberHeaderCells==2
+Search for the error
+  0%                                                                                          3/882 [00:01<04:47,  3.05it/sA 
+n error occured with plant d046db08-2287-44de-a8b1-1e05e2fbdc14 at Date 04.01.2018. NumberHeaderCells==2
+  0%                                                                                          3/882 [00:01<07:34,  1.93it/s]
+0it [00:00, ?it/s]
+Plant d046db08-2287-44de-a8b1-1e05e2fbdc14 deleted.
+  0%                                                                                                   0/882 [00:00<?, ?it/s]Start to crawl data for plant d1701288-bd4d-40e8-a2c8-6eb817a5df07 from 2018-01-02 00:00:00 to 2020-05-31 00:00:00
+An error occured with plant d1701288-bd4d-40e8-a2c8-6eb817a5df07 at Date 02.01.2018. NumberHeaderCells==2
+Search for the error
+  0%                                                                                          2/882 [00:00<03:15,  4.49it/sA 
+n error occured with plant d1701288-bd4d-40e8-a2c8-6eb817a5df07 at Date 03.01.2018. NumberHeaderCells==2
+Search for the error
+  0%                                                                                          3/882 [00:00<04:16,  3.43it/sA 
+n error occured with plant d1701288-bd4d-40e8-a2c8-6eb817a5df07 at Date 04.01.2018. NumberHeaderCells==2
+  0%                                                                                          3/882 [00:01<06:51,  2.14it/s]
+0it [00:00, ?it/s]
+Plant d1701288-bd4d-40e8-a2c8-6eb817a5df07 deleted.
+  0%                                                                                                   0/882 [00:00<?, ?it/s]Start to crawl data for plant d9c03fd8-2754-4337-9a37-e6e53717ea50 from 2018-01-02 00:00:00 to 2020-05-31 00:00:00
+An error occured with plant d9c03fd8-2754-4337-9a37-e6e53717ea50 at Date 02.01.2018. NumberHeaderCells==3
+  0%                                                                                           1/882 [00:00<10:24,  1.41it/s]
+0it [00:00, ?it/s]
+Plant d9c03fd8-2754-4337-9a37-e6e53717ea50 deleted.
+ 85%             549/643 [02:09<00:16,  5.67it/s]An error occured during clicking the buttons.
+  0%                                                                                                   0/882 [00:00<?, ?it/s]Start to crawl data for plant e24fe688-929c-4b71-aa84-9a12bf693367 from 2018-01-02 00:00:00 to 2020-05-31 00:00:00
+An error occured with plant e24fe688-929c-4b71-aa84-9a12bf693367 at Date 02.01.2018. NumberHeaderCells==3
+  0%                                                                                           1/882 [00:00<08:17,  1.77it/s]
+0it [00:00, ?it/s]
+Plant e24fe688-929c-4b71-aa84-9a12bf693367 deleted.
+  0%                                                                                                   0/882 [00:00<?, ?it/s]Start to crawl data for plant e2614a2c-4407-46a9-a612-4a83f8391200 from 2018-01-02 00:00:00 to 2020-05-31 00:00:00
+An error occured with plant e2614a2c-4407-46a9-a612-4a83f8391200 at Date 02.01.2018. NumberHeaderCells==2
+Search for the error
+  0%                                                                                          2/882 [00:00<04:01,  3.64it/sA 
+n error occured with plant e2614a2c-4407-46a9-a612-4a83f8391200 at Date 03.01.2018. NumberHeaderCells==2
+Search for the error
+  0%                                                                                          3/882 [00:01<05:28,  2.68it/sA 
+n error occured with plant e2614a2c-4407-46a9-a612-4a83f8391200 at Date 04.01.2018. NumberHeaderCells==2
+  0%                                                                                          3/882 [00:01<07:45,  1.89it/s]
+0it [00:00, ?it/s]
+Plant e2614a2c-4407-46a9-a612-4a83f8391200 deleted.
+  0%                                                                                                    0/91 [00:00<?, ?it/s]Start to crawl data for plant eed45911-6349-4eee-9eac-a48655215ee3 from 2020-03-03 00:00:00 to 2020-05-31 00:00:00
+An error occured with plant eed45911-6349-4eee-9eac-a48655215ee3 at Date 03.03.2020. NumberHeaderCells==2
+  1%                                                                                           1/91 [00:00<01:11,  1.27it/s]
+0it [00:00, ?it/s]
+Plant eed45911-6349-4eee-9eac-a48655215ee3 deleted.
+  0%                                                                                                   0/882 [00:00<?, ?it/s]Start to crawl data for plant eef2f12c-d4e7-4510-af2c-cdec0366cf42 from 2018-01-02 00:00:00 to 2020-05-31 00:00:00
+An error occured with plant eef2f12c-d4e7-4510-af2c-cdec0366cf42 at Date 02.01.2018. NumberHeaderCells==2
+Search for the error
+  0%                                                                                          2/882 [00:00<05:35,  2.62it/sA 
+n error occured with plant eef2f12c-d4e7-4510-af2c-cdec0366cf42 at Date 03.01.2018. NumberHeaderCells==2
+Search for the error
+  0%                                                                                          3/882 [00:01<07:35,  1.93it/sA 
+n error occured with plant eef2f12c-d4e7-4510-af2c-cdec0366cf42 at Date 04.01.2018. NumberHeaderCells==2
+  0%                                                                                          3/882 [00:02<10:23,  1.41it/s]
+0it [00:00, ?it/s]
+Plant eef2f12c-d4e7-4510-af2c-cdec0366cf42 deleted.
+  0%                                                                                                   0/882 [00:00<?, ?it/s]Start to crawl data for plant f009ccbb-4fd7-4f65-bdab-dc3571577cfe from 2018-01-02 00:00:00 to 2020-05-31 00:00:00
+An error occured with plant f009ccbb-4fd7-4f65-bdab-dc3571577cfe at Date 02.01.2018. NumberHeaderCells==2
+Search for the error
+  0%                                                                                          2/882 [00:00<06:38,  2.21it/sA 
+n error occured with plant f009ccbb-4fd7-4f65-bdab-dc3571577cfe at Date 03.01.2018. NumberHeaderCells==2
+Search for the error
+  0%                                                                                          3/882 [00:01<07:01,  2.08it/sA 
+n error occured with plant f009ccbb-4fd7-4f65-bdab-dc3571577cfe at Date 04.01.2018. NumberHeaderCells==2
+  0%                                                                                          3/882 [00:01<09:15,  1.58it/s]
+0it [00:00, ?it/s]
+Plant f009ccbb-4fd7-4f65-bdab-dc3571577cfe deleted.
+  0%                                                                                                   0/882 [00:00<?, ?it/s]Start to crawl data for plant f077ed94-83c9-4ed1-b9c5-858d213e5f66 from 2018-01-02 00:00:00 to 2020-05-31 00:00:00
+An error occured with plant f077ed94-83c9-4ed1-b9c5-858d213e5f66 at Date 02.01.2018. NumberHeaderCells==2
+Search for the error
+  0%                                                                                          2/882 [00:00<03:39,  4.01it/sA 
+n error occured with plant f077ed94-83c9-4ed1-b9c5-858d213e5f66 at Date 03.01.2018. NumberHeaderCells==2
+Search for the error
+  0%                                                                                          3/882 [00:01<05:59,  2.44it/sA 
+n error occured with plant f077ed94-83c9-4ed1-b9c5-858d213e5f66 at Date 04.01.2018. NumberHeaderCells==2
+  0%                                                                                          3/882 [00:01<09:25,  1.55it/s]
+0it [00:00, ?it/s]
+Plant f077ed94-83c9-4ed1-b9c5-858d213e5f66 deleted.
+ 95%     608/643 [02:44<01:40,  2.87s/it]An error occured during clicking the buttons.
+  0%                                                                                                   0/882 [00:00<?, ?it/s]Start to crawl data for plant f676033d-6cd9-4acc-b247-3fb34dc503a8 from 2018-01-02 00:00:00 to 2020-05-31 00:00:00
+An error occured with plant f676033d-6cd9-4acc-b247-3fb34dc503a8 at Date 02.01.2018. NumberHeaderCells==2
+Search for the error
+  0%                                                                                          2/882 [00:00<05:50,  2.51it/sA 
+n error occured with plant f676033d-6cd9-4acc-b247-3fb34dc503a8 at Date 03.01.2018. NumberHeaderCells==2
+Search for the error
+  0%                                                                                          3/882 [00:01<06:00,  2.44it/sA 
+n error occured with plant f676033d-6cd9-4acc-b247-3fb34dc503a8 at Date 04.01.2018. NumberHeaderCells==2
+  0%                                                                                          3/882 [00:01<08:04,  1.81it/s]
+0it [00:00, ?it/s]
+Plant f676033d-6cd9-4acc-b247-3fb34dc503a8 deleted.
+  0%                                                                                                   0/882 [00:00<?, ?it/s]Start to crawl data for plant f6847e90-7623-4894-a377-2368e96e87b6 from 2018-01-02 00:00:00 to 2020-05-31 00:00:00
+An error occured with plant f6847e90-7623-4894-a377-2368e96e87b6 at Date 02.01.2018. NumberHeaderCells==2
+Search for the error
+  0%                                                                                          2/882 [00:00<05:33,  2.64it/sA 
+n error occured with plant f6847e90-7623-4894-a377-2368e96e87b6 at Date 03.01.2018. NumberHeaderCells==2
+Search for the error
+  0%                                                                                          3/882 [00:01<05:40,  2.58it/sA 
+n error occured with plant f6847e90-7623-4894-a377-2368e96e87b6 at Date 04.01.2018. NumberHeaderCells==2
+  0%                                                                                          3/882 [00:01<07:38,  1.92it/s]
+0it [00:00, ?it/s]
+Plant f6847e90-7623-4894-a377-2368e96e87b6 deleted.
+  0%                                                                                                   0/882 [00:00<?, ?it/s]Start to crawl data for plant f9724543-69d4-42e5-9be5-1123989fb0fd from 2018-01-02 00:00:00 to 2020-05-31 00:00:00
+An error occured with plant f9724543-69d4-42e5-9be5-1123989fb0fd at Date 02.01.2018. NumberHeaderCells==2
+Search for the error
+  0%                                                                                          2/882 [00:00<06:40,  2.20it/sA 
+n error occured with plant f9724543-69d4-42e5-9be5-1123989fb0fd at Date 03.01.2018. NumberHeaderCells==2
+Search for the error
+  0%                                                                                          3/882 [00:01<08:16,  1.77it/sA 
+n error occured with plant f9724543-69d4-42e5-9be5-1123989fb0fd at Date 04.01.2018. NumberHeaderCells==2
+  0%                                                                                          3/882 [00:02<10:41,  1.37it/s]
+0it [00:00, ?it/s]
+Plant f9724543-69d4-42e5-9be5-1123989fb0fd deleted.
+  0%                                                                                                   0/882 [00:00<?, ?it/s]Start to crawl data for plant f9f97775-3050-4313-aa0e-a470ef4fa455 from 2018-01-02 00:00:00 to 2020-05-31 00:00:00
+An error occured with plant f9f97775-3050-4313-aa0e-a470ef4fa455 at Date 02.01.2018. NumberHeaderCells==2
+Search for the error
+  0%                                                                                          2/882 [00:00<03:15,  4.49it/sA 
+n error occured with plant f9f97775-3050-4313-aa0e-a470ef4fa455 at Date 03.01.2018. NumberHeaderCells==2
+Search for the error
+  0%                                                                                          3/882 [00:01<08:19,  1.76it/sA 
+n error occured with plant f9f97775-3050-4313-aa0e-a470ef4fa455 at Date 04.01.2018. NumberHeaderCells==2
+  0%                                                                                          3/882 [00:02<11:43,  1.25it/s]
+0it [00:00, ?it/s]
+Plant f9f97775-3050-4313-aa0e-a470ef4fa455 deleted.
+  0%                                                                                                   0/882 [00:00<?, ?it/s]Start to crawl data for plant fcdd0b5c-4f3a-47b0-84f7-c9dd64f63f09 from 2018-01-02 00:00:00 to 2020-05-31 00:00:00
+An error occured with plant fcdd0b5c-4f3a-47b0-84f7-c9dd64f63f09 at Date 02.01.2018. NumberHeaderCells==3
+  0%                                                                                           1/882 [00:00<11:24,  1.29it/s]
+0it [00:00, ?it/s]
+Plant fcdd0b5c-4f3a-47b0-84f7-c9dd64f63f09 deleted.
+  0%                                                                                                   0/882 [00:00<?, ?it/s]Start to crawl data for plant fd124d83-89bf-4ffd-91cd-18065e5899d1 from 2018-01-02 00:00:00 to 2020-05-31 00:00:00
+An error occured with plant fd124d83-89bf-4ffd-91cd-18065e5899d1 at Date 02.01.2018. NumberHeaderCells==3
+  0%                                                                                           1/882 [00:02<42:03,  2.86s/it] 
+0it [00:00, ?it/s]
+Plant fd124d83-89bf-4ffd-91cd-18065e5899d1 deleted.
+ 99% 637/643 [03:19<00:19,  3.31s/it]Done within: 219.64133191108704
