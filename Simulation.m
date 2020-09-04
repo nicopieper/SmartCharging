@@ -1,10 +1,10 @@
 tic
 Demo=false;
 ActivateWaitbar=true;
-NumSimUsers=2000;
+NumSimUsers=800;
 PublicChargingThreshold=uint32(15); % in %
 
-PThreshold=1.5;
+PThreshold=1.4;
 NumPredMethod=1;
 
 k=0;
