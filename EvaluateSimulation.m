@@ -1,6 +1,6 @@
 %% Define target groups
 
-NumSimUsers=100;
+NumSimUsers=800;
 
 for n=1:NumSimUsers
     if ismissing(Users{n}.VehicleUtilisation)
@@ -45,7 +45,7 @@ DataTable.ChargingPorcessesPerWeek=round(cell2mat(ChargeProcessesPerWeek)*100)/1
 disp(strcat("The users charge in average ", num2str(mean(cell2mat(ChargeProcessesPerWeek(:,1)))), " times per week at home and ", num2str(mean(cell2mat(ChargeProcessesPerWeek(:,2))))," times per week at ohter locations"))
 
 %% Energy charged per charging process
-
+tic
 EnergyPerChargingProcess=cell(length(Targets),2);
 for k=ExistingTargets
     EnergyPerChargingProcess{k,1}=-ones(NumSimUsers*1000,1);
@@ -63,7 +63,7 @@ for k=ExistingTargets
     end
 end
 
-
+toc
 EnergyPerChargingProcess=EnergyPerChargingProcess(ExistingTargets,:);
 close(figure(10))
 figure(10)
@@ -157,8 +157,9 @@ for col=1:2
     end
     xticks(datetime(1,1,1,0,0,0, 'TimeZone', 'Africa/Tunis'):hours(4):datetime(1,1,2,0,0,0, 'TimeZone', 'Africa/Tunis'))
     xticklabels(datestr(datetime(1,1,1,0,0,0, 'TimeZone', 'Africa/Tunis'):hours(4):datetime(1,1,2,0,0,0, 'TimeZone', 'Africa/Tunis'), "HH:MM"))
-    title(strcat("Arrival time at charging point at ", Location(col)))
+    xlabel("Time of date")
     ylabel("Probability")
+    title(strcat("Arrival time at charging point at ", Location(col)))
     legend([" All"; Targets(nrows>0)])
 end
 
@@ -174,15 +175,13 @@ disp(strcat("The users drove in average ", num2str(MileageYearKm), " km per year
 
 %% Coverage of VehicleNumbers
 
-if exist('Vehicles', 'var')
-    VehicleNums=[];
-    for n=1:NumSimUsers
-        VehicleNums=[VehicleNums; Users{n}.VehicleNum];
-    end
-    close(figure(13))
-    figure(13)
-    histogram(VehicleNums, length(Vehicles))
+VehicleNums=[];
+for n=1:NumSimUsers
+    VehicleNums=[VehicleNums; Users{n}.VehicleNum];
 end
+close(figure(13))
+figure(13)
+histogram(VehicleNums, length(Vehicles))
 
 %% Empty Batteries
 
@@ -192,4 +191,4 @@ for n=1:NumSimUsers
 end
 disp(strcat(num2str(sum(EmptyBattery>0)), " users experienced empty battery"))
 
-    
+%% 
