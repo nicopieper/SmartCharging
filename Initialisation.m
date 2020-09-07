@@ -35,10 +35,10 @@ if strcmp(Path(1:5), '/home')
     Path='/home/ma-student/Dropbox/Uni/Masterarbeit/Matlab/';
     Dl='/';
 elseif strcmp(Path(1:14), 'C:\Users\nicop')
-    Path='C:\Users\nicop\MATLAB\SmartChargingAlgorithm\';
+    Path='C:\Users\nicop\MATLAB\SmartCharging\';
     Dl='\';
 elseif strcmp(Path(1:13), 'C:\Users\Nico')
-    Path='C:\Users\Nico\OneDrive\SmartChargingAlgorithm\';
+    Path='C:\Users\Nico\OneDrive\SmartCharging\';
     Dl='\';
 end
 
