@@ -70,7 +70,7 @@ tic
 
 AddNoise=true;
 ActivateWaitbar=true;
-ProcessNewVehicles=false;
+ProcessNewVehicles=true;
 Evaluation=false;
 
 MinShareHomeParking=10/24;
@@ -158,7 +158,7 @@ else
         DateRange=between(dateshift(DrivingProfileTime(1,1), 'start', 'day'), dateshift(DrivingProfileTime(end,2), 'start', 'day'), 'days')+caldays(1); % The number of calendar days from the first trip to the last one (01.01.2020 23:59 --> 20.01.2020 00:00 would equal to 20 days as well as 01.01.2020 0:00 --> 20.01.2020 23:59)
         Ranges(k)=DateRange; % save of DateRanges for evaluation reasons
 
-        [CompanyDistanceToHome, HomeSpotFound]=DetermineHomeDistance(DrivingProfileTime, DrivingProfile(:,2), MaxHomeSpotDistanceDiff, MinShareHomeParking); % Investigate where most likely is the home spot of the vehicle. Find the spots where the vehicle is parked most often. Calculate the parking time per spot. The spot with the highest parking time is the home spot which is considered to have a charging point
+        [DistanceCompanyToHome, HomeSpotFound]=DetermineHomeDistance(DrivingProfileTime, DrivingProfile(:,2), MaxHomeSpotDistanceDiff, MinShareHomeParking); % Investigate where most likely is the home spot of the vehicle. Find the spots where the vehicle is parked most often. Calculate the parking time per spot. The spot with the highest parking time is the home spot which is considered to have a charging point
 
         if ~HomeSpotFound % do not consider this vehicle if no valid home spot could be found
 %             Vehicles{k}.ID
@@ -289,7 +289,7 @@ else
             Vehicles{k}.Logbook(LogbookPointer,3)=Distance; % distance in meters
 
             if Vehicles{k}.Logbook(LogbookPointer,1)==0 % if the car is not driving at the end of the time interval (else before it was set to 1)
-                if abs(DrivingProfilesExt(max(DrivingProfilePointer-1,1), 2)-CompanyDistanceToHome)<MaxHomeSpotDistanceDiff % if the distance to the company to the home spot at the end of the last trip is smaller than MaxHomeSpotDistanceDiff
+                if abs(DrivingProfilesExt(max(DrivingProfilePointer-1,1), 2)-DistanceCompanyToHome)<MaxHomeSpotDistanceDiff % if the distance to the company to the home spot at the end of the last trip is smaller than MaxHomeSpotDistanceDiff
                     Vehicles{k}.Logbook(LogbookPointer,1)=3; % ... then the charger is parked at home and might be defined as charging within the simulation script
                 else
                     Vehicles{k}.Logbook(LogbookPointer,1)=2; % ... else it is parked anywhere else
@@ -304,7 +304,7 @@ else
         Vehicles{k}.Logbook(1,1)=Vehicles{k}.Logbook(2,1); % copy the state of the second logbook entry to the first one, as it was undefined
         Vehicles{k}.AverageMileageDay_m=uint32(sum(Vehicles{k}.Logbook(:,3))/days(DateEnd-DateStart)); %[m] 
         Vehicles{k}.AverageMileageYear_km=uint32(sum(Vehicles{k}.Logbook(:,3))/days(DateEnd-DateStart)*365.25/1000); %[km]
-        Vehicles{k}.CompanyDistanceToHome=CompanyDistanceToHome;
+        Vehicles{k}.DistanceCompanyToHome=DistanceCompanyToHome;
         
         DayTrips=[DayTrips; sum(reshape(Vehicles{k}.Logbook(1:DateRange*96,3), 96, []), 1)'];
         
@@ -321,7 +321,7 @@ else
 
     save(StorageFile, "Vehicles", "-v7.3") % save the data in a file
 
-    clearvars TimeVar DrivingProfilePointer DrivingProfileMatrix PathVehicleData VehicleID DateMat DrivingProfileTime DrivingProfileTimeExt Distance DrivingTime LogbookPointer CompanyDistanceToHome    
+    clearvars TimeVar DrivingProfilePointer DrivingProfileMatrix PathVehicleData VehicleID DateMat DrivingProfileTime DrivingProfileTimeExt Distance DrivingTime LogbookPointer DistanceCompanyToHome    
     clearvars DateMat DateMatStr DateRange DeleteIndices DrivingProfile Distances DrivingProfileMat DrivingProfileTimePosix h HomeSpotFound 
     clearvars Indices k LargestValue LogbookTime LogbookTimePosix
     clearvars n Ranges RemainingDates SpotParkingTime TargetDate VehicleInfoMat VehicleMatIndices VehiclePropertiesMat VehicleDataRep

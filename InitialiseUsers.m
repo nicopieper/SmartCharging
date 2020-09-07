@@ -60,6 +60,7 @@ for n=1:NumUsers
     
     Users{n}.VehicleNum=VehicleDatabase{SizeNum}(VehiclePointer(SizeNum));
     Users{n}.NumUsers=Vehicles{VehicleDatabase{SizeNum}(VehiclePointer(SizeNum))}.NumberUsers;
+    Users{n}.DistanceCompanyToHome=Vehicles{VehicleDatabase{SizeNum}(VehiclePointer(SizeNum))}.DistanceCompanyToHome;
     Users{n}.VehicleUtilisation=Vehicles{VehicleDatabase{SizeNum}(VehiclePointer(SizeNum))}.VehicleUtilisation;
     Users{n}.LogbookSource=Vehicles{VehicleDatabase{SizeNum}(VehiclePointer(SizeNum))}.Logbook;
     Users{n}.LogbookSource(:,4)=uint32(Users{n}.LogbookSource(:,3)*Users{n}.Consumption/1000);
