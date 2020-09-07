@@ -52,7 +52,7 @@ for TimeInd=RangeTrainInd(1)+1:RangeTestInd(2)
                 Users{n}.LogbookBase(k,:)=Users{n}.LogbookBase(k-TimeStepIndsNeededForCharging,:);
             end
             
-            
+            TimeStepIndsNeededForCharging=min(length(Users{n}.LogbookBase)-(TimeInd-1), TimeStepIndsNeededForCharging);
             Users{n}.LogbookBase(TimeInd:TimeInd+TimeStepIndsNeededForCharging-1,1:7)=ones(TimeStepIndsNeededForCharging,1)*[6, zeros(1,6)]; % Public charging due to low SoC
         end
         
