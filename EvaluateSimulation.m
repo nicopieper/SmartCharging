@@ -2,31 +2,30 @@
 
 NumSimUsers=800;
 
-for n=1:NumSimUsers
-    if ismissing(Users{n}.VehicleUtilisation)
-        Users{n}.VehicleUtilisation="undefined";
-    end
-    if ismissing(Users{n}.NumUsers)
-        Users{n}.NumUsers="undefined";
-    end
-end
-
 % Targets=["small"; "medium"; "large"; "transporter"];
 Targets=["one user"; "only one user"; "several users"; "undefined"];
 Targets=["company car"; "fleet vehicle"; "undefined"];
+Targets=[1; 3; 10; 1000];
+
 TargetGroups=cell(length(Targets),1);
 for n=1:NumSimUsers
-    TargetNum=strcmp(Users{n}.VehicleUtilisation,Targets);
+%     TargetNum=strcmp(Users{n}.VehicleUtilisation,Targets);
+    TargetNum=find(Users{n}.DistanceCompanyToHome<Targets,1);
     TargetGroups{TargetNum}=[TargetGroups{TargetNum} n];
 end
-NumExistingTargets=sum(cellfun('length', TargetGroups)>0);
 ExistingTargets=find(cellfun('length', TargetGroups)>0)';
-ShowTargets=false;
+ExistingTargets=[2,3,4];
+NumExistingTargets=numel(ExistingTargets);
+ShowTargets=true;
 ShowAll=true;
+ShowELaad=true;
 
 DataTable=table(Targets(ExistingTargets));
 Location=["Home"; "Other"];
 
+if ShowELaad && ~exist('ConnectionTimeELaad', 'var')
+    GetELaadData;
+end
 
 %% Energy charged per week
 
@@ -55,7 +54,7 @@ for k=ExistingTargets
     for col=5:6
         counter=1;
         for n=TargetGroups{k}
-            ChargingBlocks=[find(Users{n}.LogbookBase(2:end,col)>0 & Users{n}.LogbookBase(1:end-1,col)==0)+1, find(Users{n}.LogbookBase(1:end-1,col)>0 & Users{n}.LogbookBase(2:end,col)==0)];
+            ChargingBlocks=[find(Users{n}.LogbookBase(1:end,col)>0 & [0; Users{n}.LogbookBase(1:end-1,col)]==0)+1, find(Users{n}.LogbookBase(1:end,col)>0 & [Users{n}.LogbookBase(2:end,col);0]==0)];
             for h=1:size(ChargingBlocks,1)
                 EnergyPerChargingProcess{k,col-4}(counter)=sum(Users{n}.LogbookBase(ChargingBlocks(h,1):ChargingBlocks(h,2),col));
                 counter=counter+1;
@@ -83,6 +82,11 @@ for col=1:2
             plot(centers, counts./sum(counts))
             legappend(l, Targets(ExistingTargets(k)));
         end
+    end
+    if ShowELaad
+        [counts, centers]=hist(EnergyDemandELaad(:,col+1), 0:4:100);
+        plot(centers, counts./sum(counts))
+        legappend(l, "ELaad");
     end
     title(strcat("Energy per charging event in kWh ", Location(col)))
     xlabel("Energy in kWh")
@@ -139,19 +143,23 @@ for col=1:2
     if ShowAll
         [counts, centers]=hist(cat(1, ConnectionTime{:,col}), (0:2:48)*60);
         plot(centers/60, counts./sum(counts))
-        legappend(l, "All")
+        legappend(l, "All");
     end
     if ShowTargets
         for k=1:NumExistingTargets
             [counts, centers]=hist(ConnectionTime{k,col}, (0:2:48)*60);
             plot(centers/60, counts./sum(counts))
-            legappend(l, Targets(ExistingTargets(k)))
+            legappend(l, Targets(ExistingTargets(k)));
         end
+    end
+    if ShowELaad
+        [counts, centers]=hist(ConnectionTimeELaad(:,col+1), (0:2:48));
+        plot(centers, counts./sum(counts))
+        legappend(l, "ELaad");
     end
     title(strcat("Connection to charging point duration at ", Location(col)))
     xlabel("Duration in hours")
     ylabel("Probability")
-    legend([" All"; Targets(ExistingTargets)])
 end
     
     
@@ -165,7 +173,7 @@ for col=1:2
         [counts, edges]=histcounts(cat(1, ArrivalTimes{:,col}), datetime(1,1,1,0,0,0, 'TimeZone', 'Africa/Tunis'):hours(1):datetime(1,1,2,0,0,0, 'TimeZone', 'Africa/Tunis'));
         centers=edges(1:end-1)+(edges(2)-edges(1))/2;
         plot(centers, counts./sum(counts))
-        legappend(l, "All")
+        legappend(l, "All");
     end
     if ShowTargets
         [nrows,~] = cellfun(@size, ArrivalTimes(:,col));
@@ -173,15 +181,18 @@ for col=1:2
             [counts, edges]=histcounts(ArrivalTimes{k,col}, datetime(1,1,1,0,0,0, 'TimeZone', 'Africa/Tunis'):hours(1):datetime(1,1,2,0,0,0, 'TimeZone', 'Africa/Tunis'));
             centers=edges(1:end-1)+(edges(2)-edges(1))/2;
             plot(centers, counts./sum(counts))
-            legappend(l, Targets(ExistingTargets(k)))
+            legappend(l, Targets(ExistingTargets(k)));
         end
+    end
+    if ShowELaad
+        plot(datetime(1,1,1,0,30,0, 'TimeZone', 'Africa/Tunis'):hours(1):datetime(1,1,1,23,30,0, 'TimeZone', 'Africa/Tunis'), sum(reshape(ArrivalTimesELaad(:,col), 4, []))/100)
+        legappend(l, "ELaad");
     end
     xticks(datetime(1,1,1,0,0,0, 'TimeZone', 'Africa/Tunis'):hours(4):datetime(1,1,2,0,0,0, 'TimeZone', 'Africa/Tunis'))
     xticklabels(datestr(datetime(1,1,1,0,0,0, 'TimeZone', 'Africa/Tunis'):hours(4):datetime(1,1,2,0,0,0, 'TimeZone', 'Africa/Tunis'), "HH:MM"))
     xlabel("Time of date")
     ylabel("Probability")
     title(strcat("Arrival time at charging point at ", Location(col)))
-    legend([" All"; Targets(nrows>0)])
 end
 
 
@@ -212,6 +223,6 @@ EmptyBattery=0;
 for n=1:NumSimUsers
     EmptyBattery(n)=sum(Users{n}.LogbookBase(2:end,7)<=0 & Users{n}.LogbookBase(1:end-1,7)>0);
 end
-disp(strcat(num2str(sum(EmptyBattery>0)), " users experienced empty battery"))
+disp(strcat(num2str(sum(EmptyBattery>0)), " users experienced empty batteries"))
 
 %% 
