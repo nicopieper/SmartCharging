@@ -70,7 +70,7 @@ tic
 
 AddNoise=true;
 ActivateWaitbar=true;
-ProcessNewVehicles=true;
+ProcessNewVehicles=false;
 Evaluation=false;
 
 MinShareHomeParking=10/24;
@@ -78,7 +78,6 @@ NumVehicles=800;
 MaxHomeSpotDistanceDiff=0.1; % [km]
 MaxPlausibleVelocity=60; % [m/s]
 TimeNoiseStdFac=0.05; % Std=TimeNoiseStdFac*TripTime
-
 PathVehicleData=[Path 'Predictions' Dl 'VehicleData' Dl];
 StorageFile=strcat(PathVehicleData, "VehicleData_", num2str(NumVehicles), "_", num2str(MaxHomeSpotDistanceDiff), "_", num2str(MinShareHomeParking), "_", num2str(AddNoise), ".mat");
 
