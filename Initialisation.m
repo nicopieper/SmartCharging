@@ -38,7 +38,7 @@ elseif strcmp(Path(1:14), 'C:\Users\nicop')
     Path='C:\Users\nicop\MATLAB\SmartCharging\';
     Dl='\';
 elseif strcmp(Path(1:13), 'C:\Users\Nico')
-    Path='C:\Users\Nico\OneDrive\SmartCharging\';
+    Path='C:\Users\Nico\Seafile\SmartCharging\';
     Dl='\';
 end
 
