@@ -158,7 +158,7 @@ else
         DateRange=between(dateshift(DrivingProfileTime(1,1), 'start', 'day'), dateshift(DrivingProfileTime(end,2), 'start', 'day'), 'days')+caldays(1); % The number of calendar days from the first trip to the last one (01.01.2020 23:59 --> 20.01.2020 00:00 would equal to 20 days as well as 01.01.2020 0:00 --> 20.01.2020 23:59)
         Ranges(k)=DateRange; % save of DateRanges for evaluation reasons
 
-        [DistanceCompanyToHome, HomeSpotFound]=DetermineHomeDistance(DrivingProfileTime, DrivingProfile(:,2), MaxHomeSpotDistanceDiff, MinShareHomeParking); % Investigate where most likely is the home spot of the vehicle. Find the spots where the vehicle is parked most often. Calculate the parking time per spot. The spot with the highest parking time is the home spot which is considered to have a charging point
+        [DistanceCompanyToHome, HomeSpotFound, AvgHomeParkingTime]=DetermineHomeDistance(DrivingProfileTime, DrivingProfile(:,2), MaxHomeSpotDistanceDiff, MinShareHomeParking); % Investigate where most likely is the home spot of the vehicle. Find the spots where the vehicle is parked most often. Calculate the parking time per spot. The spot with the highest parking time is the home spot which is considered to have a charging point
 
         if ~HomeSpotFound % do not consider this vehicle if no valid home spot could be found
 %             Vehicles{k}.ID
@@ -305,6 +305,7 @@ else
         Vehicles{k}.AverageMileageDay_m=uint32(sum(Vehicles{k}.Logbook(:,3))/days(DateEnd-DateStart)); %[m] 
         Vehicles{k}.AverageMileageYear_km=uint32(sum(Vehicles{k}.Logbook(:,3))/days(DateEnd-DateStart)*365.25/1000); %[km]
         Vehicles{k}.DistanceCompanyToHome=DistanceCompanyToHome;
+        Vehicles{k}.AvgHomeParkingTime=AvgHomeParkingTime;
         
         DayTrips=[DayTrips; sum(reshape(Vehicles{k}.Logbook(1:DateRange*96,3), 96, []), 1)'];
         
