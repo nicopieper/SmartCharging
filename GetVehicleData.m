@@ -111,6 +111,10 @@ else
     for n=1:size(Vehicles,1)
         Vehicles{n}.ID=uint32(str2num(VehiclePropertiesMat(n,1)));  % Inside the cell, the information is stored in a struct
         Vehicles{n}.VehicleSize=VehiclePropertiesMat(n,2);
+        Vehicles{n}.VehicleSizeMerged=Vehicles{n}.VehicleSize;
+        if strcmp(Vehicles{n}.VehicleSizeMerged, "transporter")
+            Vehicles{n}.VehicleSizeMerged="large";
+        end
         Vehicles{n}.EconomicSegement=VehiclePropertiesMat(n,5);
         Vehicles{n}.CitySize=VehiclePropertiesMat(n,8);
         Vehicles{n}.CompanySize=VehiclePropertiesMat(n,9);
