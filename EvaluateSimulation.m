@@ -1,85 +1,161 @@
+%% Define target groups
+
+NumSimUsers=800;
+
+for n=1:NumSimUsers
+    if ismissing(Users{n}.VehicleUtilisation)
+        Users{n}.VehicleUtilisation="undefined";
+    end
+    if ismissing(Users{n}.NumUsers)
+        Users{n}.NumUsers="undefined";
+    end
+end
+
+% Targets=["small"; "medium"; "large"; "transporter"];
+Targets=["one user"; "only one user"; "several users"; "undefined"];
+Targets=["company car"; "fleet vehicle"; "undefined"];
+TargetGroups=cell(length(Targets),1);
+for n=1:NumSimUsers
+    TargetNum=strcmp(Users{n}.VehicleUtilisation,Targets);
+    TargetGroups{TargetNum}=[TargetGroups{TargetNum} n];
+end
+NumExistingTargets=sum(cellfun('length', TargetGroups)>0);
+ExistingTargets=find(cellfun('length', TargetGroups)>0)';
+
+DataTable=table(Targets(ExistingTargets));
+Location=["Home"; "Other"];
+
+
 %% Energy charged per week
 
-ChargeProcessesHome=zeros(NumSimUsers,1);
-ChargeProcessesOther=zeros(NumSimUsers,1);
-for n=1:NumSimUsers
-    Users{n}.ChargeProcessesHomeBase=sum(Users{n}.LogbookBase(2:end,5)>0 & Users{n}.LogbookBase(1:end-1,5)==0);
-    Users{n}.ChargeProcessesOtherBase=sum(Users{n}.LogbookBase(2:end,6)>0 & Users{n}.LogbookBase(1:end-1,6)==0);
-    ChargeProcessesHome(n)=Users{n}.ChargeProcessesHomeBase;
-    ChargeProcessesOther(n)=Users{n}.ChargeProcessesOtherBase;
+ChargeProcesses=cell(length(Targets),2);
+ChargeProcessesPerWeek=cell(length(Targets),2);
+for k=ExistingTargets
+    for n=TargetGroups{k}
+        Users{n}.ChargeProcessesHomeBase=sum(Users{n}.LogbookBase(2:end,5)>0 & Users{n}.LogbookBase(1:end-1,5)==0);
+        Users{n}.ChargeProcessesOtherBase=sum(Users{n}.LogbookBase(2:end,6)>0 & Users{n}.LogbookBase(1:end-1,6)==0);
+        ChargeProcesses{k,1}(n)=Users{n}.ChargeProcessesHomeBase;
+        ChargeProcesses{k,2}(n)=Users{n}.ChargeProcessesOtherBase;
+    end
+    ChargeProcessesPerWeek{k,1}=sum(ChargeProcesses{k,1})/days(DateEnd-DateStart)*7/length(TargetGroups{k});
+    ChargeProcessesPerWeek{k,2}=sum(ChargeProcesses{k,2})/days(DateEnd-DateStart)*7/length(TargetGroups{k});
 end
-ChargePorcessesHomePerWeek=sum(ChargeProcessesHome)/days(DateEnd-DateStart)*7/NumSimUsers;
-ChargePorcessesOtherPerWeek=sum(ChargeProcessesOther)/days(DateEnd-DateStart)*7/NumSimUsers;
-disp(strcat("The users charge in average ", num2str(ChargePorcessesHomePerWeek), " times per week at home"))
-disp(strcat("The users charge in average ", num2str(ChargePorcessesOtherPerWeek), " times per week at ohter locations"))
+ChargeProcessesPerWeek=ChargeProcessesPerWeek(ExistingTargets,:);
+DataTable.ChargingPorcessesPerWeek=round(cell2mat(ChargeProcessesPerWeek)*100)/100;
+disp(strcat("The users charge in average ", num2str(mean(cell2mat(ChargeProcessesPerWeek(:,1)))), " times per week at home and ", num2str(mean(cell2mat(ChargeProcessesPerWeek(:,2))))," times per week at ohter locations"))
 
 %% Energy charged per charging process
-
-EnergyPerChargingProcessHome=[];
-EnergyPerChargingProcessOther=[];
-for n=1:NumSimUsers
-    ChargingBlocksHome=[find(Users{n}.LogbookBase(2:end,5)>0 & Users{n}.LogbookBase(1:end-1,5)==0)+1, find(Users{n}.LogbookBase(1:end-1,5)>0 & Users{n}.LogbookBase(2:end,5)==0)];
-    ChargingBlocksOther=[find(Users{n}.LogbookBase(2:end,6)>0 & Users{n}.LogbookBase(1:end-1,6)==0)+1, find(Users{n}.LogbookBase(1:end-1,6)>0 & Users{n}.LogbookBase(2:end,6)==0)];
-    for k=1:size(ChargingBlocksHome,1)
-        EnergyPerChargingProcessHome=[EnergyPerChargingProcessHome;sum(Users{n}.LogbookBase(ChargingBlocksHome(k,1):ChargingBlocksHome(k,2),5))];
-    end
-    for k=1:size(ChargingBlocksOther,1)
-        EnergyPerChargingProcessOther=[EnergyPerChargingProcessOther;sum(Users{n}.LogbookBase(ChargingBlocksOther(k,1):ChargingBlocksOther(k,2),6))];
+tic
+EnergyPerChargingProcess=cell(length(Targets),2);
+for k=ExistingTargets
+    EnergyPerChargingProcess{k,1}=-ones(NumSimUsers*1000,1);
+    EnergyPerChargingProcess{k,2}=-ones(NumSimUsers*1000,1);
+    for col=5:6
+        counter=1;
+        for n=TargetGroups{k}
+            ChargingBlocks=[find(Users{n}.LogbookBase(2:end,col)>0 & Users{n}.LogbookBase(1:end-1,col)==0)+1, find(Users{n}.LogbookBase(1:end-1,col)>0 & Users{n}.LogbookBase(2:end,col)==0)];
+            for h=1:size(ChargingBlocks,1)
+                EnergyPerChargingProcess{k,col-4}(counter)=sum(Users{n}.LogbookBase(ChargingBlocks(h,1):ChargingBlocks(h,2),col));
+                counter=counter+1;
+            end
+        end
+        EnergyPerChargingProcess{k,col-4}=EnergyPerChargingProcess{k,col-4}(EnergyPerChargingProcess{k,col-4}~=-1);
     end
 end
+
+toc
+EnergyPerChargingProcess=EnergyPerChargingProcess(ExistingTargets,:);
 close(figure(10))
 figure(10)
-histogram(EnergyPerChargingProcessHome/1000, 0:4:100, 'Normalization', 'Probability')
-hold on
-histogram(EnergyPerChargingProcessOther/1000, 0:4:100, 'Normalization', 'Probability')
-title("Energy per charging event in kWh")
-legend(["Home" "Other"])
-disp(strcat("The users charge in average ", num2str(mean(EnergyPerChargingProcessHome/1000)), " kWh per charging event at home"))
-disp(strcat("The users charge in average ", num2str(mean(EnergyPerChargingProcessHome/1000)), " kWh per charging event at other places"))
+for col=1:2
+    subplot(2,1,col)
+    hold on
+    [counts, centers]=hist(cat(1, EnergyPerChargingProcess{:,col})/1000, 0:4:100);
+    plot(centers, counts./sum(counts))
+    for k=1:NumExistingTargets
+        [counts, centers]=hist(EnergyPerChargingProcess{k, col}/1000, 0:4:100);
+        plot(centers, counts./sum(counts))
+    end
+    title(strcat("Energy per charging event in kWh ", Location(col)))
+    legend([" All"; Targets(ExistingTargets)])
+end
 
+disp(strcat("In average per charging event, ", num2str(mean(cell2mat(EnergyPerChargingProcess(:,1))/1000)), " kWh were charged at home and ", num2str(mean(cell2mat(EnergyPerChargingProcess(:,2))/1000)), " at other places"))
+
+DataTable.EnergyPerChargingProcess=round(cellfun(@mean,EnergyPerChargingProcess)/1000*100)/100;
 
 %% Energy charged per User
 
-EnergyCharged=[];
-for n=1:NumSimUsers
-    EnergyCharged(n,1:2)=sum(Users{n}.LogbookBase(1:end,5:6),1);
+EnergyCharged=cell(length(Targets),2);
+for k=ExistingTargets
+    for n=TargetGroups{k}
+        EnergyCharged{k,1}(end+1)=sum(Users{n}.LogbookBase(1:end,5),1);
+        EnergyCharged{k,2}(end+1)=sum(Users{n}.LogbookBase(1:end,6),1);
+    end
 end
-EnergyChargedPerDayPerVehicle=mean(EnergyCharged)/days(DateEnd-DateStart)/1000;
-HomeChargingQuote=EnergyChargedPerDayPerVehicle(1)/sum(EnergyChargedPerDayPerVehicle);
-disp(strcat("The users charged in average ", num2str(sum(EnergyChargedPerDayPerVehicle)), " kWh per day"))
+EnergyCharged=EnergyCharged(ExistingTargets,:);
+EnergyChargedPerDayPerVehicle=cellfun(@sum,EnergyCharged)/days(DateEnd-DateStart)/1000./cellfun(@length, TargetGroups(ExistingTargets));
+HomeChargingQuote=sum(EnergyChargedPerDayPerVehicle(:,1))/sum(EnergyChargedPerDayPerVehicle,'all');
+disp(strcat("The users charged in average ", num2str(sum(cellfun(@sum, EnergyCharged), 'all')/days(DateEnd-DateStart)/1000/NumSimUsers), " kWh per day"))
 disp(strcat(num2str(HomeChargingQuote*100), " % of all charging events took place at home"))
+% DataTable.EnergyChargedPerDay=
 
 %% Arrival and Connection time at charging point
 
-ConnectionTimeHome=[];
-ConnectionTimeOther=[];
-ArrivalTimesHome=NaT(0,0, 'TimeZone', 'Africa/Tunis');
-ArrivalTimesOther=NaT(0,0, 'TimeZone', 'Africa/Tunis');
-for n=1:NumSimUsers
-    ConnectionBlocksHome=[find(ismember(Users{n}.LogbookBase(1:end,1),4:5) & ~ismember([0;Users{n}.LogbookBase(1:end-1,1)],4:5)), find(ismember(Users{n}.LogbookBase(1:end,1),4:5) & ~ismember([Users{n}.LogbookBase(2:end,1);0],4:5))];
-    ConnectionBlocksOther=[find(ismember(Users{n}.LogbookBase(1:end,1),6) & ~ismember([0;Users{n}.LogbookBase(1:end-1,1)],6)), find(ismember(Users{n}.LogbookBase(1:end,1),6) & ~ismember([Users{n}.LogbookBase(2:end,1);0],6))];
-    ConnectionTimeHome=[ConnectionTimeHome; (ConnectionBlocksHome(:,2)-ConnectionBlocksHome(:,1)+1)*TimeStepMin];
-    ConnectionTimeOther=[ConnectionTimeOther; (ConnectionBlocksOther(:,2)-ConnectionBlocksOther(:,1)+1)*TimeStepMin];
-    ArrivalTimesHome=[ArrivalTimesHome; datetime(ones(length(ConnectionBlocksHome),1),ones(length(ConnectionBlocksHome),1),ones(length(ConnectionBlocksHome),1), hour(TimeVec(ConnectionBlocksHome(:,1))), minute((TimeVec(ConnectionBlocksHome(:,1)))),zeros(length(ConnectionBlocksHome),1), 'TimeZone', 'Africa/Tunis')];
-    ArrivalTimesOther=[ArrivalTimesOther; datetime(ones(length(ConnectionBlocksOther),1),ones(length(ConnectionBlocksOther),1),ones(length(ConnectionBlocksOther),1), hour(TimeVec(ConnectionBlocksOther(:,1))), minute((TimeVec(ConnectionBlocksOther(:,1)))),zeros(length(ConnectionBlocksOther),1), 'TimeZone', 'Africa/Tunis')];
+ConnectionTime=cell(length(Targets),2);
+ArrivalTimes=cell(length(Targets),2);
+for k=ExistingTargets
+    ConnectionTime{k,1}=[];
+    ConnectionTime{k,2}=[];
+    ArrivalTimes{k,1}=NaT(0,0, 'TimeZone', 'Africa/Tunis');
+    ArrivalTimes{k,2}=NaT(0,0, 'TimeZone', 'Africa/Tunis');
+    for n=TargetGroups{k}
+        ConnectionBlocksHome=[find(ismember(Users{n}.LogbookBase(1:end,1),4:5) & ~ismember([0;Users{n}.LogbookBase(1:end-1,1)],4:5)), find(ismember(Users{n}.LogbookBase(1:end,1),4:5) & ~ismember([Users{n}.LogbookBase(2:end,1);0],4:5))];
+        ConnectionBlocksOther=[find(ismember(Users{n}.LogbookBase(1:end,1),6) & ~ismember([0;Users{n}.LogbookBase(1:end-1,1)],6)), find(ismember(Users{n}.LogbookBase(1:end,1),6) & ~ismember([Users{n}.LogbookBase(2:end,1);0],6))];
+        ConnectionTime{k,1}=[ConnectionTime{k,1}; (ConnectionBlocksHome(:,2)-ConnectionBlocksHome(:,1)+1)*TimeStepMin];
+        ConnectionTime{k,2}=[ConnectionTime{k,2}; (ConnectionBlocksOther(:,2)-ConnectionBlocksOther(:,1)+1)*TimeStepMin];
+        ArrivalTimes{k,1}=[ArrivalTimes{k,1}; datetime(ones(length(ConnectionBlocksHome),1),ones(length(ConnectionBlocksHome),1),ones(length(ConnectionBlocksHome),1), hour(TimeVec(ConnectionBlocksHome(:,1))), minute((TimeVec(ConnectionBlocksHome(:,1)))),zeros(length(ConnectionBlocksHome),1), 'TimeZone', 'Africa/Tunis')];
+        ArrivalTimes{k,2}=[ArrivalTimes{k,2}; datetime(ones(length(ConnectionBlocksOther),1),ones(length(ConnectionBlocksOther),1),ones(length(ConnectionBlocksOther),1), hour(TimeVec(ConnectionBlocksOther(:,1))), minute((TimeVec(ConnectionBlocksOther(:,1)))),zeros(length(ConnectionBlocksOther),1), 'TimeZone', 'Africa/Tunis')];
+    end
 end
+ConnectionTime=ConnectionTime(ExistingTargets,:);
+ArrivalTimes=ArrivalTimes(ExistingTargets,:);
+
 close(figure(11))
 figure(11)
-histogram(ConnectionTimeHome/60, 0:2:48, 'Normalization', 'Probability')
-hold on
-histogram(ConnectionTimeOther/60, 0:2:48, 'Normalization', 'Probability')
-title("Connection to charging point duration")
-legend(["Home" "Other"])
-
+for col=1:2
+    subplot(2,1,col)
+    hold on
+    [counts, centers]=hist(cat(1, ConnectionTime{:,col}), (0:2:48)*60);
+    plot(centers/60, counts./sum(counts))
+    for k=1:NumExistingTargets
+        [counts, centers]=hist(ConnectionTime{k,col}, (0:2:48)*60);
+        plot(centers/60, counts./sum(counts))
+    end
+    title(strcat("Connection to charging point duration at ", Location(col)))
+    legend([" All"; Targets(ExistingTargets)])
+end
+    
+    
 close(figure(12))
 figure(12)
-histogram(ArrivalTimesHome, datetime(1,1,1,0,0,0, 'TimeZone', 'Africa/Tunis'):hours(1):datetime(1,1,2,0,0,0, 'TimeZone', 'Africa/Tunis'), 'Normalization', 'Probability')
-hold on
-histogram(ArrivalTimesOther, datetime(1,1,1,0,0,0, 'TimeZone', 'Africa/Tunis'):hours(1):datetime(1,1,2,0,0,0, 'TimeZone', 'Africa/Tunis'), 'Normalization', 'Probability')
-xticks(datetime(1,1,1,0,0,0, 'TimeZone', 'Africa/Tunis'):hours(4):datetime(1,1,2,0,0,0, 'TimeZone', 'Africa/Tunis'))
-xticklabels(datestr(datetime(1,1,1,0,0,0, 'TimeZone', 'Africa/Tunis'):hours(4):datetime(1,1,2,0,0,0, 'TimeZone', 'Africa/Tunis'), "HH:MM"))
-title("Arrival time at charging point")
-legend(["Home" "Other"])
+for col=1:2
+    subplot(2,1,col)
+    hold on
+    [counts, edges]=histcounts(cat(1, ArrivalTimes{:,col}), datetime(1,1,1,0,0,0, 'TimeZone', 'Africa/Tunis'):hours(1):datetime(1,1,2,0,0,0, 'TimeZone', 'Africa/Tunis'));
+    centers=edges(1:end-1)+(edges(2)-edges(1))/2;
+    plot(centers, counts./sum(counts))
+    [nrows,~] = cellfun(@size, ArrivalTimes(:,col));
+    for k=find(nrows>0)'
+        [counts, edges]=histcounts(ArrivalTimes{k,col}, datetime(1,1,1,0,0,0, 'TimeZone', 'Africa/Tunis'):hours(1):datetime(1,1,2,0,0,0, 'TimeZone', 'Africa/Tunis'));
+        centers=edges(1:end-1)+(edges(2)-edges(1))/2;
+        plot(centers, counts./sum(counts))
+    end
+    xticks(datetime(1,1,1,0,0,0, 'TimeZone', 'Africa/Tunis'):hours(4):datetime(1,1,2,0,0,0, 'TimeZone', 'Africa/Tunis'))
+    xticklabels(datestr(datetime(1,1,1,0,0,0, 'TimeZone', 'Africa/Tunis'):hours(4):datetime(1,1,2,0,0,0, 'TimeZone', 'Africa/Tunis'), "HH:MM"))
+    title(strcat("Arrival time at charging point at ", Location(col)))
+    legend([" All"; Targets(nrows>0)])
+end
 
 
 %% Mileage

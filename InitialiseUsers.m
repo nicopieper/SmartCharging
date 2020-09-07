@@ -1,7 +1,8 @@
-NumUsers=2000;
+NumUsers=800;
 LikelihoodChargingDay=4.1/7;
 StdwChargingDay=2/7;
 LikelihoodPV=0.45; % 44 % der privaten und 46 % der gewerblichen Nutzer über eine eigene Photovoltaikanlage, https://elib.dlr.de/96491/1/Ergebnisbericht_E-Nutzer_2015.pdf S. 10
+AddPV=false;
 
 Users=cell(NumUsers,1);
 PVPlantPointer=1;
@@ -10,6 +11,8 @@ VehiclePointer=zeros(length(VehicleSizes),1);
 
 if ~exist('Vehicles', 'var')
     GetVehicleData;
+end
+if ~exist('VehicleDatabase', 'var')
     VehicleDatabase=cell(length(VehicleSizes),1);
     for n=1:length(Vehicles)
         SizeNum=find(Vehicles{n}.VehicleSize==VehicleSizes,1);
@@ -33,8 +36,9 @@ for n=1:NumUsers
     Users{n}.ACChargingPowerVehicle=str2double(VehicleProperties(Model, 7))*1000; % [W]
     Users{n}.AChargingPowerHomeCharger=max((a(2)>=str2double(VehicleProperties(Model,8:13))).*[2.3 3.7 3.7 7.3 11 22]*1000); % [W]
     Users{n}.ACChargingPowerHomeCharging=uint32(min(Users{n}.AChargingPowerHomeCharger, Users{n}.ACChargingPowerVehicle)); % [W];
+%     Users{n}.ACChargerEfficiency=
     
-    if a(3)>=LikelihoodPV
+    if a(3)>=LikelihoodPV && AddPV
         Users{n}.PVPlant=uint8(PVPlantPointer);
         Users{n}.PVPlantExists=true;
         PVPlantPointer=mod(PVPlantPointer,length(PVPlants))+1;
@@ -55,6 +59,8 @@ for n=1:NumUsers
     end
     
     Users{n}.VehicleNum=VehicleDatabase{SizeNum}(VehiclePointer(SizeNum));
+    Users{n}.NumUsers=Vehicles{VehicleDatabase{SizeNum}(VehiclePointer(SizeNum))}.NumberUsers;
+    Users{n}.VehicleUtilisation=Vehicles{VehicleDatabase{SizeNum}(VehiclePointer(SizeNum))}.VehicleUtilisation;
     Users{n}.LogbookSource=Vehicles{VehicleDatabase{SizeNum}(VehiclePointer(SizeNum))}.Logbook;
     Users{n}.LogbookSource(:,4)=uint32(Users{n}.LogbookSource(:,3)*Users{n}.Consumption/1000);
     Users{n}.LogbookSource(1,7)=uint32(double(Users{n}.BatterySize)*0.7+TruncatedGaussian(0.1,[0.4 1]-0.7,1)); % Initial SoC between 0.4 and 1 of BatterySize. Distribution is normal
