@@ -77,6 +77,8 @@ for col=1:2
         plot(centers, counts./sum(counts))
     end
     title(strcat("Energy per charging event in kWh ", Location(col)))
+    xlabel("Energy in kWh")
+    ylabel("Probability")
     legend([" All"; Targets(ExistingTargets)])
 end
 
@@ -133,6 +135,8 @@ for col=1:2
         plot(centers/60, counts./sum(counts))
     end
     title(strcat("Connection to charging point duration at ", Location(col)))
+    xlabel("Duration in hours")
+    ylabel("Probability")
     legend([" All"; Targets(ExistingTargets)])
 end
     
@@ -153,6 +157,8 @@ for col=1:2
     end
     xticks(datetime(1,1,1,0,0,0, 'TimeZone', 'Africa/Tunis'):hours(4):datetime(1,1,2,0,0,0, 'TimeZone', 'Africa/Tunis'))
     xticklabels(datestr(datetime(1,1,1,0,0,0, 'TimeZone', 'Africa/Tunis'):hours(4):datetime(1,1,2,0,0,0, 'TimeZone', 'Africa/Tunis'), "HH:MM"))
+    xlabel("Time of date")
+    ylabel("Probability")
     title(strcat("Arrival time at charging point at ", Location(col)))
     legend([" All"; Targets(nrows>0)])
 end
@@ -185,4 +191,4 @@ for n=1:NumSimUsers
 end
 disp(strcat(num2str(sum(EmptyBattery>0)), " users experienced empty battery"))
 
-    
+%% 
