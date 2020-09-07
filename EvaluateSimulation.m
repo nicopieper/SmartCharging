@@ -21,6 +21,8 @@ for n=1:NumSimUsers
 end
 NumExistingTargets=sum(cellfun('length', TargetGroups)>0);
 ExistingTargets=find(cellfun('length', TargetGroups)>0)';
+ShowTargets=false;
+ShowAll=true;
 
 DataTable=table(Targets(ExistingTargets));
 Location=["Home"; "Other"];
@@ -45,7 +47,7 @@ DataTable.ChargingPorcessesPerWeek=round(cell2mat(ChargeProcessesPerWeek)*100)/1
 disp(strcat("The users charge in average ", num2str(mean(cell2mat(ChargeProcessesPerWeek(:,1)))), " times per week at home and ", num2str(mean(cell2mat(ChargeProcessesPerWeek(:,2))))," times per week at ohter locations"))
 
 %% Energy charged per charging process
-tic
+
 EnergyPerChargingProcess=cell(length(Targets),2);
 for k=ExistingTargets
     EnergyPerChargingProcess{k,1}=-ones(NumSimUsers*1000,1);
@@ -63,23 +65,28 @@ for k=ExistingTargets
     end
 end
 
-toc
 EnergyPerChargingProcess=EnergyPerChargingProcess(ExistingTargets,:);
 close(figure(10))
 figure(10)
 for col=1:2
     subplot(2,1,col)
     hold on
-    [counts, centers]=hist(cat(1, EnergyPerChargingProcess{:,col})/1000, 0:4:100);
-    plot(centers, counts./sum(counts))
-    for k=1:NumExistingTargets
-        [counts, centers]=hist(EnergyPerChargingProcess{k, col}/1000, 0:4:100);
+    l=legend;
+    if ShowAll
+        [counts, centers]=hist(cat(1, EnergyPerChargingProcess{:,col})/1000, 0:4:100);
         plot(centers, counts./sum(counts))
+        legappend(l, "All");
+    end
+    if ShowTargets
+        for k=1:NumExistingTargets
+            [counts, centers]=hist(EnergyPerChargingProcess{k, col}/1000, 0:4:100);
+            plot(centers, counts./sum(counts))
+            legappend(l, Targets(ExistingTargets(k)));
+        end
     end
     title(strcat("Energy per charging event in kWh ", Location(col)))
     xlabel("Energy in kWh")
     ylabel("Probability")
-    legend([" All"; Targets(ExistingTargets)])
 end
 
 disp(strcat("In average per charging event, ", num2str(mean(cell2mat(EnergyPerChargingProcess(:,1))/1000)), " kWh were charged at home and ", num2str(mean(cell2mat(EnergyPerChargingProcess(:,2))/1000)), " at other places"))
@@ -128,11 +135,18 @@ figure(11)
 for col=1:2
     subplot(2,1,col)
     hold on
-    [counts, centers]=hist(cat(1, ConnectionTime{:,col}), (0:2:48)*60);
-    plot(centers/60, counts./sum(counts))
-    for k=1:NumExistingTargets
-        [counts, centers]=hist(ConnectionTime{k,col}, (0:2:48)*60);
+    l=legend;
+    if ShowAll
+        [counts, centers]=hist(cat(1, ConnectionTime{:,col}), (0:2:48)*60);
         plot(centers/60, counts./sum(counts))
+        legappend(l, "All")
+    end
+    if ShowTargets
+        for k=1:NumExistingTargets
+            [counts, centers]=hist(ConnectionTime{k,col}, (0:2:48)*60);
+            plot(centers/60, counts./sum(counts))
+            legappend(l, Targets(ExistingTargets(k)))
+        end
     end
     title(strcat("Connection to charging point duration at ", Location(col)))
     xlabel("Duration in hours")
@@ -146,14 +160,21 @@ figure(12)
 for col=1:2
     subplot(2,1,col)
     hold on
-    [counts, edges]=histcounts(cat(1, ArrivalTimes{:,col}), datetime(1,1,1,0,0,0, 'TimeZone', 'Africa/Tunis'):hours(1):datetime(1,1,2,0,0,0, 'TimeZone', 'Africa/Tunis'));
-    centers=edges(1:end-1)+(edges(2)-edges(1))/2;
-    plot(centers, counts./sum(counts))
-    [nrows,~] = cellfun(@size, ArrivalTimes(:,col));
-    for k=find(nrows>0)'
-        [counts, edges]=histcounts(ArrivalTimes{k,col}, datetime(1,1,1,0,0,0, 'TimeZone', 'Africa/Tunis'):hours(1):datetime(1,1,2,0,0,0, 'TimeZone', 'Africa/Tunis'));
+    l=legend;
+    if ShowAll
+        [counts, edges]=histcounts(cat(1, ArrivalTimes{:,col}), datetime(1,1,1,0,0,0, 'TimeZone', 'Africa/Tunis'):hours(1):datetime(1,1,2,0,0,0, 'TimeZone', 'Africa/Tunis'));
         centers=edges(1:end-1)+(edges(2)-edges(1))/2;
         plot(centers, counts./sum(counts))
+        legappend(l, "All")
+    end
+    if ShowTargets
+        [nrows,~] = cellfun(@size, ArrivalTimes(:,col));
+        for k=find(nrows>0)'
+            [counts, edges]=histcounts(ArrivalTimes{k,col}, datetime(1,1,1,0,0,0, 'TimeZone', 'Africa/Tunis'):hours(1):datetime(1,1,2,0,0,0, 'TimeZone', 'Africa/Tunis'));
+            centers=edges(1:end-1)+(edges(2)-edges(1))/2;
+            plot(centers, counts./sum(counts))
+            legappend(l, Targets(ExistingTargets(k)))
+        end
     end
     xticks(datetime(1,1,1,0,0,0, 'TimeZone', 'Africa/Tunis'):hours(4):datetime(1,1,2,0,0,0, 'TimeZone', 'Africa/Tunis'))
     xticklabels(datestr(datetime(1,1,1,0,0,0, 'TimeZone', 'Africa/Tunis'):hours(4):datetime(1,1,2,0,0,0, 'TimeZone', 'Africa/Tunis'), "HH:MM"))
@@ -175,13 +196,15 @@ disp(strcat("The users drove in average ", num2str(MileageYearKm), " km per year
 
 %% Coverage of VehicleNumbers
 
-VehicleNums=[];
-for n=1:NumSimUsers
-    VehicleNums=[VehicleNums; Users{n}.VehicleNum];
+if exist('Vehicles', 'var')
+    VehicleNums=[];
+    for n=1:NumSimUsers
+        VehicleNums=[VehicleNums; Users{n}.VehicleNum];
+    end
+    close(figure(13))
+    figure(13)
+    histogram(VehicleNums, length(Vehicles))
 end
-close(figure(13))
-figure(13)
-histogram(VehicleNums, length(Vehicles))
 
 %% Empty Batteries
 
