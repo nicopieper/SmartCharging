@@ -71,11 +71,11 @@ tic
 
 AddNoise=true;
 ActivateWaitbar=true;
-ProcessNewVehicles=false;
+ProcessNewVehicles=true;
 Evaluation=false;
 
 MinShareHomeParking=10/24;
-NumVehicles=200;
+NumVehicles=800;
 MaxHomeSpotDistanceDiff=0.1; % [km]
 MaxPlausibleVelocity=60; % [m/s]
 TimeNoiseStdFac=0.05; % Std=TimeNoiseStdFac*TripTime
@@ -106,7 +106,7 @@ else
     DateMatStr(:,1:2)=[strcat(DateMatStr(:,3), ".", DateMatStr(:,2), ".", DateMatStr(:,1), " ", DateMatStr(:,4), ":", DateMatStr(:,5)), strcat(DateMatStr(:,8), ".", DateMatStr(:,7), ".", DateMatStr(:,6), " ", DateMatStr(:,9), ":", DateMatStr(:,10))];
     DateMat=[datetime(DateMatStr(:,1), 'InputFormat', "d.M.yyyy H:m", 'TimeZone','Africa/Tunis'), datetime(DateMatStr(:,2), 'InputFormat', "d.M.yyyy H:m", 'TimeZone','Africa/Tunis')]; % the arrival and departure times of all trips of all vehicles
     
-    Vehicles=cell(min([NumVehicles size(VehiclePropertiesMat,1)]),1); % The vehicle profiles are stored in a cell array, each vehicle has one cell
+    Vehicles=cell(min([NumVehicles size(VehiclePropertiesMat,1)])+1,1); % The vehicle profiles are stored in a cell array, each vehicle has one cell
     Vehicles{1}.TimeVec=TimeVec; % store properties of data processing in first cell
     Vehicles{1}.TimeStep=TimeStep;
     Vehicles{1}.MinShareHomeParking=MinShareHomeParking;
@@ -116,19 +116,19 @@ else
 
     %% Properties Matrix
 
-    for n=2:size(Vehicles,1)+1
-        Vehicles{n}.ID=uint32(str2num(VehiclePropertiesMat(n,1)));  % Inside the cell, the information is stored in a struct
-        Vehicles{n}.VehicleSize=VehiclePropertiesMat(n,2);
+    for n=2:size(Vehicles,1)
+        Vehicles{n}.ID=uint32(str2num(VehiclePropertiesMat(n-1,1)));  % Inside the cell, the information is stored in a struct
+        Vehicles{n}.VehicleSize=VehiclePropertiesMat(n-1,2);
         Vehicles{n}.VehicleSizeMerged=Vehicles{n}.VehicleSize;
         if strcmp(Vehicles{n}.VehicleSizeMerged, "transporter")
             Vehicles{n}.VehicleSizeMerged="large";
         end
-        Vehicles{n}.EconomicSegement=VehiclePropertiesMat(n,5);
-        Vehicles{n}.CitySize=VehiclePropertiesMat(n,8);
-        Vehicles{n}.CompanySize=VehiclePropertiesMat(n,9);
-        Vehicles{n}.VehicleUtilisation=VehiclePropertiesMat(n,11);
-        Vehicles{n}.NumberUsers=VehiclePropertiesMat(n,12);
-        Vehicles{n}.ParkingSpot=VehiclePropertiesMat(n,13);
+        Vehicles{n}.EconomicSegement=VehiclePropertiesMat(n-1,5);
+        Vehicles{n}.CitySize=VehiclePropertiesMat(n-1,8);
+        Vehicles{n}.CompanySize=VehiclePropertiesMat(n-1,9);
+        Vehicles{n}.VehicleUtilisation=VehiclePropertiesMat(n-1,11);
+        Vehicles{n}.NumberUsers=VehiclePropertiesMat(n-1,12);
+        Vehicles{n}.ParkingSpot=VehiclePropertiesMat(n-1,13);
     end
 
     %% Profiles
@@ -136,7 +136,7 @@ else
     if ActivateWaitbar
         h=waitbar(0, 'Initialise Vehicles from Fraunhofer ISI Database');
     end
-    for k=[2:20 183:184]%:length(Vehicles) % for each vehicle extract the its driving profile from DrivingProfileMat
+    for k=2:length(Vehicles) % for each vehicle extract the its driving profile from DrivingProfileMat
 
         VehicleMatIndices=DrivingProfileMat(:,1)==Vehicles{k}.ID; % Get all rows that represent trips of the vehicle
         DrivingProfile=DrivingProfileMat(VehicleMatIndices,12:13); % Get all trip distances and distances to company from vehicle number n
