@@ -1,4 +1,5 @@
 formatSpec = '%s';
+PathVehicleData=[Path 'Predictions' Dl 'VehicleData' Dl];
 
 File=fopen(strcat(PathVehicleData, 'Distribution_of_arrival_times_on_weekdays.csv'),  'r');  % Time, Private, Public, Workplace
 ArrivalWeekdaysELaad=fscanf(File,formatSpec);
