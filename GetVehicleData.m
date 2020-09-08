@@ -127,7 +127,7 @@ else
     if ActivateWaitbar
         h=waitbar(0, 'Initialise Vehicles from Fraunhofer ISI Database');
     end
-    for k=284:length(Vehicles) % for each vehicle extract the its driving profile from DrivingProfileMat
+    for k=1:length(Vehicles) % for each vehicle extract the its driving profile from DrivingProfileMat
 
         VehicleleMatIndices=DrivingProfileMat(:,1)==Vehicles{k}.ID; % Get all rows that represent trips of the vehicle
         DrivingProfile=DrivingProfileMat(VehicleleMatIndices,12:13); % Get all trip distances and distances to company from vehicle number n
