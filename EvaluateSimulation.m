@@ -1,29 +1,37 @@
 %% Define target groups
 
-NumSimUsers=800;
+if ~exist("Users", "var")
+    StorageFiles=dir(strcat(PathSimulationData, "Users_*"));
+    [~, StorageInd]=max(datetime({StorageFiles.date}, "InputFormat", "dd-MMM-yyyy HH:mm:ss"));
+    load(strcat(PathSimulationData, StorageFiles(StorageInd).name))
+end
 
 % Targets=["small"; "medium"; "large"; "transporter"];
-Targets=["one user"; "only one user"; "several users"; "undefined"];
-Targets=["company car"; "fleet vehicle"; "undefined"];
-Targets=[0.5; 1; 3; 1000];
+% Targets=["one user"; "only one user"; "several users"; "undefined"];
+% Targets=["company car"; "fleet vehicle"; "undefined"];
+% Targets=[0.5; 1; 3; 1000];
+Targets=[hours(10); hours(12); hours(14); hours(24)];
 
 TargetGroups=cell(length(Targets),1);
-for n=1:NumSimUsers
+for n=2:length(Users)
+%     TargetNum=strcmp(Users{n}.VehicleSize,Targets);
 %     TargetNum=strcmp(Users{n}.VehicleUtilisation,Targets);
-    TargetNum=find(Users{n}.DistanceCompanyToHome<Targets,1);
+%     TargetNum=find(Users{n}.DistanceCompanyToHome<Targets,1);
+    TargetNum=find(Users{n}.AvgHomeParkingTime<Targets,1);
     TargetGroups{TargetNum}=[TargetGroups{TargetNum} n];
 end
 ExistingTargets=find(cellfun('length', TargetGroups)>0)';
-ExistingTargets=[3,4];
+% ExistingTargets=[1,2, 3,4];
 NumExistingTargets=numel(ExistingTargets);
 ShowTargets=true;
 ShowAll=true;
 ShowELaad=true;
+ClearWorkspace=true;
 
 DataTable=table(Targets(ExistingTargets));
 Location=["Home"; "Other"];
 
-if ShowELaad && ~exist('ConnectionTimeELaad', 'var')
+if ShowELaad
     GetELaadData;
 end
 
@@ -49,8 +57,8 @@ disp(strcat("The users charge in average ", num2str(mean(cell2mat(ChargeProcesse
 
 EnergyPerChargingProcess=cell(length(Targets),2);
 for k=ExistingTargets
-    EnergyPerChargingProcess{k,1}=-ones(NumSimUsers*1000,1);
-    EnergyPerChargingProcess{k,2}=-ones(NumSimUsers*1000,1);
+    EnergyPerChargingProcess{k,1}=-ones(length(Users)-1*1000,1);
+    EnergyPerChargingProcess{k,2}=-ones(length(Users)-1*1000,1);
     for col=5:6
         counter=1;
         for n=TargetGroups{k}
@@ -65,8 +73,8 @@ for k=ExistingTargets
 end
 
 EnergyPerChargingProcess=EnergyPerChargingProcess(ExistingTargets,:);
-close(figure(10))
 figure(10)
+clf
 for col=1:2
     subplot(2,1,col)
     hold on
@@ -109,7 +117,7 @@ end
 EnergyCharged=EnergyCharged(ExistingTargets,:);
 EnergyChargedPerDayPerVehicle=cellfun(@sum,EnergyCharged)/days(DateEnd-DateStart)/1000./cellfun(@length, TargetGroups(ExistingTargets));
 HomeChargingQuote=sum(EnergyChargedPerDayPerVehicle(:,1))/sum(EnergyChargedPerDayPerVehicle,'all');
-disp(strcat("The users charged in average ", num2str(sum(cellfun(@sum, EnergyCharged), 'all')/days(DateEnd-DateStart)/1000/NumSimUsers), " kWh per day"))
+disp(strcat("The users charged in average ", num2str(sum(cellfun(@sum, EnergyCharged), 'all')/days(DateEnd-DateStart)/1000/length(Users)-1), " kWh per day"))
 disp(strcat(num2str(HomeChargingQuote*100), " % of all charging events took place at home"))
 % DataTable.EnergyChargedPerDay=
 
@@ -134,8 +142,8 @@ end
 ConnectionTime=ConnectionTime(ExistingTargets,:);
 ArrivalTimes=ArrivalTimes(ExistingTargets,:);
 
-close(figure(11))
 figure(11)
+clf
 for col=1:2
     subplot(2,1,col)
     hold on
@@ -161,10 +169,9 @@ for col=1:2
     xlabel("Duration in hours")
     ylabel("Probability")
 end
-    
-    
-close(figure(12))
+
 figure(12)
+clf
 for col=1:2
     subplot(2,1,col)
     hold on
@@ -199,10 +206,10 @@ end
 %% Mileage
 
 MileageYearKm=0;
-for n=1:NumSimUsers
+for n=2:length(Users)
     MileageYearKm=MileageYearKm+Users{n}.AverageMileageYear_km;
 end
-MileageYearKm=MileageYearKm/NumSimUsers;
+MileageYearKm=MileageYearKm/length(Users)-1;
 disp(strcat("The users drove in average ", num2str(MileageYearKm), " km per year"))
 
 %% Coverage of VehicleNumbers
@@ -213,17 +220,28 @@ for k=ExistingTargets
         VehicleNums=[VehicleNums; Users{n}.VehicleNum];
     end
 end
-close(figure(13))
+
 figure(13)
-histogram(VehicleNums, max(VehicleNums))
+clf
+histogram(VehicleNums, 1:1:max(VehicleNums))
 disp(strcat(num2str(length(unique(VehicleNums))), " unique Vehicles are covered by this targets"))
 
 %% Empty Batteries
 
 EmptyBattery=0;
-for n=1:NumSimUsers
+for n=2:length(Users)
     EmptyBattery(n)=sum(Users{n}.LogbookBase(2:end,7)<=0 & Users{n}.LogbookBase(1:end-1,7)>0);
 end
 disp(strcat(num2str(sum(EmptyBattery>0)), " users experienced empty batteries"))
+if sum(EmptyBattery>0)==0
+    clearvars EmptyBattery
+end
 
-%% 
+%% Clear Workspace
+
+if ClearWorkspace
+    clearvars ArrivalTimes centers ChargeProcesses ChargeProcessesPerWeek ChargingBlocks ChargingEfficiency col ConnectionBlocksHome ConnectionBlocksOther 
+    clearvars ConnectionTime counter counts edges EnergyCharged EnergyChargedPerDayPerVehicle EnergyPerChargingProcess ExistingTargets HomeChargingQuote k l 
+    clearvars Location MileageYearKm n nrows NumExistingTargets ShowAll ShowELaad ShowTargets TargetGroups TargetNum Targets
+    clearvars ArrivalTimesELaad ArrivalWeekdaysELaad ArrivalWeekendsELaad ConnectionTimeELaad
+end

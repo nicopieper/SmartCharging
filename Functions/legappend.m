@@ -1,6 +1,6 @@
 function [Legend]=legappend(Legend, Label)
 if ~isstring(Label)
-    Label=num2str(Label);
+    Label=string(Label);
 end
 if isempty(Legend)
     Legend=legend(Label);

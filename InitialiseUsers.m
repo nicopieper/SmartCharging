@@ -1,26 +1,24 @@
 NumUsers=800;
-LikelihoodChargingDay=4.1/7;
-StdwChargingDay=2/7;
 LikelihoodPV=0.45; % 44 % der privaten und 46 % der gewerblichen Nutzer über eine eigene Photovoltaikanlage, https://elib.dlr.de/96491/1/Ergebnisbericht_E-Nutzer_2015.pdf S. 10
 AddPV=false;
 
-Users=cell(NumUsers,1);
+Users=cell(NumUsers+1,1);
 PVPlantPointer=1;
-VehicleSizes=["small", "medium", "large", "transporter"];
+VehicleSizes=[{'small'}; {'medium'}; {['large', 'transporter']}];
 VehiclePointer=zeros(length(VehicleSizes),1);
 
 if ~exist('Vehicles', 'var')
     GetVehicleData;
 end
-if ~exist('VehicleDatabase', 'var')
-    VehicleDatabase=cell(length(VehicleSizes),1);
-    for n=1:length(Vehicles)
-        SizeNum=find(Vehicles{n}.VehicleSize==VehicleSizes,1);
-        if ~isempty(SizeNum)
-            VehicleDatabase{SizeNum}=[VehicleDatabase{SizeNum}; n];
-        end
+
+VehicleDatabase=cell(length(VehicleSizes),1);
+for n=2:length(Vehicles)
+    SizeNum=find(cellfun(@length, strfind(VehicleSizes, Vehicles{n}.VehicleSize)),1);
+    if ~isempty(SizeNum)
+        VehicleDatabase{SizeNum}=[VehicleDatabase{SizeNum}; n];
     end
 end
+    
 if ~exist('VehicleProperties', 'var')
     PathVehicleData=[Path 'Predictions' Dl 'VehicleData' Dl];
     VehicleProperties=readmatrix(strcat(PathVehicleData, 'Vehicle_Properties.xlsx'), 'NumHeaderLines', 1, 'OutputType', 'string'); % Model Name, Fleet Share cum., Battery Capacity [kWh], Consumption [kWh/km], Share Charging Point Power
@@ -29,7 +27,14 @@ end
 TemperatureMonths=[1, 1; 2, 1; 3, 1.2; 4, 1.3; 5, 1.7; 6, 1.9; 7, 2; 8, 2; 9, 1.7; 10, 1.4; 11, 1.2; 12, 1.1];
 TemperatureTimeVec=TemperatureMonths(month(TimeVec), 2);
 
-for n=1:NumUsers
+Users{1}.VehicleDataFileName=Vehicles{1}.FileName;
+Users{1}.NumVehicles=length(Vehicles)-1;
+Users{1}.TimeVec=intersect(TimeVec, Vehicles{1}.TimeVec);
+UsersTimeVecLog=ismember(Vehicles{1}.TimeVec,Users{1}.TimeVec);
+Users{1}.TimeStep=TimeStep;
+
+
+for n=2:NumUsers+1
     a=rand(5,1);
     Model=max((a(1)>=str2double(VehicleProperties(:,2))).*(1:size(VehicleProperties,1))');
     Users{n}.ModelName=VehicleProperties(Model, 1);
@@ -56,9 +61,9 @@ for n=1:NumUsers
         Users{n}.ChargingPThreshold=1.4+TruncatedGaussian(0.2,[0.7 2]-1.4,1); % Mean=1.4, stdw=0.2, range(0.7, 2)
     end
     
-    SizeNum=find(Users{n}.ModelSize==VehicleSizes,1);
+    SizeNum=find(cellfun(@length, strfind(VehicleSizes, Users{n}.ModelSize)),1);
     VehiclePointer(SizeNum)=mod(VehiclePointer(SizeNum), length(VehicleDatabase{SizeNum}))+1;
-    while ~strcmp(Vehicles{VehicleDatabase{SizeNum}(VehiclePointer(SizeNum))}.VehicleSizeMerged,Users{n}.ModelSize) || Users{n}.BatterySize < Vehicles{VehicleDatabase{SizeNum}(VehiclePointer(SizeNum))}.AverageMileageYear_km % first condition: search for next vehicle with the same vehicle size. second condition: ensure that battery of model (in Wh) is larger than mileage per year of vehicle (in km) so that large ranges aren't driven by a car with a too small battery
+    while ~strcmp(Vehicles{VehicleDatabase{SizeNum}(VehiclePointer(SizeNum))}.VehicleSizeMerged, Users{n}.ModelSize) || Users{n}.BatterySize < Vehicles{VehicleDatabase{SizeNum}(VehiclePointer(SizeNum))}.AverageMileageYear_km % first condition: search for next vehicle with the same vehicle size. second condition: ensure that battery of model (in Wh) is larger than mileage per year of vehicle (in km) so that large ranges aren't driven by a car with a too small battery
         VehiclePointer(SizeNum)=mod(VehiclePointer(SizeNum), length(VehicleDatabase{SizeNum}))+1;
     end
     
@@ -69,7 +74,7 @@ for n=1:NumUsers
     Users{n}.VehicleUtilisation=Vehicles{VehicleDatabase{SizeNum}(VehiclePointer(SizeNum))}.VehicleUtilisation;
     Users{n}.AvgHomeParkingTime=Vehicles{VehicleDatabase{SizeNum}(VehiclePointer(SizeNum))}.AvgHomeParkingTime;
     
-    Users{n}.LogbookSource=Vehicles{VehicleDatabase{SizeNum}(VehiclePointer(SizeNum))}.Logbook;
+    Users{n}.LogbookSource=Vehicles{VehicleDatabase{SizeNum}(VehiclePointer(SizeNum))}.Logbook(UsersTimeVecLog, :);
     Velocities=double(Users{n}.LogbookSource(:,3))./double(Users{n}.LogbookSource(:,2))/60;
     Velocities(Velocities<14)=1;
     Velocities(Velocities>=14 & Velocities<=33)=(Velocities(Velocities>=14 & Velocities<=33)-14)/(33-14)+1;
@@ -83,4 +88,5 @@ for n=1:NumUsers
     Users{n}.AverageMileageYear_km=uint32(sum(Users{n}.LogbookSource(:,3))/days(DateEnd-DateStart)*365.25/1000); %[km]
 end
 
-clearvars LikelihoodChargingDay LikelihoodPV PVPlantPointer
+clearvars LikelihoodPV PVPlantPointer Consumption Velocities SizeNum VehiclePointer VehicleDatabase AddPV TemperatureMonths TemperatureTimeVec
+clearvars NumUsers a n Model VehicleSizes UsersTimeVecLog

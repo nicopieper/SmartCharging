@@ -38,9 +38,10 @@
 %   VehiclePropertiesMat:   The matrix loaded from an excel file containing
 %                       all properties of each vehicle.
 %   Vehicles:           An cell array containing the information of all
-%                       vehicles. Each vehicle represents one cell. Inside
-%                       the cell, the information is stored as a struct.
-%                       Cell (NumVehicles, 1)
+%                       vehicles. Each vehicle represents one cell. The 
+%                       first cell contains processing information. Inside
+%                       the following cells, the vehicle data is stored, 
+%                       each as a struct. Cell (NumVehicles+1, 1)
 %   DrivingProfileMat:  The matrix loaded from an excel file containing
 %                       all recorded rides. Departure and arrival time,
 %                       trip distance and distance to company of the
@@ -70,25 +71,26 @@ tic
 
 AddNoise=true;
 ActivateWaitbar=true;
-ProcessNewVehicles=true;
+ProcessNewVehicles=false;
 Evaluation=false;
 
 MinShareHomeParking=10/24;
-NumVehicles=800;
+NumVehicles=200;
 MaxHomeSpotDistanceDiff=0.1; % [km]
 MaxPlausibleVelocity=60; % [m/s]
 TimeNoiseStdFac=0.05; % Std=TimeNoiseStdFac*TripTime
 PathVehicleData=[Path 'Predictions' Dl 'VehicleData' Dl];
-StorageFile=strcat(PathVehicleData, "VehicleData_", num2str(NumVehicles), "_", num2str(MaxHomeSpotDistanceDiff), "_", num2str(MinShareHomeParking), "_", num2str(AddNoise), ".mat");
+StorageFile=strcat(PathVehicleData, "VehicleData_", num2str(NumVehicles), "_", num2str(MaxHomeSpotDistanceDiff), "_", num2str(MinShareHomeParking), "_", num2str(AddNoise));
+StorageFiles=dir(strcat(StorageFile, "*"));
 
 NumTripsDays=0;
 close all hidden
 
-if ProcessNewVehicles==false && isfile(StorageFile)
-    
-    load(StorageFile)
-    
+if ProcessNewVehicles==false && ~isempty(StorageFiles)
+    [~, StorageInd]=max(datetime({StorageFiles.date}, "InputFormat", "dd-MMM-yyyy HH:mm:ss"));
+    load(strcat(PathVehicleData, StorageFiles(StorageInd).name))
 else
+    
     Trips=[];
     DayTrips=[];
 
@@ -103,11 +105,18 @@ else
     DateMatStr=string(DrivingProfileMat(:,2:11)); % Convert the columns for departure and arrival time to two datetime columns
     DateMatStr(:,1:2)=[strcat(DateMatStr(:,3), ".", DateMatStr(:,2), ".", DateMatStr(:,1), " ", DateMatStr(:,4), ":", DateMatStr(:,5)), strcat(DateMatStr(:,8), ".", DateMatStr(:,7), ".", DateMatStr(:,6), " ", DateMatStr(:,9), ":", DateMatStr(:,10))];
     DateMat=[datetime(DateMatStr(:,1), 'InputFormat', "d.M.yyyy H:m", 'TimeZone','Africa/Tunis'), datetime(DateMatStr(:,2), 'InputFormat', "d.M.yyyy H:m", 'TimeZone','Africa/Tunis')]; % the arrival and departure times of all trips of all vehicles
+    
+    Vehicles=cell(min([NumVehicles size(VehiclePropertiesMat,1)]),1); % The vehicle profiles are stored in a cell array, each vehicle has one cell
+    Vehicles{1}.TimeVec=TimeVec; % store properties of data processing in first cell
+    Vehicles{1}.TimeStep=TimeStep;
+    Vehicles{1}.MinShareHomeParking=MinShareHomeParking;
+    Vehicles{1}.MaxHomeSpotDistanceDiff=MaxHomeSpotDistanceDiff;
+    Vehicles{1}.MaxPlausibleVelocity=MaxPlausibleVelocity;
+    Vehicles{1}.TimeNoiseStdFac=TimeNoiseStdFac;
 
     %% Properties Matrix
 
-    Vehicles=cell(min([NumVehicles size(VehiclePropertiesMat,1)]),1); % The vehicle profiles are stored in a cell array, each vehicle has one cell
-    for n=1:size(Vehicles,1)
+    for n=2:size(Vehicles,1)+1
         Vehicles{n}.ID=uint32(str2num(VehiclePropertiesMat(n,1)));  % Inside the cell, the information is stored in a struct
         Vehicles{n}.VehicleSize=VehiclePropertiesMat(n,2);
         Vehicles{n}.VehicleSizeMerged=Vehicles{n}.VehicleSize;
@@ -127,11 +136,11 @@ else
     if ActivateWaitbar
         h=waitbar(0, 'Initialise Vehicles from Fraunhofer ISI Database');
     end
-    for k=1:length(Vehicles) % for each vehicle extract the its driving profile from DrivingProfileMat
+    for k=[2:20 183:184]%:length(Vehicles) % for each vehicle extract the its driving profile from DrivingProfileMat
 
-        VehicleleMatIndices=DrivingProfileMat(:,1)==Vehicles{k}.ID; % Get all rows that represent trips of the vehicle
-        DrivingProfile=DrivingProfileMat(VehicleleMatIndices,12:13); % Get all trip distances and distances to company from vehicle number n
-        DrivingProfileTime=DateMat(VehicleleMatIndices,:); % Get all the departure and arrival times of all trips of vehicle number n
+        VehicleMatIndices=DrivingProfileMat(:,1)==Vehicles{k}.ID; % Get all rows that represent trips of the vehicle
+        DrivingProfile=DrivingProfileMat(VehicleMatIndices,12:13); % Get all trip distances and distances to company from vehicle number n
+        DrivingProfileTime=DateMat(VehicleMatIndices,:); % Get all the departure and arrival times of all trips of vehicle number n
         DrivingProfileTimePosix=posixtime(DrivingProfileTime); % ... converted to posixtime. later used for performance reasons
         
         if days(DrivingProfileTime(end,2)-DrivingProfileTime(1,1))<days(14) % do not consider this vehicle if less than 14 days were recorded
@@ -342,13 +351,20 @@ else
     end
 
     Vehicles=Vehicles(~cellfun('isempty', Vehicles)); % delete all cells of those vehicles that weren't furhter considered
+    CheckField = @(Vehicle, Field) (isfield(Vehicle, 'Logbook') || isfield(Vehicle, 'TimeVec'));
+    Vehicles=Vehicles(cellfun(CheckField, Vehicles));
 
-    save(StorageFile, "Vehicles", "-v7.3") % save the data in a file
+    Vehicles{1}.TimeStamp=datetime('now');
+    Vehicles{1}.FileName=strcat(StorageFile, "_", datestr(Vehicles{1}.TimeStamp, "yyyy-mm-dd_HH-MM"), ".mat");
+    save(Vehicles{1}.FileName, "Vehicles", "-v7.3") % save the data in a file
 
     clearvars TimeVar DrivingProfilePointer DrivingProfileMatrix PathVehicleData VehicleID DateMat DrivingProfileTime DrivingProfileTimeExt Distance DrivingTime LogbookPointer DistanceCompanyToHome    
     clearvars DateMat DateMatStr DateRange DeleteIndices DrivingProfile Distances DrivingProfileMat DrivingProfileTimePosix h HomeSpotFound 
-    clearvars Indices k LargestValue LogbookTime LogbookTimePosix
+    clearvars Indices k LargestValue LogbookTime LogbookTimePosix CheckField StorageFiles StorageFile StorageInd AvgHomeParkingTime
     clearvars n Ranges RemainingDates SpotParkingTime TargetDate VehicleInfoMat VehicleMatIndices VehiclePropertiesMat VehicleDataRep
+    clearvars DayOneShiftedTimeProfiles DayProfileVec DayShiftedTimeProfiles DaysVec DayTrips DrivingProfilesExt DrivingProfileTimeExtPosix DrivingTimeHalf
+    clearvars MaxPlausibleVelocity MinShareHomeParking NumTripsDays OverlappingTrips ParkingTime RandDays TimeNoiseStdFac Trips TripTime VehicleMatIndices
+    clearvars Velocities WeekdayTable ShiftStart ShiftEnd
 end
 
 clearvars ActivateWaitbar AddNoise NumVehicles MaxHomeSpotDistanceDiff StorageFile PathVehicleData
@@ -397,3 +413,5 @@ if Evaluation
     MileageMap(2,:)=[{"Num Vehicles"}, num2cell([numel(cell2mat(EvalMat([false;string(EvalMat(2:end,1))=="small"],3))), numel(cell2mat(EvalMat([false;string(EvalMat(2:end,1))=="medium"],3))), numel(cell2mat(EvalMat([false;string(EvalMat(2:end,1))=="large"],3))), numel(cell2mat(EvalMat([false;string(EvalMat(2:end,1))=="transporter"],3)))])];
     MileageMap(3,:)=[{"yearly mileage [km]"}, num2cell([mean(cell2mat(EvalMat([false;string(EvalMat(2:end,1))=="small"],3))), mean(cell2mat(EvalMat([false;string(EvalMat(2:end,1))=="medium"],3))), mean(cell2mat(EvalMat([false;string(EvalMat(2:end,1))=="large"],3))), mean(cell2mat(EvalMat([false;string(EvalMat(2:end,1))=="transporter"],3)))])];
 end
+
+clearvars Evaluation 

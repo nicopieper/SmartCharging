@@ -5,11 +5,11 @@ NumSimUsers=800;
 PublicChargingThreshold=uint32(15); % in %
 
 PThreshold=1.2;
-NumPredMethod=1;
 
 k=0;
 TimeOfForecast=datetime(1,1,1,08,0,0,'TimeZone','Africa/Tunis');
 TimeVecDateNum=datenum(TimeVec);
+PathSimulationData=strcat(Path, "Simulation");
 
 if ~exist('PublicChargerDistribution', 'var')
     PathVehicleData=[Path 'Predictions' Dl 'VehicleData' Dl];
@@ -17,19 +17,20 @@ if ~exist('PublicChargerDistribution', 'var')
 end
 
 ChargingPower=zeros(NumSimUsers,1);
-ChargingEfficiency=zeros(NumSimUsers,1);
-EnergyDemandLeft=zeros(NumSimUsers,1);
+% ChargingEfficiency=zeros(NumSimUsers+1,1);
+EnergyDemandLeft=zeros(NumSimUsers+1,1);
 close all hidden
 
 if Demo
+    NumPredMethod=1;
     ForecastIntervalInd=ForecastIntervalHours*TimeStepInd;
-    DemoUser=1;
+    DemoUser=2;
     while Users{DemoUser}.PVPlantExists==false || sum(Users{DemoUser}.LogbookSource(:,1)>2)<100
         DemoUser=DemoUser+1;
     end
 end
 
-for n=1:size(Users,1)
+for n=2:size(Users,1)
     Users{n}.LogbookBase=Users{n}.LogbookSource;
 end
 
@@ -38,9 +39,11 @@ if ActivateWaitbar
     TotalIterations=RangeTestInd(2)-(RangeTrainInd(1)+1);
 end
 
+Users{1}.PThreshold=PThreshold;
+
 for TimeInd=RangeTrainInd(1)+1:RangeTestInd(2)
     
-    for n=12:12%:NumSimUsers% DemoUser%size(Users,1)
+    for n=2:NumSimUsers+1% DemoUser%size(Users,1)
         
         if (Users{n}.LogbookBase(TimeInd,1)==1 && Users{n}.LogbookBase(TimeInd-1,7)*100/Users{n}.BatterySize<PublicChargingThreshold) || (TimeInd+1<=size(Users{n}.LogbookBase,1) && Users{n}.LogbookBase(TimeInd,4)>=Users{n}.LogbookBase(TimeInd-1,7))
             
@@ -150,6 +153,17 @@ for TimeInd=RangeTrainInd(1)+1:RangeTestInd(2)
     end
 end
 if ActivateWaitbar
-    close(h)
+    close(h);
 end
-toc
+
+Users{1}.TimeStamp=datetime('now');
+SimulatedUsers=@(User) (isfield(User, 'TimeVec') || User.LogbookBase(2, 7)>0);
+Users=Users(cellfun(SimulatedUsers, Users));
+
+save(strcat(PathSimulationData, Dl, "Users_", num2str(PThreshold), "_", num2str(NumSimUsers), "_", datestr(Users{1}.TimeStamp, "yyyy-mm-dd_HH-MM"), ".mat"), "Users", "-v7.3");
+disp(strcat("Successfully simulated within ", num2str(toc), " seconds"))
+ 
+clearvars TimeInd n k Demo ActivateWaitbar Consumption24h ParkingDuration ConsumptionTilNextHomeStop TripDistance
+clearvars NextHomeStop PublicChargerPower ChargingPower EnergyDemandLeft TimeStepIndsNeededForCharging EndOfShift
+clearvars NumPredMethod TotalIterations PublicChargingThreshold NumSimUsers TimeOfForecast TimeVecDateNum P PlugInTime PThreshold
+clearvars SimulatedUsers 

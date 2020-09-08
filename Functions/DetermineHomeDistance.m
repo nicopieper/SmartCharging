@@ -53,7 +53,7 @@ else
     HomeSpotFound=false;
 end
 
-AvgHomeParkingTime=SpotParkingTime(index);
+AvgHomeParkingTime=SpotParkingTime(index)/(ParkingTime(end,2)-ParkingTime(1,1));
 DistanceToHome=DistanceToHome(index);
 
 end
