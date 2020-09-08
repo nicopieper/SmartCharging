@@ -240,7 +240,7 @@ else
             OverlappingTrips=find(ParkingTime<0)';            
             if ~isempty(OverlappingTrips)
                 for n=flip(OverlappingTrips)
-                    if DrivingProfileTimeExtPosix(n,2)+max(-ParkingTime(n)*60*1.2, 60*60)<DrivingProfileTimeExtPosix(n+1,1)
+                    if n==length(DrivingProfileTimeExtPosix) || DrivingProfileTimeExtPosix(n,2)+max(-ParkingTime(n)*60*1.2, 60*60)<DrivingProfileTimeExtPosix(n+1,1)
                         DrivingProfileTimeExtPosix(n,:)=DrivingProfileTimeExtPosix(n,:)+max(-ParkingTime(n)*60*1.2, 60*60);
                     else
                         DrivingProfileTimeExtPosix(n-1,:)=[];
