@@ -5,7 +5,7 @@ NumSimUsers=800;
 % Targets=["small"; "medium"; "large"; "transporter"];
 Targets=["one user"; "only one user"; "several users"; "undefined"];
 Targets=["company car"; "fleet vehicle"; "undefined"];
-Targets=[1; 3; 10; 1000];
+Targets=[0.5; 1; 3; 1000];
 
 TargetGroups=cell(length(Targets),1);
 for n=1:NumSimUsers
@@ -14,7 +14,7 @@ for n=1:NumSimUsers
     TargetGroups{TargetNum}=[TargetGroups{TargetNum} n];
 end
 ExistingTargets=find(cellfun('length', TargetGroups)>0)';
-ExistingTargets=[2,3,4];
+ExistingTargets=[3,4];
 NumExistingTargets=numel(ExistingTargets);
 ShowTargets=true;
 ShowAll=true;
@@ -207,15 +207,16 @@ disp(strcat("The users drove in average ", num2str(MileageYearKm), " km per year
 
 %% Coverage of VehicleNumbers
 
-if exist('Vehicles', 'var')
-    VehicleNums=[];
-    for n=1:NumSimUsers
+VehicleNums=[];
+for k=ExistingTargets
+    for n=TargetGroups{k}
         VehicleNums=[VehicleNums; Users{n}.VehicleNum];
     end
-    close(figure(13))
-    figure(13)
-    histogram(VehicleNums, length(Vehicles))
 end
+close(figure(13))
+figure(13)
+histogram(VehicleNums, max(VehicleNums))
+disp(strcat(num2str(length(unique(VehicleNums))), " unique Vehicles are covered by this targets"))
 
 %% Empty Batteries
 

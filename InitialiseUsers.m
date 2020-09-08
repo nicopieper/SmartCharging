@@ -57,7 +57,7 @@ for n=1:NumUsers
     
     SizeNum=find(Users{n}.ModelSize==VehicleSizes,1);
     VehiclePointer(SizeNum)=mod(VehiclePointer(SizeNum), length(VehicleDatabase{SizeNum}))+1;
-    while ~strcmp(Vehicles{VehicleDatabase{SizeNum}(VehiclePointer(SizeNum))}.VehicleSize,Users{n}.ModelSize) || Users{n}.BatterySize < Vehicles{VehicleDatabase{SizeNum}(VehiclePointer(SizeNum))}.AverageMileageYear_km % first condition: search for next vehicle with the same vehicle size. second condition: ensure that battery of model (in Wh) is larger than mileage per year of vehicle (in km) so that large ranges aren't driven by a car with a too small battery
+    while ~strcmp(Vehicles{VehicleDatabase{SizeNum}(VehiclePointer(SizeNum))}.VehicleSizeMerged,Users{n}.ModelSize) || Users{n}.BatterySize < Vehicles{VehicleDatabase{SizeNum}(VehiclePointer(SizeNum))}.AverageMileageYear_km % first condition: search for next vehicle with the same vehicle size. second condition: ensure that battery of model (in Wh) is larger than mileage per year of vehicle (in km) so that large ranges aren't driven by a car with a too small battery
         VehiclePointer(SizeNum)=mod(VehiclePointer(SizeNum), length(VehicleDatabase{SizeNum}))+1;
     end
     
@@ -66,6 +66,7 @@ for n=1:NumUsers
     Users{n}.NumUsers=Vehicles{VehicleDatabase{SizeNum}(VehiclePointer(SizeNum))}.NumberUsers;
     Users{n}.DistanceCompanyToHome=Vehicles{VehicleDatabase{SizeNum}(VehiclePointer(SizeNum))}.DistanceCompanyToHome;
     Users{n}.VehicleUtilisation=Vehicles{VehicleDatabase{SizeNum}(VehiclePointer(SizeNum))}.VehicleUtilisation;
+    Users{n}.AvgHomeParkingTime=Vehicles{VehicleDatabase{SizeNum}(VehiclePointer(SizeNum))}.AvgHomeParkingTime;
     
     Users{n}.LogbookSource=Vehicles{VehicleDatabase{SizeNum}(VehiclePointer(SizeNum))}.Logbook;
     Velocities=double(Users{n}.LogbookSource(:,3))./double(Users{n}.LogbookSource(:,2))/60;
