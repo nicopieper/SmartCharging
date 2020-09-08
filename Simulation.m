@@ -4,17 +4,21 @@ ActivateWaitbar=true;
 NumSimUsers=800;
 PublicChargingThreshold=uint32(15); % in %
 
-PThreshold=1.4;
+PThreshold=1.2;
 NumPredMethod=1;
 
 k=0;
 TimeOfForecast=datetime(1,1,1,08,0,0,'TimeZone','Africa/Tunis');
 TimeVecDateNum=datenum(TimeVec);
-PublicChargerDistribution=[ 50000, 0.00;...
-                           100000, 0.70;...
-                           150000, 0.9;...
-                           250000, 0.96]; % Power in [W], Likelihood cumulative
+
+if ~exist('PublicChargerDistribution', 'var')
+    PathVehicleData=[Path 'Predictions' Dl 'VehicleData' Dl];
+    PublicChargerDistribution=readmatrix(strcat(PathVehicleData, "PublicChargerProbability.xlsx"));
+end
+
 ChargingPower=zeros(NumSimUsers,1);
+ChargingEfficiency=zeros(NumSimUsers,1);
+EnergyDemandLeft=zeros(NumSimUsers,1);
 close all hidden
 
 if Demo
@@ -36,28 +40,55 @@ end
 
 for TimeInd=RangeTrainInd(1)+1:RangeTestInd(2)
     
-    for n=1:NumSimUsers% DemoUser%size(Users,1)
+    for n=12:12%:NumSimUsers% DemoUser%size(Users,1)
         
         if (Users{n}.LogbookBase(TimeInd,1)==1 && Users{n}.LogbookBase(TimeInd-1,7)*100/Users{n}.BatterySize<PublicChargingThreshold) || (TimeInd+1<=size(Users{n}.LogbookBase,1) && Users{n}.LogbookBase(TimeInd,4)>=Users{n}.LogbookBase(TimeInd-1,7))
             
-            PublicChargerPower=max((rand(1)>=PublicChargerDistribution(:,2)).*PublicChargerDistribution(:,1)); % [kW]
+            NextHomeStop=min([length(Users{n}.LogbookBase), find(Users{n}.LogbookBase(TimeInd:end,1)==3,1)+TimeInd-1]); %[TimeIndices]
+            ConsumptionTilNextHomeStop=sum(Users{n}.LogbookBase(TimeInd:NextHomeStop,4)); % [Wh]
+            TripDistance=sum(Users{n}.LogbookBase(TimeInd:NextHomeStop,3)); % [Wh]
+
+            PublicChargerPower=max((rand(1)>=PublicChargerDistribution(find(PublicChargerDistribution>TripDistance/1000,1),:)).*PublicChargerDistribution(1,:)); % [kW]
             ChargingPower(n)=min([max([Users{n}.ACChargingPowerVehicle, Users{n}.DCChargingPowerVehicle]), PublicChargerPower]); % Actual ChargingPower at public charger in [kW]
-            NextHomeStop=min([length(Users{n}.LogbookBase), find(Users{n}.LogbookBase(TimeInd:end,1)==3,1)+TimeInd-1]);
-            ConsumptionTilNextHomeStop=sum(Users{n}.LogbookBase(TimeInd:NextHomeStop,4));
-            TimeStepIndsNeededForCharging=ceil(ConsumptionTilNextHomeStop*(1+double(PublicChargingThreshold)/100)/ChargingPower(n)*60/TimeStepMin); % [Wh/W
+%             ChargingEfficiency(n)=PublicChargerDistribution(end,find(ChargingPower(n)<=PublicChargerDistribution(1,2:end),1)+1)*((1.01-0.91)*randn(1)+0.99);
             
-            EndOfShift=[strfind(Users{n}.LogbookBase(TimeInd:end,3)',zeros(1,TimeStepIndsNeededForCharging)), 1e9]; % Find the next time, when the vehicle parks for TimeStepIndsNeededForCharging complete TimeSteps
-            EndOfShift=min([length(Users{n}.LogbookBase), EndOfShift(1)+TimeInd+TimeStepIndsNeededForCharging-1-1]);
-            for k=EndOfShift:-1:TimeInd
-                Users{n}.LogbookBase(k,:)=Users{n}.LogbookBase(k-TimeStepIndsNeededForCharging,:);
+            EnergyDemandLeft(n)=double(min((double(PublicChargingThreshold)+2)/100*Users{n}.BatterySize+ConsumptionTilNextHomeStop-Users{n}.LogbookBase(TimeInd-1,7), Users{n}.BatterySize-Users{n}.LogbookBase(TimeInd-1,7)));
+            TimeStepIndsNeededForCharging=ceil(EnergyDemandLeft(n)/ChargingPower(n)*60/TimeStepMin); % [Wh/W]
+            
+            if TimeStepIndsNeededForCharging>0
+                EndOfShift=[strfind(Users{n}.LogbookBase(TimeInd:end,3)',zeros(1,TimeStepIndsNeededForCharging)), 1e9]; % Find the next time, when the vehicle parks for TimeStepIndsNeededForCharging complete TimeSteps
+                EndOfShift=min([length(Users{n}.LogbookBase), EndOfShift(1)+TimeInd+TimeStepIndsNeededForCharging-1-1]);
+                Users{n}.LogbookBase(TimeInd:EndOfShift,:)=Users{n}.LogbookBase(TimeInd-TimeStepIndsNeededForCharging:EndOfShift-TimeStepIndsNeededForCharging,:);
+                TimeStepIndsNeededForCharging=min(length(Users{n}.LogbookBase)-(TimeInd-1), TimeStepIndsNeededForCharging);
+                Users{n}.LogbookBase(TimeInd:TimeInd+TimeStepIndsNeededForCharging-1,1:7)=ones(TimeStepIndsNeededForCharging,1)*[6, zeros(1,6)]; % Public charging due to low SoC
             end
-            
-            TimeStepIndsNeededForCharging=min(length(Users{n}.LogbookBase)-(TimeInd-1), TimeStepIndsNeededForCharging);
-            Users{n}.LogbookBase(TimeInd:TimeInd+TimeStepIndsNeededForCharging-1,1:7)=ones(TimeStepIndsNeededForCharging,1)*[6, zeros(1,6)]; % Public charging due to low SoC
         end
         
-        if Users{n}.LogbookBase(TimeInd,1)==6
-            Users{n}.LogbookBase(TimeInd,6)=min([ChargingPower(n)*TimeStepMin/60, Users{n}.BatterySize-Users{n}.LogbookBase(TimeInd-1,7)]); % Publicly charged energy during one TimeStep in [Wh]
+        if EnergyDemandLeft(n)>0 %Users{n}.LogbookBase(TimeInd,1)==6
+            Users{n}.LogbookBase(TimeInd,6)=min([EnergyDemandLeft(n), ChargingPower(n)*TimeStepMin/60]); % Publicly charged energy during one TimeStep in [Wh]
+            EnergyDemandLeft(n)=EnergyDemandLeft(n)-Users{n}.LogbookBase(TimeInd,6);
+%             if Users{n}.LogbookBase(TimeInd,4)>0
+%                 
+%                 if Users{n}.LogbookBase(TimeInd,2)>(TimeStepMin-ChargingTime) % if charging would collide with driving, then shift driving a bit
+%                     EndOfShift=find(Users{n}.LogbookBase(TimeInd:end,2)<(TimeStepMin-ChargingTime));
+%                     EndOfShift=min([length(Users{n}.LogbookBase), EndOfShift(1)+TimeInd-1]);
+%                     Users{n}.LogbookBase1=Users{n}.LogbookBase;
+%                     for k=EndOfShift:-1:TimeInd+1
+%                         Users{n}.LogbookBase(k,2)=Users{n}.LogbookBase(k-1,2)+ChargingTime-TimeStepMin;
+%                         Users{n}.LogbookBase(k-1,2)=Users{n}.LogbookBase(k-1,2)-Users{n}.LogbookBase(k,2);
+%                         Users{n}.LogbookBase(k,3:4)=Users{n}.LogbookBase(k,3:4)*(TimeStepMin/(TimeStepMin-ChargingTime)); % multiply the inverse of what you subtract one row below: A*(1-B/C)*x==A --> x=C/(C-B) 
+%                         Users{n}.LogbookBase(k-1,3:4)=Users{n}.LogbookBase(k-1,3:4)*(1-ChargingTime/TimeStepMin);
+%                         if Users{n}.LogbookBase(k,2)==TimeStepMin
+%                             Users{n}.LogbookBase(k,1)=1;
+%                         end
+%                     end
+%                     Users{n}.LogbookBase1(TimeInd+1:EndOfShift,2)=Users{n}.LogbookBase1(TimeInd+1:EndOfShift,2)+ChargingTime;
+%                     Users{n}.LogbookBase1(TimeInd:EndOfShift-1,2)=Users{n}.LogbookBase1(TimeInd:EndOfShift-1,2)-ChargingTime;
+%                     Users{n}.LogbookBase1(TimeInd+1:EndOfShift,3:4)=Users{n}.LogbookBase1(TimeInd+1:EndOfShift,3:4)*(TimeStepMin/(TimeStepMin-ChargingTime)); % multiply the inverse of what you subtract one row below: A*(1-B/C)*x==A --> x=C/(C-B) 
+%                     Users{n}.LogbookBase1(TimeInd:EndOfShift-1,3:4)=Users{n}.LogbookBase1(TimeInd:EndOfShift-1,3:4)*(1-ChargingTime/TimeStepMin);
+                    
+%                 end
+%             end       
         end
         
         if Users{n}.LogbookBase(TimeInd,1)==3
@@ -79,7 +110,7 @@ for TimeInd=RangeTrainInd(1)+1:RangeTestInd(2)
                     if Consumption24h>Users{n}.LogbookBase(TimeInd-1,7)
                         Users{n}.LogbookBase(TimeInd,1)=4; % Plugged-in
                     else
-                        PlugInTime=(find(Users{n}.LogbookBase(TimeInd+1:end,1)<3,1)-1)*TimeStep;
+                        PlugInTime=(find([Users{n}.LogbookBase(TimeInd+1:end,1);0]<3,1)-1)*TimeStep;
                         P=min(1,PlugInTime/hours(2)) + min(1, (single(Users{n}.BatterySize-Users{n}.LogbookBase(TimeInd-1,7)))/single(Users{n}.BatterySize)) + min(1, single(Consumption24h)/single(Users{n}.LogbookBase(TimeInd-1,7)));
                         if P>PThreshold
                             Users{n}.LogbookBase(TimeInd,1)=4; % Plugged-in

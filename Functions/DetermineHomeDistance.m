@@ -1,13 +1,9 @@
-function [DistanceToHome, HomeSpotFound]=DetermineHomeDistance(LogbookSourceTime, CompanyDistance, MaxHomeSpotDistanceDiff, MinShareHomeParking)
+function [DistanceToHome, HomeSpotFound, AvgHomeParkingTime]=DetermineHomeDistance(LogbookSourceTime, CompanyDistance, MaxHomeSpotDistanceDiff, MinShareHomeParking)
 %% Description
 % This function determines where the vehicle has its home spot. The home
 % spot is defined as the spot, where it is considered that the vehicle has 
 % its private charging point. 
 % 
-%
-%
-%
-
 
 ParkingTime=posixtime([LogbookSourceTime(1:end-1,2) LogbookSourceTime(2:end,1)]);
 ParkingTime=round((ParkingTime-ParkingTime(1,1))/60);
@@ -57,7 +53,7 @@ else
     HomeSpotFound=false;
 end
 
-
+AvgHomeParkingTime=SpotParkingTime(index);
 DistanceToHome=DistanceToHome(index);
 
 end
