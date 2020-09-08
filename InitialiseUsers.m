@@ -22,6 +22,7 @@ if ~exist('VehicleDatabase', 'var')
     end
 end
 if ~exist('VehicleProperties', 'var')
+    PathVehicleData=[Path 'Predictions' Dl 'VehicleData' Dl];
     VehicleProperties=readmatrix(strcat(PathVehicleData, 'Vehicle_Properties.xlsx'), 'NumHeaderLines', 1, 'OutputType', 'string'); % Model Name, Fleet Share cum., Battery Capacity [kWh], Consumption [kWh/km], Share Charging Point Power
 end
 
