@@ -225,9 +225,28 @@ else
             DrivingProfileTimeExt=[DrivingProfileTime; DayOneShiftedTimeProfiles(cell2mat(WeekdayTable((RandDays(:,2)-1)*7+RandDays(:,1))),:) + repmat(caldays(repelem(DaysVec,cellfun('length',WeekdayTable((RandDays(:,2)-1)*7+RandDays(:,1))))),1,2)];
             DrivingProfilesExt=[DrivingProfile; DrivingProfile(cell2mat(WeekdayTable((RandDays(:,2)-1)*7+RandDays(:,1))),:)];
             
-            DrivingProfileTimeExtPosix=posixtime(DrivingProfileTimeExt); 
-            
+            DrivingProfileTimeExtPosix=posixtime(DrivingProfileTimeExt);            
             ParkingTime=[0;(DrivingProfileTimeExtPosix(2:end,1)-DrivingProfileTimeExtPosix(1:end-1,2))/60;0]; %[min]
+            
+            OverlappingTrips=find(ParkingTime<0)';            
+            if ~isempty(OverlappingTrips)
+                for n=flip(OverlappingTrips)
+                    if DrivingProfileTimeExtPosix(n,2)+max(-ParkingTime(n)*60*1.2, 60*60)<DrivingProfileTimeExtPosix(n+1,1)
+                        DrivingProfileTimeExtPosix(n,:)=DrivingProfileTimeExtPosix(n,:)+max(-ParkingTime(n)*60*1.2, 60*60);
+                    else
+                        DrivingProfileTimeExtPosix(n-1,:)=[];
+                        DrivingProfilesExt(n-1,:)=[];
+                    end
+                end
+                ParkingTime=[0;(DrivingProfileTimeExtPosix(2:end,1)-DrivingProfileTimeExtPosix(1:end-1,2))/60;0]; %[min]
+            end
+            
+            OverlappingTrips=find(ParkingTime<0)';
+            if ~isempty(OverlappingTrips)
+                disp("Error")
+                k
+            end
+            
             TripTime=(DrivingProfileTimeExtPosix(:,2)-DrivingProfileTimeExtPosix(:,1))/60; % [min]
             DrivingTimeHalf=TripTime/2; % [min]
             ShiftStart=zeros(length(TripTime),1);
