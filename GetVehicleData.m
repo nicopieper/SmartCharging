@@ -127,7 +127,7 @@ else
     if ActivateWaitbar
         h=waitbar(0, 'Initialise Vehicles from Fraunhofer ISI Database');
     end
-    for k=1:length(Vehicles) % for each vehicle extract the its driving profile from DrivingProfileMat
+    for k=284:length(Vehicles) % for each vehicle extract the its driving profile from DrivingProfileMat
 
         VehicleleMatIndices=DrivingProfileMat(:,1)==Vehicles{k}.ID; % Get all rows that represent trips of the vehicle
         DrivingProfile=DrivingProfileMat(VehicleleMatIndices,12:13); % Get all trip distances and distances to company from vehicle number n
@@ -214,6 +214,7 @@ else
             WeekdayTable=cell(7,1);
             DayShiftedTimeProfiles=dateshift(DrivingProfileTime, 'start', 'day');
             DayOneShiftedTimeProfiles=DayShiftedTimeProfiles(1,1)+hours(hour(DrivingProfileTime))+minutes(minute(DrivingProfileTime))+seconds(second(DrivingProfileTime));
+            DayOneShiftedTimeProfiles(DayOneShiftedTimeProfiles(:,1)>DayOneShiftedTimeProfiles(:,2),2)=DayOneShiftedTimeProfiles(DayOneShiftedTimeProfiles(:,1)>DayOneShiftedTimeProfiles(:,2),2)+day(1);
             DayProfileVec=(DayShiftedTimeProfiles(1,1):caldays(1):DayShiftedTimeProfiles(1,1)+caldays(DateRange-1))';
             for n=1:length(DayProfileVec)
                 WeekdayTable{weekday(DayProfileVec(n)), ceil((n)/7)}=find(DayShiftedTimeProfiles(:,1)==DayProfileVec(n)); % first cell captures all driving profile times of all Sundays (weekday==1), seconds of all Mondays (weekday==2) and so on
