@@ -180,7 +180,7 @@ else
         end
         
         Velocities=DrivingProfile(:,1)./(DrivingProfileTimePosix(:,2)-DrivingProfileTimePosix(:,1)); % and Velocities as they might have changed
-        if sum(Velocities>MaxPlausibleVelocity) | sum(Velocities<MinPlausibleVelocity)>0
+        if sum(Velocities>MaxPlausibleVelocity | Velocities<MinPlausibleVelocity)>0
             k
         end
 
