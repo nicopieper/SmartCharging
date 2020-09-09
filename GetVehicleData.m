@@ -136,7 +136,7 @@ else
     if ActivateWaitbar
         h=waitbar(0, 'Initialise Vehicles from Fraunhofer ISI Database');
     end
-    for k=418:length(Vehicles) % for each vehicle extract the its driving profile from DrivingProfileMat
+    for k=2:length(Vehicles) % for each vehicle extract the its driving profile from DrivingProfileMat
 
         VehicleMatIndices=DrivingProfileMat(:,1)==Vehicles{k}.ID; % Get all rows that represent trips of the vehicle
         DrivingProfile=DrivingProfileMat(VehicleMatIndices,12:13); % Get all trip distances and distances to company from vehicle number n
@@ -171,12 +171,6 @@ else
         Ranges(k)=DateRange; % save of DateRanges for evaluation reasons
 
         [DistanceCompanyToHome, HomeSpotFound, AvgHomeParkingTime]=DetermineHomeDistance(DrivingProfileTime, DrivingProfile(:,2), MaxHomeSpotDistanceDiff, MinShareHomeParking); % Investigate where most likely is the home spot of the vehicle. Find the spots where the vehicle is parked most often. Calculate the parking time per spot. The spot with the highest parking time is the home spot which is considered to have a charging point
-
-        if DistanceCompanyToHome>0.012 || DistanceCompanyToHome<0.01
-            continue
-        else
-            k
-        end
         
         if ~HomeSpotFound % do not consider this vehicle if no valid home spot could be found
 %             Vehicles{k}.ID
