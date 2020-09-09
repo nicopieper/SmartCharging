@@ -78,6 +78,7 @@ MinShareHomeParking=10/24;
 NumVehicles=800;
 MaxHomeSpotDistanceDiff=0.1; % [km]
 MaxPlausibleVelocity=60; % [m/s]
+MinPlausibleVelocity=2; % [m/s]
 TimeNoiseStdFac=0.05; % Std=TimeNoiseStdFac*TripTime
 PathVehicleData=[Path 'Predictions' Dl 'VehicleData' Dl];
 StorageFile=strcat(PathVehicleData, "VehicleData_", num2str(NumVehicles), "_", num2str(MaxHomeSpotDistanceDiff), "_", num2str(MinShareHomeParking), "_", num2str(AddNoise));
@@ -149,8 +150,9 @@ else
             continue
         end
         
-        Velocities=DrivingProfile(:,1)./(DrivingProfileTimePosix(:,2)-DrivingProfileTimePosix(:,1)); % Check whether velocity of each trip is plausible, in m/s. Division of trip distance [m] by trip duration [s]
-        if max(Velocities)>MaxPlausibleVelocity % is there a velocity unplausible?
+        Velocities=DrivingProfile(:,1)./(DrivingProfileTimePosix(:,2)-DrivingProfileTimePosix(:,1)); % [m/s] Check whether velocity of each trip is plausible, in m/s. Division of trip distance [m] by trip duration [s]
+        AvgVelocity=mean(Velocities(Velocities<=MaxPlausibleVelocity & Velocities>=MinPlausibleVelocity)); % [m/s] 
+        if max(Velocities)>MaxPlausibleVelocity % is there a velocity unplausible high?
             Indices=find(DrivingProfileTimePosix(:,2)==DrivingProfileTimePosix(:,1)); % Some trips are shorter than 1 minute, hence departure and arrival time are equal wich leads to mathematically infinet velocity. Find those cases
             if ~isempty(Indices) 
                 for n=length(Indices):-1:1 
@@ -164,7 +166,22 @@ else
                 DrivingProfileTimePosix=posixtime(DrivingProfileTime); % recalculate the DrivingProfileTimePosix
                 Velocities=DrivingProfile(:,1)./(DrivingProfileTimePosix(:,2)-DrivingProfileTimePosix(:,1)); % and Velocities as they might have changed
             end
-            DrivingProfile(Velocities>MaxPlausibleVelocity,1)=uint32(mean(Velocities(Velocities<=MaxPlausibleVelocity))*(DrivingProfileTimePosix(Velocities>MaxPlausibleVelocity,2)-DrivingProfileTimePosix(Velocities>MaxPlausibleVelocity,1))); % Exchange all remaining unplausible velocities with the average velocity of the car by shortening the trip distance  m/s * s = m
+            DrivingProfile(Velocities>MaxPlausibleVelocity,1)=uint32(AvgVelocity*(DrivingProfileTimePosix(Velocities>MaxPlausibleVelocity,2)-DrivingProfileTimePosix(Velocities>MaxPlausibleVelocity,1))); % Exchange all remaining unplausible velocities with the average velocity of the car by shortening the trip distance  m/s * s = m
+        end
+        if min(Velocities)<MinPlausibleVelocity % is there a velocity unplausible low?
+            Indices=Velocities<MinPlausibleVelocity & DrivingProfile(:,1)>1000; % trips longer than 1km will be kept but the end time will be shortend such that the driving interval fits the average velocity
+            DrivingProfileTime(Indices,2)=DrivingProfileTime(Indices,1)+seconds(DrivingProfile(Indices,1)/AvgVelocity);
+            
+            Indices=Velocities<MinPlausibleVelocity & DrivingProfile(:,1)<=1000; % trips shorter than 1km will be deleted
+            DrivingProfile(Indices,:)=[];
+           	DrivingProfileTime(Indices,:)=[];
+            
+            DrivingProfileTimePosix=posixtime(DrivingProfileTime); % recalculate the DrivingProfileTimePosix
+        end
+        
+        Velocities=DrivingProfile(:,1)./(DrivingProfileTimePosix(:,2)-DrivingProfileTimePosix(:,1)); % and Velocities as they might have changed
+        if sum(Velocities>MaxPlausibleVelocity) | sum(Velocities<MinPlausibleVelocity)>0
+            k
         end
 
         DateRange=between(dateshift(DrivingProfileTime(1,1), 'start', 'day'), dateshift(DrivingProfileTime(end,2), 'start', 'day'), 'days')+caldays(1); % The number of calendar days from the first trip to the last one (01.01.2020 23:59 --> 20.01.2020 00:00 would equal to 20 days as well as 01.01.2020 0:00 --> 20.01.2020 23:59)
@@ -256,21 +273,33 @@ else
                 k
             end
             
+            DrivingProfileTimeExt=datetime(DrivingProfileTimeExtPosix, 'ConvertFrom', 'posix', 'TimeZone', 'Africa/Tunis');
             TripTime=(DrivingProfileTimeExtPosix(:,2)-DrivingProfileTimeExtPosix(:,1))/60; % [min]
-            DrivingTimeHalf=TripTime/2; % [min]
+            TripTimeHalf=TripTime/2; % [min]
+            ParkingTimeHalf=ParkingTime/2; % [min]
             ShiftStart=zeros(length(TripTime),1);
             ShiftEnd=zeros(length(TripTime),1);
             for n=1:length(TripTime)
-                ShiftStart(n,1)=TruncatedGaussian(TripTime(n)*TimeNoiseStdFac,[-ParkingTime(n) DrivingTimeHalf(n)],1); % [min]
-                ShiftEnd(n,1)=TruncatedGaussian(TripTime(n)*TimeNoiseStdFac,[-DrivingTimeHalf(n) ParkingTime(n+1)],1); % [min]
+                ShiftStart(n,1)=min(TruncatedGaussian(TripTime(n)*TimeNoiseStdFac,[-ParkingTimeHalf(n) min(TripTimeHalf(n))],1), ParkingTimeHalf(n+1)); % [min]
             end
-
-            DrivingProfileTimeExtPosix=DrivingProfileTimeExtPosix + fix([ShiftStart, ShiftStart+ShiftEnd])*60; %[s]
-%             DrivingProfileTimeExt1=datetime(DrivingProfileTimeExtPosix1, 'ConvertFrom', 'posix', 'TimeZone', 'Africa/Tunis');
+            DrivingProfileTimeExtPosix=DrivingProfileTimeExtPosix + fix(ShiftStart)*60; %[s]
+            DrivingProfileTimeExt1=datetime(DrivingProfileTimeExtPosix, 'ConvertFrom', 'posix', 'TimeZone', 'Africa/Tunis');
+            ParkingTime=[0;(DrivingProfileTimeExtPosix(2:end,1)-DrivingProfileTimeExtPosix(1:end-1,2))/60;0]; %[min]
+            ParkingTimeHalf=ParkingTime/2; % [min]
+            for n=1:length(TripTime)
+             	ShiftEnd(n,1)=TruncatedGaussian(TripTime(n)*TimeNoiseStdFac,[-TripTimeHalf(n) ParkingTimeHalf(n+1)],1); % [min]
+            end
+            
+            DrivingProfileTimeExtPosix(:,2)=DrivingProfileTimeExtPosix(:,2) + fix(ShiftEnd)*60; %[s]
+            DrivingProfileTimeExt2=datetime(DrivingProfileTimeExtPosix, 'ConvertFrom', 'posix', 'TimeZone', 'Africa/Tunis');
             DrivingProfileExt=[round(DrivingProfileExt(:,1) .* (1+(diff(DrivingProfileTimeExtPosix,1,2)-diff(DrivingProfileTimeExtPosix,1,2))./diff(DrivingProfileTimeExtPosix,1,2)).*(1+TruncatedGaussian(TimeNoiseStdFac,[0.9 1.1]-1,length(DrivingProfileTimeExtPosix),1))), DrivingProfileExt(:,2)];
             
         end
         
+        if sum([0;(DrivingProfileTimeExtPosix(2:end,1)-DrivingProfileTimeExtPosix(1:end-1,2))/60;0]<0)>0
+            1
+        end
+
         DrivingProfileExt(DrivingProfileTimeExtPosix(:,1)<posixtime(DateStart) | DrivingProfileTimeExtPosix(:,1)>posixtime(DateEnd),:)=[]; % Delete all trips which are not between DateStart and DateEnd
         DrivingProfileTimeExtPosix(DrivingProfileTimeExtPosix(:,1)<posixtime(DateStart) | DrivingProfileTimeExtPosix(:,1)>posixtime(DateEnd),:)=[];
         
@@ -303,8 +332,23 @@ else
             Vehicles{k}.Logbook(LogbookPointer,1)=0; % first state is undefined
 
             while DrivingProfilePointer<=size(DrivingProfileTimeExtPosix,1) && TimeVar>=DrivingProfileTimeExtPosix(DrivingProfilePointer,1) % if DrivingProfilePointer does not exceed DateEnd and the current time is larger than the departure time of the Logbook entry DrivingProfilePointer is pointing to, then the car is driving within this interval. Iterate through all logbook entries whichs trips are (partly) within the time interval pointed to by DrivingProfilePointer
-
-                TripTime=min([TimeStepMin*60, DrivingProfileTimeExtPosix(DrivingProfilePointer,2)+1-DrivingProfileTimeExtPosix(DrivingProfilePointer,1), DrivingProfileTimeExtPosix(DrivingProfilePointer,2)+1-(TimeVar-TimeStepMin*60), TimeVar-DrivingProfileTimeExtPosix(DrivingProfilePointer,1)]); % [s] The driving time of this time interval is maximal TimeStepMin in seconds (therefore *60) long. This is the case, if depature time is before the beginning of the interval and the arrival time after it. If one of them was during the last TimeStepMin minutes, the part of the trip time that is within the interval is calculated
+                
+                if TimeVar-TimeStepMin*60 >= DrivingProfileTimeExtPosix(DrivingProfilePointer,1)  && TimeVar >= DrivingProfileTimeExtPosix(DrivingProfilePointer,2) % trip begins before interval and ends within
+                    TripTime=DrivingProfileTimeExtPosix(DrivingProfilePointer,2)+1-TimeVar+TimeStepMin*60;
+                elseif TimeVar-TimeStepMin*60 <= DrivingProfileTimeExtPosix(DrivingProfilePointer,1)  && TimeVar >= DrivingProfileTimeExtPosix(DrivingProfilePointer,2) % trip begins within interval and ends within
+                    TripTime=DrivingProfileTimeExtPosix(DrivingProfilePointer,2)+1-DrivingProfileTimeExtPosix(DrivingProfilePointer,1);
+                elseif TimeVar-TimeStepMin*60 <= DrivingProfileTimeExtPosix(DrivingProfilePointer,1)  && TimeVar <= DrivingProfileTimeExtPosix(DrivingProfilePointer,2) % trip begins within interval and ends after
+                    TripTime=TimeVar-DrivingProfileTimeExtPosix(DrivingProfilePointer,1);
+                elseif TimeVar-TimeStepMin*60 >= DrivingProfileTimeExtPosix(DrivingProfilePointer,1)  && TimeVar <= DrivingProfileTimeExtPosix(DrivingProfilePointer,2) % trip begins before interval and ends after
+                    TripTime=TimeStepMin*60;
+                else
+                    disp(strcat("An error occured during vehicle ", num2str(k)))
+                end
+                
+%                 TripTime=min([TimeStepMin*60, DrivingProfileTimeExtPosix(DrivingProfilePointer,2)+1-DrivingProfileTimeExtPosix(DrivingProfilePointer,1), DrivingProfileTimeExtPosix(DrivingProfilePointer,2)+1-(TimeVar-TimeStepMin*60), TimeVar-DrivingProfileTimeExtPosix(DrivingProfilePointer,1)]); % [s] The driving time of this time interval is maximal TimeStepMin in seconds (therefore *60) long. This is the case, if depature time is before the beginning of the interval and the arrival time after it. If one of them was during the last TimeStepMin minutes, the part of the trip time that is within the interval is calculated
+                if TripTime<0
+                    1
+                end
                 TimeStepDrivingTime=TimeStepDrivingTime+TripTime;
     %             DrivingTime=DrivingTime+min([minutes(15), DrivingProfileTimeExt(DrivingProfilePointer,2)+seconds(1)-DrivingProfileTimeExt(DrivingProfilePointer,1), DrivingProfileTimeExt(DrivingProfilePointer,2)+seconds(1)-(TimeVar-minutes(15)), TimeVar-DrivingProfileTimeExt(DrivingProfilePointer,1)]);
                 Distance=Distance+DrivingProfileExt(DrivingProfilePointer,1)*TripTime/(DrivingProfileTimeExtPosix(DrivingProfilePointer,2)-DrivingProfileTimeExtPosix(DrivingProfilePointer,1)); % Calculate within TimeStepinterval as timely share of (multiple) DrivingProfile entries
