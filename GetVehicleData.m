@@ -137,7 +137,7 @@ else
     if ActivateWaitbar
         h=waitbar(0, 'Initialise Vehicles from Fraunhofer ISI Database');
     end
-    for k=2:length(Vehicles) % for each vehicle extract the its driving profile from DrivingProfileMat
+    for k=460:length(Vehicles) % for each vehicle extract the its driving profile from DrivingProfileMat
 
         VehicleMatIndices=DrivingProfileMat(:,1)==Vehicles{k}.ID; % Get all rows that represent trips of the vehicle
         DrivingProfile=DrivingProfileMat(VehicleMatIndices,12:13); % Get all trip distances and distances to company from vehicle number n
@@ -297,7 +297,7 @@ else
         end
         
         if sum([0;(DrivingProfileTimeExtPosix(2:end,1)-DrivingProfileTimeExtPosix(1:end-1,2))/60;0]<0)>0
-            1
+            k
         end
 
         DrivingProfileExt(DrivingProfileTimeExtPosix(:,1)<posixtime(DateStart) | DrivingProfileTimeExtPosix(:,1)>posixtime(DateEnd),:)=[]; % Delete all trips which are not between DateStart and DateEnd
@@ -347,14 +347,14 @@ else
                 
 %                 TripTime=min([TimeStepMin*60, DrivingProfileTimeExtPosix(DrivingProfilePointer,2)+1-DrivingProfileTimeExtPosix(DrivingProfilePointer,1), DrivingProfileTimeExtPosix(DrivingProfilePointer,2)+1-(TimeVar-TimeStepMin*60), TimeVar-DrivingProfileTimeExtPosix(DrivingProfilePointer,1)]); % [s] The driving time of this time interval is maximal TimeStepMin in seconds (therefore *60) long. This is the case, if depature time is before the beginning of the interval and the arrival time after it. If one of them was during the last TimeStepMin minutes, the part of the trip time that is within the interval is calculated
                 if TripTime<0
-                    1
+                    k
                 end
                 TimeStepDrivingTime=TimeStepDrivingTime+TripTime;
     %             DrivingTime=DrivingTime+min([minutes(15), DrivingProfileTimeExt(DrivingProfilePointer,2)+seconds(1)-DrivingProfileTimeExt(DrivingProfilePointer,1), DrivingProfileTimeExt(DrivingProfilePointer,2)+seconds(1)-(TimeVar-minutes(15)), TimeVar-DrivingProfileTimeExt(DrivingProfilePointer,1)]);
                 Distance=Distance+DrivingProfileExt(DrivingProfilePointer,1)*TripTime/(DrivingProfileTimeExtPosix(DrivingProfilePointer,2)-DrivingProfileTimeExtPosix(DrivingProfilePointer,1)); % Calculate within TimeStepinterval as timely share of (multiple) DrivingProfile entries
                 
-                if Distance/TimeStepDrivingTime>60
-                    1
+                if Distance/TimeStepDrivingTime>70
+                    k
                 end
                     
                 if TimeVar >= DrivingProfileTimeExtPosix(DrivingProfilePointer,1) && TimeVar < DrivingProfileTimeExtPosix(DrivingProfilePointer,2) % if at the end of the time interval the car is still driving, than the state is driving (==1)
