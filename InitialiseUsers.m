@@ -69,6 +69,7 @@ for n=2:NumUsers+1
     
     Users{n}.VehicleSize=Vehicles{VehicleDatabase{SizeNum}(VehiclePointer(SizeNum))}.VehicleSize; % In vehicle size transporters are differentiated from large models!
     Users{n}.VehicleNum=VehicleDatabase{SizeNum}(VehiclePointer(SizeNum));
+    Users{n}.VehicleID=Vehicles{VehicleDatabase{SizeNum}(VehiclePointer(SizeNum))}.ID;
     Users{n}.NumUsers=Vehicles{VehicleDatabase{SizeNum}(VehiclePointer(SizeNum))}.NumberUsers;
     Users{n}.DistanceCompanyToHome=Vehicles{VehicleDatabase{SizeNum}(VehiclePointer(SizeNum))}.DistanceCompanyToHome;
     Users{n}.VehicleUtilisation=Vehicles{VehicleDatabase{SizeNum}(VehiclePointer(SizeNum))}.VehicleUtilisation;

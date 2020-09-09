@@ -1,9 +1,10 @@
 %% Define target groups
 
 if ~exist("Users", "var")
-    StorageFiles=dir(strcat(PathSimulationData, "Users_*"));
+    PathSimulationData=strcat(Path, "Simulation");
+    StorageFiles=dir(strcat(PathSimulationData, Dl, "Users_*"));
     [~, StorageInd]=max(datetime({StorageFiles.date}, "InputFormat", "dd-MMM-yyyy HH:mm:ss"));
-    load(strcat(PathSimulationData, StorageFiles(StorageInd).name))
+    load(strcat(PathSimulationData, Dl, StorageFiles(StorageInd).name))
 end
 
 % Targets=["small"; "medium"; "large"; "transporter"];
@@ -64,7 +65,7 @@ for k=ExistingTargets
         for n=TargetGroups{k}
             ChargingBlocks=[find(Users{n}.LogbookBase(1:end,col)>0 & [0; Users{n}.LogbookBase(1:end-1,col)]==0)+1, find(Users{n}.LogbookBase(1:end,col)>0 & [Users{n}.LogbookBase(2:end,col);0]==0)];
             for h=1:size(ChargingBlocks,1)
-                EnergyPerChargingProcess{k,col-4}(counter)=sum(Users{n}.LogbookBase(ChargingBlocks(h,1):ChargingBlocks(h,2),col));
+                EnergyPerChargingProcess{k,col-4}(counter,1)=sum(Users{n}.LogbookBase(ChargingBlocks(h,1):ChargingBlocks(h,2),col));
                 counter=counter+1;
             end
         end
@@ -203,14 +204,17 @@ for col=1:2
 end
 
 
-%% Mileage
+%% Mileage and Consumption
 
 MileageYearKm=0;
+AvgConsumption=[];
 for n=2:length(Users)
     MileageYearKm=MileageYearKm+Users{n}.AverageMileageYear_km;
+    AvgConsumption=[AvgConsumption; Users{n}.LogbookBase(Users{n}.LogbookBase(:,4)>0, 4), Users{n}.LogbookBase(Users{n}.LogbookBase(:,4)>0, 3)];
 end
 MileageYearKm=MileageYearKm/length(Users)-1;
 disp(strcat("The users drove in average ", num2str(MileageYearKm), " km per year"))
+disp(strcat("The average consumption was ", num2str(sum(AvgConsumption(:,1))/sum(AvgConsumption(:,2))*100), " kWh/100km"))
 
 %% Coverage of VehicleNumbers
 
