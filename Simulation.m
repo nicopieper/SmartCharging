@@ -3,13 +3,7 @@ Demo=false;
 ActivateWaitbar=true;
 NumSimUsers=800;
 PublicChargingThreshold=uint32(15); % in %
-
 PThreshold=1.2;
-
-k=0;
-TimeOfForecast=datetime(1,1,1,08,0,0,'TimeZone','Africa/Tunis');
-TimeVecDateNum=datenum(TimeVec);
-PathSimulationData=strcat(Path, "Simulation");
 
 if ~exist('PublicChargerDistribution', 'var')
     PathVehicleData=[Path 'Predictions' Dl 'VehicleData' Dl];
@@ -17,11 +11,13 @@ if ~exist('PublicChargerDistribution', 'var')
 end
 
 ChargingPower=zeros(NumSimUsers,1);
-% ChargingEfficiency=zeros(NumSimUsers+1,1);
 EnergyDemandLeft=zeros(NumSimUsers+1,1);
-close all hidden
+% ChargingEfficiency=zeros(NumSimUsers+1,1);
+close hidden
 
 if Demo
+    TimeOfForecast=datetime(1,1,1,08,0,0,'TimeZone','Africa/Tunis');
+    TimeVecDateNum=datenum(TimeVec);
     NumPredMethod=1;
     ForecastIntervalInd=ForecastIntervalHours*TimeStepInd;
     DemoUser=2;
@@ -67,38 +63,14 @@ for TimeInd=RangeTrainInd(1)+1:RangeTestInd(2)
             end
         end
         
-        if EnergyDemandLeft(n)>0 %Users{n}.LogbookBase(TimeInd,1)==6
+        if EnergyDemandLeft(n)>0
             Users{n}.LogbookBase(TimeInd,6)=min([EnergyDemandLeft(n), ChargingPower(n)*TimeStepMin/60]); % Publicly charged energy during one TimeStep in [Wh]
-            EnergyDemandLeft(n)=EnergyDemandLeft(n)-Users{n}.LogbookBase(TimeInd,6);
-%             if Users{n}.LogbookBase(TimeInd,4)>0
-%                 
-%                 if Users{n}.LogbookBase(TimeInd,2)>(TimeStepMin-ChargingTime) % if charging would collide with driving, then shift driving a bit
-%                     EndOfShift=find(Users{n}.LogbookBase(TimeInd:end,2)<(TimeStepMin-ChargingTime));
-%                     EndOfShift=min([length(Users{n}.LogbookBase), EndOfShift(1)+TimeInd-1]);
-%                     Users{n}.LogbookBase1=Users{n}.LogbookBase;
-%                     for k=EndOfShift:-1:TimeInd+1
-%                         Users{n}.LogbookBase(k,2)=Users{n}.LogbookBase(k-1,2)+ChargingTime-TimeStepMin;
-%                         Users{n}.LogbookBase(k-1,2)=Users{n}.LogbookBase(k-1,2)-Users{n}.LogbookBase(k,2);
-%                         Users{n}.LogbookBase(k,3:4)=Users{n}.LogbookBase(k,3:4)*(TimeStepMin/(TimeStepMin-ChargingTime)); % multiply the inverse of what you subtract one row below: A*(1-B/C)*x==A --> x=C/(C-B) 
-%                         Users{n}.LogbookBase(k-1,3:4)=Users{n}.LogbookBase(k-1,3:4)*(1-ChargingTime/TimeStepMin);
-%                         if Users{n}.LogbookBase(k,2)==TimeStepMin
-%                             Users{n}.LogbookBase(k,1)=1;
-%                         end
-%                     end
-%                     Users{n}.LogbookBase1(TimeInd+1:EndOfShift,2)=Users{n}.LogbookBase1(TimeInd+1:EndOfShift,2)+ChargingTime;
-%                     Users{n}.LogbookBase1(TimeInd:EndOfShift-1,2)=Users{n}.LogbookBase1(TimeInd:EndOfShift-1,2)-ChargingTime;
-%                     Users{n}.LogbookBase1(TimeInd+1:EndOfShift,3:4)=Users{n}.LogbookBase1(TimeInd+1:EndOfShift,3:4)*(TimeStepMin/(TimeStepMin-ChargingTime)); % multiply the inverse of what you subtract one row below: A*(1-B/C)*x==A --> x=C/(C-B) 
-%                     Users{n}.LogbookBase1(TimeInd:EndOfShift-1,3:4)=Users{n}.LogbookBase1(TimeInd:EndOfShift-1,3:4)*(1-ChargingTime/TimeStepMin);
-                    
-%                 end
-%             end       
+            EnergyDemandLeft(n)=EnergyDemandLeft(n)-Users{n}.LogbookBase(TimeInd,6); 
         end
         
         if Users{n}.LogbookBase(TimeInd,1)==3
             
             if Users{n}.LogbookBase(TimeInd-1,1)<3
-                
-    %             [Users{n}]=DetermineChargingBaseScenario(Users{n}, TimeInd, TimeStep);
 
                 if Users{n}.ChargingStrategy==1 % Always connect car to charging point if Duration of parking is higher than MinimumPluginTime
                     ParkingDuration=(find(Users{n}.LogbookBase(TimeInd:end,1)<3,1)-1)*TimeStep;
@@ -163,7 +135,7 @@ Users=Users(cellfun(SimulatedUsers, Users));
 save(strcat(PathSimulationData, Dl, "Users_", num2str(PThreshold), "_", num2str(NumSimUsers), "_", datestr(Users{1}.TimeStamp, "yyyy-mm-dd_HH-MM"), ".mat"), "Users", "-v7.3");
 disp(strcat("Successfully simulated within ", num2str(toc), " seconds"))
  
-clearvars TimeInd n k Demo ActivateWaitbar Consumption24h ParkingDuration ConsumptionTilNextHomeStop TripDistance
+clearvars TimeInd n Demo ActivateWaitbar Consumption24h ParkingDuration ConsumptionTilNextHomeStop TripDistance
 clearvars NextHomeStop PublicChargerPower ChargingPower EnergyDemandLeft TimeStepIndsNeededForCharging EndOfShift
 clearvars NumPredMethod TotalIterations PublicChargingThreshold NumSimUsers TimeOfForecast TimeVecDateNum P PlugInTime PThreshold
 clearvars SimulatedUsers 

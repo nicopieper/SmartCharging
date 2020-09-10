@@ -9,7 +9,7 @@ if hour(TimeVec(TimeInd))==hour(TimeOfForecast) && minute(TimeVec(TimeInd))==min
 %     clearpoints(figPVPred{p})
 %     addpoints(figPVPred{p}, TimeVecDateNum(TimeInd-400:TimeInd),PVPredQH(TimeInd-400:TimeInd))
     
-    ForcastLength=min(ForecastIntervalInd-1, RangeTestInd(2)-TimeInd)
+    ForcastLength=min(ForecastIntervalInd-1, RangeTestInd(2)-TimeInd);
     for ForecastDuration=0:min(ForecastIntervalInd-1, RangeTestInd(2)-TimeInd)        
         for p=1:NumPredMethod
 %             figure(11)

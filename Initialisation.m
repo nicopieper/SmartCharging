@@ -1,8 +1,8 @@
 %% Initialisation
 clear
-DateStart=datetime(2019,1,1,0,0,0, 'TimeZone', 'Africa/Tunis');
-DateEnd=datetime(2020,05,31,23,45,0, 'TimeZone', 'Africa/Tunis');
-DateEndTrain=datetime(2019,08,31,23,45,0, 'TimeZone', 'Africa/Tunis');
+DateStart=datetime(2019,09,1,0,0,0, 'TimeZone', 'Africa/Tunis');
+DateEnd=datetime(2020,06,30,23,45,0, 'TimeZone', 'Africa/Tunis');
+DateEndTrain=datetime(2020,02,29,23,45,0, 'TimeZone', 'Africa/Tunis');
 TimeStep=minutes(15);
 TimeStepMin=minutes(TimeStep);
 
@@ -41,6 +41,9 @@ elseif strcmp(Path(1:13), 'C:\Users\Nico')
     Path='C:\Users\Nico\Seafile\SmartCharging\';
     Dl='\';
 end
+
+PathSimulationData=strcat(Path, "Simulation");
+PredictionDataPath=strcat(Path, 'Predictions', Dl, "PredictionData", Dl);
 
 %% Get Data
 GetSmardData;

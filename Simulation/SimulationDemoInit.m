@@ -1,22 +1,4 @@
-SpotmarketLabel="Dayahead Auction Price";
-SpotmarketReal=interp1(TimeH,DayaheadRealH, TimeQH);
-SpotmarketReal(end-2:end)=SpotmarketReal(end-3);
-SpotmarketPred=interp1(TimeH,DayaheadPredH, TimeQH);
-SpotmarketPred(end-2:end)=SpotmarketPred(end-3);
-   ForecastIntervalPredInd=52;
-SpotmarketPredMat=interp1((1:ForecastIntervalPredInd)',DayaheadPredMat(:,:), (1:1/TimeStepInd:ForecastIntervalPredInd+1-1/TimeStepInd));
-SpotmarketPredMat(end-2:end,:)=ones(3,1)*SpotmarketPredMat(end-3,:);
-    ForecastIntervalPredInd=52*4;
 
-PVPredQH=PVPredTemp;
-PVPredMat=PVPredMatTemp;
-
-
-ResPoDemLabel="Secondary Reserve Capacity Energy Demand";
-ResEnPricesLabel="Secondary Reserve Capacity & Energy Price";
-
-SoCPlotLabel=strcat("SoC of the Vehicle of User ", num2str(DemoUser));
-PVPlotLabel=strcat("PV Generation Power of User ", num2str(DemoUser));
 
 
 PlotColors= [0.0000, 0.4470, 0.7410; 0.8500, 0.3250, 0.0980;... 

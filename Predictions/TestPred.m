@@ -1,4 +1,4 @@
-function [Prediction, PredictionMat, TargetMat, MAEConst, mMAPEConst, RMSEConst] = TestPred(PredMethod, PredictorMat, TargetDelayed, Target, TimeVecPred, TimeStepPredInd, RangeTestPredInd, RangeTestDate, MaxDelayInd, ForecastIntervalPredInd, Demo, TargetName, ActivateWaitbar)
+function [Prediction, PredictionMat, TargetMat, MAEConst, mMAPEConst, RMSEConst] = TestPred(PredMethod, PredictorMat, TargetDelayed, Target, TimeVecPred, TimeStepPredInd, RangeTestPredInd, RangeTestDate, MaxDelayInd, ForecastIntervalPredInd, Demo, TargetName, ActivateWaitbar, PredictionDataPath, TimeIntervalFile)
 %% Description
 % This function generates predictions basing on trained LSQ and NARXNET
 % models. The predictions can be visualised in a live demonstration.
@@ -170,6 +170,19 @@ if strcmp("PVPlants_1", TargetName)
         PredictionMat(Sunset, n)=0;
     end
 end
+
+
+PredcitionTemp=Prediction;
+PredictionMatTemp=PredictionMat;
+PredMethodTemp=PredMethod;
+for p=1:NumPredMethod
+    Prediction=PredMethodTemp(:,p);
+    PredictionMat=PredictionMatTemp(:,:,p);
+    PredMethod=PredMethodTemp(p,:);
+    save(strcat(PredictionDataPath, TargetName, "_", LegendVec(p), "_", num2str(ForecastIntervalPredInd), "_", "_", num2str(size(PredictorMatInput,2)), "_", TimeIntervalFile, "_", datestr(datetime('now'), "yyyy-mm-dd_HH-MM"), ".mat"), "Prediction", "PredictionMat", "PredMethod", "Target", "TimeVecPred", "ForecastIntervalPredInd", "-v7.3");
+end
+Prediction=PredcitionTemp;
+PredictionMat=PredictionMatTemp;
 
 %% Evaluation
 for p=1:NumPredMethod

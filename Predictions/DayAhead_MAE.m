@@ -71,18 +71,17 @@ if ~exist('GenRealQH', 'var') || ~exist('IntradayRealQH', 'var') || ~exist('ResP
     disp('Successfully initialised')
 end
 
-Target=double(PVPlants{1}.Profile);% double(PVPlants{1}.Profile); %DayaheadRealH;
+Target=double(PVPlants{1}.Profile); % double(PVPlants{1}.Profile); %DayaheadRealH;
 TargetTitle="PVPlants_1";  % "DayaheadRealH"; "PVPlants_1"
 TimeVecPred=TimeQH;
-Predictors=[GenPredQH(:,4)];% [GenPredQH(:,4)]; [LoadPredH, GenPredH]
+Predictors= [GenPredQH(:,4)];% [GenPredQH(:,4)]; [LoadPredH, GenPredH]
 PredMethod={1};
 TrainModelNew=0;
 
-MaxDelayHours=7*24/7*2;
+MaxDelayHours=7*24/7*1;
 ForecastIntervalHours=52; % 52h  % The model must be able to predict the value of Wednesday 12:00 at Monday 8:00 --> 52 forecast interval
 Demo=0;
 ActivateWaitbar=1;
-
 
 if ~exist('PredVarsInput', 'var') || ~isequaln(PredVarsInput,{MaxDelayHours, Target, TimeVecPred, Predictors})
     disp('Calculate Predictor Variables')
@@ -126,7 +125,7 @@ for n=1:size(PredMethod,1)  % Fill the Matrix with the Model
     end
 end   
 [Prediction, PredictionMat, TargetMat, MAE, mMAPE, RMSE] = TestPred(PredMethod, PredictorMat, TargetDelayed, Target, TimeVecPred,...
-    TimeStepPredInd, RangeTestPredInd, RangeTestDate, MaxDelayInd, ForecastIntervalPredInd, Demo, TargetTitle, ActivateWaitbar); % The actual Prediction
+    TimeStepPredInd, RangeTestPredInd, RangeTestDate, MaxDelayInd, ForecastIntervalPredInd, Demo, TargetTitle, ActivateWaitbar, PredictionDataPath, TimeIntervalFile); % The actual Prediction
 
 clearvars TimeIntervalFile
 
