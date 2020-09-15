@@ -63,8 +63,6 @@
 %                       MaxHomeSpotDistanceDiff, the data is loaded from a
 %                       file. logical (1,1)
 
-%
-
 %% Initialisation
 
 tic
@@ -128,7 +126,13 @@ else
         Vehicles{n}.CitySize=VehiclePropertiesMat(n-1,8);
         Vehicles{n}.CompanySize=VehiclePropertiesMat(n-1,9);
         Vehicles{n}.VehicleUtilisation=VehiclePropertiesMat(n-1,11);
+        if ismissing(Vehicles{n}.VehicleUtilisation)
+            Vehicles{n}.VehicleUtilisation="undefined";
+        end
         Vehicles{n}.NumberUsers=VehiclePropertiesMat(n-1,12);
+        if ismissing(Vehicles{n}.NumberUsers)
+            Vehicles{n}.NumberUsers="undefined";
+        end
         Vehicles{n}.ParkingSpot=VehiclePropertiesMat(n-1,13);
     end
 

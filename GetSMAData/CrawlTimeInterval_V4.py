@@ -30,12 +30,11 @@ from DataFunctions import *
 import os
 import csv
 from tqdm import *
-import shutil
 
 StartSys=time.time() # Measure execution time of the script
 
-DateStart=datetime(2018,1,1)
-DateEnd=datetime(2020,8,20)
+DateStart=datetime(2020,8,1)
+DateEnd=datetime(2020,8,31)
 MinPower=12
 MaxPower=15
 
@@ -48,8 +47,9 @@ option.experimental_options["prefs"] = chrome_prefs
 chrome_prefs["profile.default_content_settings"] = {"images": 2}
 chrome_prefs["profile.managed_default_content_settings"] = {"images": 2}
 # driver=webdriver.Chrome(DriverPath, chrome_options=option)
+SuccessfulWritings=0
 
-for p in range(3):
+for p in range(2):
     
     driver=webdriver.Chrome(DriverPath)
     driver.get("https://www.sunnyportal.de/Templates/PublicPagesPlantList.aspx") # initialise the driver
@@ -107,6 +107,7 @@ for p in range(3):
                     [Error, TSComplete]=CrawlData(DateRange, PlantPath, Dl, driver) # scrape the data from the website by iterating through DateRange and store the data in seperate csv files
                     if TSComplete==True: # if no error occured during the scraping
                         WriteProperties(PlantPath, Plant, Dl) # update the properties
+                        SuccessfulWritings=SuccessfulWritings+1
                     else:
                         print("Plant " + Plant[0][3] + " deleted.")
                         WriteListOfUnsuitablePlants(DataPath, Plant[0][3], Dl)

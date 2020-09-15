@@ -33,10 +33,10 @@ from tqdm import *
 
 StartSys=time.time() # Measure execution time of the script
 
-DateStart=datetime(2020,1,1)
-DateEnd=datetime(2020,1,31)
+DateStart=datetime(2020,8,1)
+DateEnd=datetime(2020,8,31)
 MinPower=3
-MaxPower=15
+MaxPower=5.9999
 
 Dl='/'
 DataPath=r"C:/Users/nicop/SMAPlantData/PlantData"
@@ -49,7 +49,7 @@ chrome_prefs["profile.managed_default_content_settings"] = {"images": 2}
 # driver=webdriver.Chrome(DriverPath, chrome_options=option)
 SuccessfulWritings=0
 
-for p in range(3):
+for p in range(2):
     
     driver=webdriver.Chrome(DriverPath)
     driver.get("https://www.sunnyportal.de/Templates/PublicPagesPlantList.aspx") # initialise the driver

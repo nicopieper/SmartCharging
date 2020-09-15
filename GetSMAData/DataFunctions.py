@@ -147,13 +147,14 @@ def WriteProperties(PlantPath, Plant, Dl):
     PlantFolders=[Path for Path in listdir(PlantPath) if not isfile(PlantPath + Dl + Path)]
     PlantFiles=[]
     for PlantFolder in PlantFolders:
-        PlantSubFolders=listdir(PlantPath + Dl + PlantFolder)
-        for PlantSubFolder in PlantSubFolders:
-            if "ExamplePlantData" in PlantPath:
-                Files = [f[-6:-4] + "." + f[-9:-7] + "." + f[-14:-10] for f in listdir(PlantPath + Dl + PlantFolder + Dl + PlantSubFolder) if isfile(join(PlantPath + Dl + PlantFolder + Dl + PlantSubFolder, f))]
-            else:    
-                Files = [f[-14:-4] for f in listdir(PlantPath + Dl + PlantFolder + Dl + PlantSubFolder) if isfile(join(PlantPath + Dl + PlantFolder + Dl + PlantSubFolder, f))]
-            PlantFiles.extend(Files)
+        if not "PredictionData" in PlantFolder:
+            PlantSubFolders=listdir(PlantPath + Dl + PlantFolder)
+            for PlantSubFolder in PlantSubFolders:
+                if "ExamplePlantData" in PlantPath:
+                    Files = [f[-6:-4] + "." + f[-9:-7] + "." + f[-14:-10] for f in listdir(PlantPath + Dl + PlantFolder + Dl + PlantSubFolder) if isfile(join(PlantPath + Dl + PlantFolder + Dl + PlantSubFolder, f))]
+                else:    
+                    Files = [f[-14:-4] for f in listdir(PlantPath + Dl + PlantFolder + Dl + PlantSubFolder) if isfile(join(PlantPath + Dl + PlantFolder + Dl + PlantSubFolder, f))]
+                PlantFiles.extend(Files)
 
     with open(PlantPath + Dl + 'PlantProperties.csv', 'w', newline='') as csvfile:                          
         csvwriter = csv.writer(csvfile)                                                

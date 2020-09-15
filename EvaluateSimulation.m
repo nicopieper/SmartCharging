@@ -1,5 +1,14 @@
 %% Define target groups
 
+for n=2:length(Users)
+    if ismissing(Users{n}.VehicleUtilisation)
+        Users{n}.VehicleUtilisation="undefined";
+    end
+    if ismissing(Users{n}.NumUsers)
+        Users{n}.NumUsers="undefined";
+    end
+end
+
 if ~exist("Users", "var")
     PathSimulationData=strcat(Path, "Simulation");
     StorageFiles=dir(strcat(PathSimulationData, Dl, "Users_*"));
@@ -7,18 +16,19 @@ if ~exist("Users", "var")
     load(strcat(PathSimulationData, Dl, StorageFiles(StorageInd).name))
 end
 
-% Targets=["small"; "medium"; "large"; "transporter"];
+Targets=["small"; "medium"; "large"; "transporter"];
 % Targets=["one user"; "only one user"; "several users"; "undefined"];
 % Targets=["company car"; "fleet vehicle"; "undefined"];
 % Targets=[0.5; 1; 3; 1000];
-Targets=[hours(10); hours(12); hours(14); hours(24)];
+% Targets=[hours(10); hours(12); hours(14); hours(24)];
 
 TargetGroups=cell(length(Targets),1);
 for n=2:length(Users)
-%     TargetNum=strcmp(Users{n}.VehicleSize,Targets);
-%     TargetNum=strcmp(Users{n}.VehicleUtilisation,Targets);
+    TargetNum=find(strcmp(Users{n}.VehicleSize,Targets),1);
+%     TargetNum=find(strcmp(Users{n}.VehicleUtilisation,Targets),1);
 %     TargetNum=find(Users{n}.DistanceCompanyToHome<Targets,1);
-    TargetNum=find(Users{n}.AvgHomeParkingTime<Targets,1);
+%     TargetNum=find(Users{n}.AvgHomeParkingTime<Targets,1);
+
     TargetGroups{TargetNum}=[TargetGroups{TargetNum} n];
 end
 ExistingTargets=find(cellfun('length', TargetGroups)>0)';
@@ -35,6 +45,9 @@ Location=["Home"; "Other"];
 if ShowELaad
     GetELaadData;
 end
+
+DayVecHourly=datetime(1,1,1,0,0,0, 'TimeZone', 'Africa/Tunis'):hours(1):datetime(1,1,2,0,0,0, 'TimeZone', 'Africa/Tunis');
+DayVecQuaterly=datetime(1,1,1,0,0,0, 'TimeZone', 'Africa/Tunis'):minutes(15):datetime(1,1,2,0,0,0, 'TimeZone', 'Africa/Tunis')-minutes(15);
 
 %% Energy charged per week
 
@@ -178,7 +191,7 @@ for col=1:2
     hold on
     l=legend;
     if ShowAll
-        [counts, edges]=histcounts(cat(1, ArrivalTimes{:,col}), datetime(1,1,1,0,0,0, 'TimeZone', 'Africa/Tunis'):hours(1):datetime(1,1,2,0,0,0, 'TimeZone', 'Africa/Tunis'));
+        [counts, edges]=histcounts(cat(1, ArrivalTimes{:,col}), DayVecHourly);
         centers=edges(1:end-1)+(edges(2)-edges(1))/2;
         plot(centers, counts./sum(counts))
         legappend(l, "All");
@@ -186,14 +199,14 @@ for col=1:2
     if ShowTargets
         [nrows,~] = cellfun(@size, ArrivalTimes(:,col));
         for k=find(nrows>0)'
-            [counts, edges]=histcounts(ArrivalTimes{k,col}, datetime(1,1,1,0,0,0, 'TimeZone', 'Africa/Tunis'):hours(1):datetime(1,1,2,0,0,0, 'TimeZone', 'Africa/Tunis'));
+            [counts, edges]=histcounts(ArrivalTimes{k,col}, DayVecHourly);
             centers=edges(1:end-1)+(edges(2)-edges(1))/2;
             plot(centers, counts./sum(counts))
             legappend(l, Targets(ExistingTargets(k)));
         end
     end
     if ShowELaad
-        plot(datetime(1,1,1,0,30,0, 'TimeZone', 'Africa/Tunis'):hours(1):datetime(1,1,1,23,30,0, 'TimeZone', 'Africa/Tunis'), sum(reshape(ArrivalTimesELaad(:,col), 4, []))/100)
+        plot(DayVecHourly, sum(reshape(ArrivalTimesELaad(:,col), 4, []))/100)
         legappend(l, "ELaad");
     end
     xticks(datetime(1,1,1,0,0,0, 'TimeZone', 'Africa/Tunis'):hours(4):datetime(1,1,2,0,0,0, 'TimeZone', 'Africa/Tunis'))
@@ -203,6 +216,43 @@ for col=1:2
     title(strcat("Arrival time at charging point at ", Location(col)))
 end
 
+%% Load Profile
+
+Load=cell(length(Targets),2);
+for k=ExistingTargets
+    Load{k,1}=zeros(96,1);
+    Load{k,2}=zeros(96,1);
+    for n=TargetGroups{k}
+        Load{k,1}=Load{k,1}+sum(reshape(Users{n}.LogbookBase(:,5), 96, []),2)*4/1e3/days(Users{1}.TimeVec(end)-Users{1}.TimeVec(1));
+        Load{k,2}=Load{k,2}+sum(reshape(Users{n}.LogbookBase(:,6), 96, []),2)*4/1e3/days(Users{1}.TimeVec(end)-Users{1}.TimeVec(1));
+    end
+    Load{k,1}=Load{k,1};
+    Load{k,2}=Load{k,2};
+end
+Load=Load(ExistingTargets,:);
+
+figure(13)
+clf
+for col=1:2
+    subplot(2,1,col)
+    hold on
+    l=legend;
+    if ShowAll
+        plot(DayVecQuaterly, sum(cat(2, Load{:,col}),2)/numel(cat(2,TargetGroups{:})))
+        legappend(l, "All");
+    end
+    if ShowTargets
+        for k=1:NumExistingTargets
+            plot(DayVecQuaterly, Load{k,col}/numel(TargetGroups{ExistingTargets(k)}))
+            legappend(l, Targets(ExistingTargets(k)));
+        end
+    end
+    title(strcat("Load profile of fleet at ", Location(col)))
+    xticks(datetime(1,1,1,0,0,0, 'TimeZone', 'Africa/Tunis'):hours(4):datetime(1,1,2,0,0,0, 'TimeZone', 'Africa/Tunis'))
+    xticklabels(datestr(datetime(1,1,1,0,0,0, 'TimeZone', 'Africa/Tunis'):hours(4):datetime(1,1,2,0,0,0, 'TimeZone', 'Africa/Tunis'), "HH:MM"))
+    xlabel("Time of date")
+    ylabel("Load per user in kW")
+end
 
 %% Mileage and Consumption
 
@@ -225,7 +275,7 @@ for k=ExistingTargets
     end
 end
 
-figure(13)
+figure(14)
 clf
 histogram(VehicleNums, 1:1:max(VehicleNums))
 disp(strcat(num2str(length(unique(VehicleNums))), " unique Vehicles are covered by this targets"))

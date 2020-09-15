@@ -1,7 +1,6 @@
 tic
-Demo=false;
 ActivateWaitbar=true;
-NumSimUsers=800;
+NumSimUsers=200;
 PublicChargingThreshold=uint32(15); % in %
 PThreshold=1.2;
 
@@ -15,16 +14,6 @@ EnergyDemandLeft=zeros(NumSimUsers+1,1);
 % ChargingEfficiency=zeros(NumSimUsers+1,1);
 close hidden
 
-if Demo
-    TimeOfForecast=datetime(1,1,1,08,0,0,'TimeZone','Africa/Tunis');
-    TimeVecDateNum=datenum(TimeVec);
-    NumPredMethod=1;
-    ForecastIntervalInd=ForecastIntervalHours*TimeStepInd;
-    DemoUser=2;
-    while Users{DemoUser}.PVPlantExists==false || sum(Users{DemoUser}.LogbookSource(:,1)>2)<100
-        DemoUser=DemoUser+1;
-    end
-end
 
 for n=2:size(Users,1)
     Users{n}.LogbookBase=Users{n}.LogbookSource;
@@ -51,7 +40,7 @@ for TimeInd=RangeTrainInd(1)+1:RangeTestInd(2)
             ChargingPower(n)=min([max([Users{n}.ACChargingPowerVehicle, Users{n}.DCChargingPowerVehicle]), PublicChargerPower]); % Actual ChargingPower at public charger in [kW]
 %             ChargingEfficiency(n)=PublicChargerDistribution(end,find(ChargingPower(n)<=PublicChargerDistribution(1,2:end),1)+1)*((1.01-0.91)*randn(1)+0.99);
             
-            EnergyDemandLeft(n)=double(min((double(PublicChargingThreshold)+2)/100*Users{n}.BatterySize+ConsumptionTilNextHomeStop-Users{n}.LogbookBase(TimeInd-1,7), Users{n}.BatterySize-Users{n}.LogbookBase(TimeInd-1,7)));
+            EnergyDemandLeft(n)=double(min((double(PublicChargingThreshold)+5+TruncatedGaussian(7,[1 40]-5,1))/100*Users{n}.BatterySize+ConsumptionTilNextHomeStop-Users{n}.LogbookBase(TimeInd-1,7), Users{n}.BatterySize-Users{n}.LogbookBase(TimeInd-1,7)));
             TimeStepIndsNeededForCharging=ceil(EnergyDemandLeft(n)/ChargingPower(n)*60/TimeStepMin); % [Wh/W]
             
             if TimeStepIndsNeededForCharging>0
@@ -81,7 +70,7 @@ for TimeInd=RangeTrainInd(1)+1:RangeTestInd(2)
                     end
 
                 elseif Users{n}.ChargingStrategy==2 % The probability of connection is a function of Plug-in time, SoC and the consumption within the next 24h
-                    Consumption24h=uint32(sum(Users{n}.LogbookBase(TimeInd:min(TimeInd+hours(24)/TimeStep-1, size(Users{n}.LogbookBase,1)), 3))*Users{n}.Consumption/1000); % [Wh]
+                    Consumption24h=uint32(sum(Users{n}.LogbookBase(TimeInd:min(TimeInd+hours(24)/TimeStep-1, size(Users{n}.LogbookBase,1)), 4))); % [Wh]
                     if Consumption24h>Users{n}.LogbookBase(TimeInd-1,7)
                         Users{n}.LogbookBase(TimeInd,1)=4; % Plugged-in
                     else
@@ -113,13 +102,6 @@ for TimeInd=RangeTrainInd(1)+1:RangeTestInd(2)
             
     end
     
-    if TimeInd==RangeTestInd(1) && Demo
-        SimulationDemoInit;
-    end
-    if TimeInd>=RangeTestInd(1) && Demo
-        SimulationDemoLoop;
-    end
-    
     if ActivateWaitbar && mod(TimeInd,1000)==0
         waitbar((TimeInd-RangeTrainInd(1)+1)/TotalIterations);
     end
@@ -135,7 +117,7 @@ Users=Users(cellfun(SimulatedUsers, Users));
 save(strcat(PathSimulationData, Dl, "Users_", num2str(PThreshold), "_", num2str(NumSimUsers), "_", datestr(Users{1}.TimeStamp, "yyyy-mm-dd_HH-MM"), ".mat"), "Users", "-v7.3");
 disp(strcat("Successfully simulated within ", num2str(toc), " seconds"))
  
-clearvars TimeInd n Demo ActivateWaitbar Consumption24h ParkingDuration ConsumptionTilNextHomeStop TripDistance
+clearvars TimeInd n ActivateWaitbar Consumption24h ParkingDuration ConsumptionTilNextHomeStop TripDistance
 clearvars NextHomeStop PublicChargerPower ChargingPower EnergyDemandLeft TimeStepIndsNeededForCharging EndOfShift
 clearvars NumPredMethod TotalIterations PublicChargingThreshold NumSimUsers TimeOfForecast TimeVecDateNum P PlugInTime PThreshold
 clearvars SimulatedUsers 

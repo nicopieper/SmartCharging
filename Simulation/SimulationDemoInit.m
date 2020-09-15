@@ -38,16 +38,19 @@ grid on
 hold on
 
 figSpotmarketReal = animatedline(TimeVecDateNum(TimeInd-24*TimeStepInd+1:TimeInd), SpotmarketReal(TimeInd-24*TimeStepInd+1:TimeInd,1), 'MaximumNumPoints',400,  'Color', PlotColors(1,:));
-% xticks([TimeVecTemp(1) TimeVecTemp(end/2) TimeVecTemp(end)])
-% xticklabels({datestr(TimeVecTemp(1),'dd.mm HH:MM') datestr(TimeVecTemp(end/2),'dd.mm HH:MM') datestr(TimeVecTemp(end),'dd.mm HH:MM')})
 xticks(TimeVecDateNum(TimeInd-24*TimeStepInd+1:48:end))
 xticklabels({datestr(TimeVecDateNum(TimeInd-24*TimeStepInd+1:48:end),'dd.mm HH:MM')})
 
 for p=1:NumPredMethod
-    figSpotmarketPred{p}=animatedline(TimeVecDateNum(max(TimeInd-ForecastIntervalInd+ForecastDuration, RangeTestInd(1)):TimeInd+ForecastDuration), SpotmarketPred(max(TimeInd-ForecastIntervalInd+ForecastDuration, RangeTestInd(1)):TimeInd+ForecastDuration,p), 'MaximumNumPoints',400, 'Color', PlotColors(p+1,:));
+    figSpotmarketPred{p}=animatedline(TimeVecDateNum(max(TimeInd-ForecastIntervalInd+ForecastDuration, DemoStart):TimeInd+ForecastDuration), SpotmarketPred(max(TimeInd-ForecastIntervalInd+ForecastDuration, DemoStart):TimeInd+ForecastDuration,p), 'MaximumNumPoints',400, 'Color', PlotColors(p+1,:));
 end
 
 legend(["Real" "Prediction"],'Interpreter','none')
+
+yminSpotmarket=min([SpotmarketReal(TimeInd-24*7*TimeStepInd:min(length(TimeVec),TimeInd+24*7*TimeStepInd)); SpotmarketPred(TimeInd-24*7*TimeStepInd:min(length(TimeVec),TimeInd+24*7*TimeStepInd))]);
+yminSpotmarket=round(yminSpotmarket-abs(yminSpotmarket)*0.1);
+ymaxSpotmarket=max([SpotmarketReal(TimeInd-24*7*TimeStepInd:min(length(TimeVec),TimeInd+24*7*TimeStepInd)); SpotmarketPred(TimeInd-24*7*TimeStepInd:min(length(TimeVec),TimeInd+24*7*TimeStepInd))]);
+ymaxSpotmarket=round(ymaxSpotmarket+abs(ymaxSpotmarket)*0.1);
 
 
 
@@ -62,11 +65,16 @@ hold on
 figResPoDemRealNeg=animatedline(TimeVecDateNum(TimeInd-24*TimeStepInd+1:TimeInd), ResPoDemRealQH(TimeInd-24*TimeStepInd+1:TimeInd,1), 'MaximumNumPoints',400, 'Color', PlotColors(1,:));
 figResPoDemRealPos=animatedline(TimeVecDateNum(TimeInd-24*TimeStepInd+1:TimeInd), ResPoDemRealQH(TimeInd-24*TimeStepInd+1:TimeInd,2), 'MaximumNumPoints',400, 'Color', PlotColors(2,:));
 %     for p=1:NumPredMethod % Create one Figure Property for each model
-%         figPred{p}=plot(TimeVec(max(TimeInd-ForecastIntervalInd+ForecastDuration, RangeTestInd(1)):TimeInd+ForecastDuration), SpotmarketPred(max(TimeInd-ForecastIntervalInd+ForecastDuration, RangeTestInd(1)):TimeInd+ForecastDuration,p), 'Color', PlotColors(p,:));
+%         figPred{p}=plot(TimeVec(max(TimeInd-ForecastIntervalInd+ForecastDuration, DemoStart):TimeInd+ForecastDuration), SpotmarketPred(max(TimeInd-ForecastIntervalInd+ForecastDuration, DemoStart):TimeInd+ForecastDuration,p), 'Color', PlotColors(p,:));
 %     end
 xticks(TimeVecDateNum(TimeInd-24*TimeStepInd+1:48:end))
 xticklabels({datestr(TimeVecDateNum(TimeInd-24*TimeStepInd+1:48:end),'dd.mm HH:MM')})
 legend(["Negative" "Positive"],'Interpreter','none')
+
+yminResPoDem=min(ResPoDemRealQH(TimeInd-24*7*TimeStepInd:min(length(TimeVec),TimeInd+24*7*TimeStepInd),:),[],'all');
+yminResPoDem=round(yminResPoDem-abs(yminResPoDem)*0.1);
+ymaxResPoDem=max(ResPoDemRealQH(TimeInd-24*7*TimeStepInd:min(length(TimeVec),TimeInd+24*7*TimeStepInd)),[],'all');
+ymaxResPoDem=round(ymaxResPoDem+abs(ymaxResPoDem)*0.1);
 
 
 
@@ -78,10 +86,10 @@ ylabel('SoC')
 grid on
 hold on
 
-figSoCPlot=animatedline(TimeVecDateNum(TimeInd-24*TimeStepInd+1:TimeInd), double(Users{DemoUser}.LogbookBase(TimeInd-24*TimeStepInd+1:TimeInd,6))/double(Users{DemoUser}.BatterySize), 'MaximumNumPoints',400,  'Color', PlotColors(1,:));
+figSoCPlot=animatedline(TimeVecDateNum(TimeInd-24*TimeStepInd+1:TimeInd), double(Users{DemoUser}.LogbookBase(TimeInd-24*TimeStepInd+1:TimeInd,7))/double(Users{DemoUser}.BatterySize), 'MaximumNumPoints',400,  'Color', PlotColors(1,:));
 set(figSoCPlot, {'color'}, {[0.0000, 0.4470, 0.7410]});
 %     for p=1:NumPredMethod % Create one Figure Property for each model
-%         figPred{p}=plot(TimeVec(max(TimeInd-ForecastIntervalInd+ForecastDuration, RangeTestInd(1)):TimeInd+ForecastDuration), SpotmarketPred(max(TimeInd-ForecastIntervalInd+ForecastDuration, RangeTestInd(1)):TimeInd+ForecastDuration,p), 'Color', PlotColors(p,:));
+%         figPred{p}=plot(TimeVec(max(TimeInd-ForecastIntervalInd+ForecastDuration, DemoStart):TimeInd+ForecastDuration), SpotmarketPred(max(TimeInd-ForecastIntervalInd+ForecastDuration, DemoStart):TimeInd+ForecastDuration,p), 'Color', PlotColors(p,:));
 %     end
 xticks(TimeVecDateNum(TimeInd-24*TimeStepInd+1:48:end))
 xticklabels({datestr(TimeVecDateNum(TimeInd-24*TimeStepInd+1:48:end),'dd.mm HH:MM')})
@@ -89,24 +97,24 @@ ylim([-0.1 1.1])
 legend(["SoC"],'Interpreter','none')
 
 
+if ShowPVPred
+    subplot(2,2,4)
+    cla
+    title(strcat(PVPlotLabel, " ", datestr(TimeVec(TimeInd),'dd.mm.yyyy HH:MM')),'Interpreter','none')
+    xlabel('Time')
+    ylabel('PV Generation Power [W]')
+    grid on
+    hold on
 
-subplot(2,2,4)
-cla
-title(strcat(PVPlotLabel, " ", datestr(TimeVec(TimeInd),'dd.mm.yyyy HH:MM')),'Interpreter','none')
-xlabel('Time')
-ylabel('PV Generation Power [W]')
-grid on
-hold on
-
-figPVPlot=animatedline(TimeVecDateNum(TimeInd-24*TimeStepInd+1:TimeInd), double(PVPlants{Users{DemoUser}.PVPlant}.Profile(TimeInd-24*TimeStepInd+1:TimeInd)), 'MaximumNumPoints',400,  'Color', PlotColors(1,:));
-for p=1:NumPredMethod % Create one Figure Property for each model
-    figPVPred{p}=animatedline(TimeVecDateNum(max(TimeInd-ForecastIntervalInd+ForecastDuration, RangeTestInd(1)):TimeInd+ForecastDuration), PVPredQH(max(TimeInd-ForecastIntervalInd+ForecastDuration, RangeTestInd(1)):TimeInd+ForecastDuration,p), 'MaximumNumPoints',400, 'Color', PlotColors(p+1,:));
+    figPVPlot=animatedline(TimeVecDateNum(TimeInd-24*TimeStepInd+1:TimeInd), double(PVPlants{Users{DemoUser}.PVPlant}.Profile(TimeInd-24*TimeStepInd+1:TimeInd)), 'MaximumNumPoints',400,  'Color', PlotColors(1,:));
+    for p=1:NumPredMethod % Create one Figure Property for each model
+        figPVPred{p}=animatedline(TimeVecDateNum(max(TimeInd-ForecastIntervalInd+ForecastDuration, DemoStart):TimeInd+ForecastDuration), PVPredQH(max(TimeInd-ForecastIntervalInd+ForecastDuration, DemoStart):TimeInd+ForecastDuration,p), 'MaximumNumPoints',400, 'Color', PlotColors(p+1,:));
+    end
+    xticks(TimeVecDateNum(TimeInd-24*TimeStepInd+1:48:end))
+    xticklabels({datestr(TimeVecDateNum(TimeInd-24*TimeStepInd+1:48:end),'dd.mm HH:MM')})
+    ylim([-round(PVPlants{Users{DemoUser}.PVPlant}.PeakPower)*10   ceil(PVPlants{Users{DemoUser}.PVPlant}.PeakPower)*1000])
+    legend(["PV Generation" "PV Prediction"],'Interpreter','none')
 end
-xticks(TimeVecDateNum(TimeInd-24*TimeStepInd+1:48:end))
-xticklabels({datestr(TimeVecDateNum(TimeInd-24*TimeStepInd+1:48:end),'dd.mm HH:MM')})
-ylim([-round(PVPlants{Users{DemoUser}.PVPlant}.PeakPower)*10   ceil(PVPlants{Users{DemoUser}.PVPlant}.PeakPower)*1000])
-legend(["PV Generation" "PV Prediction"],'Interpreter','none')
-
 
 
 
@@ -114,7 +122,7 @@ legend(["PV Generation" "PV Prediction"],'Interpreter','none')
 % 
 % figSpotmarketReal=plot(TimeVec(TimeInd-24*TimeStepInd+1:TimeInd), SpotmarketReal(TimeInd-24*TimeStepInd+1:TimeInd,1), 'Color', [0.0000, 0.4470, 0.7410]);
 % for p=1:NumPredMethod % Create one Figure Property for each model
-%     figSpotmarketPred{p}=plot(TimeVec(max(TimeInd-ForecastIntervalInd+ForecastDuration, RangeTestInd(1)):TimeInd+ForecastDuration), SpotmarketPred(max(TimeInd-ForecastIntervalInd+ForecastDuration, RangeTestInd(1)):TimeInd+ForecastDuration,p), 'Color', PlotColors(p,:));
+%     figSpotmarketPred{p}=plot(TimeVec(max(TimeInd-ForecastIntervalInd+ForecastDuration, DemoStart):TimeInd+ForecastDuration), SpotmarketPred(max(TimeInd-ForecastIntervalInd+ForecastDuration, DemoStart):TimeInd+ForecastDuration,p), 'Color', PlotColors(p,:));
 % end
 % 
 % legend(["Real" "Prediction"],'Interpreter','none')
@@ -131,7 +139,7 @@ legend(["PV Generation" "PV Prediction"],'Interpreter','none')
 % figResPoDemReal=plot(TimeVec(TimeInd-24*TimeStepInd+1:TimeInd), ResPoDemRealQH(TimeInd-24*TimeStepInd+1:TimeInd,:));
 % set(figResPoDemReal, {'color'}, {[0.0000, 0.4470, 0.7410]; PlotColors(1,:)});
 % %     for p=1:NumPredMethod % Create one Figure Property for each model
-% %         figPred{p}=plot(TimeVec(max(TimeInd-ForecastIntervalInd+ForecastDuration, RangeTestInd(1)):TimeInd+ForecastDuration), SpotmarketPred(max(TimeInd-ForecastIntervalInd+ForecastDuration, RangeTestInd(1)):TimeInd+ForecastDuration,p), 'Color', PlotColors(p,:));
+% %         figPred{p}=plot(TimeVec(max(TimeInd-ForecastIntervalInd+ForecastDuration, DemoStart):TimeInd+ForecastDuration), SpotmarketPred(max(TimeInd-ForecastIntervalInd+ForecastDuration, DemoStart):TimeInd+ForecastDuration,p), 'Color', PlotColors(p,:));
 % %     end
 % legend(["Negative" "Positive"],'Interpreter','none')
 % 
@@ -144,10 +152,10 @@ legend(["PV Generation" "PV Prediction"],'Interpreter','none')
 % grid on
 % hold on
 % 
-% figSoCPlot=plot(TimeVec(TimeInd-24*TimeStepInd+1:TimeInd), single(Users{DemoUser}.LogbookBase(TimeInd-24*TimeStepInd+1:TimeInd,6))/single(Users{DemoUser}.BatterySize));
+% figSoCPlot=plot(TimeVec(TimeInd-24*TimeStepInd+1:TimeInd), single(Users{DemoUser}.LogbookBase(TimeInd-24*TimeStepInd+1:TimeInd,7))/single(Users{DemoUser}.BatterySize));
 % set(figSoCPlot, {'color'}, {[0.0000, 0.4470, 0.7410]});
 % %     for p=1:NumPredMethod % Create one Figure Property for each model
-% %         figPred{p}=plot(TimeVec(max(TimeInd-ForecastIntervalInd+ForecastDuration, RangeTestInd(1)):TimeInd+ForecastDuration), SpotmarketPred(max(TimeInd-ForecastIntervalInd+ForecastDuration, RangeTestInd(1)):TimeInd+ForecastDuration,p), 'Color', PlotColors(p,:));
+% %         figPred{p}=plot(TimeVec(max(TimeInd-ForecastIntervalInd+ForecastDuration, DemoStart):TimeInd+ForecastDuration), SpotmarketPred(max(TimeInd-ForecastIntervalInd+ForecastDuration, DemoStart):TimeInd+ForecastDuration,p), 'Color', PlotColors(p,:));
 % %     end
 % ylim([-0.1 1.1])
 % legend(["SoC"],'Interpreter','none')
@@ -164,7 +172,7 @@ legend(["PV Generation" "PV Prediction"],'Interpreter','none')
 % figPVPlot=plot(TimeVec(TimeInd-24*TimeStepInd+1:TimeInd), PVPlants{Users{DemoUser}.PVPlant}.Profile(TimeInd-24*TimeStepInd+1:TimeInd));
 % set(figPVPlot, {'color'}, {[0.0000, 0.4470, 0.7410]});
 % for p=1:NumPredMethod % Create one Figure Property for each model
-%     figPVPred{p}=plot(TimeVec(max(TimeInd-ForecastIntervalInd+ForecastDuration, RangeTestInd(1)):TimeInd+ForecastDuration), PVPredQH(max(TimeInd-ForecastIntervalInd+ForecastDuration, RangeTestInd(1)):TimeInd+ForecastDuration,p), 'Color', PlotColors(p,:));
+%     figPVPred{p}=plot(TimeVec(max(TimeInd-ForecastIntervalInd+ForecastDuration, DemoStart):TimeInd+ForecastDuration), PVPredQH(max(TimeInd-ForecastIntervalInd+ForecastDuration, DemoStart):TimeInd+ForecastDuration,p), 'Color', PlotColors(p,:));
 % end
 % ylim([-round(PVPlants{Users{DemoUser}.PVPlant}.PeakPower)*10   ceil(PVPlants{Users{DemoUser}.PVPlant}.PeakPower)*1000])
 % legend(["PV Generation" "PV Prediction"],'Interpreter','none')

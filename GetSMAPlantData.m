@@ -13,7 +13,6 @@
 
 %Initialisation;
 tic
-PathSMAData="C:\Users\nicop\SMAPlantData\PlantData\";
 ProcessDataNewSMAPlant=false;
 formatSpec = '%s';
 NumberPlantsLoaded=0;
@@ -50,13 +49,13 @@ for n=1:size(Files,1)
         Error=true;
         
         for k=1:size(DataComplete,1)
-            DataSetDateStart=datetime(DataComplete(k).name(14:23), 'InputFormat', 'dd.MM.yyyy', 'TimeZone','Africa/Tunis');
-            DataSetDateEnd=datetime(DataComplete(k).name(25:34), 'InputFormat', 'dd.MM.yyyy', 'TimeZone','Africa/Tunis')+hours(23)+minutes(59);
+            ExistingDataDateStart=datetime(DataComplete(k).name(14:23), 'InputFormat', 'dd.MM.yyyy', 'TimeZone','Africa/Tunis');
+            ExistingDataDateEnd=datetime(DataComplete(k).name(25:34), 'InputFormat', 'dd.MM.yyyy', 'TimeZone','Africa/Tunis')+hours(23)+minutes(59);
             
-            if DataSetDateStart<=DateStart && DataSetDateEnd>=DateEnd
+            if ExistingDataDateStart<=DateStart && ExistingDataDateEnd>=DateEnd
                 load(strcat(PlantPath, Dl, DataComplete(k).name))
             
-                if length(LoadedSMAPlantDataComplete)==round(days(DataSetDateEnd(end)-DataSetDateStart(1)))*96
+                if length(LoadedSMAPlantDataComplete)==round(days(ExistingDataDateEnd(end)-ExistingDataDateStart(1)))*96
                     Error=false;
                     break
                 else
@@ -77,8 +76,8 @@ for n=1:size(Files,1)
                
         LoadedSMAPlantDataComplete=[];
         Error=false;
-        DataSetDateStart=NaT(0,0,'TimeZone', 'Africa/Tunis');
-        DataSetDateEnd=NaT(0,0,'TimeZone', 'Africa/Tunis');
+        ExistingDataDateStart=NaT(0,0,'TimeZone', 'Africa/Tunis');
+        ExistingDataDateEnd=NaT(0,0,'TimeZone', 'Africa/Tunis');
         DateVec=ExistingDates';
         
         if ProcessDataNewSMAPlant==false
@@ -86,20 +85,23 @@ for n=1:size(Files,1)
             DateVec=ExistingDates';
             DataComplete=dir(strcat(PlantPath, Dl, 'DataComplete_*'));        
             for k=1:size(DataComplete,1)
-                DataSetDateStart(k)=datetime(DataComplete(k).name(14:23), 'InputFormat', 'dd.MM.yyyy', 'TimeZone','Africa/Tunis');
-                DataSetDateEnd(k)=datetime(DataComplete(k).name(25:34), 'InputFormat', 'dd.MM.yyyy', 'TimeZone','Africa/Tunis')+hours(23)+minutes(59);
+                ExistingDataDateStart(k)=datetime(DataComplete(k).name(14:23), 'InputFormat', 'dd.MM.yyyy', 'TimeZone','Africa/Tunis');
+                ExistingDataDateEnd(k)=datetime(DataComplete(k).name(25:34), 'InputFormat', 'dd.MM.yyyy', 'TimeZone','Africa/Tunis')+hours(23)+minutes(59);
             end
 
-            if ~isempty(DataSetDateStart(k))
-                [~,ind]=max(DataSetDateEnd-DataSetDateStart);
+            if ~isempty(ExistingDataDateStart(k))
+                [~,ind]=max(ExistingDataDateEnd-ExistingDataDateStart);
                 load(strcat(PlantPath, Dl, DataComplete(ind).name))
-                DateVec=[ExistingDates(1):caldays(1):DataSetDateStart(ind)-caldays(1), DataSetDateEnd(ind)+caldays(1)-hours(23)-minutes(59):caldays(1):ExistingDates(end)];
-                ValuesBeforeExistingDataSet=length(ExistingDates(1):caldays(1):DataSetDateStart(ind)-caldays(1));
-                ValuesAfterExistingDataSet=length(DataSetDateEnd(ind)+caldays(1)-hours(23)-minutes(59):caldays(1):ExistingDates(end));
+                DateVec=[ExistingDates(1):caldays(1):ExistingDataDateStart(ind)-caldays(1), ExistingDataDateEnd(ind)+caldays(1)-hours(23)-minutes(59):caldays(1):ExistingDates(end)];
+                DaysBeforeExistingDataSet=length(ExistingDates(1):caldays(1):ExistingDataDateStart(ind)-caldays(1));
+                DaysAfterExistingDataSet=length(ExistingDataDateEnd(ind)+caldays(1)-hours(23)-minutes(59):caldays(1):ExistingDates(end));
+            else
+                DateVec=DateStart:caldays(1):DateEnd;
             end
         end
             
-        LoadedSMAPlantDataPart=[];
+        LoadedSMAPlantDataNew=[];
+
         for Date=DateVec
             StoragePath=strcat(PlantPath, Dl, datestr(Date, 'yyyy'), Dl, datestr(Date, 'mm'));
 
@@ -120,24 +122,30 @@ for n=1:size(Files,1)
                     LoadedSMAPlantData(isnan(LoadedSMAPlantData))=0;
 
                     if length(LoadedSMAPlantData)==96
-                        LoadedSMAPlantDataPart=[LoadedSMAPlantDataPart; LoadedSMAPlantData];
+                        LoadedSMAPlantDataNew=[LoadedSMAPlantDataNew; LoadedSMAPlantData];
                     else
                         Error=true;
                         break
                     end
-
+                else
+                    %disp(['File of plant ' Files(n).name ' is empty at date ' datestr(Date, 'dd.mm.yyyy')])
                 end
             end
         end
         
+        if isempty(ExistingDataDateStart(k))
+            DaysBeforeExistingDataSet=length(LoadedSMAPlantDataNew)/96;
+            DaysAfterExistingDataSet=0;
+        end
+        
         if ProcessDataNewSMAPlant==false
-            LoadedSMAPlantDataComplete=[LoadedSMAPlantDataPart(1:ValuesBeforeExistingDataSet*96);  LoadedSMAPlantDataComplete;   LoadedSMAPlantDataPart(end-ValuesAfterExistingDataSet*96+1:end)];
+            LoadedSMAPlantDataComplete=[LoadedSMAPlantDataNew(1:DaysBeforeExistingDataSet*96);  LoadedSMAPlantDataComplete;   LoadedSMAPlantDataNew(end-DaysAfterExistingDataSet*96+1:end)];
         else
-            LoadedSMAPlantDataComplete=LoadedSMAPlantDataPart;
+            LoadedSMAPlantDataComplete=LoadedSMAPlantDataNew;
         end
 
-        DataSetDateStart=ExistingDates(1);
-        DataSetDateEnd=ExistingDates(end)+hours(23)+minutes(59);
+        ExistingDataDateStart=ExistingDates(1);
+        ExistingDataDateEnd=ExistingDates(end)+hours(23)+minutes(59);
 
         if Error==false
             if length(LoadedSMAPlantDataComplete)==round(days(ExistingDates(end)-ExistingDates(1))+1)*96
@@ -148,8 +156,9 @@ for n=1:size(Files,1)
         end
     end
     
-    DatesDiffStart=round(days(DateStart-DataSetDateStart));
-    DatesDiffEnd=round(days(DataSetDateEnd-DateEnd));
+    DatesDiffStart=round(days(DateStart-ExistingDataDateStart));
+    DatesDiffEnd=round(days(ExistingDataDateEnd-DateEnd));
+    LoadedSMAPlantDataComplete=[0;LoadedSMAPlantDataComplete(1:end-1)]; % The SMA Data starts always at 00:15 --> Add a zero at beginning to shift ift
     
     if DatesDiffStart>=0 && DatesDiffEnd>=0 && length(DatesDiffStart*96+1:length(LoadedSMAPlantDataComplete)-DatesDiffEnd*96)==round(days(DateEnd-DateStart))*96
         
@@ -185,5 +194,5 @@ disp(['PVPlantData successfully imported ' num2str(toc) 's'])
 %% Clean up Workspace
 
 clearvars Files h Properties StorageFile StoragePath n k LoadedSMAPlantData LoadedSMAPlantDataComplete DataComplete Delimiter ExistingDates
-clearvars File formatSpec NumberPlantsLoaded NumberPlantsToLoad PlantPath PathSMAData DatesDiffStart DatesDiffEnd DataSetDateStart DataSetDateEnd
-clearvars Error FieldNames
+clearvars File formatSpec NumberPlantsLoaded NumberPlantsToLoad PlantPath DatesDiffStart DatesDiffEnd ExistingDataDateStart ExistingDataDateEnd
+clearvars Error FieldNames LoadedSMAPlantDataNew

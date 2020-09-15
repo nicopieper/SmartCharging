@@ -1,4 +1,4 @@
-function [Prediction, PredictionMat, TargetMat, MAEConst, mMAPEConst, RMSEConst] = TestPred(PredMethod, PredictorMat, TargetDelayed, Target, TimeVecPred, TimeStepPredInd, RangeTestPredInd, RangeTestDate, MaxDelayInd, ForecastIntervalPredInd, Demo, TargetName, ActivateWaitbar, PredictionDataPath, TimeIntervalFile)
+function [Prediction, PredictionMat, TargetMat, MAEConst, mMAPEConst, RMSEConst] = TestPred(PredMethod, PredictorMat, TargetDelayed, Target, TimeVecPred, TimeStepPredInd, RangeTrainPredInd, RangeTestPredInd, RangeTrainDate, RangeTestDate, MaxDelayInd, ForecastIntervalPredInd, Demo, TargetName, ActivateWaitbar, PredictionDataPath, TimeIntervalFile)
 %% Description
 % This function generates predictions basing on trained LSQ and NARXNET
 % models. The predictions can be visualised in a live demonstration.
@@ -56,9 +56,11 @@ function [Prediction, PredictionMat, TargetMat, MAEConst, mMAPEConst, RMSEConst]
 
 %% Initialisation
 NumPredMethod=size(PredMethod,1);
-Prediction=zeros(RangeTestPredInd(2), NumPredMethod);
-PredictionMat=zeros(ForecastIntervalPredInd, floor((RangeTestPredInd(2)-RangeTestPredInd(1))/(24*TimeStepPredInd)), NumPredMethod);
-TargetMat=zeros(ForecastIntervalPredInd, floor((RangeTestPredInd(2)-RangeTestPredInd(1))/ForecastIntervalPredInd));
+Prediction=zeros(RangeTestPredInd(2)-RangeTrainPredInd(1)+1, NumPredMethod);
+% PredictionMat=zeros(ForecastIntervalPredInd, floor((RangeTestPredInd(2)-RangeTestPredInd(1))/(24*TimeStepPredInd)), NumPredMethod);
+PredictionMat=zeros(ForecastIntervalPredInd, RangeTestPredInd(2)-RangeTrainPredInd(1)+1, NumPredMethod);
+% TargetMat=zeros(ForecastIntervalPredInd, floor((RangeTestPredInd(2)-RangeTrainPredInd(1))/(24*TimeStepPredInd)), NumPredMethod);
+TargetMat=zeros(ForecastIntervalPredInd, RangeTestPredInd(2)-RangeTrainPredInd(1)+1, NumPredMethod);
 TimeInd=RangeTestPredInd(1);
 k=1;
 ymin=-20; % round(min(Target)*1.1/10)*10;
@@ -111,7 +113,7 @@ while TimeInd<=RangeTestPredInd(2)
                     end
                     
                     Prediction(TimeInd+ForecastDuration,p)=PredMethod{p,3}(PredMethod{p,2}(ForecastDuration+1,:), PredictorMatInput); % The LSQ Prediction, PredMethod{p,2} covers the Model Function, PredMethod{p,1} covers the LSQ Coefficients
-                    PredictionMat(ForecastDuration+1,k,p)=Prediction(TimeInd+ForecastDuration,p); % A vector storing all predicted Values
+                    PredictionMat(ForecastDuration+1,TimeInd,p)=Prediction(TimeInd+ForecastDuration,p); % A vector storing all predicted Values
                 catch
                     TimeInd
                 end
@@ -119,7 +121,7 @@ while TimeInd<=RangeTestPredInd(2)
                 PredictorMatInput=[num2cell(PredictorMat(TimeInd+ForecastDuration,:)',1);{0}]; % Regarding current Values, the ANN uses only the Predictors, hence the target row can be zero
                 PredictorMatDelayedInput=[num2cell(zeros(size(PredictorMat,2),MaxDelayInd+ForecastDuration),1); num2cell(TargetDelayed(TimeInd-MaxDelayInd+1:TimeInd+ForecastDuration,1))']; % Regarding delayed Values, the ANN uses only the delayed Targets, hence the first rows are not used an can by any value
                 Prediction(TimeInd+ForecastDuration,p)=cell2mat(PredMethod{p,2}{ForecastDuration+1}(PredictorMatInput, PredictorMatDelayedInput, PredMethod{p,3}))';
-                PredictionMat(ForecastDuration+1,k,p)=Prediction(TimeInd+ForecastDuration,p);
+                PredictionMat(ForecastDuration+1,TimeInd,p)=Prediction(TimeInd+ForecastDuration,p);
             end
             if Demo  
                 EndCounter=max(EndCounter,TimeInd+ForecastDuration);                    
@@ -132,7 +134,7 @@ while TimeInd<=RangeTestPredInd(2)
                 pause(0.01/NumPredMethod)
             end
         end        
-        TargetMat(ForecastDuration+1,k)=Target(TimeInd+ForecastDuration);
+        TargetMat(ForecastDuration+1,TimeInd)=Target(TimeInd+ForecastDuration);
     end    
     if Demo
         for i=0:24*TimeStepPredInd-1
@@ -158,10 +160,11 @@ end
 if strcmp("PVPlants_1", TargetName)
     Prediction(Prediction<20)=0;
     PredictionMat(PredictionMat<20)=0;
-    DayTestVec=RangeTestDate(1):caldays(1):RangeTestDate(2);
+    DayTestVec=RangeTrainDate(1):caldays(1):RangeTestDate(2);
     
     SunTab=[1, 8, 17; 2, 7, 18; 3, 6, 20; 4, 6, 21; 5, 5, 22; 6, 5, 22; 7, 5, 22; 8, 6, 21; 9, 7, 20; 10, 7, 19; 11, 8, 17; 12, 8, 16];
-    for n=1:size(PredictionMat,2)
+%     for n=1:size(PredictionMat,2)
+    for n=1:floor((RangeTestPredInd(2)-RangeTestPredInd(1))/(24*TimeStepPredInd))
         Month=find(month(DayTestVec(n))==SunTab(:,1),1);
         DayVec=mod((hour(RangeTestDate(1))*TimeStepPredInd:1:size(PredictionMat,1)+hour(RangeTestDate(1))*TimeStepPredInd-1)/TimeStepPredInd, 24);
         Sunrise=DayVec<SunTab(Month,2);
@@ -176,7 +179,7 @@ PredcitionTemp=Prediction;
 PredictionMatTemp=PredictionMat;
 PredMethodTemp=PredMethod;
 for p=1:NumPredMethod
-    Prediction=PredMethodTemp(:,p);
+    Prediction=PredcitionTemp(:,p);
     PredictionMat=PredictionMatTemp(:,:,p);
     PredMethod=PredMethodTemp(p,:);
     save(strcat(PredictionDataPath, TargetName, "_", LegendVec(p), "_", num2str(ForecastIntervalPredInd), "_", "_", num2str(size(PredictorMatInput,2)), "_", TimeIntervalFile, "_", datestr(datetime('now'), "yyyy-mm-dd_HH-MM"), ".mat"), "Prediction", "PredictionMat", "PredMethod", "Target", "TimeVecPred", "ForecastIntervalPredInd", "-v7.3");
@@ -186,15 +189,18 @@ PredictionMat=PredictionMatTemp;
 
 %% Evaluation
 for p=1:NumPredMethod
-    MAE(:,p)=mean(abs(PredictionMat(:,:,p)-TargetMat),2); % Mean Absolute Error
-    mMAPE(:,p)=mean(abs(TargetMat-PredictionMat(:,:,p))./mean(abs(TargetMat),2),2); % Mean Absolute Percentage Error
-    RMSE(:,p)=sqrt(mean((PredictionMat(:,:,p)-TargetMat).^2,2)); % Mean Squared Error
+    PredCoulmns=zeros(ForecastIntervalPredInd,1)==PredictionMat(:,:,p);
+    PredictionMatEval=PredictionMat(:,~all(PredCoulmns,1),p);
+    TargetMatEval=TargetMat(:,~all(PredCoulmns,1),p);
+    MAE(:,p)=mean(abs(PredictionMatEval),2); % Mean Absolute Error
+    mMAPE(:,p)=mean(abs(TargetMatEval-PredictionMatEval)./mean(abs(TargetMatEval),2),2); % Mean Absolute Percentage Error
+    RMSE(:,p)=sqrt(mean((PredictionMatEval-TargetMatEval).^2,2)); % Mean Squared Error
     
-    MAEConst(1,p)=round(mean(abs(PredictionMat(:,:,p)-TargetMat),'all'),3);
-    mMAPEConst(1,p)=round(mean(abs(TargetMat-PredictionMat(:,:,p)),'all')./mean(abs(TargetMat),'all'),3);     
-    RMSEConst(1,p)=round(sqrt(mean((PredictionMat(:,:,p)-TargetMat).^2,'all')),3);
-    MEANConst(1,p)=round(mean(abs(TargetMat),'all'),3);
-    STDConst(1,p)=round(std(TargetMat(:)),3);
+    MAEConst(1,p)=round(mean(abs(PredictionMatEval-TargetMatEval),'all'),3);
+    mMAPEConst(1,p)=round(mean(abs(TargetMatEval-PredictionMatEval),'all')./mean(abs(TargetMatEval),'all'),3);     
+    RMSEConst(1,p)=round(sqrt(mean((PredictionMatEval-TargetMatEval).^2,'all')),3);
+    MEANConst(1,p)=round(mean(abs(TargetMatEval),'all'),3);
+    STDConst(1,p)=round(std(TargetMat, 0, 'all'),3);
 end
 MAESTDConst=round(MAEConst./STDConst,3);
 Results=splitvars(table({'MAE'; 'mMAPE'; 'MAE/STD'; 'RMSE'; 'MEAN_ABS'; 'STD'},...

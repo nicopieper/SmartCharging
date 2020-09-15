@@ -40,11 +40,11 @@ from tqdm import *
 
 StartSys=time.time() # measure the script's execution time
 DateStart=datetime(2018,1,1)
-DateEnd=datetime(2020,5,31)
-MinPower="15"
-MaxPower="15,5"
+DateEnd=datetime(2020,8,31)
+MinPower="3"
+MaxPower="15"
 NumPlants=1
-NumPlantsSearch=200
+NumPlantsSearch=20
 
 Dl='/'
 DataPath=r"C:/Users/nicop/SMAPlantData/PlantData"
@@ -58,10 +58,10 @@ DriverPath= "C:\Program Files (x86)\chromedriver.exe"
 driver=webdriver.Chrome(DriverPath)
 driver.get("https://www.sunnyportal.de/Templates/PublicPagesPlantList.aspx")
 
-driver.find_element_by_id("ctl00_ContentPlaceHolder1_CountryDropDownList").send_keys("Deutschland") # enter "Deutschland" in country edit field
+# driver.find_element_by_id("ctl00_ContentPlaceHolder1_CountryDropDownList").send_keys("Deutschland") # enter "Deutschland" in country edit field
 driver.find_element_by_id("ctl00_ContentPlaceHolder1_FromPeakPowerNumTB_numTB").send_keys(MinPower) # enter MinPower in corresponding edit field
 driver.find_element_by_id("ctl00_ContentPlaceHolder1_ToPeakPowerNumTB_numTB").send_keys(MaxPower) # enter MaxPower in corresponding edit field
-#driver.find_element_by_id("ctl00_ContentPlaceHolder1_CityFilterTextBox").send_keys("Basel")
+driver.find_element_by_id("ctl00_ContentPlaceHolder1_CityFilterTextBox").send_keys("Basel")
 driver.find_element_by_id("ctl00_ContentPlaceHolder1_FilterButton").click() # click the "Suchen" button
 
 PlantID=[]
@@ -197,6 +197,7 @@ for ID in PlantID: # iterate through each found ID
                             WriteProperties(PlantPath, Plant, Dl) # create the properties file
                             [Error, TSComplete]=CrawlData(DateRange, PlantPath, Dl, driver) # scrape the data from the website by iterating through DateRange and store the data in seperate csv files
                             if TSComplete==True and Error==False: # if no error occured during the scraping
+                                WriteProperties(PlantPath, Plant, Dl) # update the properties
                                 SuccessfulWritings=SuccessfulWritings+1
                                 WritingSuccessful=True
                                 break
