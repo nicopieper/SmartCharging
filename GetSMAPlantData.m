@@ -1,23 +1,104 @@
 %% Description
-% This Script loads data downloaded form the regelleistung.net website from
-% a local path, processes it and stores it into variables. Once processed, 
-% the variables are saved in the mat-file 'RegelData.m'.
-% NAN vlaues are replaced by estimates by the function FillMissingValues.
-% The function DeleteDST changes the time series such as if there would be
-% no Daylight Saving Time. Therefore, in October the doubling occuring hour
-% is deleted and in March the missing hour is added by a linear estimate.
-% To circumvent datetime issues in Matlab, Tunesian TimeZone is used, as it
-% does not consider DST.
+% This script loads data into the workspace that was downloaded form the
+% SMA sunny portal by the python scripts in the folder GetSMAData. The
+% python scripts store measured power generation of multiple PV plants
+% within Germany within the time interval 01.01.2018 to 31.08.2020. For
+% each plant, the measured data is stored in csv files, whereby one file
+% covers one day of one plant. In addition, for each plant some properties 
+% like the location, peak power, SMA's plant ID are stored in a seperate 
+% file called PlantProperties.csv.
+% This script loads the plants data into Matlab and stores the measured
+% generation power into a DataComplete_IntervalStart-IntervalEnd.mat file
+% for each plant. If new generation data was added by the python scripts,
+% this script adds this data if needed due to the definition of DateStart
+% and DateEnd and creates a new DataComplete_IntervalStart-IntervalEnd.mat 
+% file. If such a file already satisfies the defined interval, instead of
+% the csv files, this script loads the .mat file. The data of the plants
+% are stored into the cell array PVPlants including generation power
+% PVPlants{n}.Profile and further properties like PVPlants{n}.PeakPower.
+%
+% Depended scripts / folders
+%   Initialisation          Needed for the execution of this script
+%   GetSMAData              This folder contains the python scripts used
+%                           for crawling the sunny portal
+%
+% Description of important variables
+%   ProcessDataNewSMAPlant: The data of all plants is processed is loaded
+%                       completly new from the csv files, not using the mat
+%                       files. Logical
+%   PVPlants:           The cell array that contains the data of all PV
+%                       plants. The data of PVPlants{n}.Profile is aligned
+%                       with TimeVec defined  in the Initialisation script.
+%                       cell (N,1)
+%   NumberPlantsToLoad: Maximum number of plants that shall be loaded into
+%                       PVPlants. It is truncated by the number of existing
+%                       PVPlants. (1,1)
+%   ExistingDates:      All dates data is available for a specific plant.
+%   ExistingDataDateStart: 
+%   LikelihoodPV:       The likelihood that one users owns a PV plant.
+%                       Integer
+%   AddPV               Control variable to skip the assignment of PV
+%                       plants. Logical
+%   Users:              The cell array that covers all user data. The 
+%                       first cell contains processing information. Inside
+%                       the following cells, the user data is stored, 
+%                       each as a struct. cell (NumUsers+1,1)
+%   VehicleSizes        The vehicle sizes that are accepted. In general,
+%                       the vehicles in Vehicles have four different sizes:
+%                       small, medium, large, transporter. VehicleSizes
+%                       determines which of them will be considered for the
+%                       users. Two sizes can be merged (considered as one
+%                       class) by putting them into one cell {['large',
+%                       'transporter']}. In consequence, a real car
+%                       with the size large wil lget a driving profile of a
+%                       large or transporter vehicle. cell of strings (1,N)
+%   PVPlantPointer      A pointer that indicates which PV plant will be
+%                       assigned to the next user that owns a PV plant. The
+%                       same plant can be assigned to multiple users. (1,1)
+%   VehiclePointer      A set of pointer that indicate which vehicle from
+%                       Vehicles of a certain vehicle size will be assigned
+%                       to the next user. Therefore, there are as many
+%                       pointers as VehicleSizes has entries. The first row
+%                       corresponds to the first vehicle size (usually
+%                       small) and so on. The same vehicle can be assigned 
+%                       to multiple users. (N,1)
+%   VehicleDatabase     A cell array of N rows. Each row covers the vehicle
+%                       numbers of one VehicleSize. cell (N,1)
+%   VehicleProperties   The real data of the cars that are assigned to the
+%                       users. Covers the car name, market share
+%                       (cumulated), size, battery capacity, for
+%                       consumption values (cold city, mild city, cold
+%                       highway, mild highway) and a guess about the
+%                       typical distribution of chargers the usual driver 
+%                       of this car have.
+%   TemperatureMonths   A first step to consider weather conditions for
+%                       energy consumptions of vehicles. Each month is
+%                       referred to a general temperature indicator between
+%                       1 and 2. Small values represent cold temperatures
+%                       and the other way around. The values are estimated
+%                       from a climate chart for Germany. The first colum
+%                       represents the month number, the second column the
+%                       temperature indicator. (12, 2)
+%   TemperatureTimeVec  The temperature indicator for each entry within
+%                       TimeVec. Therefore the months of TimeVec are
+%                       matched with the first col of TemperatureMonths.
+%                       (M,1)
+%   UsersTimeVecLogical Indicates which entries of Vehicles logbook are
+%                       used within the given time interval set in
+%                       Initialisation. If the Vehicles were processed with
+%                       the same time interval, than all entries of this
+%                       variable are one. Time points that are only part of
+%                       Vehicles are deleted from the logbooks.
 
 %% Initialisation
 
 %Initialisation;
 tic
 ProcessDataNewSMAPlant=false;
-formatSpec = '%s';
-NumberPlantsLoaded=0;
 NumberPlantsToLoad=800;
 
+NumberPlantsLoaded=0;
+formatSpec = '%s';
 Files=dir(PathSMAData);
 Files=Files(strlength(cellstr({Files(:).name}))>5);
 Files=Files(~strcmp(cellstr({Files(:).name}),'ListOfUnsuitablePlants.csv'));

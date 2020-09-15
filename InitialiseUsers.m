@@ -173,7 +173,7 @@ for n=2:NumUsers+1
     
     Consumption=Users{n}.Consumption(1,1).*(2-Velocities).*(2-TemperatureTimeVec)+Users{n}.Consumption(2,1)*(Velocities-1).*(2-TemperatureTimeVec)+Users{n}.Consumption(1,2)*(2-Velocities).*(TemperatureTimeVec-1)+Users{n}.Consumption(2,2)*(Velocities-1).*(TemperatureTimeVec-1); % calculate the consumption of all trips depending of velocity and temperature
     
-    Users{n}.LogbookSource(:,4)=uint32(Users{n}.LogbookSource(:,3).*Consumption); % add consumption to logbook
+    Users{n}.LogbookSource(:,4)=uint32(double(Users{n}.LogbookSource(:,3)).*Consumption); % add consumption to logbook
     Users{n}.LogbookSource(1,7)=uint32(double(Users{n}.BatterySize)*0.7+TruncatedGaussian(0.1,[0.4 1]-0.7,1)); % Initial SoC between 0.4 and 1 of BatterySize. Distribution is normal
     Users{n}.AverageMileageDay_m=uint32(sum(Users{n}.LogbookSource(:,3))/days(DateEnd-DateStart)); %[m]
     Users{n}.AverageMileageYear_km=uint32(sum(Users{n}.LogbookSource(:,3))/days(DateEnd-DateStart)*365.25/1000); %[km]

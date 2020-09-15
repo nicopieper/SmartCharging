@@ -22,3 +22,4 @@ for n=1:size(Folders,1)
     end
     waitbar(n/size(Folders,1))
 end
+close(h);
