@@ -1,6 +1,6 @@
 tic
 ActivateWaitbar=true;
-NumSimUsers=10;
+NumSimUsers=800;
 PublicChargingThreshold=uint32(15); % in %
 PThreshold=1.2;
 
@@ -33,7 +33,13 @@ for TimeInd=RangeTrainInd(1)+1:RangeTestInd(2)
         
         if (Users{n}.LogbookBase(TimeInd,1)==1 && Users{n}.LogbookBase(TimeInd-1,7)*100/Users{n}.BatterySize<PublicChargingThreshold) || (TimeInd+1<=size(Users{n}.LogbookBase,1) && Users{n}.LogbookBase(TimeInd,4)>=Users{n}.LogbookBase(TimeInd-1,7))
             
-            NextHomeStop=min([length(Users{n}.LogbookBase), find(Users{n}.LogbookBase(TimeInd:end,1)==3,1)+TimeInd-1]); %[TimeIndices]
+%             NextHomeStop=min([length(Users{n}.LogbookBase), find(Users{n}.LogbookBase(TimeInd:end,1)==3,1)+TimeInd-1]); %[TimeIndices]
+            k=TimeInd;
+            while k < length(Users{n}.LogbookBase) && Users{n}.LogbookBase(k,1)~=3
+                k=k+1;
+            end
+            NextHomeStop=k;
+            
             ConsumptionTilNextHomeStop=sum(Users{n}.LogbookBase(TimeInd:NextHomeStop,4)); % [Wh]
             TripDistance=sum(Users{n}.LogbookBase(TimeInd:NextHomeStop,3)); % [Wh]
 
@@ -45,8 +51,16 @@ for TimeInd=RangeTrainInd(1)+1:RangeTestInd(2)
             TimeStepIndsNeededForCharging=ceil(EnergyDemandLeft(n)/ChargingPower(n)*60/TimeStepMin); % [Wh/W]
             
             if TimeStepIndsNeededForCharging>0
-                EndOfShift=[strfind(Users{n}.LogbookBase(TimeInd:end,3)',zeros(1,TimeStepIndsNeededForCharging)), 1e9]; % Find the next time, when the vehicle parks for TimeStepIndsNeededForCharging complete TimeSteps
-                EndOfShift=min([length(Users{n}.LogbookBase), EndOfShift(1)+TimeInd+TimeStepIndsNeededForCharging-1-1]);
+                k=TimeInd;
+                while k < length(Users{n}.LogbookBase) && ~isequal(Users{n}.LogbookBase(k:k+TimeStepIndsNeededForCharging-1,3),zeros(TimeStepIndsNeededForCharging,1))
+                    k=k+1;
+                end
+                EndOfShift=k+TimeStepIndsNeededForCharging-1;
+%                 EndOfShift=[strfind(Users{n}.LogbookBase(TimeInd:end,3)',zeros(1,TimeStepIndsNeededForCharging)), 1e9]; % Find the next time, when the vehicle parks for TimeStepIndsNeededForCharging complete TimeSteps
+%                 EndOfShift=min([length(Users{n}.LogbookBase), EndOfShift(1)+TimeInd+TimeStepIndsNeededForCharging-1-1]);
+%                 if EndOfShift1~=EndOfShift
+%                     1
+%                 end
                 Users{n}.LogbookBase(TimeInd:EndOfShift,:)=Users{n}.LogbookBase(TimeInd-TimeStepIndsNeededForCharging:EndOfShift-TimeStepIndsNeededForCharging,:);
                 TimeStepIndsNeededForCharging=min(length(Users{n}.LogbookBase)-(TimeInd-1), TimeStepIndsNeededForCharging);
                 Users{n}.LogbookBase(TimeInd:TimeInd+TimeStepIndsNeededForCharging-1,1:7)=ones(TimeStepIndsNeededForCharging,1)*[6 + PublicChargerPower<30000, zeros(1,6)]; % Public charging due to low SoC
