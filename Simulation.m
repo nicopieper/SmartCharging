@@ -1,8 +1,9 @@
 tic
 ActivateWaitbar=true;
-NumSimUsers=200;
+NumSimUsers=10;
 PublicChargingThreshold=uint32(15); % in %
 PThreshold=1.2;
+
 
 if ~exist('PublicChargerDistribution', 'var')
     PathVehicleData=[Path 'Predictions' Dl 'VehicleData' Dl];
@@ -48,7 +49,7 @@ for TimeInd=RangeTrainInd(1)+1:RangeTestInd(2)
                 EndOfShift=min([length(Users{n}.LogbookBase), EndOfShift(1)+TimeInd+TimeStepIndsNeededForCharging-1-1]);
                 Users{n}.LogbookBase(TimeInd:EndOfShift,:)=Users{n}.LogbookBase(TimeInd-TimeStepIndsNeededForCharging:EndOfShift-TimeStepIndsNeededForCharging,:);
                 TimeStepIndsNeededForCharging=min(length(Users{n}.LogbookBase)-(TimeInd-1), TimeStepIndsNeededForCharging);
-                Users{n}.LogbookBase(TimeInd:TimeInd+TimeStepIndsNeededForCharging-1,1:7)=ones(TimeStepIndsNeededForCharging,1)*[6, zeros(1,6)]; % Public charging due to low SoC
+                Users{n}.LogbookBase(TimeInd:TimeInd+TimeStepIndsNeededForCharging-1,1:7)=ones(TimeStepIndsNeededForCharging,1)*[6 + PublicChargerPower<30000, zeros(1,6)]; % Public charging due to low SoC
             end
         end
         
@@ -109,6 +110,19 @@ end
 if ActivateWaitbar
     close(h);
 end
+
+%% Evaluate base electricity costs
+
+for n=2:NumSimUsers+1
+    Users{n}.FinListBase=uint32(double(Users{n}.LogbookBase(:,5))/1000.*(Users{n}.PrivateElectricityPrice+DayaheadRealQH/10)*1.19); % [ct] total electricity costs equal base price of user + current production costs. VAT applies to the end price
+    Users{n}.FinListBase(:,2)=uint32(zeros(length(TimeVec),1) + double(Users{n}.LogbookBase(:,6))/1000.*Users{n}.PublicACChargingPrices.*double(Users{n}.LogbookBase(:,1)==6)); % [ct] fixed price for public AC charging
+    Users{n}.FinListBase(:,2)=Users{n}.FinListBase(:,2) + uint32(double(Users{n}.LogbookBase(:,6))/1000.*Users{n}.PublicDCChargingPrices.*double(Users{n}.LogbookBase(:,1)==7)); % [ct] fixed price for public DC charging
+    
+    Users{n}.AverageConsumptionBaseYear_kWh=sum(Users{n}.LogbookBase(:,5:6), 'all')/1000/days(DateEnd-DateStart)*365.25;
+end
+
+%%
+
 
 Users{1}.TimeStamp=datetime('now');
 SimulatedUsers=@(User) (isfield(User, 'TimeVec') || User.LogbookBase(2, 7)>0);
