@@ -28,7 +28,7 @@ Users{1}.PThreshold=PThreshold;
 
 for TimeInd=RangeTrainInd(1)+1:RangeTestInd(2)
     
-    for n=2:NumUsers+1% DemoUser%size(Users,1)
+    for n=31:31%NumUsers+1% DemoUser%size(Users,1)
         
         if (Users{n}.LogbookBase(TimeInd,1)==1 && Users{n}.LogbookBase(TimeInd-1,7)*100/Users{n}.BatterySize<PublicChargingThreshold) || (TimeInd+1<=size(Users{n}.LogbookBase,1) && Users{n}.LogbookBase(TimeInd,4)>=Users{n}.LogbookBase(TimeInd-1,7))
             
@@ -62,7 +62,7 @@ for TimeInd=RangeTrainInd(1)+1:RangeTestInd(2)
 %                 end
                 Users{n}.LogbookBase(TimeInd:EndOfShift,:)=Users{n}.LogbookBase(TimeInd-TimeStepIndsNeededForCharging:EndOfShift-TimeStepIndsNeededForCharging,:);
                 TimeStepIndsNeededForCharging=min(length(Users{n}.LogbookBase)-(TimeInd-1), TimeStepIndsNeededForCharging);
-                Users{n}.LogbookBase(TimeInd:TimeInd+TimeStepIndsNeededForCharging-1,1:7)=ones(TimeStepIndsNeededForCharging,1)*[6 + PublicChargerPower<30000, zeros(1,6)]; % Public charging due to low SoC
+                Users{n}.LogbookBase(TimeInd:TimeInd+TimeStepIndsNeededForCharging-1,1:7)=ones(TimeStepIndsNeededForCharging,1)*[6 + double(PublicChargerPower>30000), zeros(1,6)]; % Public charging due to low SoC
             end
         end
         
