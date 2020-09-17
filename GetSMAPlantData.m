@@ -34,68 +34,36 @@
 %                       PVPlants. It is truncated by the number of existing
 %                       PVPlants. (1,1)
 %   ExistingDates:      All dates data is available for a specific plant.
-%   ExistingDataDateStart: 
-%   LikelihoodPV:       The likelihood that one users owns a PV plant.
-%                       Integer
-%   AddPV               Control variable to skip the assignment of PV
-%                       plants. Logical
-%   Users:              The cell array that covers all user data. The 
-%                       first cell contains processing information. Inside
-%                       the following cells, the user data is stored, 
-%                       each as a struct. cell (NumUsers+1,1)
-%   VehicleSizes        The vehicle sizes that are accepted. In general,
-%                       the vehicles in Vehicles have four different sizes:
-%                       small, medium, large, transporter. VehicleSizes
-%                       determines which of them will be considered for the
-%                       users. Two sizes can be merged (considered as one
-%                       class) by putting them into one cell {['large',
-%                       'transporter']}. In consequence, a real car
-%                       with the size large wil lget a driving profile of a
-%                       large or transporter vehicle. cell of strings (1,N)
-%   PVPlantPointer      A pointer that indicates which PV plant will be
-%                       assigned to the next user that owns a PV plant. The
-%                       same plant can be assigned to multiple users. (1,1)
-%   VehiclePointer      A set of pointer that indicate which vehicle from
-%                       Vehicles of a certain vehicle size will be assigned
-%                       to the next user. Therefore, there are as many
-%                       pointers as VehicleSizes has entries. The first row
-%                       corresponds to the first vehicle size (usually
-%                       small) and so on. The same vehicle can be assigned 
-%                       to multiple users. (N,1)
-%   VehicleDatabase     A cell array of N rows. Each row covers the vehicle
-%                       numbers of one VehicleSize. cell (N,1)
-%   VehicleProperties   The real data of the cars that are assigned to the
-%                       users. Covers the car name, market share
-%                       (cumulated), size, battery capacity, for
-%                       consumption values (cold city, mild city, cold
-%                       highway, mild highway) and a guess about the
-%                       typical distribution of chargers the usual driver 
-%                       of this car have.
-%   TemperatureMonths   A first step to consider weather conditions for
-%                       energy consumptions of vehicles. Each month is
-%                       referred to a general temperature indicator between
-%                       1 and 2. Small values represent cold temperatures
-%                       and the other way around. The values are estimated
-%                       from a climate chart for Germany. The first colum
-%                       represents the month number, the second column the
-%                       temperature indicator. (12, 2)
-%   TemperatureTimeVec  The temperature indicator for each entry within
-%                       TimeVec. Therefore the months of TimeVec are
-%                       matched with the first col of TemperatureMonths.
-%                       (M,1)
-%   UsersTimeVecLogical Indicates which entries of Vehicles logbook are
-%                       used within the given time interval set in
-%                       Initialisation. If the Vehicles were processed with
-%                       the same time interval, than all entries of this
-%                       variable are one. Time points that are only part of
-%                       Vehicles are deleted from the logbooks.
+%   ExistingDataDateStart: The first day that is covered by a DataComplete
+%                       file that contains the measured pv generation data 
+%                       of multiple days. 
+%                       Datetime (number of existing DataComplete files,1)
+%   ExistingDataDateStart: The last day that is covered by a DataComplete
+%                       file that contains the measured pv generation data 
+%                       of multiple days. 
+%                       Datetime (number of existing DataComplete files,1)
+%   LoadedSMAPlantDataComplete: The pv generation data of a plant of
+%                       multiple days that is stored in a DataComplete file
+%                       will be loaded into this variable. The other way
+%                       around, if a new DataComplete file becomes
+%                       generated, it will be saved from this variable.
+%                       double (length(TimeVec),1)
+%   DaysBeforeExistingDataSet: Number of days between the the first data
+%                       for that data exist for this plant an the first
+%                       date that is covered by a DataComplete file. 
+%                       double (number of existing DataComplete files,1)
+%   DaysAfterExistingDataSet: Same as above but it counts the days between
+%                       the end of DataComplete and the last date data 
+%                       exists for this plant. double (1,1)
 
 %% Initialisation
 
 %Initialisation;
 tic
-ProcessDataNewSMAPlant=false;
+ProcessDataNewSMAPlant=false; % 
 NumberPlantsToLoad=800;
+AddPredictions=true;
+LoadOnlyPlantsWithPrediction=false;
 
 NumberPlantsLoaded=0;
 formatSpec = '%s';
@@ -110,6 +78,10 @@ h=waitbar(0, 'Lade PV-Profile von lokalem Pfad');
 for n=1:size(Files,1)
 
     PlantPath=strcat(PathSMAData, Files(n).name);
+    
+    if LoadOnlyPlantsWithPrediction && ~isfolder(strcat(PlantPath, Dl, "PredictionData"))
+        continue
+    end
     
     File=fopen(strcat(PlantPath, Dl, 'PlantProperties.csv'), 'r');
     Properties = fscanf(File,formatSpec);
@@ -152,6 +124,21 @@ for n=1:size(Files,1)
         end
                 
     end
+    
+    UsedTimeVecLogical=ismember(datetime(2018,1,1,0,0,0, 'TimeZone', 'Africa/Tunis'):hours(1):datetime(2020,8,31,23,0,0, 'TimeZone', 'Africa/Tunis'),TimeVec);
+    if AddPredictions
+        if isfile(strcat(PlantPath, Dl, "PredictionData", Dl, "PlantDataComplete_2018-01-01_2020-08-31", ".mat"))
+            load(strcat(PlantPath, Dl, "PredictionData", Dl, "PlantDataComplete_2018-01-01_2020-08-31", ".mat"));
+            if length(PlantDataComplete)==23376 % the number of quater hours from 01.01.2018 until 31.08.2020
+                PVPlants{n}.PredictionH=PlantDataComplete(UsedTimeVecLogical);
+            elseif LoadOnlyPlantsWithPrediction
+                continue
+            end
+        elseif LoadOnlyPlantsWithPrediction
+            continue
+        end
+    end
+        
     
     if Error==true || ProcessDataNewSMAPlant==true
                
@@ -276,4 +263,4 @@ disp(['PVPlantData successfully imported ' num2str(toc) 's'])
 
 clearvars Files h Properties StorageFile StoragePath n k LoadedSMAPlantData LoadedSMAPlantDataComplete DataComplete Delimiter ExistingDates
 clearvars File formatSpec NumberPlantsLoaded NumberPlantsToLoad PlantPath DatesDiffStart DatesDiffEnd ExistingDataDateStart ExistingDataDateEnd
-clearvars Error FieldNames LoadedSMAPlantDataNew
+clearvars Error FieldNames LoadedSMAPlantDataNew UsedTimeVecLogical AddPredictions LoadOnlyPlantsWithPrediction

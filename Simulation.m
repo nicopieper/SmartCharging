@@ -1,6 +1,5 @@
 tic
 ActivateWaitbar=true;
-NumSimUsers=800;
 PublicChargingThreshold=uint32(15); % in %
 PThreshold=1.2;
 
@@ -52,7 +51,7 @@ for TimeInd=RangeTrainInd(1)+1:RangeTestInd(2)
             
             if TimeStepIndsNeededForCharging>0
                 k=TimeInd;
-                while k < length(Users{n}.LogbookBase) && ~isequal(Users{n}.LogbookBase(k:k+TimeStepIndsNeededForCharging-1,3),zeros(TimeStepIndsNeededForCharging,1))
+                while k < length(Users{n}.LogbookBase)-TimeStepIndsNeededForCharging+1 && ~isequal(Users{n}.LogbookBase(k:k+TimeStepIndsNeededForCharging-1,3),zeros(TimeStepIndsNeededForCharging,1))
                     k=k+1;
                 end
                 EndOfShift=k+TimeStepIndsNeededForCharging-1;

@@ -3,6 +3,7 @@ PathECData=[Path 'Predictions' Dl 'EnergyChartsData' Dl];
 DateStartEC=datetime(year(DateStart), month(DateStart), 1, 0,0,0, 'TimeZone','Europe/Berlin');
 DateEndEC=dateshift(datetime(year(DateEnd), month(DateEnd), day(DateEnd), 23,59,59, 'TimeZone','Europe/Berlin'), 'end', 'month')+hours(23)+minutes(59);
 MonthVec=DateStartEC:calmonths(1):DateEndEC;
+TimeECH=DateStart:hours(1):DateEnd;
 DaysDiffStart=round(days(DateStart-DateStartEC));
 DaysDiffEnd=round(days(DateEndEC-DateEnd));
 EnergyChartsURL='https://www.energy-charts.de/';
@@ -99,6 +100,7 @@ end
 
 %% Store Data in Variables
 DayaheadRealH=FillMissingValues(ECData.DayAheadAuctionH.Values,1);
+DayaheadRealQH=interp1(TimeECH,DayaheadRealH, TimeVec);
 if size(ECData.IntradayContinuousIndexPriceH.Values,1)==size(ECData.IntradayContinuousID3PriceH.Values,1) && size(ECData.IntradayContinuousID3PriceH.Values,1)==size(ECData.IntradayContinuousID1PriceH.Values,1)
     IntradayRealH=FillMissingValues([ECData.IntradayContinuousIndexPriceH.Values, ECData.IntradayContinuousID3PriceH.Values, ECData.IntradayContinuousID1PriceH.Values],1);
     IntradayRealQH=FillMissingValues([ECData.IntradayContinuous15minutesIndexPriceQH.Values, ECData.IntradayContinuous15minutesID3PriceQH.Values, ECData.IntradayContinuous15minutesID1PriceQH.Values],4);

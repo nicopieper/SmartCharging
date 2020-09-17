@@ -146,7 +146,7 @@ for k=ExistingTargets
     ArrivalTimes{k,2}=NaT(0,0, 'TimeZone', 'Africa/Tunis');
     for n=TargetGroups{k}
         ConnectionBlocksHome=[find(ismember(Users{n}.LogbookBase(1:end,1),4:5) & ~ismember([0;Users{n}.LogbookBase(1:end-1,1)],4:5)), find(ismember(Users{n}.LogbookBase(1:end,1),4:5) & ~ismember([Users{n}.LogbookBase(2:end,1);0],4:5))];
-        ConnectionBlocksOther=[find(ismember(Users{n}.LogbookBase(1:end,1),6) & ~ismember([0;Users{n}.LogbookBase(1:end-1,1)],6)), find(ismember(Users{n}.LogbookBase(1:end,1),6) & ~ismember([Users{n}.LogbookBase(2:end,1);0],6))];
+        ConnectionBlocksOther=[find(ismember(Users{n}.LogbookBase(1:end,1),6:7) & ~ismember([0;Users{n}.LogbookBase(1:end-1,1)],6:7)), find(ismember(Users{n}.LogbookBase(1:end,1),6:7) & ~ismember([Users{n}.LogbookBase(2:end,1);0],6:7))];
         ConnectionTime{k,1}=[ConnectionTime{k,1}; (ConnectionBlocksHome(:,2)-ConnectionBlocksHome(:,1)+1)*TimeStepMin];
         ConnectionTime{k,2}=[ConnectionTime{k,2}; (ConnectionBlocksOther(:,2)-ConnectionBlocksOther(:,1)+1)*TimeStepMin];
         ArrivalTimes{k,1}=[ArrivalTimes{k,1}; datetime(ones(length(ConnectionBlocksHome),1),ones(length(ConnectionBlocksHome),1),ones(length(ConnectionBlocksHome),1), hour(TimeVec(ConnectionBlocksHome(:,1))), minute((TimeVec(ConnectionBlocksHome(:,1)))),zeros(length(ConnectionBlocksHome),1), 'TimeZone', 'Africa/Tunis')];
@@ -206,7 +206,7 @@ for col=1:2
         end
     end
     if ShowELaad
-        plot(DayVecHourly, sum(reshape(ArrivalTimesELaad(:,col), 4, []))/100)
+        plot(datetime(1,1,1,0,30,0, 'TimeZone', 'Africa/Tunis'):hours(1):datetime(1,1,1,23,30,0, 'TimeZone', 'Africa/Tunis'), sum(reshape(ArrivalTimesELaad(:,col), 4, []))/100)
         legappend(l, "ELaad");
     end
     xticks(datetime(1,1,1,0,0,0, 'TimeZone', 'Africa/Tunis'):hours(4):datetime(1,1,2,0,0,0, 'TimeZone', 'Africa/Tunis'))

@@ -315,7 +315,10 @@ else
         % below), the trip distance, the consumed energy through driving,
         % the charged energy at the home spot charger, the charged energy
         % at public chargers, the SoC
-        % State: 1==Driving, 2==Parking anywhere, 3==Parking at home charging point, 4==connected to home charging point, 5==charging at home charging point, 6==charging at public charger
+        % State: 1==Driving, 2==Parking anywhere, 3==Parking at home
+        % charging point, 4==connected to home charging point, 5==charging
+        % at home charging point, 6==charging at public AC charger, 
+        % 7==charging at public DC charger
         
         if LargestValue<2^32 % State, DrivingTime [min], Distance [m], Consumption [Wh], Charged energy at home spot [Wh], Charged energy at public chagrer [Wh] SoC [Wh]
             Vehicles{k}.Logbook=uint32(zeros(size(LogbookTime,1),7)); 

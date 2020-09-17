@@ -28,7 +28,7 @@
 %   LikelihoodPV:       The likelihood that one users owns a PV plant.
 %                       (1,1)
 %   AddPV               Control variable to skip the assignment of PV
-%                       plants. Logical
+%                       plants to the Users. Logical
 %   Users:              The cell array that covers all user data. The 
 %                       first cell contains processing information. Inside
 %                       the following cells, the user data is stored, 
@@ -82,9 +82,12 @@
 
 %% Initialisation
 
-NumUsers=800; % number of users
+NumUsers=100; % number of users
 LikelihoodPV=0.45; % 44 % der privaten und 46 % der gewerblichen Nutzer über eine eigene Photovoltaikanlage, https://elib.dlr.de/96491/1/Ergebnisbericht_E-Nutzer_2015.pdf S. 10
 AddPV=false; % determines wheter PV plants shall be assigned to the users. In general true, only false for test purposes
+MeanPrivateElectricityPrice=30.43/1.19-3.7513; % [ct/kWh] average German electricity price in 2019 according to Strom-Report without VAT (19%) and electricity production price (avg. Dayahead price was 3.7513 ct/kWh in 2019)
+PublicACChargingPrices=[29, 39];
+PublicDCChargingPrices=[39, 49];
 
 Users=cell(NumUsers+1,1); % the main cell variable all user data is stored in
 PVPlantPointer=1; % 
@@ -124,7 +127,7 @@ Users{1}.TimeStep=TimeStep;
 %% Initialise the users
 
 for n=2:NumUsers+1
-    a=rand(5,1); % get some random numbers that will be used during the initialsation of this user
+    a=rand(7,1); % get some random numbers that will be used during the initialsation of this user
     Model=max((a(1)>=str2double(VehicleProperties(:,2))).*(1:size(VehicleProperties,1))'); % with respect to market share of the cars, pick one of them. a(1) is uniformly distributed between 0 and 1. find the first vehicle whichs cumulated market share value (in decimal) is large than a(1). the cumulated market share value of the first car is 0, the one of the next car represents the market share of the first vehicle. the number of the second car represents the cumulated share of the first two vehicles and so on
     Users{n}.ModelName=VehicleProperties(Model, 1); % the car name, e. g. "BMW i3s"
     Users{n}.ModelSize=VehicleProperties(Model, 3); % small, medium, large
@@ -135,8 +138,11 @@ for n=2:NumUsers+1
     Users{n}.AChargingPowerHomeCharger=max((a(2)>=str2double(VehicleProperties(Model,11:16))).*[2.3 3.7 3.7 7.3 11 22]*1000); % [W] with respect to the guessed distribution of chargers for this car, pick one ac charging power for the private charging point. selection mechanism equals the on described for the Model
     Users{n}.ACChargingPowerHomeCharging=uint32(min(Users{n}.AChargingPowerHomeCharger, Users{n}.ACChargingPowerVehicle)); % [W] the charging power at the private charging point is determined by the minimum of the cars and the charging points power
     Users{n}.ACChargingPowerHomeChargingLossFactor=a(3)*(0.95-0.85)+0.85; % consider a charging loss factor for the charging point
+    Users{n}.PrivateElectricityPrice=MeanPrivateElectricityPrice+randn(1);
+    Users{n}.PublicACChargingPrices=max((a(4)>=[0, 0.5]).*PublicACChargingPrices);
+    Users{n}.PublicDCChargingPrices=max((a(5)>=[0, 0.5]).*PublicDCChargingPrices);
     
-    if a(4)>=LikelihoodPV && AddPV 
+    if a(6)>=LikelihoodPV && AddPV 
         Users{n}.PVPlant=uint8(PVPlantPointer); % save the assigned PV plant number
         Users{n}.PVPlantExists=true; % and set this variable to true to indicate that this user owns a PV plant
         PVPlantPointer=mod(PVPlantPointer,length(PVPlants))+1; % increase pointer
@@ -144,7 +150,7 @@ for n=2:NumUsers+1
         Users{n}.PVPlantExists=false;
     end
     
-    Users{n}.ChargingStrategy=uint8((a(5,1)>=0.0)+1); % pick a charging strategy
+    Users{n}.ChargingStrategy=uint8((a(7,1)>=0.0)+1); % pick a charging strategy
     if Users{n}.ChargingStrategy==1 % this one is primitive
         Users{n}.MinimumPluginTime=minutes(randi([30 90], 1,1));
     elseif Users{n}.ChargingStrategy==2 % only use this strategy which will be explained in Simulation
