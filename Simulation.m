@@ -9,9 +9,9 @@ if ~exist('PublicChargerDistribution', 'var')
     PublicChargerDistribution=readmatrix(strcat(PathVehicleData, "PublicChargerProbability.xlsx"));
 end
 
-ChargingPower=zeros(NumSimUsers,1);
-EnergyDemandLeft=zeros(NumSimUsers+1,1);
-% ChargingEfficiency=zeros(NumSimUsers+1,1);
+ChargingPower=zeros(NumUsers,1);
+EnergyDemandLeft=zeros(NumUsers+1,1);
+% ChargingEfficiency=zeros(NumUsers+1,1);
 close hidden
 
 
@@ -28,7 +28,7 @@ Users{1}.PThreshold=PThreshold;
 
 for TimeInd=RangeTrainInd(1)+1:RangeTestInd(2)
     
-    for n=2:NumSimUsers+1% DemoUser%size(Users,1)
+    for n=2:NumUsers+1% DemoUser%size(Users,1)
         
         if (Users{n}.LogbookBase(TimeInd,1)==1 && Users{n}.LogbookBase(TimeInd-1,7)*100/Users{n}.BatterySize<PublicChargingThreshold) || (TimeInd+1<=size(Users{n}.LogbookBase,1) && Users{n}.LogbookBase(TimeInd,4)>=Users{n}.LogbookBase(TimeInd-1,7))
             
@@ -126,7 +126,7 @@ end
 
 %% Evaluate base electricity costs
 
-for n=2:NumSimUsers+1
+for n=2:NumUsers+1
     Users{n}.FinListBase=uint32(double(Users{n}.LogbookBase(:,5))/1000.*(Users{n}.PrivateElectricityPrice+DayaheadRealQH/10)*1.19); % [ct] total electricity costs equal base price of user + current production costs. VAT applies to the end price
     Users{n}.FinListBase(:,2)=uint32(zeros(length(TimeVec),1) + double(Users{n}.LogbookBase(:,6))/1000.*Users{n}.PublicACChargingPrices.*double(Users{n}.LogbookBase(:,1)==6)); % [ct] fixed price for public AC charging
     Users{n}.FinListBase(:,2)=Users{n}.FinListBase(:,2) + uint32(double(Users{n}.LogbookBase(:,6))/1000.*Users{n}.PublicDCChargingPrices.*double(Users{n}.LogbookBase(:,1)==7)); % [ct] fixed price for public DC charging
@@ -141,10 +141,10 @@ Users{1}.TimeStamp=datetime('now');
 SimulatedUsers=@(User) (isfield(User, 'TimeVec') || User.LogbookBase(2, 7)>0);
 Users=Users(cellfun(SimulatedUsers, Users));
 
-save(strcat(PathSimulationData, Dl, "Users_", num2str(PThreshold), "_", num2str(NumSimUsers), "_", datestr(Users{1}.TimeStamp, "yyyy-mm-dd_HH-MM"), ".mat"), "Users", "-v7.3");
+save(strcat(PathSimulationData, Dl, "Users_", num2str(PThreshold), "_", num2str(NumUsers), "_", datestr(Users{1}.TimeStamp, "yyyy-mm-dd_HH-MM"), ".mat"), "Users", "-v7.3");
 disp(strcat("Successfully simulated within ", num2str(toc), " seconds"))
  
 clearvars TimeInd n ActivateWaitbar Consumption24h ParkingDuration ConsumptionTilNextHomeStop TripDistance
 clearvars NextHomeStop PublicChargerPower ChargingPower EnergyDemandLeft TimeStepIndsNeededForCharging EndOfShift
-clearvars NumPredMethod TotalIterations PublicChargingThreshold NumSimUsers TimeOfForecast TimeVecDateNum P PlugInTime PThreshold
+clearvars NumPredMethod TotalIterations PublicChargingThreshold NumUsers TimeOfForecast TimeVecDateNum P PlugInTime PThreshold
 clearvars SimulatedUsers 

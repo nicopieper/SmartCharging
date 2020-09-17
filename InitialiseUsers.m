@@ -188,4 +188,4 @@ end
 %% Clean up Workspace
 
 clearvars LikelihoodPV PVPlantPointer Consumption Velocities SizeNum VehiclePointer VehicleDatabase AddPV TemperatureMonths TemperatureTimeVec
-clearvars NumUsers a n Model VehicleSizes UsersTimeVecLog
+clearvars a n Model VehicleSizes UsersTimeVecLog
