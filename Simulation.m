@@ -28,7 +28,7 @@ Users{1}.PThreshold=PThreshold;
 
 for TimeInd=RangeTrainInd(1)+1:RangeTestInd(2)
     
-    for n=31:31%NumUsers+1% DemoUser%size(Users,1)
+    for n=2:NumUsers+1
         
         if (Users{n}.LogbookBase(TimeInd,1)==1 && Users{n}.LogbookBase(TimeInd-1,7)*100/Users{n}.BatterySize<PublicChargingThreshold) || (TimeInd+1<=size(Users{n}.LogbookBase,1) && Users{n}.LogbookBase(TimeInd,4)>=Users{n}.LogbookBase(TimeInd-1,7))
             

@@ -426,7 +426,7 @@ end
 
 clearvars ActivateWaitbar AddNoise NumVehicles MaxHomeSpotDistanceDiff StorageFile PathVehicleData
 
-disp(['Vehcile Data successfully imported ' num2str(toc) 's'])
+disp(['Vehicle Data successfully imported ' num2str(toc) 's'])
 
 if Evaluation
     %% Evaluation
