@@ -60,17 +60,17 @@ DateEndEC=dateshift(datetime(year(DateEnd), month(DateEnd), day(DateEnd), 23,59,
 MonthVec=DateStartEC:calmonths(1):DateEndEC; % all months covered by DateStart and DateEnd
 TimeECH=DateStart:hours(1):DateEnd; % Time covered by TimeVec in hourly time steps
 
-EnergyChartsURL='https://www.energy-charts.de/'; % the data is stored in json files which can be accessed by a regular URL that starts like this
+EnergyChartsURL='https://www.energy-charts.info/charts/'; % the data is stored in json files which can be accessed by a regular URL that starts like this
 options=weboptions;
 options.Timeout=10; % terminate the data download if it exceeds 10 seconds
-Pages=["price", "power"; "2", "1"]; % labels for the URL. the numbers signalise whether there is only hourly data (1, the power generation data) or as well quater hourly data (2, the price data)
+Pages=["price_spot_market", "power"; "2", "1"]; % labels for the URL. the numbers signalise whether there is only hourly data (1, the power generation data) or as well quater hourly data (2, the price data)
 TimeLabels=["QuarterHourly", "Hourly"; "QH", "H"; "15min_", ""; "", ""; ]; % labels for the URL and folders
 
 ECData=struct;
 
 %% Download or load Data
 
-h=waitbar(0, 'Lade Stromwirtschaftsdaten von energy-charts.de');
+h=waitbar(0, 'Lade Stromwirtschaftsdaten von energy-charts.info');
 for Month=MonthVec % iterate through the months
     
     MonthStr=datestr(Month, 'mm'); % number of month
@@ -89,9 +89,13 @@ for Month=MonthVec % iterate through the months
             if isfile(StorageFile) && ProcessDataNewEC==0 % if the wanted exsist as a mat file, load it
                 load(StorageFile);
                 
-            else % load the data from the energy-charts.de website 
-                
-                RawData=webread(strcat(EnergyChartsURL, Pages(1,i), '/', 'month_', TimeLabels(2+i,k), YearStr, '_', MonthStr, '.json'), options); % build the URL that points to the json file with the wanted data, specified by month and hourly/quater hourly. the json file covers data of multiple categories. the categories must not be consistent an change over time as some were added to the website
+            else % load the data from the energy-charts.info website
+                if i==1 || year(Month)>=2019
+                    DataTag='raw_data';
+                else
+                    DataTag='data';
+                end
+                RawData=webread(strcat(EnergyChartsURL, Pages(1,i), '/', DataTag, '/de/', 'month_', TimeLabels(2+i,k), YearStr, '_', MonthStr, '.json'), options); % build the URL that points to the json file with the wanted data, specified by month and hourly/quater hourly. the json file covers data of multiple categories. the categories must not be consistent an change over time as some were added to the website
                 ECDataLoaded=struct;
                 
                 for n=1:size(RawData,1) % start to process the data
