@@ -1,0 +1,631 @@
+id;vehicle_size;economic_sector;nace_section;economic_segment;nace_division;description_of_the_economic_sector_according_to_company;city_size;company_size;comment;vehicle_utilization;number_of_users;parking_spot;federal_state;company_id
+1106000161;small;PUBLIC ADMINISTRATION AND DEFENCE. COMPULSORY SOCIAL SECURITY;O;Public administration and defence. compulsory social security;84;social insurance;up to 20000;51 to 250;None;;;;BW;110615
+1106000171;large;PUBLIC ADMINISTRATION AND DEFENCE. COMPULSORY SOCIAL SECURITY;O;Public administration and defence. compulsory social security;84;social insurance;up to 20000;51 to 250;None;;;;BW;110615
+1106000181;small;PUBLIC ADMINISTRATION AND DEFENCE. COMPULSORY SOCIAL SECURITY;O;Public administration and defence. compulsory social security;84;social insurance;up to 20000;51 to 250;None;;;;BW;110615
+1106000191;medium;PUBLIC ADMINISTRATION AND DEFENCE. COMPULSORY SOCIAL SECURITY;O;Public administration and defence. compulsory social security;84;social insurance;up to 20000;51 to 250;None;;;;BW;110615
+1106000201;small;PUBLIC ADMINISTRATION AND DEFENCE. COMPULSORY SOCIAL SECURITY;O;Public administration and defence. compulsory social security;84;social insurance;up to 20000;51 to 250;None;;;;BW;110615
+1106000211;small;PUBLIC ADMINISTRATION AND DEFENCE. COMPULSORY SOCIAL SECURITY;O;Public administration and defence. compulsory social security;84;social insurance;up to 20000;51 to 250;None;;;;BW;110615
+1106000221;small;PUBLIC ADMINISTRATION AND DEFENCE. COMPULSORY SOCIAL SECURITY;O;Public administration and defence. compulsory social security;84;social insurance;up to 20000;51 to 250;None;;;;BW;110615
+1106000231;transporter;ELECTRICITY. GAS. STEAM AND AIR CONDITIONING SUPPLY;D;Electricity. gas. steam and air conditioning supply;35;utility company;up to 20000;51 to 250;None;;;;BW;110616
+1106000241;transporter;ELECTRICITY. GAS. STEAM AND AIR CONDITIONING SUPPLY;D;Electricity. gas. steam and air conditioning supply;35;utility company;up to 20000;51 to 250;None;;;;BW;110616
+1106000251;transporter;ELECTRICITY. GAS. STEAM AND AIR CONDITIONING SUPPLY;D;Electricity. gas. steam and air conditioning supply;35;utility company;up to 20000;51 to 250;None;;;;BW;110616
+1106000261;small;ELECTRICITY. GAS. STEAM AND AIR CONDITIONING SUPPLY;D;Electricity. gas. steam and air conditioning supply;35;utility company;up to 20000;51 to 250;None;;;;BW;110616
+1106000271;transporter;ELECTRICITY. GAS. STEAM AND AIR CONDITIONING SUPPLY;D;Electricity. gas. steam and air conditioning supply;35;utility company;up to 20000;51 to 250;None;;;;BW;110616
+1106000281;medium;ELECTRICITY. GAS. STEAM AND AIR CONDITIONING SUPPLY;D;Electricity. gas. steam and air conditioning supply;35;utility company;up to 20000;51 to 250;None;;;;BW;110616
+1106000291;medium;ELECTRICITY. GAS. STEAM AND AIR CONDITIONING SUPPLY;D;Electricity. gas. steam and air conditioning supply;35;utility company;up to 20000;51 to 250;None;;;;BW;110616
+1106000301;transporter;ELECTRICITY. GAS. STEAM AND AIR CONDITIONING SUPPLY;D;Electricity. gas. steam and air conditioning supply;35;utility company;up to 20000;51 to 250;None;;;;BW;110616
+1106000311;medium;ELECTRICITY. GAS. STEAM AND AIR CONDITIONING SUPPLY;D;Electricity. gas. steam and air conditioning supply;35;utility company;up to 20000;51 to 250;None;;;;BW;110616
+1106000321;medium;ELECTRICITY. GAS. STEAM AND AIR CONDITIONING SUPPLY;D;Electricity. gas. steam and air conditioning supply;35;utility company;up to 20000;51 to 250;None;;;;BW;110616
+1106000331;medium;PUBLIC ADMINISTRATION AND DEFENCE. COMPULSORY SOCIAL SECURITY;O;Public administration and defence. compulsory social security;84;social insurance;more than 100000;51 to 250;None;;;;BW;110612
+1106000341;transporter;PUBLIC ADMINISTRATION AND DEFENCE. COMPULSORY SOCIAL SECURITY;O;Public administration and defence. compulsory social security;84;social insurance;more than 100000;51 to 250;None;;;;BW;110612
+1106000351;transporter;PUBLIC ADMINISTRATION AND DEFENCE. COMPULSORY SOCIAL SECURITY;O;Public administration and defence. compulsory social security;84;social insurance;more than 100000;51 to 250;None;;;;BW;110612
+1106000361;transporter;PUBLIC ADMINISTRATION AND DEFENCE. COMPULSORY SOCIAL SECURITY;O;Public administration and defence. compulsory social security;84;social insurance;up to 20000;51 to 250;None;;;;BW;110612
+1106000371;transporter;PUBLIC ADMINISTRATION AND DEFENCE. COMPULSORY SOCIAL SECURITY;O;Public administration and defence. compulsory social security;84;social insurance;up to 20000;51 to 250;None;;;;BW;110612
+1106000381;transporter;PUBLIC ADMINISTRATION AND DEFENCE. COMPULSORY SOCIAL SECURITY;O;Public administration and defence. compulsory social security;84;social insurance;up to 20000;51 to 250;None;;;;BW;110612
+1106000391;medium;ADMINISTRATIVE AND SUPPORT SERVICE ACTIVITIES;N;Office administrative. office support and other business support activities;82;office administrative. office support and other business support activities;20000 to 100000;251 to 1000;None;;;;BW;110604
+1106000411;medium;ADMINISTRATIVE AND SUPPORT SERVICE ACTIVITIES;N;Office administrative. office support and other business support activities;82;office administrative. office support and other business support activities;20000 to 100000;251 to 1000;None;;;;BW;110604
+1106000421;medium;ADMINISTRATIVE AND SUPPORT SERVICE ACTIVITIES;N;Office administrative. office support and other business support activities;82;office administrative. office support and other business support activities;20000 to 100000;251 to 1000;None;;;;BW;110604
+1106000431;transporter;ADMINISTRATIVE AND SUPPORT SERVICE ACTIVITIES;N;Office administrative. office support and other business support activities;82;office administrative. office support and other business support activities;20000 to 100000;251 to 1000;None;;;;BW;110604
+1106000441;medium;ADMINISTRATIVE AND SUPPORT SERVICE ACTIVITIES;N;Office administrative. office support and other business support activities;82;office administrative. office support and other business support activities;20000 to 100000;251 to 1000;None;;;;BW;110604
+1106000451;special vehicle;CONSTRUCTION;F;;-1;construction;up to 20000;under 10;None;;;;BW;110601
+1106000461;transporter;CONSTRUCTION;F;;-1;construction;up to 20000;under 10;None;;;;BW;110601
+1106000471;transporter;CONSTRUCTION;F;;-1;construction;up to 20000;under 10;None;;;;BW;110601
+1106000481;medium;CONSTRUCTION;F;;-1;construction;up to 20000;under 10;None;;;;BW;110601
+1106000491;medium;TRANSPORTATION AND STORAGE;H;Land transport and transport via pipelines;49;taxi;20000 to 100000;10 to 50;None;;;;BW;110607
+1106000501;medium;TRANSPORTATION AND STORAGE;H;Land transport and transport via pipelines;49;taxi;20000 to 100000;10 to 50;None;;;;BW;110607
+1106000511;medium;TRANSPORTATION AND STORAGE;H;Land transport and transport via pipelines;49;taxi;20000 to 100000;10 to 50;None;;;;BW;110607
+1106000521;medium;TRANSPORTATION AND STORAGE;H;Land transport and transport via pipelines;49;taxi;20000 to 100000;10 to 50;None;;;;BW;110607
+1106000531;small;HUMAN HEALTH AND SOCIAL WORK ACTIVITIES;Q;Social work activities without accommodation;88;service for out-patients;up to 20000;251 to 1000;None;;;;BW;110603
+1106000541;small;HUMAN HEALTH AND SOCIAL WORK ACTIVITIES;Q;Social work activities without accommodation;88;service for out-patients;up to 20000;251 to 1000;None;;;;BW;110603
+1106000551;small;HUMAN HEALTH AND SOCIAL WORK ACTIVITIES;Q;Social work activities without accommodation;88;service for out-patients;up to 20000;251 to 1000;None;;;;BW;110603
+1106000561;small;HUMAN HEALTH AND SOCIAL WORK ACTIVITIES;Q;Social work activities without accommodation;88;service for out-patients;up to 20000;251 to 1000;None;;;;BW;110603
+1106000571;transporter;ADMINISTRATIVE AND SUPPORT SERVICE ACTIVITIES;N;Office administrative. office support and other business support activities;82;office administrative. office support and other business support activities;20000 to 100000;10 to 50;None;;;;BW;110608
+1106000581;transporter;ADMINISTRATIVE AND SUPPORT SERVICE ACTIVITIES;N;Office administrative. office support and other business support activities;82;office administrative. office support and other business support activities;20000 to 100000;10 to 50;None;;;;BW;110608
+1106000591;transporter;ADMINISTRATIVE AND SUPPORT SERVICE ACTIVITIES;N;Office administrative. office support and other business support activities;82;office administrative. office support and other business support activities;20000 to 100000;10 to 50;None;;;;BW;110608
+1106000601;transporter;ADMINISTRATIVE AND SUPPORT SERVICE ACTIVITIES;N;Office administrative. office support and other business support activities;82;office administrative. office support and other business support activities;20000 to 100000;10 to 50;None;;;;BW;110608
+1106000611;transporter;TRANSPORTATION AND STORAGE;H;Postal and courier activities;53;postal and courier activities;more than 100000;under 10;None;;;;BW;110606
+1106000621;transporter;TRANSPORTATION AND STORAGE;H;Postal and courier activities;53;postal and courier activities;more than 100000;under 10;None;;;;BW;110606
+1106000631;transporter;TRANSPORTATION AND STORAGE;H;Postal and courier activities;53;postal and courier activities;more than 100000;under 10;None;;;;BW;110606
+1106000641;small;HUMAN HEALTH AND SOCIAL WORK ACTIVITIES;Q;Social work activities without accommodation;88;meals on wheels;more than 100000;under 10;None;;;;BW;110613
+1106000661;small;HUMAN HEALTH AND SOCIAL WORK ACTIVITIES;Q;Social work activities without accommodation;88;meals on wheels;more than 100000;under 10;None;;;;BW;110613
+1106000671;small;PUBLIC ADMINISTRATION AND DEFENCE. COMPULSORY SOCIAL SECURITY;O;Public administration and defence. compulsory social security;84;social insurance;up to 20000;;None;;;;BW;110609
+1106000681;medium;PUBLIC ADMINISTRATION AND DEFENCE. COMPULSORY SOCIAL SECURITY;O;Public administration and defence. compulsory social security;84;social insurance;up to 20000;;None;;;;BW;110609
+1106000691;transporter;ADMINISTRATIVE AND SUPPORT SERVICE ACTIVITIES;N;Office administrative. office support and other business support activities;82;office administrative. office support and other business support activities;20000 to 100000;under 10;None;;;;BW;110614
+1106000701;medium;ADMINISTRATIVE AND SUPPORT SERVICE ACTIVITIES;N;Office administrative. office support and other business support activities;82;office administrative. office support and other business support activities;20000 to 100000;under 10;None;;;;BW;110614
+1106000711;medium;FINANCIAL AND INSURANCE ACTIVITIES;K;Insurance. reinsurance and pension funding. except compulsory social security;65;insurance agent;up to 20000;under 10;None;;;;BW;110617
+1106000721;small;HUMAN HEALTH AND SOCIAL WORK ACTIVITIES;Q;Social work activities without accommodation;88;service for out-patients;20000 to 100000;10 to 50;None;;;;BW;110602
+1106000731;small;HUMAN HEALTH AND SOCIAL WORK ACTIVITIES;Q;Social work activities without accommodation;88;service for out-patients;20000 to 100000;10 to 50;None;;;;BW;110602
+1106000741;small;HUMAN HEALTH AND SOCIAL WORK ACTIVITIES;Q;Social work activities without accommodation;88;service for out-patients;20000 to 100000;10 to 50;None;;;;BW;110602
+1106000751;small;HUMAN HEALTH AND SOCIAL WORK ACTIVITIES;Q;Social work activities without accommodation;88;service for out-patients;20000 to 100000;10 to 50;None;;;;BW;110602
+1106000761;small;CONSTRUCTION;F;;-1;construction;more than 100000;under 10;None;;;;BW;110605
+1106000771;small;CONSTRUCTION;F;;-1;construction;more than 100000;under 10;None;;;;BW;110605
+1106000781;transporter;CONSTRUCTION;F;;-1;construction;more than 100000;under 10;None;;;;BW;110605
+1106000791;transporter;CONSTRUCTION;F;;-1;construction;more than 100000;under 10;None;;;;BW;110605
+1106000801;large;CONSTRUCTION;F;;-1;construction;more than 100000;10 to 50;None;;;;BW;110611
+1106000811;transporter;CONSTRUCTION;F;;-1;construction;more than 100000;10 to 50;None;;;;BW;110611
+1106000821;transporter;CONSTRUCTION;F;;-1;construction;more than 100000;10 to 50;None;;;;BW;110611
+1106000831;medium;HUMAN HEALTH AND SOCIAL WORK ACTIVITIES;Q;Social work activities without accommodation;88;meals on wheels;20000 to 100000;51 to 250;None;;;;BW;110610
+1106000841;transporter;HUMAN HEALTH AND SOCIAL WORK ACTIVITIES;Q;Social work activities without accommodation;88;meals on wheels;20000 to 100000;51 to 250;None;;;;BW;110610
+1106000851;transporter;CONSTRUCTION;F;;-1;construction;more than 100000;10 to 50;None;;;;BW;110611
+1106000861;transporter;CONSTRUCTION;F;;-1;construction;more than 100000;10 to 50;None;;;;BW;110611
+1106000871;medium;HUMAN HEALTH AND SOCIAL WORK ACTIVITIES;Q;Social work activities without accommodation;88;meals on wheels;20000 to 100000;51 to 250;None;;;;BW;110610
+1106000881;transporter;HUMAN HEALTH AND SOCIAL WORK ACTIVITIES;Q;Social work activities without accommodation;88;meals on wheels;20000 to 100000;51 to 250;None;;;;BW;110610
+1106000891;small;HUMAN HEALTH AND SOCIAL WORK ACTIVITIES;Q;Social work activities without accommodation;88;meals on wheels;20000 to 100000;51 to 250;None;;;;BW;110610
+1106000901;transporter;HUMAN HEALTH AND SOCIAL WORK ACTIVITIES;Q;Social work activities without accommodation;88;meals on wheels;20000 to 100000;51 to 250;None;;;;BW;110610
+1107000222;medium;PUBLIC ADMINISTRATION AND DEFENCE. COMPULSORY SOCIAL SECURITY;O;Public administration and defence. compulsory social security;84;social insurance;more than 100000;251 to 1000;None;;;;BW;110708
+1107000232;large;MANUFACTURING;C;;-1;manufacturing;up to 20000;51 to 250;None;;;;BW;110704
+1107000242;medium;MANUFACTURING;C;;-1;manufacturing;up to 20000;51 to 250;None;;;;BW;110704
+1107000252;transporter;MANUFACTURING;C;;-1;manufacturing;up to 20000;51 to 250;None;;;;BW;110704
+1107000262;large;MANUFACTURING;C;;-1;manufacturing;up to 20000;51 to 250;None;;;;BW;110704
+1107000272;large;FINANCIAL AND INSURANCE ACTIVITIES;K;Insurance. reinsurance and pension funding. except compulsory social security;65;insurance agent;20000 to 100000;under 10;None;;;;BW;110709
+1107000282;medium;TRANSPORTATION AND STORAGE;H;Land transport and transport via pipelines;49;taxi;up to 20000;10 to 50;None;;;;BW;110702
+1107000292;medium;TRANSPORTATION AND STORAGE;H;Land transport and transport via pipelines;49;taxi;up to 20000;10 to 50;None;;;;BW;110702
+1107000302;medium;TRANSPORTATION AND STORAGE;H;Land transport and transport via pipelines;49;taxi;up to 20000;10 to 50;None;;;;BW;110702
+1107000312;medium;TRANSPORTATION AND STORAGE;H;Land transport and transport via pipelines;49;taxi;up to 20000;10 to 50;None;;;;BW;110702
+1107000322;large;TRANSPORTATION AND STORAGE;H;Postal and courier activities;53;postal and courier activities;20000 to 100000;51 to 250;None;;;;BW;110703
+1107000332;large;TRANSPORTATION AND STORAGE;H;Postal and courier activities;53;postal and courier activities;20000 to 100000;51 to 250;None;;;;BW;110703
+1107000342;large;TRANSPORTATION AND STORAGE;H;Postal and courier activities;53;postal and courier activities;20000 to 100000;51 to 250;None;;;;BW;110703
+1107000352;large;TRANSPORTATION AND STORAGE;H;Postal and courier activities;53;postal and courier activities;20000 to 100000;51 to 250;None;;;;BW;110703
+1107000362;large;TRANSPORTATION AND STORAGE;H;Postal and courier activities;53;postal and courier activities;20000 to 100000;51 to 250;None;;;;BW;110703
+1107000372;transporter;ADMINISTRATIVE AND SUPPORT SERVICE ACTIVITIES;N;Office administrative. office support and other business support activities;82;office administrative. office support and other business support activities;more than 100000;51 to 250;None;;;;BW;110720
+1107000382;transporter;ADMINISTRATIVE AND SUPPORT SERVICE ACTIVITIES;N;Office administrative. office support and other business support activities;82;office administrative. office support and other business support activities;more than 100000;51 to 250;None;;;;BW;110720
+1107000392;special vehicle;PUBLIC ADMINISTRATION AND DEFENCE. COMPULSORY SOCIAL SECURITY;O;Public administration and defence. compulsory social security;84;social insurance;more than 100000;51 to 250;None;;;;BW;110712
+1107000402;special vehicle;PUBLIC ADMINISTRATION AND DEFENCE. COMPULSORY SOCIAL SECURITY;O;Public administration and defence. compulsory social security;84;social insurance;more than 100000;51 to 250;None;;;;BW;110712
+1107000422;medium;PUBLIC ADMINISTRATION AND DEFENCE. COMPULSORY SOCIAL SECURITY;O;Public administration and defence. compulsory social security;84;social insurance;more than 100000;51 to 250;None;;;;BW;110712
+1107000432;special vehicle;PUBLIC ADMINISTRATION AND DEFENCE. COMPULSORY SOCIAL SECURITY;O;Public administration and defence. compulsory social security;84;social insurance;more than 100000;51 to 250;None;;;;BW;110712
+1107000442;special vehicle;PUBLIC ADMINISTRATION AND DEFENCE. COMPULSORY SOCIAL SECURITY;O;Public administration and defence. compulsory social security;84;social insurance;more than 100000;51 to 250;None;;;;BW;110712
+1107000452;special vehicle;PUBLIC ADMINISTRATION AND DEFENCE. COMPULSORY SOCIAL SECURITY;O;Public administration and defence. compulsory social security;84;social insurance;more than 100000;51 to 250;None;;;;BW;110712
+1107000462;medium;PUBLIC ADMINISTRATION AND DEFENCE. COMPULSORY SOCIAL SECURITY;O;Public administration and defence. compulsory social security;84;social insurance;more than 100000;51 to 250;None;;;;BW;110712
+1107000472;medium;ELECTRICITY. GAS. STEAM AND AIR CONDITIONING SUPPLY;D;Electricity. gas. steam and air conditioning supply;35;utility company;20000 to 100000;251 to 1000;None;;;;BW;110714
+1107000482;medium;MANUFACTURING;C;;-1;manufacturing;up to 20000;251 to 1000;None;;;;BW;110710
+1107000492;medium;MANUFACTURING;C;;-1;manufacturing;up to 20000;251 to 1000;None;;;;BW;110710
+1107000502;medium;MANUFACTURING;C;;-1;manufacturing;up to 20000;251 to 1000;None;;;;BW;110710
+1107000512;medium;MANUFACTURING;C;;-1;manufacturing;up to 20000;251 to 1000;None;;;;BW;110710
+1107000522;medium;MANUFACTURING;C;;-1;manufacturing;up to 20000;251 to 1000;None;;;;BW;110710
+1107000532;transporter;HUMAN HEALTH AND SOCIAL WORK ACTIVITIES;Q;Social work activities without accommodation;88;meals on wheels;up to 20000;251 to 1000;None;;;;BW;110706
+1107000542;transporter;HUMAN HEALTH AND SOCIAL WORK ACTIVITIES;Q;Social work activities without accommodation;88;meals on wheels;up to 20000;251 to 1000;None;;;;BW;110706
+1107000552;transporter;HUMAN HEALTH AND SOCIAL WORK ACTIVITIES;Q;Social work activities without accommodation;88;meals on wheels;up to 20000;251 to 1000;None;;;;BW;110706
+1107000562;transporter;HUMAN HEALTH AND SOCIAL WORK ACTIVITIES;Q;Social work activities without accommodation;88;meals on wheels;up to 20000;251 to 1000;None;;;;BW;110706
+1107000572;transporter;ELECTRICITY. GAS. STEAM AND AIR CONDITIONING SUPPLY;D;Electricity. gas. steam and air conditioning supply;35;utility company;20000 to 100000;251 to 1000;None;;;;BW;110714
+1107000582;medium;ELECTRICITY. GAS. STEAM AND AIR CONDITIONING SUPPLY;D;Electricity. gas. steam and air conditioning supply;35;utility company;20000 to 100000;251 to 1000;None;;;;BW;110714
+1107000592;transporter;ELECTRICITY. GAS. STEAM AND AIR CONDITIONING SUPPLY;D;Electricity. gas. steam and air conditioning supply;35;utility company;20000 to 100000;251 to 1000;None;;;;BW;110714
+1107000602;small;ELECTRICITY. GAS. STEAM AND AIR CONDITIONING SUPPLY;D;Electricity. gas. steam and air conditioning supply;35;utility company;20000 to 100000;10 to 50;None;;;;BW;110714
+1107000622;small;ELECTRICITY. GAS. STEAM AND AIR CONDITIONING SUPPLY;D;Electricity. gas. steam and air conditioning supply;35;utility company;up to 20000;10 to 50;None;;;;BW;110701
+1107000632;small;ELECTRICITY. GAS. STEAM AND AIR CONDITIONING SUPPLY;D;Electricity. gas. steam and air conditioning supply;35;utility company;up to 20000;10 to 50;None;;;;BW;110701
+1107000642;medium;PUBLIC ADMINISTRATION AND DEFENCE. COMPULSORY SOCIAL SECURITY;O;Public administration and defence. compulsory social security;84;social insurance;up to 20000;10 to 50;None;;;;BW;110718
+1107000652;large;PUBLIC ADMINISTRATION AND DEFENCE. COMPULSORY SOCIAL SECURITY;O;Public administration and defence. compulsory social security;84;social insurance;up to 20000;10 to 50;None;;;;BW;110718
+1107000662;transporter;PUBLIC ADMINISTRATION AND DEFENCE. COMPULSORY SOCIAL SECURITY;O;Public administration and defence. compulsory social security;84;social insurance;up to 20000;51 to 250;None;;;;BW;110718
+1107000672;medium;TRANSPORTATION AND STORAGE;H;Land transport and transport via pipelines;49;taxi;more than 100000;51 to 250;None;;;;BW;110716
+1107000682;medium;TRANSPORTATION AND STORAGE;H;Land transport and transport via pipelines;49;taxi;more than 100000;51 to 250;None;;;;BW;110716
+1107000692;medium;TRANSPORTATION AND STORAGE;H;Land transport and transport via pipelines;49;taxi;more than 100000;under 10;None;;;;BW;110716
+1107000702;medium;TRANSPORTATION AND STORAGE;H;Land transport and transport via pipelines;49;taxi;more than 100000;251 to 1000;None;;;;BW;110716
+1107000712;large;FINANCIAL AND INSURANCE ACTIVITIES;K;Insurance. reinsurance and pension funding. except compulsory social security;65;insurance agent;more than 100000;251 to 1000;None;;;;BW;110719
+1107000732;small;MANUFACTURING;C;;-1;manufacturing;up to 20000;251 to 1000;None;;;;BW;110705
+1107000742;transporter;MANUFACTURING;C;;-1;manufacturing;up to 20000;51 to 250;None;;;;BW;110705
+1107000752;transporter;MANUFACTURING;C;;-1;manufacturing;up to 20000;51 to 250;None;;;;BW;110705
+1107000762;transporter;TRANSPORTATION AND STORAGE;H;Postal and courier activities;53;postal and courier activities;up to 20000;51 to 250;None;;;;BW;110717
+1107000772;transporter;TRANSPORTATION AND STORAGE;H;Postal and courier activities;53;postal and courier activities;up to 20000;51 to 250;None;;;;BW;110717
+1107000782;medium;TRANSPORTATION AND STORAGE;H;Postal and courier activities;53;postal and courier activities;up to 20000;51 to 250;None;;;;BW;110717
+1107000792;small;TRANSPORTATION AND STORAGE;H;Postal and courier activities;53;postal and courier activities;up to 20000;;None;;;;BW;110717
+1107000802;small;HUMAN HEALTH AND SOCIAL WORK ACTIVITIES;Q;Social work activities without accommodation;88;service for out-patients;more than 100000;;None;;;;BW;110707
+1107000812;small;HUMAN HEALTH AND SOCIAL WORK ACTIVITIES;Q;Social work activities without accommodation;88;service for out-patients;more than 100000;251 to 1000;None;;;;BW;110711
+1107000822;small;HUMAN HEALTH AND SOCIAL WORK ACTIVITIES;Q;Social work activities without accommodation;88;service for out-patients;more than 100000;;None;;;;BW;110711
+1107000832;medium;PUBLIC ADMINISTRATION AND DEFENCE. COMPULSORY SOCIAL SECURITY;O;Public administration and defence. compulsory social security;84;social insurance;up to 20000;;None;;;;BW;110718
+1107000842;transporter;MANUFACTURING;C;;-1;manufacturing;more than 100000;51 to 250;None;;;;BW;110713
+1107000852;small;HUMAN HEALTH AND SOCIAL WORK ACTIVITIES;Q;Social work activities without accommodation;88;service for out-patients;more than 100000;;None;;;;BW;110711
+1107000862;small;HUMAN HEALTH AND SOCIAL WORK ACTIVITIES;Q;Social work activities without accommodation;88;service for out-patients;more than 100000;;None;;;;BW;110707
+1107000872;transporter;MANUFACTURING;C;;-1;manufacturing;more than 100000;251 to 1000;None;;;;BW;110713
+1107000882;transporter;MANUFACTURING;C;;-1;manufacturing;more than 100000;251 to 1000;None;;;;BW;110713
+1107000902;transporter;PUBLIC ADMINISTRATION AND DEFENCE. COMPULSORY SOCIAL SECURITY;O;Public administration and defence. compulsory social security;84;social insurance;more than 100000;10 to 50;None;;;;BW;110708
+1107000992;small;FINANCIAL AND INSURANCE ACTIVITIES;K;Insurance. reinsurance and pension funding. except compulsory social security;65;insurance agent;up to 20000;10 to 50;None;;;;BW;110715
+1202357301;medium;TRANSPORTATION AND STORAGE;H;Land transport and transport via pipelines;49;taxi;more than 100000;51 to 250;None;;;;BY;120209
+1202510685;medium;TRANSPORTATION AND STORAGE;H;Land transport and transport via pipelines;49;taxi;more than 100000;51 to 250;None;;;;BY;120209
+1202514356;medium;TRANSPORTATION AND STORAGE;H;Land transport and transport via pipelines;49;taxi;20000 to 100000;51 to 250;None;;;;BY;120201
+1202557421;small;HUMAN HEALTH AND SOCIAL WORK ACTIVITIES;Q;Social work activities without accommodation;88;service for out-patients;20000 to 100000;10 to 50;None;;;;NI;120203
+1202557462;medium;TRANSPORTATION AND STORAGE;H;Land transport and transport via pipelines;49;taxi;more than 100000;51 to 250;None;;;;BY;120209
+1202558072;transporter;TRANSPORTATION AND STORAGE;H;Land transport and transport via pipelines;49;taxi;20000 to 100000;51 to 250;None;;;;BY;120201
+1202558114;medium;HUMAN HEALTH AND SOCIAL WORK ACTIVITIES;Q;Social work activities without accommodation;88;meals on wheels;20000 to 100000;51 to 250;None;;;;NW;120208
+1202558452;transporter;MANUFACTURING;C;Manufacture of food products;10;baker/butcher;up to 20000;251 to 1000;None;;;;BW;120205
+1202558999;large;TRANSPORTATION AND STORAGE;H;Land transport and transport via pipelines;49;taxi;20000 to 100000;51 to 250;None;;;;BY;120201
+1202561472;transporter;MANUFACTURING;C;Manufacture of food products;10;baker/butcher;up to 20000;251 to 1000;None;;;;BW;120205
+1202562637;medium;TRANSPORTATION AND STORAGE;H;Land transport and transport via pipelines;49;taxi;more than 100000;51 to 250;None;;;;BY;120209
+1202562876;small;HUMAN HEALTH AND SOCIAL WORK ACTIVITIES;Q;Social work activities without accommodation;88;service for out-patients;20000 to 100000;10 to 50;None;;;;NI;120203
+1202563403;large;TRANSPORTATION AND STORAGE;H;Land transport and transport via pipelines;49;taxi;20000 to 100000;51 to 250;None;;;;BY;120201
+1202563726;medium;HUMAN HEALTH AND SOCIAL WORK ACTIVITIES;Q;Social work activities without accommodation;88;meals on wheels;20000 to 100000;51 to 250;None;;;;NW;120208
+1202563809;medium;CONSTRUCTION;F;;-1;construction;up to 20000;10 to 50;None;;;;BY;120210
+1202564245;large;CONSTRUCTION;F;;-1;construction;up to 20000;10 to 50;None;;;;BY;120210
+1202566919;transporter;MANUFACTURING;C;Manufacture of food products;10;baker/butcher;up to 20000;251 to 1000;None;;;;BW;120205
+1202569178;small;HUMAN HEALTH AND SOCIAL WORK ACTIVITIES;Q;Social work activities without accommodation;88;service for out-patients;more than 100000;10 to 50;None;;;;TH;120207
+1202570341;medium;TRANSPORTATION AND STORAGE;H;Land transport and transport via pipelines;49;taxi;more than 100000;51 to 250;None;;;;BY;120209
+1202572750;medium;TRANSPORTATION AND STORAGE;H;Land transport and transport via pipelines;49;taxi;more than 100000;51 to 250;None;;;;BY;120209
+1202573006;large;WHOLESALE AND RETAIL TRADE. REPAIR OF MOTOR VEHICLES AND MOTORCYCLES;G;Wholesale and retail trade and repair of motor vehicles and motorcycles;45;wholesale and retail trade and repair of motor vehicles and motorcycles;up to 20000;10 to 50;None;;;;NI;120211
+1202573360;medium;TRANSPORTATION AND STORAGE;H;Land transport and transport via pipelines;49;taxi;20000 to 100000;51 to 250;None;;;;BY;120201
+1202573501;medium;HUMAN HEALTH AND SOCIAL WORK ACTIVITIES;Q;Social work activities without accommodation;88;service for out-patients;up to 20000;under 10;None;;;;RP;120204
+1202573527;transporter;MANUFACTURING;C;Manufacture of food products;10;baker/butcher;up to 20000;251 to 1000;None;;;;BW;120205
+1202573550;transporter;CONSTRUCTION;F;;-1;construction;up to 20000;10 to 50;None;;;;BY;120210
+1202573642;small;HUMAN HEALTH AND SOCIAL WORK ACTIVITIES;Q;Social work activities without accommodation;88;service for out-patients;20000 to 100000;10 to 50;None;;;;NI;120203
+1202573659;small;HUMAN HEALTH AND SOCIAL WORK ACTIVITIES;Q;Social work activities without accommodation;88;service for out-patients;more than 100000;10 to 50;None;;;;TH;120207
+1202573782;medium;HUMAN HEALTH AND SOCIAL WORK ACTIVITIES;Q;Social work activities without accommodation;88;meals on wheels;20000 to 100000;51 to 250;None;;;;NW;120208
+1202573832;small;HUMAN HEALTH AND SOCIAL WORK ACTIVITIES;Q;Social work activities without accommodation;88;service for out-patients;up to 20000;under 10;None;;;;RP;120204
+1202574103;medium;HUMAN HEALTH AND SOCIAL WORK ACTIVITIES;Q;Social work activities without accommodation;88;meals on wheels;up to 20000;51 to 250;None;;;;BY;120202
+1202574137;large;TRANSPORTATION AND STORAGE;H;Land transport and transport via pipelines;49;taxi;20000 to 100000;51 to 250;None;;;;BY;120201
+1202574665;transporter;MANUFACTURING;C;Manufacture of food products;10;baker/butcher;up to 20000;251 to 1000;None;;;;BW;120205
+1202581942;transporter;MANUFACTURING;C;Manufacture of food products;10;baker/butcher;up to 20000;51 to 250;None;;;;BW;120206
+1202582197;transporter;CONSTRUCTION;F;;-1;construction;up to 20000;10 to 50;None;;;;BW;120210
+1202624437;transporter;HUMAN HEALTH AND SOCIAL WORK ACTIVITIES;Q;Social work activities without accommodation;88;service for out-patients;more than 100000;10 to 50;None;;;;BY;120207
+1202624569;small;HUMAN HEALTH AND SOCIAL WORK ACTIVITIES;Q;Social work activities without accommodation;88;service for out-patients;up to 20000;under 10;None;;;;RP;120204
+1202641217;medium;HUMAN HEALTH AND SOCIAL WORK ACTIVITIES;Q;Social work activities without accommodation;88;service for out-patients;more than 100000;10 to 50;None;;;;TH;120207
+1202642504;small;HUMAN HEALTH AND SOCIAL WORK ACTIVITIES;Q;Social work activities without accommodation;88;service for out-patients;up to 20000;under 10;None;;;;RP;120204
+1202642983;medium;TRANSPORTATION AND STORAGE;H;Land transport and transport via pipelines;49;taxi;more than 100000;51 to 250;None;;;;BY;120209
+1202643031;medium;TRANSPORTATION AND STORAGE;H;Land transport and transport via pipelines;49;taxi;more than 100000;51 to 250;None;;;;BY;120209
+1202643700;transporter;MANUFACTURING;C;Manufacture of food products;10;baker/butcher;up to 20000;251 to 1000;None;;;;BW;120205
+1202643924;transporter;MANUFACTURING;C;Manufacture of food products;10;baker/butcher;up to 20000;251 to 1000;None;;;;BW;120205
+1202644088;large;TRANSPORTATION AND STORAGE;H;Land transport and transport via pipelines;49;taxi;20000 to 100000;51 to 250;None;;;;BY;120201
+1202650283;large;TRANSPORTATION AND STORAGE;H;Land transport and transport via pipelines;49;taxi;20000 to 100000;51 to 250;None;;;;BY;120201
+1202650424;small;HUMAN HEALTH AND SOCIAL WORK ACTIVITIES;Q;Social work activities without accommodation;88;service for out-patients;up to 20000;under 10;None;;;;RP;120204
+1202650507;small;HUMAN HEALTH AND SOCIAL WORK ACTIVITIES;Q;Social work activities without accommodation;88;service for out-patients;20000 to 100000;10 to 50;None;;;;NI;120203
+1202653121;large;CONSTRUCTION;F;;-1;construction;up to 20000;10 to 50;None;;;;BY;120210
+1202654806;medium;TRANSPORTATION AND STORAGE;H;Land transport and transport via pipelines;49;taxi;more than 100000;51 to 250;None;;;;BY;120209
+1202654863;transporter;MANUFACTURING;C;Manufacture of food products;10;baker/butcher;up to 20000;251 to 1000;None;;;;BW;120205
+1202655258;large;TRANSPORTATION AND STORAGE;H;Land transport and transport via pipelines;49;taxi;20000 to 100000;51 to 250;None;;;;BY;120201
+1203510685;medium;HUMAN HEALTH AND SOCIAL WORK ACTIVITIES;Q;Social work activities without accommodation;88;meals on wheels;up to 20000;under 10;None;;;;SH;120306
+1203514356;medium;WHOLESALE AND RETAIL TRADE. REPAIR OF MOTOR VEHICLES AND MOTORCYCLES;G;Wholesale and retail trade and repair of motor vehicles and motorcycles;45;wholesale and retail trade and repair of motor vehicles and motorcycles;more than 100000;10 to 50;None;;;;NI;120309
+1203557421;transporter;CONSTRUCTION;F;;-1;construction;up to 20000;10 to 50;None;;;;BY;120319
+1203557462;transporter;CONSTRUCTION;F;;-1;construction;more than 100000;under 10;None;;;;NW;120312
+1203558072;large;WHOLESALE AND RETAIL TRADE. REPAIR OF MOTOR VEHICLES AND MOTORCYCLES;G;Wholesale and retail trade and repair of motor vehicles and motorcycles;45;wholesale and retail trade and repair of motor vehicles and motorcycles;20000 to 100000;under 10;None;;;;BW;120321
+1203558114;large;CONSTRUCTION;F;;-1;construction;20000 to 100000;under 10;None;;;;SN;120323
+1203558452;transporter;HUMAN HEALTH AND SOCIAL WORK ACTIVITIES;Q;Social work activities without accommodation;88;meals on wheels;more than 100000;51 to 250;None;;;;BW;120311
+1203561472;small;HUMAN HEALTH AND SOCIAL WORK ACTIVITIES;Q;Social work activities without accommodation;88;meals on wheels;up to 20000;51 to 250;None;;;;BW;120303
+1203562637;transporter;MANUFACTURING;C;Manufacture of food products;10;baker/butcher;more than 100000;51 to 250;None;;;;BY;120318
+1203562876;transporter;CONSTRUCTION;F;;-1;construction;up to 20000;10 to 50;None;;;;BY;120319
+1203563403;medium;WHOLESALE AND RETAIL TRADE. REPAIR OF MOTOR VEHICLES AND MOTORCYCLES;G;Wholesale and retail trade and repair of motor vehicles and motorcycles;45;wholesale and retail trade and repair of motor vehicles and motorcycles;20000 to 100000;251 to 1000;None;;;;BY;120307
+1203563726;transporter;MANUFACTURING;C;Manufacture of food products;10;baker/butcher;more than 100000;51 to 250;None;;;;ST;120317
+1203563809;small;HUMAN HEALTH AND SOCIAL WORK ACTIVITIES;Q;Social work activities without accommodation;88;service for out-patients;up to 20000;10 to 50;None;;;;BY;120308
+1203564245;transporter;TRANSPORTATION AND STORAGE;H;Land transport and transport via pipelines;49;taxi;up to 20000;under 10;None;;;;BB;120310
+1203566919;medium;WHOLESALE AND RETAIL TRADE. REPAIR OF MOTOR VEHICLES AND MOTORCYCLES;G;Wholesale and retail trade and repair of motor vehicles and motorcycles;45;wholesale and retail trade and repair of motor vehicles and motorcycles;more than 100000;10 to 50;None;;;;NI;120309
+1203569178;transporter;HUMAN HEALTH AND SOCIAL WORK ACTIVITIES;Q;Social work activities without accommodation;88;meals on wheels;more than 100000;51 to 250;None;;;;BW;120311
+1203570341;transporter;CONSTRUCTION;F;;-1;construction;more than 100000;under 10;None;;;;NW;120312
+1203572750;transporter;WHOLESALE AND RETAIL TRADE. REPAIR OF MOTOR VEHICLES AND MOTORCYCLES;G;Wholesale and retail trade and repair of motor vehicles and motorcycles;45;wholesale and retail trade and repair of motor vehicles and motorcycles;20000 to 100000;251 to 1000;None;;;;BY;120307
+1203573006;large;WHOLESALE AND RETAIL TRADE. REPAIR OF MOTOR VEHICLES AND MOTORCYCLES;G;Wholesale and retail trade and repair of motor vehicles and motorcycles;45;wholesale and retail trade and repair of motor vehicles and motorcycles;up to 20000;10 to 50;None;;;;NI;120322
+1203573360;transporter;WHOLESALE AND RETAIL TRADE. REPAIR OF MOTOR VEHICLES AND MOTORCYCLES;G;Wholesale and retail trade and repair of motor vehicles and motorcycles;45;wholesale and retail trade and repair of motor vehicles and motorcycles;more than 100000;10 to 50;None;;;;ST;120313
+1203573501;transporter;CONSTRUCTION;F;;-1;construction;20000 to 100000;10 to 50;None;;;;BY;120304
+1203573527;transporter;MANUFACTURING;C;Manufacture of food products;10;baker/butcher;up to 20000;under 10;None;;;;BY;120320
+1203573550;small;HUMAN HEALTH AND SOCIAL WORK ACTIVITIES;Q;Social work activities without accommodation;88;service for out-patients;up to 20000;10 to 50;None;;;;BY;120308
+1203573642;transporter;CONSTRUCTION;F;;-1;construction;up to 20000;10 to 50;None;;;;BY;120319
+1203573659;transporter;WHOLESALE AND RETAIL TRADE. REPAIR OF MOTOR VEHICLES AND MOTORCYCLES;G;Wholesale and retail trade and repair of motor vehicles and motorcycles;45;wholesale and retail trade and repair of motor vehicles and motorcycles;more than 100000;10 to 50;None;;;;ST;120313
+1203573782;transporter;MANUFACTURING;C;Manufacture of food products;10;baker/butcher;more than 100000;10 to 50;None;;;;BY;120301
+1203573832;transporter;CONSTRUCTION;F;;-1;construction;20000 to 100000;10 to 50;None;;;;BY;120304
+1203574103;medium;HUMAN HEALTH AND SOCIAL WORK ACTIVITIES;Q;Social work activities without accommodation;88;meals on wheels;up to 20000;51 to 250;None;;;;BY;120302
+1203574137;large;CONSTRUCTION;F;;-1;construction;20000 to 100000;under 10;None;;;;SN;120323
+1203574665;transporter;WHOLESALE AND RETAIL TRADE. REPAIR OF MOTOR VEHICLES AND MOTORCYCLES;G;Wholesale and retail trade and repair of motor vehicles and motorcycles;45;wholesale and retail trade and repair of motor vehicles and motorcycles;more than 100000;10 to 50;None;;;;ST;120313
+1203581942;small;HUMAN HEALTH AND SOCIAL WORK ACTIVITIES;Q;Social work activities without accommodation;88;meals on wheels;up to 20000;51 to 250;None;;;;BW;120303
+1203582197;large;TRANSPORTATION AND STORAGE;H;Land transport and transport via pipelines;49;taxi;up to 20000;under 10;None;;;;BB;120310
+1203624437;small;HUMAN HEALTH AND SOCIAL WORK ACTIVITIES;Q;Social work activities without accommodation;88;meals on wheels;more than 100000;51 to 250;None;;;;BW;120311
+1203624569;small;CONSTRUCTION;F;;-1;construction;20000 to 100000;10 to 50;None;;;;BY;120304
+1203641217;medium;WHOLESALE AND RETAIL TRADE. REPAIR OF MOTOR VEHICLES AND MOTORCYCLES;G;Wholesale and retail trade and repair of motor vehicles and motorcycles;45;wholesale and retail trade and repair of motor vehicles and motorcycles;more than 100000;10 to 50;None;;;;NI;120309
+1203642504;transporter;CONSTRUCTION;F;;-1;construction;20000 to 100000;10 to 50;None;;;;BY;120304
+1203642983;transporter;MANUFACTURING;C;Manufacture of food products;10;baker/butcher;20000 to 100000;51 to 250;None;;;;ST;120305
+1203643031;transporter;CONSTRUCTION;F;;-1;construction;more than 100000;under 10;None;;;;NW;120312
+1203643700;small;HUMAN HEALTH AND SOCIAL WORK ACTIVITIES;Q;Social work activities without accommodation;88;meals on wheels;more than 100000;51 to 250;None;;;;BW;120311
+1203643924;medium;WHOLESALE AND RETAIL TRADE. REPAIR OF MOTOR VEHICLES AND MOTORCYCLES;G;Wholesale and retail trade and repair of motor vehicles and motorcycles;45;wholesale and retail trade and repair of motor vehicles and motorcycles;20000 to 100000;under 10;None;;;;BW;120321
+1203650283;medium;HUMAN HEALTH AND SOCIAL WORK ACTIVITIES;Q;Social work activities without accommodation;88;meals on wheels;up to 20000;51 to 250;None;;;;BY;120302
+1203650507;medium;CONSTRUCTION;F;;-1;construction;20000 to 100000;10 to 50;None;;;;BY;120304
+1203653121;small;HUMAN HEALTH AND SOCIAL WORK ACTIVITIES;Q;Social work activities without accommodation;88;meals on wheels;up to 20000;10 to 50;None;;;;BY;120308
+1203654806;medium;HUMAN HEALTH AND SOCIAL WORK ACTIVITIES;Q;Social work activities without accommodation;88;meals on wheels;up to 20000;under 10;None;;;;SH;120306
+1203655258;large;CONSTRUCTION;F;;-1;construction;20000 to 100000;under 10;None;;;;SN;120323
+1205510685;small;HUMAN HEALTH AND SOCIAL WORK ACTIVITIES;Q;Social work activities without accommodation;88;service for out-patients;up to 20000;;None;;;;NI;120501
+1205557421;small;HUMAN HEALTH AND SOCIAL WORK ACTIVITIES;Q;Social work activities without accommodation;88;service for out-patients;up to 20000;;None;;;;NI;120501
+1205557462;small;HUMAN HEALTH AND SOCIAL WORK ACTIVITIES;Q;Social work activities without accommodation;88;service for out-patients;up to 20000;;None;;;;NI;120501
+1205558072;small;HUMAN HEALTH AND SOCIAL WORK ACTIVITIES;Q;Social work activities without accommodation;88;service for out-patients;up to 20000;;None;;;;NI;120501
+1205558114;small;HUMAN HEALTH AND SOCIAL WORK ACTIVITIES;Q;Social work activities without accommodation;88;service for out-patients;up to 20000;;None;;;;NI;120501
+1205558452;small;HUMAN HEALTH AND SOCIAL WORK ACTIVITIES;Q;Social work activities without accommodation;88;service for out-patients;up to 20000;;None;;;;NI;120501
+1205558999;small;HUMAN HEALTH AND SOCIAL WORK ACTIVITIES;Q;Social work activities without accommodation;88;service for out-patients;up to 20000;;None;;;;NI;120501
+1205562637;small;HUMAN HEALTH AND SOCIAL WORK ACTIVITIES;Q;Social work activities without accommodation;88;service for out-patients;up to 20000;;None;;;;NI;120501
+1205562876;small;HUMAN HEALTH AND SOCIAL WORK ACTIVITIES;Q;Social work activities without accommodation;88;service for out-patients;up to 20000;;None;;;;NI;120501
+1205563403;small;HUMAN HEALTH AND SOCIAL WORK ACTIVITIES;Q;Social work activities without accommodation;88;service for out-patients;up to 20000;;None;;;;NI;120501
+1205564245;small;ADMINISTRATIVE AND SUPPORT SERVICE ACTIVITIES;N;Services to buildings and landscape activities;81;commercial cleaning;up to 20000;;None;;;;NI;120502
+1205566919;medium;CONSTRUCTION;F;Construction of buildings;41;construction;up to 20000;;None;;;;NI;120503
+1205569178;large;CONSTRUCTION;F;Construction of buildings;41;construction;up to 20000;;None;;;;NI;120503
+1205573642;medium;CONSTRUCTION;F;Construction of buildings;41;construction;up to 20000;;None;;;;NI;120503
+1205573659;medium;CONSTRUCTION;F;Construction of buildings;41;construction;up to 20000;;None;;;;NI;120503
+1206572750;medium;OTHER SERVICE ACTIVITIES;S;Other personal service activities;96;laundry;more than 100000;;None;;;;NI;120604
+1206573006;transporter;ADMINISTRATIVE AND SUPPORT SERVICE ACTIVITIES;N;Services to buildings and landscape activities;81;commercial cleaning;up to 20000;;None;;;;NI;120605
+1206573360;transporter;OTHER SERVICE ACTIVITIES;S;Other personal service activities;96;laundry;more than 100000;;None;;;;NI;120604
+1206573501;transporter;OTHER SERVICE ACTIVITIES;S;Other personal service activities;96;laundry;more than 100000;;None;;;;NI;120604
+1206573527;medium;ADMINISTRATIVE AND SUPPORT SERVICE ACTIVITIES;N;Services to buildings and landscape activities;81;commercial cleaning;up to 20000;;None;;;;NI;120605
+1206573550;small;WHOLESALE AND RETAIL TRADE. REPAIR OF MOTOR VEHICLES AND MOTORCYCLES;G;Wholesale and retail trade and repair of motor vehicles and motorcycles;45;wholesale and retail trade and repair of motor vehicles and motorcycles;up to 20000;;None;;;;NI;120606
+1206573782;large;WHOLESALE AND RETAIL TRADE. REPAIR OF MOTOR VEHICLES AND MOTORCYCLES;G;Wholesale and retail trade and repair of motor vehicles and motorcycles;45;wholesale and retail trade and repair of motor vehicles and motorcycles;up to 20000;;None;;;;NI;120606
+1206573832;transporter;OTHER SERVICE ACTIVITIES;S;Other personal service activities;96;laundry;more than 100000;;None;;;;NI;120604
+1206574103;transporter;TRANSPORTATION AND STORAGE;H;Postal and courier activities;53;postal and courier activities;more than 100000;;None;;;;NI;120607
+1206574137;medium;ADMINISTRATIVE AND SUPPORT SERVICE ACTIVITIES;N;Services to buildings and landscape activities;81;commercial cleaning;up to 20000;;None;;;;NI;120605
+1206574665;transporter;OTHER SERVICE ACTIVITIES;S;Other personal service activities;96;laundry;more than 100000;;None;;;;NI;120604
+1206641217;large;WHOLESALE AND RETAIL TRADE. REPAIR OF MOTOR VEHICLES AND MOTORCYCLES;G;Wholesale and retail trade and repair of motor vehicles and motorcycles;45;wholesale and retail trade and repair of motor vehicles and motorcycles;up to 20000;;None;;;;NI;120606
+1206642504;small;TRANSPORTATION AND STORAGE;H;Postal and courier activities;53;postal and courier activities;more than 100000;;None;;;;NI;120607
+1206655258;medium;TRANSPORTATION AND STORAGE;H;Postal and courier activities;53;postal and courier activities;more than 100000;;None;;;;NI;120607
+1208357301;transporter;WHOLESALE AND RETAIL TRADE. REPAIR OF MOTOR VEHICLES AND MOTORCYCLES;G;Wholesale trade. except of motor vehicles and motorcycles;46;wholesale;more than 100000;10 to 50;None;;;;BY;120812
+1208510685;large;OTHER SERVICE ACTIVITIES;S;Activities of membership organisations;94;professional association;up to 20000;10 to 50;None;;;;TH;120801
+1208514356;medium;OTHER SERVICE ACTIVITIES;S;Other personal service activities;96;service;more than 100000;51 to 250;None;;;;NW;120803
+1208557421;medium;ADMINISTRATIVE AND SUPPORT SERVICE ACTIVITIES;N;Services to buildings and landscape activities;81;facility management;20000 to 100000;under 10;None;;;;TH;120806
+1208557462;medium;WHOLESALE AND RETAIL TRADE. REPAIR OF MOTOR VEHICLES AND MOTORCYCLES;G;Retail trade. except of motor vehicles and motorcycles;47;retail;up to 20000;under 10;None;;;;MV;120819
+1208558114;transporter;OTHER SERVICE ACTIVITIES;S;Repair of computers and personal and household goods;95;repair of computers and personal and household goods;up to 20000;10 to 50;None;;;;BY;120807
+1208558452;small;WHOLESALE AND RETAIL TRADE. REPAIR OF MOTOR VEHICLES AND MOTORCYCLES;G;Retail trade. except of motor vehicles and motorcycles;47;retail;20000 to 100000;10 to 50;None;;;;NW;120813
+1208558999;small;OTHER SERVICE ACTIVITIES;S;Other personal service activities;96;service;more than 100000;51 to 250;None;;;;NW;120803
+1208562637;large;WHOLESALE AND RETAIL TRADE. REPAIR OF MOTOR VEHICLES AND MOTORCYCLES;G;Retail trade. except of motor vehicles and motorcycles;47;retail;up to 20000;under 10;None;;;;TH;120809
+1208562876;medium;ADMINISTRATIVE AND SUPPORT SERVICE ACTIVITIES;N;Security and investigation activities;80;security agency;more than 100000;1001 to 5000;None;;;;HE;120804
+1208563403;medium;ADMINISTRATIVE AND SUPPORT SERVICE ACTIVITIES;N;Services to buildings and landscape activities;81;facility management;20000 to 100000;under 10;None;;;;TH;120806
+1208563726;large;OTHER SERVICE ACTIVITIES;S;Repair of computers and personal and household goods;95;repair of computers and personal and household goods;up to 20000;under 10;None;;;;BY;120816
+1208563809;medium;OTHER SERVICE ACTIVITIES;S;Other personal service activities;96;service;more than 100000;51 to 250;None;;;;NW;120803
+1208564245;medium;OTHER SERVICE ACTIVITIES;S;Repair of computers and personal and household goods;95;repair of computers and personal and household goods;up to 20000;under 10;None;;;;BY;120818
+1208566919;small;MANUFACTURING;C;Manufacture of wood and of products of wood and cork. except furniture. manufacture of articles of straw and plaiting materials;16;carpentry;more than 100000;under 10;None;;;;BW;120808
+1208569178;transporter;OTHER SERVICE ACTIVITIES;S;Repair of computers and personal and household goods;95;repair of computers and personal and household goods;up to 20000;10 to 50;None;;;;BY;120807
+1208570341;small;OTHER SERVICE ACTIVITIES;S;Other personal service activities;96;service;more than 100000;51 to 250;None;;;;NW;120803
+1208572750;small;ADMINISTRATIVE AND SUPPORT SERVICE ACTIVITIES;N;Services to buildings and landscape activities;81;commercial cleaning;more than 100000;under 10;None;;;;ST;120810
+1208573006;medium;OTHER SERVICE ACTIVITIES;S;Other personal service activities;96;energy consulting for buildings;up to 20000;under 10;None;;;;BW;120802
+1208573360;transporter;OTHER SERVICE ACTIVITIES;S;Repair of computers and personal and household goods;95;repair of computers and personal and household goods;up to 20000;10 to 50;None;;;;BY;120807
+1208573501;small;OTHER SERVICE ACTIVITIES;S;Other personal service activities;97;energy consulting;more than 100000;under 10;None;;;;BY;120814
+1208573550;medium;MANUFACTURING;C;Manufacture of wood and of products of wood and cork. except furniture. manufacture of articles of straw and plaiting materials;16;carpentry;more than 100000;under 10;None;;;;BW;120808
+1208573642;medium;WHOLESALE AND RETAIL TRADE. REPAIR OF MOTOR VEHICLES AND MOTORCYCLES;G;Wholesale and retail trade and repair of motor vehicles and motorcycles;45;wholesale and retail trade and repair of motor vehicles and motorcycles;more than 100000;51 to 250;None;;;;HE;120805
+1208573659;medium;WHOLESALE AND RETAIL TRADE. REPAIR OF MOTOR VEHICLES AND MOTORCYCLES;G;Wholesale trade. except of motor vehicles and motorcycles;46;wholesale;more than 100000;10 to 50;None;;;;BY;120812
+1208573782;medium;ADMINISTRATIVE AND SUPPORT SERVICE ACTIVITIES;N;Services to buildings and landscape activities;81;commercial cleaning;up to 20000;51 to 250;None;;;;RP;120811
+1208573832;medium;WHOLESALE AND RETAIL TRADE. REPAIR OF MOTOR VEHICLES AND MOTORCYCLES;G;Retail trade. except of motor vehicles and motorcycles;47;retail;up to 20000;under 10;None;;;;BW;120815
+1208574103;medium;OTHER SERVICE ACTIVITIES;S;Repair of computers and personal and household goods;95;repair of computers and personal and household goods;up to 20000;10 to 50;None;;;;BY;120807
+1208574137;medium;ADMINISTRATIVE AND SUPPORT SERVICE ACTIVITIES;N;Security and investigation activities;80;security agency;more than 100000;1001 to 5000;None;;;;HE;120804
+1208574665;small;OTHER SERVICE ACTIVITIES;S;Repair of computers and personal and household goods;95;repair of computers and personal and household goods;20000 to 100000;under 10;None;;;;NW;120807
+1208581942;transporter;OTHER SERVICE ACTIVITIES;S;Other personal service activities;96;service;more than 100000;51 to 250;None;;;;NW;120803
+1208582197;transporter;OTHER SERVICE ACTIVITIES;S;Repair of computers and personal and household goods;95;repair of computers and personal and household goods;up to 20000;under 10;None;;;;HE;120817
+1208624437;transporter;OTHER SERVICE ACTIVITIES;S;Other personal service activities;96;service;more than 100000;51 to 250;None;;;;NW;120803
+1208624569;medium;WHOLESALE AND RETAIL TRADE. REPAIR OF MOTOR VEHICLES AND MOTORCYCLES;G;Wholesale and retail trade and repair of motor vehicles and motorcycles;45;wholesale and retail trade and repair of motor vehicles and motorcycles;more than 100000;51 to 250;None;;;;HE;120805
+1208641217;small;OTHER SERVICE ACTIVITIES;S;Other personal service activities;96;service;more than 100000;51 to 250;None;;;;NW;120803
+1208642983;medium;WHOLESALE AND RETAIL TRADE. REPAIR OF MOTOR VEHICLES AND MOTORCYCLES;G;Retail trade. except of motor vehicles and motorcycles;47;retail;up to 20000;under 10;None;;;;MV;120819
+1208643031;medium;OTHER SERVICE ACTIVITIES;S;Other personal service activities;96;energy consulting for buildings;up to 20000;under 10;None;;;;BW;120802
+1208643700;medium;ADMINISTRATIVE AND SUPPORT SERVICE ACTIVITIES;N;Security and investigation activities;80;security agency;more than 100000;1001 to 5000;None;;;;HE;120804
+1208643924;large;ADMINISTRATIVE AND SUPPORT SERVICE ACTIVITIES;N;Services to buildings and landscape activities;81;commercial cleaning;up to 20000;51 to 250;None;;;;RP;120811
+1208644088;large;WHOLESALE AND RETAIL TRADE. REPAIR OF MOTOR VEHICLES AND MOTORCYCLES;G;Wholesale and retail trade and repair of motor vehicles and motorcycles;45;wholesale and retail trade and repair of motor vehicles and motorcycles;more than 100000;51 to 250;None;;;;HE;120805
+1208650283;medium;OTHER SERVICE ACTIVITIES;S;Other personal service activities;96;service;more than 100000;51 to 250;None;;;;NW;120803
+1208650424;medium;ADMINISTRATIVE AND SUPPORT SERVICE ACTIVITIES;N;Security and investigation activities;80;security agency;more than 100000;1001 to 5000;None;;;;HE;120804
+1208650507;transporter;MANUFACTURING;C;Manufacture of wood and of products of wood and cork. except furniture. manufacture of articles of straw and plaiting materials;16;carpentry;more than 100000;under 10;None;;;;BW;120808
+1208653121;medium;OTHER SERVICE ACTIVITIES;S;Repair of computers and personal and household goods;95;repair of computers and personal and household goods;up to 20000;under 10;None;;;;HE;120817
+1208654806;small;OTHER SERVICE ACTIVITIES;S;Other personal service activities;96;service;more than 100000;51 to 250;None;;;;NW;120803
+1208654863;large;MANUFACTURING;C;Manufacture of wood and of products of wood and cork. except furniture. manufacture of articles of straw and plaiting materials;16;carpentry;more than 100000;under 10;None;;;;BW;120808
+1208655258;transporter;OTHER SERVICE ACTIVITIES;S;Repair of computers and personal and household goods;95;repair of computers and personal and household goods;up to 20000;under 10;None;;;;BY;120818
+1209357301;large;MANUFACTURING;C;Manufacture of wood and of products of wood and cork. except furniture. manufacture of articles of straw and plaiting materials;16;carpentry;more than 100000;10 to 50;None;;;;RP;120915
+1209510685;large;MANUFACTURING;C;Manufacture of wood and of products of wood and cork. except furniture. manufacture of articles of straw and plaiting materials;16;carpentry;more than 100000;10 to 50;None;;;;RP;120915
+1209514356;large;WHOLESALE AND RETAIL TRADE. REPAIR OF MOTOR VEHICLES AND MOTORCYCLES;G;Retail trade. except of motor vehicles and motorcycles;47;retail;more than 100000;under 10;None;;;;BW;120914
+1209557421;medium;FINANCIAL AND INSURANCE ACTIVITIES;K;Insurance. reinsurance and pension funding. except compulsory social security;65;insurance;more than 100000;251 to 1000;None;;;;BE;120907
+1209557462;small;WHOLESALE AND RETAIL TRADE. REPAIR OF MOTOR VEHICLES AND MOTORCYCLES;G;Retail trade. except of motor vehicles and motorcycles;47;retail;more than 100000;under 10;None;;;;BW;120914
+1209558072;transporter;OTHER SERVICE ACTIVITIES;S;Repair of computers and personal and household goods;95;repair of computers and personal and household goods;more than 100000;10 to 50;None;;;;RP;120915
+1209558114;medium;OTHER SERVICE ACTIVITIES;S;Activities of membership organisations;94;church association;more than 100000;51 to 250;None;;;;NW;120901
+1209558452;medium;OTHER SERVICE ACTIVITIES;S;Activities of membership organisations;94;church association;more than 100000;51 to 250;None;;;;NW;120901
+1209558999;medium;OTHER SERVICE ACTIVITIES;S;Repair of computers and personal and household goods;95;repair of computers and personal and household goods;20000 to 100000;10 to 50;None;;;;BY;120903
+1209562637;transporter;OTHER SERVICE ACTIVITIES;S;Repair of computers and personal and household goods;95;repair of computers and personal and household goods;20000 to 100000;10 to 50;None;;;;BY;120903
+1209562876;transporter;FINANCIAL AND INSURANCE ACTIVITIES;K;Insurance. reinsurance and pension funding. except compulsory social security;65;insurance;more than 100000;251 to 1000;None;;;;BE;120907
+1209563726;medium;OTHER SERVICE ACTIVITIES;S;Activities of membership organisations;94;church association;more than 100000;51 to 250;None;;;;NW;120901
+1209563809;medium;ADMINISTRATIVE AND SUPPORT SERVICE ACTIVITIES;N;Services to buildings and landscape activities;81;pest control;up to 20000;10 to 50;None;;;;NI;120916
+1209564245;transporter;MANUFACTURING;C;Manufacture of wood and of products of wood and cork. except furniture. manufacture of articles of straw and plaiting materials;16;carpentry;more than 100000;10 to 50;None;;;;RP;120915
+1209566919;transporter;WHOLESALE AND RETAIL TRADE. REPAIR OF MOTOR VEHICLES AND MOTORCYCLES;G;Wholesale trade. except of motor vehicles and motorcycles;46;wholesale;20000 to 100000;under 10;None;;;;BB;120909
+1209569178;medium;OTHER SERVICE ACTIVITIES;S;Activities of membership organisations;94;church association;more than 100000;51 to 250;None;;;;NW;120901
+1209570341;transporter;OTHER SERVICE ACTIVITIES;S;Repair of computers and personal and household goods;95;repair of computers and personal and household goods;more than 100000;;None;;;;BE;120905
+1209572750;medium;OTHER SERVICE ACTIVITIES;S;Activities of membership organisations;94;church association;more than 100000;51 to 250;None;;;;NW;120901
+1209573360;medium;OTHER SERVICE ACTIVITIES;S;Repair of computers and personal and household goods;95;repair of computers and personal and household goods;20000 to 100000;10 to 50;None;;;;BY;120903
+1209573501;small;OTHER SERVICE ACTIVITIES;S;Other personal service activities;96;death care;more than 100000;under 10;None;;;;NW;120908
+1209573527;transporter;MANUFACTURING;C;Manufacture of wood and of products of wood and cork. except furniture. manufacture of articles of straw and plaiting materials;16;carpentry;more than 100000;10 to 50;None;;;;RP;120915
+1209573550;medium;ADMINISTRATIVE AND SUPPORT SERVICE ACTIVITIES;N;Services to buildings and landscape activities;81;pest control;up to 20000;10 to 50;None;;;;NI;120916
+1209573642;small;WHOLESALE AND RETAIL TRADE. REPAIR OF MOTOR VEHICLES AND MOTORCYCLES;G;Wholesale and retail trade and repair of motor vehicles and motorcycles;45;wholesale and retail trade and repair of motor vehicles and motorcycles;20000 to 100000;under 10;None;;;;NW;120913
+1209573659;transporter;OTHER SERVICE ACTIVITIES;S;Repair of computers and personal and household goods;95;repair of computers and personal and household goods;more than 100000;under 10;None;;;;BE;120904
+1209573782;transporter;MANUFACTURING;C;Manufacture of wood and of products of wood and cork. except furniture. manufacture of articles of straw and plaiting materials;16;carpentry;more than 100000;10 to 50;None;;;;RP;120915
+1209573832;large;OTHER SERVICE ACTIVITIES;S;Repair of computers and personal and household goods;95;repair of computers and personal and household goods;up to 20000;under 10;None;;;;BW;120902
+1209574103;large;WHOLESALE AND RETAIL TRADE. REPAIR OF MOTOR VEHICLES AND MOTORCYCLES;G;Wholesale trade. except of motor vehicles and motorcycles;46;wholesale;20000 to 100000;51 to 250;None;;;;HE;120912
+1209574137;medium;OTHER SERVICE ACTIVITIES;S;Activities of membership organisations;94;church association;more than 100000;51 to 250;None;;;;NW;120901
+1209574665;large;WHOLESALE AND RETAIL TRADE. REPAIR OF MOTOR VEHICLES AND MOTORCYCLES;G;Wholesale trade. except of motor vehicles and motorcycles;46;wholesale;20000 to 100000;under 10;None;;;;NW;120910
+1209581942;transporter;OTHER SERVICE ACTIVITIES;S;Other personal service activities;96;death care;more than 100000;10 to 50;None;;;;BE;120906
+1209582197;medium;OTHER SERVICE ACTIVITIES;S;Repair of computers and personal and household goods;95;repair of computers and personal and household goods;20000 to 100000;10 to 50;None;;;;BY;120903
+1209624437;transporter;OTHER SERVICE ACTIVITIES;S;Repair of computers and personal and household goods;95;repair of computers and personal and household goods;20000 to 100000;10 to 50;None;;;;BY;120903
+1209624569;medium;ADMINISTRATIVE AND SUPPORT SERVICE ACTIVITIES;N;Services to buildings and landscape activities;81;pest control;up to 20000;10 to 50;None;;;;NI;120916
+1209641217;transporter;MANUFACTURING;C;Manufacture of wood and of products of wood and cork. except furniture. manufacture of articles of straw and plaiting materials;16;carpentry;more than 100000;10 to 50;None;;;;RP;120915
+1209642983;medium;ADMINISTRATIVE AND SUPPORT SERVICE ACTIVITIES;N;Services to buildings and landscape activities;81;pest control;up to 20000;10 to 50;None;;;;NI;120916
+1209643031;transporter;MANUFACTURING;C;Manufacture of wood and of products of wood and cork. except furniture. manufacture of articles of straw and plaiting materials;16;carpentry;more than 100000;10 to 50;None;;;;RP;120915
+1209643700;medium;OTHER SERVICE ACTIVITIES;S;Activities of membership organisations;94;church association;more than 100000;51 to 250;None;;;;NW;120901
+1209643924;medium;WHOLESALE AND RETAIL TRADE. REPAIR OF MOTOR VEHICLES AND MOTORCYCLES;G;Wholesale trade. except of motor vehicles and motorcycles;46;wholesale;20000 to 100000;under 10;None;;;;NW;120917
+1209644088;transporter;OTHER SERVICE ACTIVITIES;S;Repair of computers and personal and household goods;95;repair of computers and personal and household goods;more than 100000;under 10;None;;;;NW;120911
+1209650424;medium;MANUFACTURING;C;Manufacture of wood and of products of wood and cork. except furniture. manufacture of articles of straw and plaiting materials;16;carpentry;more than 100000;10 to 50;None;;;;RP;120915
+1209650507;transporter;WHOLESALE AND RETAIL TRADE. REPAIR OF MOTOR VEHICLES AND MOTORCYCLES;G;Retail trade. except of motor vehicles and motorcycles;47;retail;more than 100000;under 10;None;;;;BW;120914
+1209653121;transporter;OTHER SERVICE ACTIVITIES;S;Repair of computers and personal and household goods;95;repair of computers and personal and household goods;more than 100000;under 10;None;;;;BE;120904
+1209654806;medium;OTHER SERVICE ACTIVITIES;S;Repair of computers and personal and household goods;95;repair of computers and personal and household goods;20000 to 100000;10 to 50;None;;;;BY;120903
+1209654863;large;OTHER SERVICE ACTIVITIES;S;Other personal service activities;96;death care;more than 100000;under 10;None;;;;NW;120908
+1209655258;small;OTHER SERVICE ACTIVITIES;S;Activities of membership organisations;94;church association;more than 100000;51 to 250;None;;;;NW;120901
+1303573527;large;MANUFACTURING;C;Manufacture of electrical equipment;27;;more than 100000;1001 to 5000;None;;;;;130301
+1303573642;large;MANUFACTURING;C;Manufacture of electrical equipment;27;;more than 100000;1001 to 5000;None;;;;;130301
+1303643700;large;MANUFACTURING;C;Manufacture of electrical equipment;27;;more than 100000;1001 to 5000;None;;;;;130301
+1303650507;large;MANUFACTURING;C;Manufacture of electrical equipment;27;;more than 100000;1001 to 5000;None;;;;;130301
+1308557462;large;INFORMATION AND COMMUNICATION;J;Computer programming. consultancy and related activities;62;J;more than 100000;10 to 50;None;company car;only one user;own parking spot on company's estate;BW;130802
+1308558072;medium;MANUFACTURING;C;Manufacture of basic pharmaceutical products and pharmaceutical preparations;21;;up to 20000;251 to 1000;None;fleet vehicle;several users;own parking spot on company's estate;BW;130806
+1308558114;medium;MANUFACTURING;C;Manufacture of basic pharmaceutical products and pharmaceutical preparations;21;;up to 20000;251 to 1000;None;fleet vehicle;several users;own parking spot on company's estate;BW;130806
+1308558452;transporter;WATER SUPPLY. SEWERAGE. WASTE MANAGEMENT AND REMEDIATION ACTIVITIES;E;Waste collection. treatment and disposal activities. materials recovery;38;;more than 100000;251 to 1000;None;fleet vehicle;several users;own parking spot on company's estate;BW;130801
+1308558999;medium;INFORMATION AND COMMUNICATION;J;Computer programming. consultancy and related activities;62;J;more than 100000;10 to 50;None;fleet vehicle;several users;differing parking spots on company's estate;BW;130802
+1308562637;transporter;WATER SUPPLY. SEWERAGE. WASTE MANAGEMENT AND REMEDIATION ACTIVITIES;E;Waste collection. treatment and disposal activities. materials recovery;38;;more than 100000;251 to 1000;None;fleet vehicle;several users;own parking spot on company's estate;BW;130801
+1308562876;medium;MANUFACTURING;C;Manufacture of computer. electronic and optical products;26;;more than 100000;over 5000;None;fleet vehicle;several users;own parking spot on company's estate;BW;130805
+1308563809;medium;WATER SUPPLY. SEWERAGE. WASTE MANAGEMENT AND REMEDIATION ACTIVITIES;E;Waste collection. treatment and disposal activities. materials recovery;38;;more than 100000;251 to 1000;None;fleet vehicle;several users;own parking spot on company's estate;BW;130801
+1308569178;small;WHOLESALE AND RETAIL TRADE. REPAIR OF MOTOR VEHICLES AND MOTORCYCLES;G;Wholesale trade. except of motor vehicles and motorcycles;46;G;20000 to 100000;10 to 50;None;company car;only one user;no own parking spot on company's estate;BW;130802
+1308570341;medium;WATER SUPPLY. SEWERAGE. WASTE MANAGEMENT AND REMEDIATION ACTIVITIES;E;Waste collection. treatment and disposal activities. materials recovery;38;;more than 100000;251 to 1000;None;fleet vehicle;several users;own parking spot on company's estate;BW;130801
+1308572750;medium;MANUFACTURING;C;Manufacture of fabricated metal products. except machinery and equipment;25;C;up to 20000;10 to 50;None;company car;only one user;own parking spot on company's estate;BW;130803
+1308573006;small;WHOLESALE AND RETAIL TRADE. REPAIR OF MOTOR VEHICLES AND MOTORCYCLES;G;Wholesale trade. except of motor vehicles and motorcycles;46;G;20000 to 100000;10 to 50;None;company car;only one user;own parking spot on company's estate;BW;130802
+1308573360;medium;MANUFACTURING;C;Manufacture of basic pharmaceutical products and pharmaceutical preparations;21;;up to 20000;251 to 1000;None;fleet vehicle;several users;own parking spot on company's estate;BW;130806
+1308573527;medium;MANUFACTURING;C;Manufacture of basic pharmaceutical products and pharmaceutical preparations;21;;up to 20000;251 to 1000;None;fleet vehicle;several users;own parking spot on company's estate;BW;130806
+1308573642;medium;MANUFACTURING;C;Manufacture of basic pharmaceutical products and pharmaceutical preparations;21;;up to 20000;251 to 1000;None;fleet vehicle;several users;own parking spot on company's estate;BW;130806
+1308573782;transporter;MANUFACTURING;C;Manufacture of fabricated metal products. except machinery and equipment;25;C;up to 20000;10 to 50;None;fleet vehicle;several users;own parking spot on company's estate;BW;130803
+1308574137;medium;WHOLESALE AND RETAIL TRADE. REPAIR OF MOTOR VEHICLES AND MOTORCYCLES;G;Wholesale trade. except of motor vehicles and motorcycles;46;G;20000 to 100000;10 to 50;None;company car;only one user;own parking spot on company's estate;BW;130802
+1308582197;medium;WHOLESALE AND RETAIL TRADE. REPAIR OF MOTOR VEHICLES AND MOTORCYCLES;G;Wholesale trade. except of motor vehicles and motorcycles;46;G;20000 to 100000;10 to 50;None;company car;only one user;own parking spot on company's estate;BW;130802
+1308641217;transporter;WATER SUPPLY. SEWERAGE. WASTE MANAGEMENT AND REMEDIATION ACTIVITIES;E;Waste collection. treatment and disposal activities. materials recovery;38;;more than 100000;251 to 1000;None;fleet vehicle;several users;own parking spot on company's estate;BW;130801
+1308643031;medium;MANUFACTURING;C;Manufacture of basic pharmaceutical products and pharmaceutical preparations;21;;up to 20000;251 to 1000;None;fleet vehicle;several users;own parking spot on company's estate;BW;130806
+1308643700;medium;MANUFACTURING;C;Manufacture of basic pharmaceutical products and pharmaceutical preparations;21;;up to 20000;251 to 1000;None;fleet vehicle;several users;own parking spot on company's estate;BW;130806
+1308643924;medium;MANUFACTURING;C;Manufacture of basic pharmaceutical products and pharmaceutical preparations;21;;up to 20000;251 to 1000;None;fleet vehicle;several users;own parking spot on company's estate;BW;130806
+1308650507;medium;MANUFACTURING;C;Manufacture of basic pharmaceutical products and pharmaceutical preparations;21;;up to 20000;251 to 1000;None;fleet vehicle;several users;differing parking spots on company's estate;BW;130806
+1308654806;medium;WHOLESALE AND RETAIL TRADE. REPAIR OF MOTOR VEHICLES AND MOTORCYCLES;G;Wholesale trade. except of motor vehicles and motorcycles;46;G;20000 to 100000;10 to 50;None;company car;only one user;differing parking spots on company's estate;BW;130802
+1308654863;transporter;WATER SUPPLY. SEWERAGE. WASTE MANAGEMENT AND REMEDIATION ACTIVITIES;E;Waste collection. treatment and disposal activities. materials recovery;38;;more than 100000;251 to 1000;None;fleet vehicle;several users;own parking spot on company's estate;BW;130801
+1308655258;transporter;WATER SUPPLY. SEWERAGE. WASTE MANAGEMENT AND REMEDIATION ACTIVITIES;E;Waste collection. treatment and disposal activities. materials recovery;38;;more than 100000;251 to 1000;None;fleet vehicle;several users;own parking spot on company's estate;BW;130801
+1310573659;small;INFORMATION AND COMMUNICATION;J;Publishing activities;58;;20000 to 100000;51 to 250;None;fleet vehicle;several users;own parking spot on company's estate;BW;130907
+1310573782;small;INFORMATION AND COMMUNICATION;J;Publishing activities;58;;20000 to 100000;51 to 250;None;fleet vehicle;several users;own parking spot on company's estate;BW;130907
+1310573832;small;INFORMATION AND COMMUNICATION;J;Publishing activities;58;;20000 to 100000;51 to 250;None;fleet vehicle;several users;own parking spot on company's estate;BW;130907
+1310574103;small;INFORMATION AND COMMUNICATION;J;Publishing activities;58;;20000 to 100000;51 to 250;None;fleet vehicle;several users;own parking spot on company's estate;BW;130907
+1310574137;small;INFORMATION AND COMMUNICATION;J;Publishing activities;58;;20000 to 100000;51 to 250;None;fleet vehicle;several users;own parking spot on company's estate;BW;130907
+1310574665;medium;INFORMATION AND COMMUNICATION;J;Computer programming. consultancy and related activities;62;;20000 to 100000;10 to 50;None;company car;only one user;no own parking spot on company's estate;BW;130906
+1310581942;medium;INFORMATION AND COMMUNICATION;J;Computer programming. consultancy and related activities;62;;20000 to 100000;10 to 50;None;company car;only one user;no own parking spot on company's estate;BW;130906
+1310582197;medium;INFORMATION AND COMMUNICATION;J;Computer programming. consultancy and related activities;62;;20000 to 100000;10 to 50;None;fleet vehicle;several users;own parking spot on company's estate;BW;130906
+1310624437;transporter;CONSTRUCTION;F;Construction of buildings;41;;20000 to 100000;51 to 250;None;fleet vehicle;only one user;own parking spot on company's estate;BW;130905
+1310624569;large;CONSTRUCTION;F;Construction of buildings;41;;20000 to 100000;51 to 250;None;company car;only one user;own parking spot on company's estate;BW;130905
+1310641217;medium;CONSTRUCTION;F;Construction of buildings;41;;20000 to 100000;51 to 250;None;fleet vehicle;several users;own parking spot on company's estate;BW;130905
+1310642504;transporter;CONSTRUCTION;F;Construction of buildings;41;;20000 to 100000;51 to 250;None;fleet vehicle;several users;own parking spot on company's estate;BW;130905
+1310642983;small;CONSTRUCTION;F;Construction of buildings;41;;20000 to 100000;51 to 250;None;fleet vehicle;several users;own parking spot on company's estate;BW;130905
+1310643700;transporter;PUBLIC ADMINISTRATION AND DEFENCE. COMPULSORY SOCIAL SECURITY;O;Public administration and defence. compulsory social security;84;;up to 20000;under 10;None;fleet vehicle;several users;own parking spot on company's estate;BW;130904
+1310643924;medium;PUBLIC ADMINISTRATION AND DEFENCE. COMPULSORY SOCIAL SECURITY;O;Public administration and defence. compulsory social security;84;;up to 20000;under 10;None;company car;only one user;own parking spot on company's estate;BW;130903
+1310644088;small;PUBLIC ADMINISTRATION AND DEFENCE. COMPULSORY SOCIAL SECURITY;O;Public administration and defence. compulsory social security;84;;up to 20000;under 10;None;company car;several users;own parking spot on company's estate;BW;130903
+1310650283;small;PUBLIC ADMINISTRATION AND DEFENCE. COMPULSORY SOCIAL SECURITY;O;Public administration and defence. compulsory social security;84;;up to 20000;under 10;None;company car;several users;own parking spot on company's estate;BW;130903
+1310654806;medium;PUBLIC ADMINISTRATION AND DEFENCE. COMPULSORY SOCIAL SECURITY;O;Public administration and defence. compulsory social security;84;;up to 20000;10 to 50;None;company car;only one user;own parking spot on company's estate;BW;130902
+1310654863;medium;PUBLIC ADMINISTRATION AND DEFENCE. COMPULSORY SOCIAL SECURITY;O;Public administration and defence. compulsory social security;84;;up to 20000;10 to 50;None;company car;several users;own parking spot on company's estate;BW;130902
+1310655258;small;PUBLIC ADMINISTRATION AND DEFENCE. COMPULSORY SOCIAL SECURITY;O;Public administration and defence. compulsory social security;84;;up to 20000;under 10;None;company car;only one user;no own parking spot on company's estate;BW;130901
+1312357301;transporter;PUBLIC ADMINISTRATION AND DEFENCE. COMPULSORY SOCIAL SECURITY;O;Public administration and defence. compulsory social security;84;;20000 to 100000;251 to 1000;None;company car;several users;own parking spot on company's estate;BW;131208
+1312510685;small;PUBLIC ADMINISTRATION AND DEFENCE. COMPULSORY SOCIAL SECURITY;O;Public administration and defence. compulsory social security;84;;20000 to 100000;251 to 1000;None;company car;several users;own parking spot on company's estate;BW;131208
+1312514356;transporter;PUBLIC ADMINISTRATION AND DEFENCE. COMPULSORY SOCIAL SECURITY;O;Public administration and defence. compulsory social security;84;;20000 to 100000;251 to 1000;None;company car;several users;own parking spot on company's estate;BW;131208
+1312558114;small;PUBLIC ADMINISTRATION AND DEFENCE. COMPULSORY SOCIAL SECURITY;O;Public administration and defence. compulsory social security;84;;20000 to 100000;251 to 1000;None;company car;several users;own parking spot on company's estate;BW;131208
+1312558452;small;PUBLIC ADMINISTRATION AND DEFENCE. COMPULSORY SOCIAL SECURITY;O;Public administration and defence. compulsory social security;84;;20000 to 100000;251 to 1000;None;company car;several users;own parking spot on company's estate;BW;131208
+1312558999;transporter;PUBLIC ADMINISTRATION AND DEFENCE. COMPULSORY SOCIAL SECURITY;O;Public administration and defence. compulsory social security;84;;20000 to 100000;251 to 1000;None;company car;several users;own parking spot on company's estate;BW;131208
+1312562637;medium;PUBLIC ADMINISTRATION AND DEFENCE. COMPULSORY SOCIAL SECURITY;O;Public administration and defence. compulsory social security;84;;20000 to 100000;251 to 1000;None;company car;several users;own parking spot on company's estate;BW;131208
+1312562876;transporter;PUBLIC ADMINISTRATION AND DEFENCE. COMPULSORY SOCIAL SECURITY;O;Public administration and defence. compulsory social security;84;;20000 to 100000;251 to 1000;None;company car;several users;own parking spot on company's estate;BW;131208
+1312564245;small;PUBLIC ADMINISTRATION AND DEFENCE. COMPULSORY SOCIAL SECURITY;O;Public administration and defence. compulsory social security;84;;20000 to 100000;251 to 1000;None;fleet vehicle;several users;differing parking spots on company's estate;BW;131207
+1312566919;small;PUBLIC ADMINISTRATION AND DEFENCE. COMPULSORY SOCIAL SECURITY;O;Public administration and defence. compulsory social security;84;;20000 to 100000;251 to 1000;None;fleet vehicle;several users;differing parking spots on company's estate;BW;131207
+1312569178;small;PUBLIC ADMINISTRATION AND DEFENCE. COMPULSORY SOCIAL SECURITY;O;Public administration and defence. compulsory social security;84;;20000 to 100000;251 to 1000;None;fleet vehicle;several users;differing parking spots on company's estate;BW;131207
+1312570341;medium;MANUFACTURING;C;Manufacture of motor vehicles. trailers and semi-trailers;29;;up to 20000;1001 to 5000;None;fleet vehicle;several users;own parking spot on company's estate;BW;131205
+1312572750;medium;MANUFACTURING;C;Manufacture of motor vehicles. trailers and semi-trailers;29;;up to 20000;1001 to 5000;None;fleet vehicle;several users;own parking spot on company's estate;BW;131205
+1312573006;small;PUBLIC ADMINISTRATION AND DEFENCE. COMPULSORY SOCIAL SECURITY;O;Public administration and defence. compulsory social security;84;;up to 20000;under 10;None;company car;several users;no own parking spot on company's estate;BW;131206
+1312573360;medium;MANUFACTURING;C;Manufacture of motor vehicles. trailers and semi-trailers;29;;up to 20000;1001 to 5000;None;fleet vehicle;several users;differing parking spots on company's estate;BW;131205
+1312573501;medium;MANUFACTURING;C;Manufacture of motor vehicles. trailers and semi-trailers;29;;up to 20000;1001 to 5000;None;fleet vehicle;several users;own parking spot on company's estate;BW;131205
+1312573550;small;MANUFACTURING;C;Manufacture of motor vehicles. trailers and semi-trailers;29;;up to 20000;1001 to 5000;None;fleet vehicle;several users;own parking spot on company's estate;BW;131205
+1312573659;medium;MANUFACTURING;C;Manufacture of motor vehicles. trailers and semi-trailers;29;;up to 20000;1001 to 5000;None;fleet vehicle;several users;own parking spot on company's estate;BW;131205
+1312573782;medium;MANUFACTURING;C;Manufacture of motor vehicles. trailers and semi-trailers;29;;up to 20000;1001 to 5000;None;fleet vehicle;several users;own parking spot on company's estate;BW;131205
+1312573832;medium;MANUFACTURING;C;Manufacture of motor vehicles. trailers and semi-trailers;29;;up to 20000;1001 to 5000;None;fleet vehicle;several users;own parking spot on company's estate;BW;131205
+1312574103;medium;MANUFACTURING;C;Manufacture of motor vehicles. trailers and semi-trailers;29;;up to 20000;1001 to 5000;None;fleet vehicle;several users;own parking spot on company's estate;BW;131205
+1312574137;small;PUBLIC ADMINISTRATION AND DEFENCE. COMPULSORY SOCIAL SECURITY;O;Public administration and defence. compulsory social security;84;;up to 20000;under 10;None;company car;several users;own parking spot on company's estate;BW;131206
+1312574665;medium;MANUFACTURING;C;Manufacture of motor vehicles. trailers and semi-trailers;29;;up to 20000;1001 to 5000;None;fleet vehicle;several users;own parking spot on company's estate;BW;131205
+1312581942;medium;PUBLIC ADMINISTRATION AND DEFENCE. COMPULSORY SOCIAL SECURITY;O;Public administration and defence. compulsory social security;84;;up to 20000;10 to 50;None;company car;several users;own parking spot on company's estate;BW;131204
+1312624437;small;PUBLIC ADMINISTRATION AND DEFENCE. COMPULSORY SOCIAL SECURITY;O;Public administration and defence. compulsory social security;84;;up to 20000;10 to 50;None;company car;several users;no own parking spot on company's estate;BW;131203
+1312624569;transporter;PUBLIC ADMINISTRATION AND DEFENCE. COMPULSORY SOCIAL SECURITY;O;Public administration and defence. compulsory social security;84;;up to 20000;10 to 50;None;;several users;own parking spot on company's estate;BW;131203
+1312641217;small;PROFESSIONAL. SCIENTIFIC AND TECHNICAL ACTIVITIES;M;Architectural and engineering activities. technical testing and analysis;71;;20000 to 100000;10 to 50;None;company car;several users;own parking spot on company's estate;BW;131202
+1312642504;small;PROFESSIONAL. SCIENTIFIC AND TECHNICAL ACTIVITIES;M;Architectural and engineering activities. technical testing and analysis;71;;20000 to 100000;10 to 50;None;company car;several users;own parking spot on company's estate;BW;131202
+1312642983;small;PROFESSIONAL. SCIENTIFIC AND TECHNICAL ACTIVITIES;M;Architectural and engineering activities. technical testing and analysis;71;;20000 to 100000;10 to 50;None;company car;several users;own parking spot on company's estate;BW;131202
+1312643031;small;PROFESSIONAL. SCIENTIFIC AND TECHNICAL ACTIVITIES;M;Architectural and engineering activities. technical testing and analysis;71;;20000 to 100000;10 to 50;None;company car;several users;own parking spot on company's estate;BW;131202
+1312643924;small;PUBLIC ADMINISTRATION AND DEFENCE. COMPULSORY SOCIAL SECURITY;O;Public administration and defence. compulsory social security;84;;up to 20000;51 to 250;None;fleet vehicle;several users;own parking spot on company's estate;BW;131201
+1312644088;medium;PUBLIC ADMINISTRATION AND DEFENCE. COMPULSORY SOCIAL SECURITY;O;Public administration and defence. compulsory social security;84;;up to 20000;51 to 250;None;fleet vehicle;several users;own parking spot on company's estate;BW;131201
+1312650424;medium;PUBLIC ADMINISTRATION AND DEFENCE. COMPULSORY SOCIAL SECURITY;O;Public administration and defence. compulsory social security;84;;up to 20000;51 to 250;None;company car;only one user;differing parking spots on company's estate;BW;131201
+1312654806;small;PUBLIC ADMINISTRATION AND DEFENCE. COMPULSORY SOCIAL SECURITY;O;Public administration and defence. compulsory social security;84;;up to 20000;51 to 250;None;fleet vehicle;several users;own parking spot on company's estate;BW;131201
+1312654863;medium;PUBLIC ADMINISTRATION AND DEFENCE. COMPULSORY SOCIAL SECURITY;O;Public administration and defence. compulsory social security;84;;up to 20000;51 to 250;None;company car;only one user;differing parking spots on company's estate;BW;131201
+1312655258;small;PUBLIC ADMINISTRATION AND DEFENCE. COMPULSORY SOCIAL SECURITY;O;Public administration and defence. compulsory social security;84;;up to 20000;51 to 250;None;fleet vehicle;several users;own parking spot on company's estate;BW;131201
+1401514356;medium;ADMINISTRATIVE AND SUPPORT SERVICE ACTIVITIES;N;Rental and leasing activities;77;;up to 20000;under 10;None;fleet vehicle;several users;no own parking spot on company's estate;BW;140104
+1401558452;small;ADMINISTRATIVE AND SUPPORT SERVICE ACTIVITIES;N;Rental and leasing activities;77;;up to 20000;under 10;None;fleet vehicle;several users;no own parking spot on company's estate;BW;140104
+1401558999;medium;ADMINISTRATIVE AND SUPPORT SERVICE ACTIVITIES;N;Rental and leasing activities;77;;up to 20000;under 10;None;fleet vehicle;several users;no own parking spot on company's estate;BW;140104
+1401562876;small;ADMINISTRATIVE AND SUPPORT SERVICE ACTIVITIES;N;Rental and leasing activities;77;;up to 20000;under 10;None;fleet vehicle;several users;no own parking spot on company's estate;BW;140104
+1401564245;small;ADMINISTRATIVE AND SUPPORT SERVICE ACTIVITIES;N;Rental and leasing activities;77;;up to 20000;under 10;None;fleet vehicle;several users;no own parking spot on company's estate;BW;140104
+1401566919;small;ADMINISTRATIVE AND SUPPORT SERVICE ACTIVITIES;N;Rental and leasing activities;77;;up to 20000;under 10;None;fleet vehicle;several users;no own parking spot on company's estate;BW;140104
+1401569178;small;ADMINISTRATIVE AND SUPPORT SERVICE ACTIVITIES;N;Rental and leasing activities;77;;up to 20000;under 10;None;fleet vehicle;several users;no own parking spot on company's estate;BW;140104
+1401570341;small;ADMINISTRATIVE AND SUPPORT SERVICE ACTIVITIES;N;Rental and leasing activities;77;;up to 20000;under 10;None;fleet vehicle;several users;no own parking spot on company's estate;BW;140104
+1401572750;small;ADMINISTRATIVE AND SUPPORT SERVICE ACTIVITIES;N;Rental and leasing activities;77;;up to 20000;under 10;None;fleet vehicle;several users;no own parking spot on company's estate;BW;140104
+1401573006;small;ADMINISTRATIVE AND SUPPORT SERVICE ACTIVITIES;N;Rental and leasing activities;77;;up to 20000;under 10;None;fleet vehicle;several users;no own parking spot on company's estate;BW;140104
+1401573360;small;ADMINISTRATIVE AND SUPPORT SERVICE ACTIVITIES;N;Travel agency. tour operator and other reservation service and related activities;79;;20000 to 100000;10 to 50;None;company car;several users;no own parking spot on company's estate;BW;140103
+1401573501;small;ADMINISTRATIVE AND SUPPORT SERVICE ACTIVITIES;N;Travel agency. tour operator and other reservation service and related activities;79;;20000 to 100000;10 to 50;None;company car;several users;differing parking spots on company's estate;BW;140103
+1401573527;large;ADMINISTRATIVE AND SUPPORT SERVICE ACTIVITIES;N;Travel agency. tour operator and other reservation service and related activities;79;;20000 to 100000;10 to 50;None;company car;several users;own parking spot on company's estate;BW;140103
+1401573550;small;PUBLIC ADMINISTRATION AND DEFENCE. COMPULSORY SOCIAL SECURITY;O;Public administration and defence. compulsory social security;84;;20000 to 100000;51 to 250;None;fleet vehicle;several users;differing parking spots on company's estate;BW;140102
+1401573642;transporter;PUBLIC ADMINISTRATION AND DEFENCE. COMPULSORY SOCIAL SECURITY;O;Public administration and defence. compulsory social security;84;;20000 to 100000;51 to 250;None;fleet vehicle;several users;differing parking spots on company's estate;BW;140102
+1401573659;medium;PUBLIC ADMINISTRATION AND DEFENCE. COMPULSORY SOCIAL SECURITY;O;Public administration and defence. compulsory social security;84;;20000 to 100000;51 to 250;None;company car;only one user;no own parking spot on company's estate;BW;140102
+1401573782;transporter;PUBLIC ADMINISTRATION AND DEFENCE. COMPULSORY SOCIAL SECURITY;O;Public administration and defence. compulsory social security;84;;20000 to 100000;51 to 250;None;company car;only one user;own parking spot on company's estate;BW;140102
+1401573832;medium;PUBLIC ADMINISTRATION AND DEFENCE. COMPULSORY SOCIAL SECURITY;O;Public administration and defence. compulsory social security;84;;20000 to 100000;51 to 250;None;fleet vehicle;several users;differing parking spots on company's estate;BW;140102
+1401574103;transporter;MANUFACTURING;C;Manufacture of basic metals;24;;up to 20000;51 to 250;None;company car;several users;differing parking spots on company's estate;BW;140101
+1401574137;medium;MANUFACTURING;C;Manufacture of basic metals;24;;up to 20000;51 to 250;None;company car;several users;own parking spot on company's estate;BW;140101
+1402642983;medium;WHOLESALE AND RETAIL TRADE. REPAIR OF MOTOR VEHICLES AND MOTORCYCLES;G;Wholesale and retail trade and repair of motor vehicles and motorcycles;45;;more than 100000;51 to 250;None;fleet vehicle;several users;differing parking spots on company's estate;BW;140201
+1402643031;medium;WHOLESALE AND RETAIL TRADE. REPAIR OF MOTOR VEHICLES AND MOTORCYCLES;G;Wholesale and retail trade and repair of motor vehicles and motorcycles;45;;more than 100000;51 to 250;None;fleet vehicle;several users;differing parking spots on company's estate;BW;140201
+1402643700;medium;WHOLESALE AND RETAIL TRADE. REPAIR OF MOTOR VEHICLES AND MOTORCYCLES;G;Wholesale and retail trade and repair of motor vehicles and motorcycles;45;;more than 100000;51 to 250;None;fleet vehicle;several users;differing parking spots on company's estate;BW;140201
+1402643924;medium;WHOLESALE AND RETAIL TRADE. REPAIR OF MOTOR VEHICLES AND MOTORCYCLES;G;Wholesale and retail trade and repair of motor vehicles and motorcycles;45;;more than 100000;51 to 250;None;fleet vehicle;several users;differing parking spots on company's estate;BW;140201
+1402644088;medium;WHOLESALE AND RETAIL TRADE. REPAIR OF MOTOR VEHICLES AND MOTORCYCLES;G;Wholesale and retail trade and repair of motor vehicles and motorcycles;45;;more than 100000;51 to 250;None;fleet vehicle;several users;differing parking spots on company's estate;BW;140201
+1402650424;medium;WHOLESALE AND RETAIL TRADE. REPAIR OF MOTOR VEHICLES AND MOTORCYCLES;G;Wholesale and retail trade and repair of motor vehicles and motorcycles;45;;more than 100000;51 to 250;None;fleet vehicle;several users;differing parking spots on company's estate;BW;140201
+1402654806;medium;WHOLESALE AND RETAIL TRADE. REPAIR OF MOTOR VEHICLES AND MOTORCYCLES;G;Wholesale and retail trade and repair of motor vehicles and motorcycles;45;;more than 100000;51 to 250;None;fleet vehicle;several users;differing parking spots on company's estate;BW;140201
+1402654863;medium;WHOLESALE AND RETAIL TRADE. REPAIR OF MOTOR VEHICLES AND MOTORCYCLES;G;Wholesale and retail trade and repair of motor vehicles and motorcycles;45;;more than 100000;51 to 250;None;fleet vehicle;several users;differing parking spots on company's estate;BW;140201
+1402655258;medium;WHOLESALE AND RETAIL TRADE. REPAIR OF MOTOR VEHICLES AND MOTORCYCLES;G;Wholesale and retail trade and repair of motor vehicles and motorcycles;45;;more than 100000;51 to 250;None;fleet vehicle;several users;differing parking spots on company's estate;BW;140201
+1404557421;medium;MANUFACTURING;C;Manufacture of machinery and equipment n.e.c.;28;;up to 20000;1001 to 5000;None;fleet vehicle;several users;differing parking spots on company's estate;BW;140406
+1404557462;medium;MANUFACTURING;C;Manufacture of machinery and equipment n.e.c.;28;;up to 20000;1001 to 5000;None;fleet vehicle;several users;differing parking spots on company's estate;BW;140406
+1404558114;medium;MANUFACTURING;C;Manufacture of machinery and equipment n.e.c.;28;;up to 20000;1001 to 5000;None;fleet vehicle;several users;differing parking spots on company's estate;BW;140406
+1404558452;medium;MANUFACTURING;C;Manufacture of machinery and equipment n.e.c.;28;;up to 20000;1001 to 5000;None;fleet vehicle;several users;differing parking spots on company's estate;BW;140406
+1404558999;medium;MANUFACTURING;C;Manufacture of machinery and equipment n.e.c.;28;;up to 20000;1001 to 5000;None;fleet vehicle;several users;differing parking spots on company's estate;BW;140406
+1404562637;medium;MANUFACTURING;C;Manufacture of machinery and equipment n.e.c.;28;;up to 20000;1001 to 5000;None;fleet vehicle;several users;differing parking spots on company's estate;BW;140406
+1404562876;medium;MANUFACTURING;C;Manufacture of machinery and equipment n.e.c.;28;;up to 20000;1001 to 5000;None;fleet vehicle;several users;differing parking spots on company's estate;BW;140406
+1404563403;medium;MANUFACTURING;C;Manufacture of machinery and equipment n.e.c.;28;;up to 20000;1001 to 5000;None;fleet vehicle;several users;differing parking spots on company's estate;BW;140406
+1404563726;medium;MANUFACTURING;C;Manufacture of machinery and equipment n.e.c.;28;;up to 20000;1001 to 5000;None;fleet vehicle;several users;differing parking spots on company's estate;BW;140406
+1404563809;medium;MANUFACTURING;C;Manufacture of machinery and equipment n.e.c.;28;;up to 20000;1001 to 5000;None;fleet vehicle;several users;differing parking spots on company's estate;BW;140406
+1404564245;medium;MANUFACTURING;C;Manufacture of machinery and equipment n.e.c.;28;;up to 20000;1001 to 5000;None;fleet vehicle;several users;differing parking spots on company's estate;BW;140406
+1404566919;medium;MANUFACTURING;C;Manufacture of machinery and equipment n.e.c.;28;;up to 20000;1001 to 5000;None;fleet vehicle;several users;differing parking spots on company's estate;BW;140406
+1404569178;medium;MANUFACTURING;C;Manufacture of machinery and equipment n.e.c.;28;;up to 20000;1001 to 5000;None;fleet vehicle;several users;differing parking spots on company's estate;BW;140406
+1404570341;medium;MANUFACTURING;C;Manufacture of machinery and equipment n.e.c.;28;;up to 20000;1001 to 5000;None;fleet vehicle;several users;differing parking spots on company's estate;BW;140406
+1404572750;medium;MANUFACTURING;C;Manufacture of paper and paper products;17;;up to 20000;51 to 250;None;fleet vehicle;several users;own parking spot on company's estate;BW;140405
+1404573006;large;MANUFACTURING;C;Manufacture of paper and paper products;17;;up to 20000;51 to 250;None;fleet vehicle;only one user;differing parking spots on company's estate;BW;140405
+1404573360;medium;MANUFACTURING;C;Manufacture of paper and paper products;17;;up to 20000;51 to 250;None;fleet vehicle;several users;differing parking spots on company's estate;BW;140405
+1404573501;large;MANUFACTURING;C;Manufacture of paper and paper products;17;;up to 20000;51 to 250;None;fleet vehicle;several users;own parking spot on company's estate;BW;140405
+1404573527;large;MANUFACTURING;C;Manufacture of paper and paper products;17;;up to 20000;51 to 250;None;fleet vehicle;several users;own parking spot on company's estate;BW;140405
+1404573550;medium;MANUFACTURING;C;Manufacture of machinery and equipment n.e.c.;28;;up to 20000;51 to 250;None;fleet vehicle;several users;differing parking spots on company's estate;BW;140404
+1404573659;medium;MANUFACTURING;C;Manufacture of machinery and equipment n.e.c.;28;;up to 20000;51 to 250;None;company car;only one user;differing parking spots on company's estate;BW;140404
+1404573782;medium;MANUFACTURING;C;Manufacture of machinery and equipment n.e.c.;28;;up to 20000;51 to 250;None;company car;only one user;differing parking spots on company's estate;BW;140404
+1404573832;medium;MANUFACTURING;C;Manufacture of machinery and equipment n.e.c.;28;;up to 20000;51 to 250;None;company car;only one user;differing parking spots on company's estate;BW;140404
+1404574103;large;OTHER SERVICE ACTIVITIES;S;Activities of membership organisations;94;;more than 100000;10 to 50;None;fleet vehicle;several users;own parking spot on company's estate;BW;140403
+1404574137;large;OTHER SERVICE ACTIVITIES;S;Activities of membership organisations;94;;more than 100000;10 to 50;None;fleet vehicle;several users;own parking spot on company's estate;BW;140403
+1404643031;medium;PUBLIC ADMINISTRATION AND DEFENCE. COMPULSORY SOCIAL SECURITY;O;Public administration and defence. compulsory social security;84;;up to 20000;10 to 50;None;fleet vehicle;several users;own parking spot on company's estate;BW;140402
+1404643700;medium;MANUFACTURING;C;Manufacture of electrical equipment;27;;20000 to 100000;51 to 250;None;company car;only one user;own parking spot on company's estate;BW;140401
+1404643924;medium;MANUFACTURING;C;Manufacture of electrical equipment;27;;20000 to 100000;51 to 250;None;fleet vehicle;several users;own parking spot on company's estate;BW;140401
+1404644088;medium;MANUFACTURING;C;Manufacture of electrical equipment;27;;20000 to 100000;51 to 250;None;fleet vehicle;several users;own parking spot on company's estate;BW;140401
+1404650283;medium;MANUFACTURING;C;Manufacture of electrical equipment;27;;20000 to 100000;51 to 250;None;company car;only one user;differing parking spots on company's estate;BW;140401
+1404650424;medium;MANUFACTURING;C;Manufacture of electrical equipment;27;;20000 to 100000;51 to 250;None;company car;only one user;own parking spot on company's estate;BW;140401
+1404650507;medium;MANUFACTURING;C;Manufacture of electrical equipment;27;;20000 to 100000;51 to 250;None;fleet vehicle;several users;own parking spot on company's estate;BW;140401
+1404653121;medium;MANUFACTURING;C;Manufacture of electrical equipment;27;;20000 to 100000;51 to 250;None;fleet vehicle;several users;own parking spot on company's estate;BW;140401
+1404654806;medium;MANUFACTURING;C;Manufacture of electrical equipment;27;;20000 to 100000;51 to 250;None;company car;only one user;own parking spot on company's estate;BW;140401
+1404654863;medium;MANUFACTURING;C;Manufacture of electrical equipment;27;;20000 to 100000;51 to 250;None;company car;only one user;own parking spot on company's estate;BW;140401
+1404655258;medium;MANUFACTURING;C;Manufacture of electrical equipment;27;;20000 to 100000;51 to 250;None;fleet vehicle;several users;own parking spot on company's estate;BW;140401
+1405573360;small;HUMAN HEALTH AND SOCIAL WORK ACTIVITIES;Q;Social work activities without accommodation;88;;20000 to 100000;10 to 50;None;company car;several users;differing parking spots on company's estate;BW;140504
+1405573501;small;HUMAN HEALTH AND SOCIAL WORK ACTIVITIES;Q;Social work activities without accommodation;88;;20000 to 100000;10 to 50;None;fleet vehicle;several users;differing parking spots on company's estate;BW;140504
+1405573527;small;HUMAN HEALTH AND SOCIAL WORK ACTIVITIES;Q;Social work activities without accommodation;88;;20000 to 100000;10 to 50;None;fleet vehicle;several users;differing parking spots on company's estate;BW;140504
+1405573550;small;HUMAN HEALTH AND SOCIAL WORK ACTIVITIES;Q;Social work activities without accommodation;88;;20000 to 100000;10 to 50;None;fleet vehicle;several users;own parking spot on company's estate;BW;140504
+1405573642;small;HUMAN HEALTH AND SOCIAL WORK ACTIVITIES;Q;Social work activities without accommodation;88;;20000 to 100000;10 to 50;None;company car;only one user;differing parking spots on company's estate;BW;140504
+1405573659;transporter;ADMINISTRATIVE AND SUPPORT SERVICE ACTIVITIES;N;Services to buildings and landscape activities;81;;up to 20000;under 10;None;fleet vehicle;several users;own parking spot on company's estate;BW;140503
+1405573782;transporter;ADMINISTRATIVE AND SUPPORT SERVICE ACTIVITIES;N;Services to buildings and landscape activities;81;;up to 20000;under 10;None;fleet vehicle;several users;own parking spot on company's estate;BW;140503
+1405573832;transporter;ADMINISTRATIVE AND SUPPORT SERVICE ACTIVITIES;N;Services to buildings and landscape activities;81;;up to 20000;under 10;None;fleet vehicle;several users;own parking spot on company's estate;BW;140503
+1405643700;transporter;PUBLIC ADMINISTRATION AND DEFENCE. COMPULSORY SOCIAL SECURITY;O;Public administration and defence. compulsory social security;84;;up to 20000;51 to 250;None;company car;several users;own parking spot on company's estate;BW;140502
+1405643924;medium;PUBLIC ADMINISTRATION AND DEFENCE. COMPULSORY SOCIAL SECURITY;O;Public administration and defence. compulsory social security;84;;up to 20000;51 to 250;None;company car;only one user;own parking spot on company's estate;BW;140502
+1405644088;medium;PUBLIC ADMINISTRATION AND DEFENCE. COMPULSORY SOCIAL SECURITY;O;Public administration and defence. compulsory social security;84;;up to 20000;51 to 250;None;company car;several users;own parking spot on company's estate;BW;140502
+1405650283;medium;PUBLIC ADMINISTRATION AND DEFENCE. COMPULSORY SOCIAL SECURITY;O;Public administration and defence. compulsory social security;84;;up to 20000;51 to 250;None;company car;several users;own parking spot on company's estate;BW;140502
+1405650424;transporter;PUBLIC ADMINISTRATION AND DEFENCE. COMPULSORY SOCIAL SECURITY;O;Public administration and defence. compulsory social security;84;;up to 20000;10 to 50;None;company car;several users;own parking spot on company's estate;BW;140501
+1405653121;large;PUBLIC ADMINISTRATION AND DEFENCE. COMPULSORY SOCIAL SECURITY;O;Public administration and defence. compulsory social security;84;;up to 20000;10 to 50;None;company car;several users;own parking spot on company's estate;BW;140501
+1405654806;transporter;PUBLIC ADMINISTRATION AND DEFENCE. COMPULSORY SOCIAL SECURITY;O;Public administration and defence. compulsory social security;84;;up to 20000;10 to 50;None;company car;several users;own parking spot on company's estate;BW;140501
+1405654863;transporter;PUBLIC ADMINISTRATION AND DEFENCE. COMPULSORY SOCIAL SECURITY;O;Public administration and defence. compulsory social security;84;;up to 20000;10 to 50;None;company car;several users;no own parking spot on company's estate;BW;140501
+1405655258;transporter;PUBLIC ADMINISTRATION AND DEFENCE. COMPULSORY SOCIAL SECURITY;O;Public administration and defence. compulsory social security;84;;up to 20000;10 to 50;None;company car;several users;own parking spot on company's estate;BW;140501
+1407572750;small;MANUFACTURING;C;Manufacture of machinery and equipment n.e.c.;28;;up to 20000;10 to 50;None;company car;several users;own parking spot on company's estate;BW;140706
+1407573006;transporter;MANUFACTURING;C;Manufacture of machinery and equipment n.e.c.;28;;up to 20000;10 to 50;None;company car;several users;own parking spot on company's estate;BW;140706
+1407573360;small;MANUFACTURING;C;Manufacture of machinery and equipment n.e.c.;28;;up to 20000;10 to 50;None;company car;several users;own parking spot on company's estate;BW;140706
+1407573501;small;MANUFACTURING;C;Repair and installation of machinery and equipment;33;;over 100000;10 to 50;None;fleet vehicle;several users;differing parking spots on company's estate;BW;140705
+1407573550;small;MANUFACTURING;C;Repair and installation of machinery and equipment;33;;over 100000;10 to 50;None;fleet vehicle;several users;differing parking spots on company's estate;BW;140705
+1407573659;medium;MANUFACTURING;C;Manufacture of machinery and equipment n.e.c.;28;;20000 to 100000;51 to 250;None;company car;one user;differing parking spots on company's estate;BW;140704
+1407573782;medium;MANUFACTURING;C;Manufacture of machinery and equipment n.e.c.;28;;20000 to 100000;51 to 250;None;company car;one user;differing parking spots on company's estate;BW;140704
+1407573832;small;MANUFACTURING;C;Manufacture of machinery and equipment n.e.c.;28;;20000 to 100000;51 to 250;None;fleet vehicle;several users;differing parking spots on company's estate;BW;140704
+1407574103;transporter;PUBLIC ADMINISTRATION AND DEFENCE. COMPULSORY SOCIAL SECURITY;O;Public administration and defence. compulsory social security;84;;20000 to 100000;10 to 50;None;fleet vehicle;one user;own parking spot on company's estate;BW;140703
+1407574137;medium;PUBLIC ADMINISTRATION AND DEFENCE. COMPULSORY SOCIAL SECURITY;O;Public administration and defence. compulsory social security;84;;20000 to 100000;10 to 50;None;fleet vehicle;one user;own parking spot on company's estate;BW;140703
+1407581942;transporter;PUBLIC ADMINISTRATION AND DEFENCE. COMPULSORY SOCIAL SECURITY;O;Public administration and defence. compulsory social security;84;;20000 to 100000;10 to 50;None;fleet vehicle;one user;own parking spot on company's estate;BW;140703
+1407624437;transporter;PUBLIC ADMINISTRATION AND DEFENCE. COMPULSORY SOCIAL SECURITY;O;Public administration and defence. compulsory social security;84;;20000 to 100000;10 to 50;None;fleet vehicle;one user;own parking spot on company's estate;BW;140703
+1407624569;large;MANUFACTURING;C;Manufacture of computer. electronic and optical products;26;;up to 20000;10 to 50;None;company car;one user;own parking spot on company's estate;BW;140702
+1407641217;transporter;MANUFACTURING;C;Manufacture of computer. electronic and optical products;26;;up to 20000;10 to 50;None;fleet vehicle;several users;own parking spot on company's estate;BW;140702
+1407642983;small;MANUFACTURING;C;Manufacture of machinery and equipment n.e.c.;28;;20000 to 100000;10 to 50;None;fleet vehicle;several users;own parking spot on company's estate;BW;140701
+1407643031;transporter;MANUFACTURING;C;Manufacture of machinery and equipment n.e.c.;28;;20000 to 100000;10 to 50;None;fleet vehicle;several users;own parking spot on company's estate;BW;140701
+1407643700;small;MANUFACTURING;C;Manufacture of machinery and equipment n.e.c.;28;;20000 to 100000;10 to 50;None;company car;several users;own parking spot on company's estate;BW;140701
+1407643924;medium;MANUFACTURING;C;Manufacture of machinery and equipment n.e.c.;28;;20000 to 100000;10 to 50;None;company car;one user;no own parking spot on company's estate;BW;140701
+1407644088;small;MANUFACTURING;C;Manufacture of machinery and equipment n.e.c.;28;;20000 to 100000;10 to 50;None;company car;several users;own parking spot on company's estate;BW;140701
+1407650283;small;MANUFACTURING;C;Manufacture of machinery and equipment n.e.c.;28;;20000 to 100000;10 to 50;None;company car;several users;own parking spot on company's estate;BW;140701
+1407650424;large;MANUFACTURING;C;Manufacture of machinery and equipment n.e.c.;28;;20000 to 100000;10 to 50;None;company car;several users;own parking spot on company's estate;BW;140701
+1407650507;small;MANUFACTURING;C;Manufacture of machinery and equipment n.e.c.;28;;20000 to 100000;10 to 50;None;company car;several users;own parking spot on company's estate;BW;140701
+1407653121;small;MANUFACTURING;C;Manufacture of machinery and equipment n.e.c.;28;;20000 to 100000;10 to 50;None;fleet vehicle;several users;own parking spot on company's estate;BW;140701
+1407654806;small;PUBLIC ADMINISTRATION AND DEFENCE. COMPULSORY SOCIAL SECURITY;O;Public administration and defence. compulsory social security;84;;up to 20000;51 to 250;None;company car;several users;own parking spot on company's estate;BW;140707
+1407654863;small;PUBLIC ADMINISTRATION AND DEFENCE. COMPULSORY SOCIAL SECURITY;O;Public administration and defence. compulsory social security;84;;up to 20000;51 to 250;None;company car;several users;own parking spot on company's estate;BW;140707
+1407655258;small;PUBLIC ADMINISTRATION AND DEFENCE. COMPULSORY SOCIAL SECURITY;O;Public administration and defence. compulsory social security;84;;up to 20000;51 to 250;None;company car;several users;own parking spot on company's estate;BW;140707
+1408570341;medium;TRANSPORTATION AND STORAGE;H;Land transport and transport via pipelines;49;;over 100000;51 to 250;None;fleet vehicle;several users;differing parking spots on company's estate;BW;140801
+1408654863;medium;TRANSPORTATION AND STORAGE;H;Land transport and transport via pipelines;49;;over 100000;51 to 250;None;fleet vehicle;several users;differing parking spots on company's estate;BW;140801
+1408655258;medium;TRANSPORTATION AND STORAGE;H;Land transport and transport via pipelines;49;;over 100000;51 to 250;None;fleet vehicle;several users;differing parking spots on company's estate;BW;140801
+1409357301;large;MANUFACTURING;C;Printing and reproduction of recorded media;18;;20000 to 100000;10 to 50;None;company car;one user;no own parking spot on company's estate;BW;140904
+1409510685;medium;MANUFACTURING;C;Printing and reproduction of recorded media;18;;20000 to 100000;10 to 50;None;fleet vehicle;several users;own parking spot on company's estate;BW;140904
+1409558452;medium;PROFESSIONAL. SCIENTIFIC AND TECHNICAL ACTIVITIES;M;Activities of head offices. management consultancy activities;70;;over 100000;51 to 250;None;company car;one user;differing parking spots on company's estate;BW;140906
+1409562637;large;PROFESSIONAL. SCIENTIFIC AND TECHNICAL ACTIVITIES;M;Activities of head offices. management consultancy activities;70;;over 100000;51 to 250;None;company car;one user;no own parking spot on company's estate;BW;140906
+1409563726;large;PROFESSIONAL. SCIENTIFIC AND TECHNICAL ACTIVITIES;M;Activities of head offices. management consultancy activities;70;;over 100000;51 to 250;None;company car;one user;own parking spot on company's estate;BW;140906
+1409563809;large;PROFESSIONAL. SCIENTIFIC AND TECHNICAL ACTIVITIES;M;Activities of head offices. management consultancy activities;70;;over 100000;51 to 250;None;company car;one user;own parking spot on company's estate;BW;140906
+1409570341;small;HUMAN HEALTH AND SOCIAL WORK ACTIVITIES;Q;Social work activities without accommodation;88;;20000 to 100000;51 to 250;None;fleet vehicle;several users;differing parking spots on company's estate;BW;140901
+1409573360;medium;HUMAN HEALTH AND SOCIAL WORK ACTIVITIES;Q;Social work activities without accommodation;88;;20000 to 100000;51 to 250;None;fleet vehicle;several users;differing parking spots on company's estate;BW;140905
+1409573527;medium;HUMAN HEALTH AND SOCIAL WORK ACTIVITIES;Q;Social work activities without accommodation;88;;20000 to 100000;51 to 250;None;fleet vehicle;several users;differing parking spots on company's estate;BW;140905
+1409573550;medium;HUMAN HEALTH AND SOCIAL WORK ACTIVITIES;Q;Social work activities without accommodation;88;;20000 to 100000;51 to 250;None;fleet vehicle;several users;differing parking spots on company's estate;BW;140905
+1409573642;medium;HUMAN HEALTH AND SOCIAL WORK ACTIVITIES;Q;Social work activities without accommodation;88;;20000 to 100000;51 to 250;None;fleet vehicle;several users;differing parking spots on company's estate;BW;140905
+1409573782;medium;HUMAN HEALTH AND SOCIAL WORK ACTIVITIES;Q;Social work activities without accommodation;88;;20000 to 100000;51 to 250;None;fleet vehicle;several users;differing parking spots on company's estate;BW;140905
+1409643700;small;PUBLIC ADMINISTRATION AND DEFENCE. COMPULSORY SOCIAL SECURITY;O;Public administration and defence. compulsory social security;84;;20000 to 100000;1001 to 5000;None;fleet vehicle;several users;own parking spot on company's estate;BW;140903
+1409650424;large;MANUFACTURING;C;Manufacture of computer. electronic and optical products;26;;up to 20000;251 to 1000;None;company car;one user;own parking spot on company's estate;BW;140902
+1409650507;medium;MANUFACTURING;C;Manufacture of computer. electronic and optical products;26;;up to 20000;251 to 1000;None;fleet vehicle;several users;own parking spot on company's estate;BW;140902
+1409654863;small;HUMAN HEALTH AND SOCIAL WORK ACTIVITIES;Q;Social work activities without accommodation;88;;20000 to 100000;51 to 250;None;fleet vehicle;several users;differing parking spots on company's estate;BW;140901
+1409655258;small;HUMAN HEALTH AND SOCIAL WORK ACTIVITIES;Q;Social work activities without accommodation;88;;20000 to 100000;51 to 250;None;fleet vehicle;several users;differing parking spots on company's estate;BW;140901
+1412569178;large;REAL ESTATE ACTIVITIES;L;Real estate activities;68;;over 100000;kleiner 10;None;company car;one user;own parking spot on company's estate;BW;141207
+1412570341;small;REAL ESTATE ACTIVITIES;L;Real estate activities;68;;over 100000;kleiner 10;None;company car;one user;own parking spot on company's estate;BW;141207
+1412572750;medium;INFORMATION AND COMMUNICATION;J;Computer programming. consultancy and related activities;62;;over 100000;56 bis 250;None;company car;one user;differing parking spots on company's estate;BW;141206
+1412573360;medium;INFORMATION AND COMMUNICATION;J;Computer programming. consultancy and related activities;62;;over 100000;54 bis 250;None;company car;one user;differing parking spots on company's estate;BW;141206
+1412573501;small;INFORMATION AND COMMUNICATION;J;Computer programming. consultancy and related activities;62;;over 100000;53 bis 250;None;company car;one user;differing parking spots on company's estate;BW;141206
+1412573527;small;INFORMATION AND COMMUNICATION;J;Computer programming. consultancy and related activities;62;;over 100000;52 bis 250;None;company car;one user;differing parking spots on company's estate;BW;141206
+1412573550;medium;INFORMATION AND COMMUNICATION;J;Computer programming. consultancy and related activities;62;;over 100000;51 to 250;None;company car;one user;differing parking spots on company's estate;BW;141206
+1412573642;transporter;INFORMATION AND COMMUNICATION;J;Computer programming. consultancy and related activities;62;;up to 20000;10 to 50;None;company car;one user;own parking spot on company's estate;BW;141205
+1412573659;medium;INFORMATION AND COMMUNICATION;J;Computer programming. consultancy and related activities;62;;up to 20000;10 to 50;None;company car;one user;own parking spot on company's estate;BW;141205
+1412573782;small;INFORMATION AND COMMUNICATION;J;Computer programming. consultancy and related activities;62;;up to 20000;10 to 50;None;fleet vehicle;several users;own parking spot on company's estate;BW;141205
+1412573832;small;INFORMATION AND COMMUNICATION;J;Computer programming. consultancy and related activities;62;;up to 20000;10 to 50;None;company car;one user;own parking spot on company's estate;BW;141205
+1412574103;medium;INFORMATION AND COMMUNICATION;J;Computer programming. consultancy and related activities;62;;up to 20000;10 to 50;None;company car;one user;own parking spot on company's estate;BW;141205
+1412574137;large;INFORMATION AND COMMUNICATION;J;Computer programming. consultancy and related activities;62;;up to 20000;10 to 50;None;company car;one user;own parking spot on company's estate;BW;141205
+1412581942;medium;INFORMATION AND COMMUNICATION;J;Computer programming. consultancy and related activities;62;;up to 20000;10 to 50;None;company car;one user;own parking spot on company's estate;BW;141205
+1412582197;transporter;PROFESSIONAL. SCIENTIFIC AND TECHNICAL ACTIVITIES;M;Architectural and engineering activities. technical testing and analysis;71;;20000 to 100000;kleiner 10;None;company car;one user;own parking spot on company's estate;BW;141204
+1412624437;large;PROFESSIONAL. SCIENTIFIC AND TECHNICAL ACTIVITIES;M;Architectural and engineering activities. technical testing and analysis;71;;20000 to 100000;kleiner 10;None;company car;one user;own parking spot on company's estate;BW;141204
+1412624569;medium;PUBLIC ADMINISTRATION AND DEFENCE. COMPULSORY SOCIAL SECURITY;O;Public administration and defence. compulsory social security;84;;up to 20000;10 to 50;None;company car;one user;own parking spot on company's estate;BW;141203
+1412641217;small;HUMAN HEALTH AND SOCIAL WORK ACTIVITIES;Q;Social work activities without accommodation;88;;20000 to 100000;51 to 250;None;fleet vehicle;several users;differing parking spots on company's estate;BW;141202
+1412642983;small;HUMAN HEALTH AND SOCIAL WORK ACTIVITIES;Q;Social work activities without accommodation;88;;20000 to 100000;51 to 250;None;fleet vehicle;several users;differing parking spots on company's estate;BW;141202
+1412643031;small;HUMAN HEALTH AND SOCIAL WORK ACTIVITIES;Q;Social work activities without accommodation;88;;20000 to 100000;51 to 250;None;fleet vehicle;several users;differing parking spots on company's estate;BW;141202
+1412643924;small;HUMAN HEALTH AND SOCIAL WORK ACTIVITIES;Q;Social work activities without accommodation;88;;20000 to 100000;51 to 250;None;fleet vehicle;several users;differing parking spots on company's estate;BW;141202
+1412644088;small;HUMAN HEALTH AND SOCIAL WORK ACTIVITIES;Q;Social work activities without accommodation;88;;20000 to 100000;51 to 250;None;fleet vehicle;several users;differing parking spots on company's estate;BW;141202
+1412650283;large;HUMAN HEALTH AND SOCIAL WORK ACTIVITIES;Q;Social work activities without accommodation;88;;20000 to 100000;51 to 250;None;fleet vehicle;several users;differing parking spots on company's estate;BW;141202
+1412650424;small;HUMAN HEALTH AND SOCIAL WORK ACTIVITIES;Q;Social work activities without accommodation;88;;20000 to 100000;51 to 250;None;fleet vehicle;several users;differing parking spots on company's estate;BW;141202
+1412650507;small;HUMAN HEALTH AND SOCIAL WORK ACTIVITIES;Q;Social work activities without accommodation;88;;20000 to 100000;51 to 250;None;fleet vehicle;several users;differing parking spots on company's estate;BW;141202
+1412653121;small;HUMAN HEALTH AND SOCIAL WORK ACTIVITIES;Q;Social work activities without accommodation;88;;20000 to 100000;51 to 250;None;fleet vehicle;several users;differing parking spots on company's estate;BW;141202
+1412654806;large;MANUFACTURING;C;Printing and reproduction of recorded media;18;;20000 to 100000;10 to 50;None;company car;one user;own parking spot on company's estate;BW;141201
+1412654863;large;MANUFACTURING;C;Printing and reproduction of recorded media;18;;20000 to 100000;10 to 50;None;company car;one user;own parking spot on company's estate;BW;141201
+1412655258;large;MANUFACTURING;C;Printing and reproduction of recorded media;18;;20000 to 100000;10 to 50;None;company car;one user;own parking spot on company's estate;BW;141201
+1501510685;transporter;TRANSPORTATION AND STORAGE;H;Land transport and transport via pipelines;49;;over 100000;251 to 1000;None;fleet vehicle;several users;no own parking spot on company's estate;BW;150110
+1501514356;transporter;TRANSPORTATION AND STORAGE;H;Land transport and transport via pipelines;49;;over 100000;251 to 1000;None;fleet vehicle;several users;no own parking spot on company's estate;BW;150110
+1501557421;transporter;TRANSPORTATION AND STORAGE;H;Land transport and transport via pipelines;49;;over 100000;251 to 1000;None;fleet vehicle;several users;no own parking spot on company's estate;BW;150110
+1501563809;medium;OTHER SERVICE ACTIVITIES;S;Computer programming. consultancy and related activities;62;;up to 20000;10 to 50;None;company car;one user;differing parking spots on company's estate;BW;150109
+1501564245;large;WHOLESALE AND RETAIL TRADE. REPAIR OF MOTOR VEHICLES AND MOTORCYCLES;G;Rental and leasing activities;77;;up to 20000;kleiner 10;None;company car;one user;own parking spot on company's estate;BW;150108
+1501569178;small;WHOLESALE AND RETAIL TRADE. REPAIR OF MOTOR VEHICLES AND MOTORCYCLES;G;Rental and leasing activities;77;;up to 20000;kleiner 10;None;fleet vehicle;several users;no own parking spot on company's estate;BW;150108
+1501570341;small;WHOLESALE AND RETAIL TRADE. REPAIR OF MOTOR VEHICLES AND MOTORCYCLES;G;Rental and leasing activities;77;;up to 20000;kleiner 10;None;fleet vehicle;several users;own parking spot on company's estate;BW;150108
+1501572750;medium;WHOLESALE AND RETAIL TRADE. REPAIR OF MOTOR VEHICLES AND MOTORCYCLES;G;Wholesale and retail trade and repair of motor vehicles and motorcycles;45;;up to 20000;51 to 250;None;;several users;differing parking spots on company's estate;BW;150107
+1501573360;medium;WHOLESALE AND RETAIL TRADE. REPAIR OF MOTOR VEHICLES AND MOTORCYCLES;G;Wholesale and retail trade and repair of motor vehicles and motorcycles;45;;up to 20000;51 to 250;None;;several users;differing parking spots on company's estate;BW;150107
+1501573501;medium;WHOLESALE AND RETAIL TRADE. REPAIR OF MOTOR VEHICLES AND MOTORCYCLES;G;Wholesale and retail trade and repair of motor vehicles and motorcycles;45;;up to 20000;51 to 250;None;;several users;differing parking spots on company's estate;BW;150107
+1501573527;medium;WHOLESALE AND RETAIL TRADE. REPAIR OF MOTOR VEHICLES AND MOTORCYCLES;G;Wholesale and retail trade and repair of motor vehicles and motorcycles;45;;up to 20000;51 to 250;None;;several users;differing parking spots on company's estate;BW;150107
+1501573642;transporter;PUBLIC ADMINISTRATION AND DEFENCE. COMPULSORY SOCIAL SECURITY;O;Public administration and defence. compulsory social security;84;;up to 20000;kleiner 10;None;company car;several users;own parking spot on company's estate;BW;150106
+1501573659;transporter;PUBLIC ADMINISTRATION AND DEFENCE. COMPULSORY SOCIAL SECURITY;O;Public administration and defence. compulsory social security;84;;up to 20000;kleiner 10;None;company car;several users;own parking spot on company's estate;BW;150106
+1501573782;large;WHOLESALE AND RETAIL TRADE. REPAIR OF MOTOR VEHICLES AND MOTORCYCLES;G;Retail trade. except of motor vehicles and motorcycles;47;;up to 20000;51 to 250;None;company car;one user;own parking spot on company's estate;BW;150105
+1501573832;medium;WHOLESALE AND RETAIL TRADE. REPAIR OF MOTOR VEHICLES AND MOTORCYCLES;G;Retail trade. except of motor vehicles and motorcycles;47;;up to 20000;51 to 250;None;company car;one user;differing parking spots on company's estate;BW;150105
+1501574103;transporter;WHOLESALE AND RETAIL TRADE. REPAIR OF MOTOR VEHICLES AND MOTORCYCLES;G;Retail trade. except of motor vehicles and motorcycles;47;;up to 20000;51 to 250;None;fleet vehicle;one user;no own parking spot on company's estate;BW;150105
+1501574137;medium;WHOLESALE AND RETAIL TRADE. REPAIR OF MOTOR VEHICLES AND MOTORCYCLES;G;Retail trade. except of motor vehicles and motorcycles;47;;up to 20000;51 to 250;None;company car;one user;no own parking spot on company's estate;BW;150105
+1501581942;medium;MANUFACTURING;C;Manufacture of fabricated metal products. except machinery and equipment;25;;20000 to 100000;10 to 50;None;company car;one user;differing parking spots on company's estate;BW;150104
+1501582197;medium;MANUFACTURING;C;Manufacture of fabricated metal products. except machinery and equipment;25;;20000 to 100000;10 to 50;None;company car;one user;own parking spot on company's estate;BW;150104
+1501624437;large;MANUFACTURING;C;Manufacture of fabricated metal products. except machinery and equipment;25;;20000 to 100000;10 to 50;None;company car;one user;own parking spot on company's estate;BW;150104
+1501624569;medium;MANUFACTURING;C;Manufacture of fabricated metal products. except machinery and equipment;25;;up to 20000;10 to 50;None;company car;one user;own parking spot on company's estate;BW;150103
+1501641217;medium;MANUFACTURING;C;Manufacture of fabricated metal products. except machinery and equipment;25;;up to 20000;10 to 50;None;company car;several users;own parking spot on company's estate;BW;150103
+1501642983;transporter;PUBLIC ADMINISTRATION AND DEFENCE. COMPULSORY SOCIAL SECURITY;O;Public administration and defence. compulsory social security;84;;up to 20000;kleiner 10;None;fleet vehicle;several users;differing parking spots on company's estate;BW;150102
+1501643031;transporter;PUBLIC ADMINISTRATION AND DEFENCE. COMPULSORY SOCIAL SECURITY;O;Public administration and defence. compulsory social security;84;;up to 20000;kleiner 10;None;fleet vehicle;several users;differing parking spots on company's estate;BW;150102
+1501643924;medium;PUBLIC ADMINISTRATION AND DEFENCE. COMPULSORY SOCIAL SECURITY;O;Public administration and defence. compulsory social security;84;;up to 20000;kleiner 10;None;fleet vehicle;several users;own parking spot on company's estate;BW;150102
+1501650283;medium;PUBLIC ADMINISTRATION AND DEFENCE. COMPULSORY SOCIAL SECURITY;O;Public administration and defence. compulsory social security;84;;up to 20000;kleiner 10;None;fleet vehicle;several users;differing parking spots on company's estate;BW;150102
+1501650424;small;PUBLIC ADMINISTRATION AND DEFENCE. COMPULSORY SOCIAL SECURITY;O;Public administration and defence. compulsory social security;84;;20000 to 100000;1001 to 5000;None;fleet vehicle;several users;own parking spot on company's estate;BW;150101
+1501650507;small;PUBLIC ADMINISTRATION AND DEFENCE. COMPULSORY SOCIAL SECURITY;O;Public administration and defence. compulsory social security;84;;20000 to 100000;1001 to 5000;None;fleet vehicle;several users;own parking spot on company's estate;BW;150101
+1501653121;small;PUBLIC ADMINISTRATION AND DEFENCE. COMPULSORY SOCIAL SECURITY;O;Public administration and defence. compulsory social security;84;;20000 to 100000;1001 to 5000;None;fleet vehicle;several users;own parking spot on company's estate;BW;150101
+1501654806;small;PUBLIC ADMINISTRATION AND DEFENCE. COMPULSORY SOCIAL SECURITY;O;Public administration and defence. compulsory social security;84;;20000 to 100000;1001 to 5000;None;fleet vehicle;several users;own parking spot on company's estate;BW;150101
+1501654863;small;PUBLIC ADMINISTRATION AND DEFENCE. COMPULSORY SOCIAL SECURITY;O;Public administration and defence. compulsory social security;84;;20000 to 100000;1001 to 5000;None;fleet vehicle;several users;own parking spot on company's estate;BW;150101
+1501655258;small;PUBLIC ADMINISTRATION AND DEFENCE. COMPULSORY SOCIAL SECURITY;O;Public administration and defence. compulsory social security;84;;20000 to 100000;1001 to 5000;None;fleet vehicle;several users;own parking spot on company's estate;BW;150101
+1501655258;small;PUBLIC ADMINISTRATION AND DEFENCE. COMPULSORY SOCIAL SECURITY;O;Public administration and defence. compulsory social security;84;;20000 to 100000;1001 to 5000;None;fleet vehicle;several users;own parking spot on company's estate;BW;150101
