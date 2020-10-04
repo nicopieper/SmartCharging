@@ -13,9 +13,6 @@
 # mat
 *.mat
 
-# MAT
-*.M
-
 # fig
 *.fig
 
@@ -45,5 +42,6 @@ codegen/
 # Simulink cache files
 *.slxc
 
-# Octave session info
-octave-workspace
+# PNG
+*.png
+*.PNG
