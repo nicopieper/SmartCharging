@@ -1,6 +1,17 @@
 %% Description
-% This Script smard.de data directly from the website or, when already 
-% stored, from a local path. Downloaded data is stored in week files.
+% This Script loads electricity data directly from smard.de or, when 
+% already stored, from a local path. Downloaded data is stored in files
+% that cover one complete week of a subject. The subjects are Dayahead
+% spotmarket price, the real grid load, the predicted grid load, the real
+% electricity generation data, the predicted electricity generation data.
+% The real generation data distinguishes all different types of electricity
+% source (Biomass, Wind Offshore, WindOnshore, PV, Coal, Nuclear etc.), the
+% prediction only distinguishes Total, Wind Onshore, Wind Offshore, PV,
+% Remaining.
+% The data is stored in a tree structure. Every categroy includes folders
+% for hourly and quater hourly data. Those folders have include one folder 
+% for each year. Inside those year folders there is one mat file for each
+% week.
 % NAN vlaues are replaced by estimates by the function FillMissingValues.
 % The function DeleteDST changes the time series such as if there would be
 % no Daylight Saving Time. Therefore, in October the doubling occuring hour
@@ -8,28 +19,61 @@
 % To circumvent datetime issues in Matlab, Tunesian TimeZone is used, as it
 % does not consider DST.
 %
-% It processes
-%   - DayAhead Prices
-%   - Real Load
-%   - Predicted Load
-%   - Real Generation
-%   - Predicted Generation
+% Depended scripts / folders
+%   Initialisation          Needed for the execution of this script
+%   GeneratePrediction.m    Makes us of this data to generate predictors,
+%                           prediction models and predictions
+%
 % Abbreviations:
 %   - Pred  = Prediction
 %   - H     = Hourly
 %   - QH    = Quaterly Hour
+%
+% Description of important variables
+%   DateStartSmard:     Data that was once downloaded is stored in files
+%                       that cover one week. Therefore, this variable finds
+%                       the first Monday before DateStart (if DateStart is
+%                       a Monday than they are equal). datetime (1,1)
+%   DateEndSmard:       This variable finds first Sunday after DateEnd 
+%                       (if DateStart is a Sunday than they are equal).
+%                       datetime (1,1)
+%   DateVec             All Mondays between DateStartSmard and 
+%                       DateEndSmard. Each Moday represents one week. Data
+%                       is loaded for each week (Monday) in DataVec.
+%                       datetime (1, number weeks)
+%   DaysDiffStart:      If DateStart is not a Monday, data for some
+%                       unwanted dates will be loaded. DaysDiffStart counts
+%                       the number of days with unwanted data before
+%                       DateStart. double (1,1)
+%   DaysDiffEnd:        If DateStart is not a Sunday, data for some
+%                       unwanted dates will be loaded too. DaysDiffEnd 
+%                       counts the number of days with unwanted data after
+%                       DateEnd. double (1,1)
+%   IDList:             smard.de assigns each data category with an ID.
+%                       Dayahead has to IDs at it changed when Germany,
+%                       Austria and Lucembourg joined a collaborative spot
+%                       market. string array
+%   SmardData:          A container with all the loaded data. One row
+%                       represents one category (e. g. Dayahead real
+%                       price). The first column is used for the quater
+%                       hourly values, the second one for houly values and
+%                       the third one gives a desricption of this category
+%                       as a string. cell array (20,3)
+
 
 %% Initialisation
 tic
 PathSmardData=[Path 'Predictions' Dl 'SmardData' Dl];
-DateStartSmard=LastMonday(datetime(year(DateStart), month(DateStart), day(DateStart), 0,0,0, 'TimeZone','Europe/Berlin'));
-DateEndSmard=NextSunday(datetime(year(DateEnd), month(DateEnd), day(DateEnd), 23,59,59, 'TimeZone','Europe/Berlin'));
-DateVec=DateStartSmard:caldays(7):DateEndSmard;
+
+DateStartSmard=LastMonday(datetime(year(DateStart), month(DateStart), day(DateStart), 0,0,0, 'TimeZone','Europe/Berlin')); % search for the last monday before DateStart
+DateEndSmard=NextSunday(datetime(year(DateEnd), month(DateEnd), day(DateEnd), 23,59,59, 'TimeZone','Europe/Berlin')); % search for the next Sunday after DateStart
+DateVec=DateStartSmard:caldays(7):DateEndSmard; 
 DaysDiffStart=round(days(DateStart-DateStartSmard));
 DaysDiffEnd=round(days(DateEndSmard-DateEnd));
-SmardURL='https://smard.de/app/chart_data/';
+
+SmardURL='https://smard.de/app/chart_data/'; % the data is saved in json files available thorugh links that begin with this URL
 TimeLabels=["Hourly", "QuarterHourly"; "hour", "quarterhour"; "H", "QH"];
-IDList=["DayaheadReal",                 "4169", "251";...
+IDList=["DayaheadReal",                 "4169", "251";... % the links contain an ID that refers to a data category
         "GenBiomasseReal",              "4066", "";...
         "GenWasserkraftReal",           "1226", "";...
         "GenWindOffshoreReal",          "1225", "";...
@@ -55,53 +99,69 @@ SmardData=cell(size(IDList,1),2);
 
 %% Download or load Data
 h=waitbar(0, 'Lade Stromwirtschaftsdaten von smard.de');
-for Date=DateVec
-    Weeknum=num2str(weeknum(Date+days(1)));
-    Year=num2str(year(Date));            
-    for n=1:size(IDList,1)
-        for k=1:2
-            StoragePath=strcat(PathSmardData, IDList(n,1), Dl, TimeLabels(1,k), Dl, Year, Dl);
+for Date=DateVec % iterate thorugh the weeks and load the data
+    
+    Weeknum=num2str(weeknum(Date+days(1))); % find the week number. the transition from one year to the next is tricky. the addition of one day does fix that
+    Year=num2str(year(Date));
+    
+    for n=1:size(IDList,1) % iterate trough the data categories 
+        for k=1:2 % 1: hourly, 2: quater hourly
+            
+            StoragePath=strcat(PathSmardData, IDList(n,1), Dl, TimeLabels(1,k), Dl, Year, Dl); % use a tree folder structure. each data category has a folder. this folder is seperated folders for hourly and quater hourly data. Each folder has folders for each year. in the year folders there is one mat file for each week of downloaded data
             if ~exist(StoragePath, 'dir')
-                mkdir(StoragePath)
+                mkdir(StoragePath) % if a folder does not exist yet, make it
             end
+            
             StorageFile=strcat(StoragePath, IDList(n,1), TimeLabels(3,k), '_', Year, '-', Weeknum, '.mat');
-            if isfile(StorageFile) && ProcessDataNewSmard==0   
+            if isfile(StorageFile) && ProcessDataNewSmard==0 % if the required data for the week given by Date and the data category given by IDList(n,1) does already exsit as a mat file, then load it
+                %% load data from local path
                 load(StorageFile);
-            else
+                    
+            else % otherwise the data has to be downlaoded from smard.de which requires an internet connection
+                %% load data from smard.de
+                
                 IDCol=2;
-                CountryCode="DE";
+                
+                CountryCode="DE"; % generally use DE as the country code, only the dayahead market data needs DE-AT-LU
                 if n==1
                     CountryCode="DE-AT-LU";
-                    if Date<=datetime(2018,09,30,23,45,0, 'TimeZone', 'Europe/Berlin')
+                    if Date<=datetime(2018,09,30,23,45,0, 'TimeZone', 'Europe/Berlin') % after Germany, Austria and Luxembourg joined a share spotmarket the ID changed
                         IDCol=3;
                     end
-                end                
-                RawData=webread(strcat(SmardURL, IDList(n,IDCol), '/', CountryCode, '/', IDList(n,IDCol), '_', CountryCode, '_', TimeLabels(2,k), '_', strcat(string(posixtime(Date)), '000'), '.json'));
-                Time=datetime(RawData.series(:,1)/1000,'ConvertFrom', 'posixtime', 'TimeZone', 'Europe/Berlin');
-                SmardDataLoaded=RawData.series(:,2);
-                if size(Time,1)~=168*(k^2)
-                    DSTChanges=find(isdst(Time(1:end-1))~=isdst(Time(2:end)));
-                    DSTChanges=[DSTChanges month(Time(DSTChanges))];
-                    SmardDataLoaded=DeleteDST(SmardDataLoaded, DSTChanges, k^2);
+                end   
+                
+                RawData=webread(strcat(SmardURL, IDList(n,IDCol), '/', CountryCode, '/', IDList(n,IDCol), '_', CountryCode, '_', TimeLabels(2,k), '_', strcat(string(posixtime(Date)), '000'), '.json')); % download the json file for the week and data category via the correct URL
+                Time=datetime(RawData.series(:,1)/1000,'ConvertFrom', 'posixtime', 'TimeZone', 'Europe/Berlin'); % from the downloaded data save the corresponding time
+                SmardDataLoaded=RawData.series(:,2); % and the data values
+                
+                if size(Time,1)~=168*(k^2) % if one week does not contain 168 values of hourly data or 168*4 values for quater hourly data, then this week must contain a date in which the daylight saving time changes.
+                    DSTChanges=find(isdst(Time(1:end-1))~=isdst(Time(2:end))); % within the time vector, find the index where the transition of the daylight saving time happens. dst checks whether a datetime value is part of the daylight saving time or not. if the result changes between to consecutive values, then this must be the transition
+                    DSTChanges=[DSTChanges month(Time(DSTChanges))]; % store the transitions and add the month. it is important to know whether it is march or october in order to correct the inconsistencies due to DST
+                    SmardDataLoaded=DeleteDST(SmardDataLoaded, DSTChanges, k^2); % in march values for the missing hour are interpolated, such as if there was no DST. in october the surplus values are deleted such as if there was no DST
                 end
-                save(StorageFile, 'SmardDataLoaded', '-v7.3')                                    
+                
+                save(StorageFile, 'SmardDataLoaded', '-v7.3') % save the data loaded from smard.de in a mat file
             end
-            SmardData{n,k}=[SmardData{n,k}; SmardDataLoaded];
+            
+            SmardData{n,k}=[SmardData{n,k}; SmardDataLoaded]; % store the data in the container
         end
     end
     waitbar((Date-DateStart)/(DateEnd-DateStart))
 end
 close(h);
 
+%% Post processing
+
 for n=1:size(IDList,1)
     for k=1:2
-        SmardData{n,k}=SmardData{n,k}(DaysDiffStart*k^2*24+1:end-DaysDiffEnd*k^2*24);
+        SmardData{n,k}=SmardData{n,k}(DaysDiffStart*k^2*24+1:end-DaysDiffEnd*k^2*24); % delete surplus values that were loaded because the first or last week exceeds partly TimeVec
     end
 end
 
-SmardData(:,3)=cellstr(IDList(:,1));
+SmardData(:,3)=cellstr(IDList(:,1)); % add categroy descriptions
 
 %% Store Data in Variables
+
 TimeH=(DateStart:hours(1):DateEnd)';
 TimeQH=(DateStart:minutes(15):DateEnd)';
 GenRealH=FillMissingValues([SmardData{2:13,1}], 1); % GenBiomasseReal, GenWasserkraftReal, GenWindOffshoreReal, GenWindOnshoreReal, GenPhotovoltaikReal, GenSonstigeErneuerbareReal, GenKernenergieReal, GenBraunkohelReal, GenSteinkohle RealGenErdgasReal, GenPumpspeicherReal, GenSonstigeKonvetionelleReal
@@ -115,7 +175,7 @@ LoadPredQH=FillMissingValues([SmardData{20,2}], 4)*4;
 DayaheadReal1H=FillMissingValues([SmardData{1,1}], 1);
 DayaheadReal1QH=FillMissingValues([SmardData{1,2}], 4);
 
-if length(SmardData{2,2})~=round(days(DateEnd-DateStart))*24*4==length(TimeQH) || length(SmardData{2,1})~=round(days(DateEnd-DateStart))*24==length(TimeH)
+if length(SmardData{2,2})~=round(days(DateEnd-DateStart))*24*4==length(TimeQH) || length(SmardData{2,1})~=round(days(DateEnd-DateStart))*24==length(TimeH) % check data for consistency
     disp(strcat("The length of the Smard Data vectors does not correspond to the range of the end and start date"))
 end
 

@@ -1,5 +1,12 @@
 %% Define target groups
 
+if ~exist("Users", "var")
+    PathSimulationData=strcat(Path, "Simulation");
+    StorageFiles=dir(strcat(PathSimulationData, Dl, "Users_*"));
+    [~, StorageInd]=max(datetime({StorageFiles.date}, "InputFormat", "dd-MMM-yyyy HH:mm:ss"));
+    load(strcat(PathSimulationData, Dl, StorageFiles(StorageInd).name))
+end
+
 for n=2:length(Users)
     if ismissing(Users{n}.VehicleUtilisation)
         Users{n}.VehicleUtilisation="undefined";
@@ -7,13 +14,6 @@ for n=2:length(Users)
     if ismissing(Users{n}.NumUsers)
         Users{n}.NumUsers="undefined";
     end
-end
-
-if ~exist("Users", "var")
-    PathSimulationData=strcat(Path, "Simulation");
-    StorageFiles=dir(strcat(PathSimulationData, Dl, "Users_*"));
-    [~, StorageInd]=max(datetime({StorageFiles.date}, "InputFormat", "dd-MMM-yyyy HH:mm:ss"));
-    load(strcat(PathSimulationData, Dl, StorageFiles(StorageInd).name))
 end
 
 Targets=["small"; "medium"; "large"; "transporter"];
@@ -60,8 +60,8 @@ for k=ExistingTargets
         ChargeProcesses{k,1}(n)=Users{n}.ChargeProcessesHomeBase;
         ChargeProcesses{k,2}(n)=Users{n}.ChargeProcessesOtherBase;
     end
-    ChargeProcessesPerWeek{k,1}=sum(ChargeProcesses{k,1})/days(DateEnd-DateStart)*7/length(TargetGroups{k});
-    ChargeProcessesPerWeek{k,2}=sum(ChargeProcesses{k,2})/days(DateEnd-DateStart)*7/length(TargetGroups{k});
+    ChargeProcessesPerWeek{k,1}=sum(ChargeProcesses{k,1})/days(Users{1}.TimeVec(end)-Users{1}.TimeVec(1))*7/length(TargetGroups{k});
+    ChargeProcessesPerWeek{k,2}=sum(ChargeProcesses{k,2})/days(Users{1}.TimeVec(end)-Users{1}.TimeVec(1))*7/length(TargetGroups{k});
 end
 ChargeProcessesPerWeek=ChargeProcessesPerWeek(ExistingTargets,:);
 DataTable.ChargingPorcessesPerWeek=round(cell2mat(ChargeProcessesPerWeek)*100)/100;
@@ -129,9 +129,9 @@ for k=ExistingTargets
     end
 end
 EnergyCharged=EnergyCharged(ExistingTargets,:);
-EnergyChargedPerDayPerVehicle=cellfun(@sum,EnergyCharged)/days(DateEnd-DateStart)/1000./cellfun(@length, TargetGroups(ExistingTargets));
+EnergyChargedPerDayPerVehicle=cellfun(@sum,EnergyCharged)/days(Users{1}.TimeVec(end)-Users{1}.TimeVec(1))/1000./cellfun(@length, TargetGroups(ExistingTargets));
 HomeChargingQuote=sum(EnergyChargedPerDayPerVehicle(:,1))/sum(EnergyChargedPerDayPerVehicle,'all');
-disp(strcat("The users charged in average ", num2str(sum(cellfun(@sum, EnergyCharged), 'all')/days(DateEnd-DateStart)/1000/length(Users)-1), " kWh per day"))
+disp(strcat("The users charged in average ", num2str(sum(cellfun(@sum, EnergyCharged), 'all')/days(Users{1}.TimeVec(end)-Users{1}.TimeVec(1))/1000/length(Users)-1), " kWh per day"))
 disp(strcat(num2str(HomeChargingQuote*100), " % of all charging events took place at home"))
 % DataTable.EnergyChargedPerDay=
 
@@ -149,8 +149,8 @@ for k=ExistingTargets
         ConnectionBlocksOther=[find(ismember(Users{n}.LogbookBase(1:end,1),6:7) & ~ismember([0;Users{n}.LogbookBase(1:end-1,1)],6:7)), find(ismember(Users{n}.LogbookBase(1:end,1),6:7) & ~ismember([Users{n}.LogbookBase(2:end,1);0],6:7))];
         ConnectionTime{k,1}=[ConnectionTime{k,1}; (ConnectionBlocksHome(:,2)-ConnectionBlocksHome(:,1)+1)*TimeStepMin];
         ConnectionTime{k,2}=[ConnectionTime{k,2}; (ConnectionBlocksOther(:,2)-ConnectionBlocksOther(:,1)+1)*TimeStepMin];
-        ArrivalTimes{k,1}=[ArrivalTimes{k,1}; datetime(ones(length(ConnectionBlocksHome),1),ones(length(ConnectionBlocksHome),1),ones(length(ConnectionBlocksHome),1), hour(TimeVec(ConnectionBlocksHome(:,1))), minute((TimeVec(ConnectionBlocksHome(:,1)))),zeros(length(ConnectionBlocksHome),1), 'TimeZone', 'Africa/Tunis')];
-        ArrivalTimes{k,2}=[ArrivalTimes{k,2}; datetime(ones(length(ConnectionBlocksOther),1),ones(length(ConnectionBlocksOther),1),ones(length(ConnectionBlocksOther),1), hour(TimeVec(ConnectionBlocksOther(:,1))), minute((TimeVec(ConnectionBlocksOther(:,1)))),zeros(length(ConnectionBlocksOther),1), 'TimeZone', 'Africa/Tunis')];
+        ArrivalTimes{k,1}=[ArrivalTimes{k,1}; datetime(ones(length(ConnectionBlocksHome),1),ones(length(ConnectionBlocksHome),1),ones(length(ConnectionBlocksHome),1), hour(Users{1}.TimeVec(ConnectionBlocksHome(:,1))), minute((Users{1}.TimeVec(ConnectionBlocksHome(:,1)))),zeros(length(ConnectionBlocksHome),1), 'TimeZone', 'Africa/Tunis')];
+        ArrivalTimes{k,2}=[ArrivalTimes{k,2}; datetime(ones(length(ConnectionBlocksOther),1),ones(length(ConnectionBlocksOther),1),ones(length(ConnectionBlocksOther),1), hour(Users{1}.TimeVec(ConnectionBlocksOther(:,1))), minute((Users{1}.TimeVec(ConnectionBlocksOther(:,1)))),zeros(length(ConnectionBlocksOther),1), 'TimeZone', 'Africa/Tunis')];
     end
 end
 ConnectionTime=ConnectionTime(ExistingTargets,:);

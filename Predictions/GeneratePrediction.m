@@ -42,14 +42,14 @@
 %                                                   mMAPE                                                       mMAPE
 %                               Prädiktoren     LSQ     Narxnet                             Prädiktoren     LSQ     Narxnet
 %   
-%   ResPoPricesReal4H(:,1)      []              0.736   0.832       ResEnPricesRealQH(:,3)  []              0.746   0.838
-%   ResPoPricesReal4H(:,1)      [Load, Gen]     0.803   0.792       ResEnPricesRealQH(:,3)  [Load, Gen]     0.790   0.919
-%   ResPoPricesReal4H(:,2)      []              0.410   0.644       ResEnPricesRealQH(:,4)  []              0.189   0.275
-%   ResPoPricesReal4H(:,2)      [Load, Gen]     0.614   0.746       ResEnPricesRealQH(:,4)  [Load, Gen]     0.194   0.251
-%   ResPoPricesReal4H(:,3)      []              0.770   0.881       ResPoDemRealQH(:,1)     []              0.994   1.010
-%   ResPoPricesReal4H(:,3)      [Load, Gen]     0.841   0.747       ResPoDemRealQH(:,1)     [Load, Gen]     0.994   1.012
-%   ResPoPricesReal4H(:,4)      []              0.563   0.729       ResPoDemRealQH(:,2)     []              1.318   1.331
-%   ResPoPricesReal4H(:,4)      [Load, Gen]     0.871   1.089       ResPoDemRealQH(:,2)     [Load, Gen]     1.327   1.345
+%   ResPoPricesReal4H(:,3)      []              0.736   0.832       ResEnPricesRealQH(:,3)  []              0.746   0.838
+%   ResPoPricesReal4H(:,3)      [Load, Gen]     0.803   0.792       ResEnPricesRealQH(:,3)  [Load, Gen]     0.790   0.919
+%   ResPoPricesReal4H(:,4)      []              0.410   0.644       ResEnPricesRealQH(:,4)  []              0.189   0.275
+%   ResPoPricesReal4H(:,4)      [Load, Gen]     0.614   0.746       ResEnPricesRealQH(:,4)  [Load, Gen]     0.194   0.251
+%   ResPoPricesReal4H(:,5)      []              0.770   0.881       ResPoDemRealQH(:,1)     []              0.994   1.010
+%   ResPoPricesReal4H(:,5)      [Load, Gen]     0.841   0.747       ResPoDemRealQH(:,1)     [Load, Gen]     0.994   1.012
+%   ResPoPricesReal4H(:,6)      []              0.563   0.729       ResPoDemRealQH(:,2)     []              1.318   1.331
+%   ResPoPricesReal4H(:,6)      [Load, Gen]     0.871   1.089       ResPoDemRealQH(:,2)     [Load, Gen]     1.327   1.345
 %
 %   IntradayRealH(:,1)          []              0.286   0.289       IntradayRealH(:,3)      []              0.286   0.289 
 %   IntradayRealH(:,1)          [Load, Gen]     0.230   0.212       IntradayRealH(:,3)      [Load, Gen]     0.230   0.212
@@ -71,14 +71,14 @@ if ~exist('GenRealQH', 'var') || ~exist('IntradayRealQH', 'var') || ~exist('ResP
     disp('Successfully initialised')
 end
 
-Target=DayaheadRealH; % double(PVPlants{1}.Profile); %DayaheadRealH;
-TargetTitle="DayaheadRealH";  % "DayaheadRealH"; "PVPlants_1"
-TimeVecPred=TimeH;
-Predictors= [LoadPredH, GenPredH];% [GenPredQH(:,4)]; [LoadPredH, GenPredH]
-PredMethod={1;2};
+Target=Availability1; % double(PVPlants{1}.Profile); %DayaheadRealH;
+TargetTitle="Availability";  % "DayaheadRealH"; "PVPlants_1"
+TimeVecPred=TimeVec;
+Predictors= [SoC1, Weekday];% [GenPredQH(:,4)]; [LoadPredH, GenPredH]
+PredMethod={2};
 TrainModelNew=0;
 
-MaxDelayHours=7*24/7*3;
+MaxDelayHours=7*24/7*1;
 ForecastIntervalHours=52; % 52h  % The model must be able to predict the value of Wednesday 12:00 at Monday 8:00 --> 52 forecast interval
 Demo=0;
 ActivateWaitbar=1;
