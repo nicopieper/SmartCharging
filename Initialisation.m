@@ -1,3 +1,23 @@
+%%
+StorageFiles=dir(strcat(Path.Simulation, Dl, "Users_*"));
+for n=StorageFiles'
+load(strcat(n.folder, '\', n.name))
+% if ~isfield(Users{1}, 'Time')
+%     Users{1}.Time.Vec=Users{1}.TimeVec;
+%     Users{1}.Time.Step=Users{1}.TimeStep;
+%     Users{1}.Time.Stamp=Users{1}.TimeStamp;
+%     Users{1}=rmfield(Users{1}, 'TimeVec');
+%     Users{1}=rmfield(Users{1}, 'TimeStep');
+%     Users{1}=rmfield(Users{1}, 'TimeStamp');
+% end
+Del=strfind(n.name, "_");
+TimeInt=strcat(datestr(Users{1}.Time.Vec(1), 'yyyymmdd'), "-", datestr(Users{1}.Time.Vec(end), 'yyyymmdd'));
+Users{1}.FileName=string(strcat(n.folder, '\', n.name(1:Del(end)), TimeInt, "_", n.name(Del(end)+1:end)));
+save(Users{1}.FileName, "Users", "-v7.3")
+end
+
+
+
 %% Initialisation
 clear
 Time.Start=datetime(2018,01,1,0,0,0, 'TimeZone', 'Africa/Tunis');
@@ -19,6 +39,7 @@ Range.TrainDate=[Time.Start, Time.EndTrain];
 Range.TestDate=[dateshift(Time.EndTrain, 'end', 'day')+hours(8), Time.End];
 Time.Vec=(Time.Start:Time.Step:Time.End)';
 Time.StepInd=hours(1)/Time.Step;
+Time.IntervalFile=strcat(datestr(Time.Start, 'yyyymmdd'), "-", datestr(Time.End, 'yyyymmdd'));
 
 Range.TrainInd=[find(Range.TrainDate(1)==Time.Vec,1) find(dateshift(Range.TrainDate(2),'end','day')-Time.Step==Time.Vec,1)];
 %Range.Val=[Range.Train(2)+1 Range.Train(2)+floor(length(Target)*ShareVal/24)*24-MaxDelayInd];

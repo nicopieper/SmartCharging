@@ -55,18 +55,18 @@ PathSmardData=[Path 'Predictions' Dl 'SmardData' Dl];
 TimeIntervalLabel=strcat(datestr(Time.Start, 'yyyymmdd'), '0000_', datestr(Time.End, 'yyyymmdd'), '23');
 StorageFile=strcat(PathSmardData, 'SmardData', TimeIntervalFile, '.mat');
 GenPredFREQH=readmatrix(strcat(PathSmardData, 'Prognostizierte_Erzeugung_', TimeIntervalLabel, '59.xlsx'), 'NumHeaderLines', 7,  'OutputType', 'string');
-TimeQH=datetime(strcat(GenPredFREQH(:,1), " ", GenPredFREQH(:,2)),'InputFormat','dd.MM.yyyy HH:mm', 'TimeZone', 'Africa/Tunis');
+Time.QH=datetime(strcat(GenPredFREQH(:,1), " ", GenPredFREQH(:,2)),'InputFormat','dd.MM.yyyy HH:mm', 'TimeZone', 'Africa/Tunis');
 temp=datetime(strcat(GenPredFREQH(:,1), " ", GenPredFREQH(:,2)),'InputFormat','dd.MM.yyyy HH:mm', 'TimeZone', 'Europe/Berlin');
 DSTChangesQH=find(isdst(temp(1:end-1))~=isdst(temp(2:end)));
 DSTChangesQH=[DSTChangesQH month(temp(DSTChangesQH))];
-TimeQH=DeleteDST(TimeQH, DSTChangesQH, 4);
+Time.QH=DeleteDST(Time.QH, DSTChangesQH, 4);
 GenPredFREQH=DeleteDST(str2double(strrep(erase(GenPredFREQH(:,3:7),'.'), ',', '.')), DSTChangesQH, 4);
 GenPredFREQH=FillMissingValues(GenPredFREQH(:,2:4), 4);
 
 corrs=[];
 for n=[1:5 8:9]
-    Start=find(TimeQH==OPSPVProfiles{3,n}(1));
-    End=find(TimeQH==OPSPVProfiles{3,n}(end));
+    Start=find(Time.QH==OPSPVProfiles{3,n}(1));
+    End=find(Time.QH==OPSPVProfiles{3,n}(end));
     %figure(n)
     %plot(crosscorr(OPSPVProfiles{2,n}, GenPredFREQH(Start:End,3),'NumLags',10))
     corrs(n)=Nth(corrcoef(OPSPVProfiles{2,n}, GenPredFREQH(Start:End,3)),2);

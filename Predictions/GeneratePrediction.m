@@ -91,9 +91,8 @@ if ~exist('PredVarsInput', 'var') || ~isequaln(PredVarsInput,{MaxDelayHours, Tar
 end
 ForecastIntervalPredInd=ForecastIntervalHours*Time.StepPredInd;
 
-Time.IntervalFile=strcat(datestr(Time.Start, 'yyyymmdd'), "-", datestr(Time.End, 'yyyymmdd'));
-StorageFileLSQ=strcat(Path.TrainedModel, 'LSQ_', TargetTitle, '_', num2str(ForecastIntervalPredInd), '_', num2str(MaxDelayHours*Time.StepPredInd+size(PredictorMat,2)), '_', TimeIntervalFile, '.mat'); % Path where the LSQ model shall be stored
-StorageFileNarxnet=strcat(Path.TrainedModel, 'Narxnet_', TargetTitle, '_', num2str(ForecastIntervalPredInd), '_', num2str(MaxDelayHours*Time.StepPredInd+size(PredictorMat,2)), '_', TimeIntervalFile, '.mat'); % Path where the LSQ model shall be stored
+StorageFileLSQ=strcat(Path.TrainedModel, 'LSQ_', TargetTitle, '_', num2str(ForecastIntervalPredInd), '_', num2str(MaxDelayHours*Time.StepPredInd+size(PredictorMat,2)), '_', Time.IntervalFile, '.mat'); % Path where the LSQ model shall be stored
+StorageFileNarxnet=strcat(Path.TrainedModel, 'Narxnet_', TargetTitle, '_', num2str(ForecastIntervalPredInd), '_', num2str(MaxDelayHours*Time.StepPredInd+size(PredictorMat,2)), '_', Time.IntervalFile, '.mat'); % Path where the LSQ model shall be stored
 
 %% Load trained Models or if they do not exist train them
 if sum(ismember(cell2mat(PredMethod(:,1)),1)) && (TrainModelNew || ~isfile(StorageFileLSQ))
@@ -126,9 +125,9 @@ for n=1:size(PredMethod,1)  % Fill the Matrix with the Model
     end
 end   
 [Prediction, PredictionMat, TargetMat, MAE, mMAPE, RMSE] = TestPred(PredMethod, PredictorMat, TargetDelayed, Target, Time,...
-    Range, MaxDelayInd, ForecastIntervalPredInd, Demo, TargetTitle, ActivateWaitbar, Path, TimeIntervalFile); % The actual Prediction
+    Range, MaxDelayInd, ForecastIntervalPredInd, Demo, TargetTitle, ActivateWaitbar, Path, Time.IntervalFile); % The actual Prediction
 
-clearvars TimeIntervalFile
+clearvars 
 
 
 toc

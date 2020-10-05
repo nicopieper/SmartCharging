@@ -43,7 +43,7 @@ close(h);
 
 %% Store Data in Variables
 PVProfiles1=cell2mat(struct2cell(SMAData)');
-TimeQH=(NextMonday(Time.Start):minutes(15):LastSunday(Time.End))';
+Time.QH=(NextMonday(Time.Start):minutes(15):LastSunday(Time.End))';
 
 %% Clean up Workspace
 clearvars n Date Month Year Data Time.StartSMA DateEndSMA Day FieldNames options SMAData SMADataLoaded SMAURL Zips 

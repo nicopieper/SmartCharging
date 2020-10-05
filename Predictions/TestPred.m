@@ -190,7 +190,7 @@ for p=1:NumPredMethod
     Pred.Time=Time;
     Pred.Time.Stamp=datetime('now');
     Pred.Range=Range;
-    Pred.FileName=strcat(Path.Prediction, TargetTitle, "_", LegendVec(p), "_", num2str(ForecastIntervalPredInd), "_", "_", num2str(size(PredictorMatInput,2)), "_", TimeIntervalFile, "_", datestr(Pred.Time.Stamp; 'yyyymmdd-), ".mat");
+    Pred.FileName=strcat(Path.Prediction, TargetTitle, "_", LegendVec(p), "_", num2str(ForecastIntervalPredInd), "_", "_", num2str(size(PredictorMatInput,2)), "_", TimeIntervalFile, "_", datestr(Pred.Time.Stamp, 'yyyymmdd-HHMM'), ".mat");
     Pred.ForecastIntervalInd=ForecastIntervalPredInd;
     save(Pred.FileName, "Pred", "-v7.3");
 end

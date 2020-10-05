@@ -143,7 +143,7 @@ end
 SimulatedUsers=@(User) (isfield(User, 'Time') || User.LogbookBase(2, 7)>0);
 Users=Users(cellfun(SimulatedUsers, Users));
 Users{1}.Time.Stamp=datetime('now');
-Users{1}.FileName=strcat(Path.Simulation, Dl, "Users_", num2str(PThreshold), "_", num2str(NumUsers), "_", datestr(Users{1}.Time.Stamp, "yyyy-mm-dd_HH-MM"), ".mat");
+Users{1}.FileName=strcat(Path.Simulation, Dl, "Users_", num2str(PThreshold), "_", num2str(NumUsers), "_", Time.IntervalFile, "_", datestr(Users{1}.Time.Stamp, "yyyy-mm-dd_HH-MM"), ".mat");
 
 save(strcat(Path.Simulation, Dl, "Users_", num2str(PThreshold), "_", num2str(NumUsers), "_", datestr(Users{1}.TimeStamp, "yyyy-mm-dd_HH-MM"), ".mat"), "Users", "-v7.3");
 disp(strcat("Successfully simulated within ", num2str(toc), " seconds"))
