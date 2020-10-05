@@ -1,3 +1,20 @@
+subplot(2,2,1)
+title(strcat(SpotmarketLabel, " ", datestr(Time.Demo.Vec(TimeInd),'dd.mm.yyyy HH:MM')),'Interpreter','none')
+
+subplot(2,2,2)
+title(strcat(ResPoDemLabel, " ", datestr(Time.Demo.Vec(TimeInd),'dd.mm.yyyy HH:MM')),'Interpreter','none')
+ylim([yminResPoDem ymaxResPoDem])
+
+subplot(2,2,3)
+title(strcat(SoCPlotLabel, " ", datestr(Time.Demo.Vec(TimeInd),'dd.mm.yyyy HH:MM')),'Interpreter','none')
+
+if ShowPVPred
+    subplot(2,2,4)
+    title(strcat(PVPlotLabel, " ", datestr(Time.Demo.Vec(TimeInd),'dd.mm.yyyy HH:MM')),'Interpreter','none')
+end
+
+
+
 if hour(Time.Demo.Vec(TimeInd))==hour(TimeOfForecast) && minute(Time.Demo.Vec(TimeInd))==minute(TimeOfForecast)
     yminSpotmarket=min([SpotmarketReal(TimeInd+TimeDiffs.General-24*7*Time.Demo.StepInd:min(length(Time.Vec),TimeInd+TimeDiffs.General+24*7*Time.Demo.StepInd)); SpotmarketPred(TimeInd+TimeDiffs.SpotmarketPred-24*7*Time.Demo.StepInd:min(length(Time.Vec),TimeInd+TimeDiffs.SpotmarketPred+24*7*Time.Demo.StepInd))]);
     yminSpotmarket=round(yminSpotmarket-abs(yminSpotmarket)*0.1);
@@ -27,14 +44,14 @@ if hour(Time.Demo.Vec(TimeInd))==hour(TimeOfForecast) && minute(Time.Demo.Vec(Ti
                 addpoints(figSpotmarketPred{p},Time.Demo.VecDateNum(TimeInd+ForecastDuration:TimeInd+ForecastDuration+Time.Demo.StepInd-1),SpotmarketPred(TimeInd+TimeDiffs.SpotmarketPred+ForecastDuration:TimeInd+TimeDiffs.SpotmarketPred+ForecastDuration+Time.Demo.StepInd-1))
             end
             %title(strcat(SpotmarketLabel, " ", datestr(Time.Demo.Vec(TimeInd),'dd.mm.yyyy HH:MM')),'Interpreter','none')
-            xlim([Time.Demo.VecDateNum(TimeInd-36*Time.StepInd+max(0,-ForecastIntervalInd+24*Time.StepInd+ForecastDuration+Time.StepInd)) Time.Demo.VecDateNum(EndCounter+3)]) % Create a moving plot 
+            xlim([Time.Demo.VecDateNum(TimeInd-36*Time.StepInd+max(0,-ForecastIntervalInd+24*Time.StepInd+ForecastDuration+Time.Demo.StepInd)) Time.Demo.VecDateNum(EndCounter+3)]) % Create a moving plot 
             ylim([yminSpotmarket ymaxSpotmarket])
 
             subplot(2,2,2)
-            xlim([Time.Demo.VecDateNum(TimeInd-36*Time.StepInd+max(0,-ForecastIntervalInd+24*Time.StepInd+ForecastDuration+Time.StepInd)) Time.Demo.VecDateNum(EndCounter+3)]) % Create a moving plot 
+            xlim([Time.Demo.VecDateNum(TimeInd-36*Time.StepInd+max(0,-ForecastIntervalInd+24*Time.StepInd+ForecastDuration+Time.Demo.StepInd)) Time.Demo.VecDateNum(EndCounter+3)]) % Create a moving plot 
 
             subplot(2,2,3)
-            xlim([Time.Demo.VecDateNum(TimeInd-36*Time.StepInd+max(0,-ForecastIntervalInd+24*Time.StepInd+ForecastDuration+Time.StepInd)) Time.Demo.VecDateNum(EndCounter+3)]) % Create a moving plot 
+            xlim([Time.Demo.VecDateNum(TimeInd-36*Time.StepInd+max(0,-ForecastIntervalInd+24*Time.StepInd+ForecastDuration+Time.Demo.StepInd)) Time.Demo.VecDateNum(EndCounter+3)]) % Create a moving plot 
 
             if ShowPVPred
                 subplot(2,2,4)
@@ -98,23 +115,18 @@ end
 subplot(2,2,1)
 addpoints(figSpotmarketReal,Time.Demo.VecDateNum(TimeInd:TimeInd+Time.Demo.StepInd-1),SpotmarketReal(TimeInd+TimeDiffs.General:TimeInd+TimeDiffs.General+Time.Demo.StepInd-1))
 ylim([yminSpotmarket ymaxSpotmarket])
-title(strcat(SpotmarketLabel, " ", datestr(Time.Demo.Vec(TimeInd),'dd.mm.yyyy HH:MM')),'Interpreter','none')
 
 subplot(2,2,2)
 addpoints(figResPoDemRealNeg,Time.Demo.VecDateNum(TimeInd:TimeInd+Time.Demo.StepInd-1),ResPoDemRealQH(TimeInd+TimeDiffs.General:TimeInd+TimeDiffs.General+Time.Demo.StepInd-1,1))
 addpoints(figResPoDemRealPos,Time.Demo.VecDateNum(TimeInd:TimeInd+Time.Demo.StepInd-1),ResPoDemRealQH(TimeInd+TimeDiffs.General:TimeInd+TimeDiffs.General+Time.Demo.StepInd-1,2))
-title(strcat(ResPoDemLabel, " ", datestr(Time.Demo.Vec(TimeInd),'dd.mm.yyyy HH:MM')),'Interpreter','none')
 ylim([yminResPoDem ymaxResPoDem])
 
 subplot(2,2,3)
 addpoints(figSoCPlot,Time.Demo.VecDateNum(TimeInd:TimeInd+Time.Demo.StepInd-1),double(Users{DemoUser}.LogbookBase(TimeInd+TimeDiffs.User:TimeInd+TimeDiffs.User+Time.Demo.StepInd-1,7))/double(Users{DemoUser}.BatterySize))
-title(strcat(SoCPlotLabel, " ", datestr(Time.Demo.Vec(TimeInd),'dd.mm.yyyy HH:MM')),'Interpreter','none')
-! gt
+
 if ShowPVPred
     subplot(2,2,4)
     addpoints(figPVPlot,Time.Demo.VecDateNum(TimeInd:TimeInd+Time.Demo.StepInd-1),PVQH(TimeInd+TimeDiffs.SpotmarketPred:TimeInd+TimeDiffs.General+Time.Demo.StepInd-1))
-    title(strcat(PVPlotLabel, " ", datestr(Time.Demo.Vec(TimeInd),'dd.mm.yyyy HH:MM')),'Interpreter','none')
-    % pause(0.001)
 end
     
 drawnow

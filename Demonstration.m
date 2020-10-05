@@ -4,7 +4,7 @@ ShowPVPred=true;
 ShowBaseScenario=true;
 TimeOfForecast=datetime(1,1,1,08,0,0,'TimeZone','Africa/Tunis');
 Time.Demo.Step=minutes(60);
-Time.Demo.StepInd=hours(1)/Time.Demo.Step;
+Time.Demo.StepInd=4;
 
 
 NumPredMethod=1;
@@ -70,7 +70,7 @@ TimeDiffs.User=find(ismember(Users{1}.Time.Vec,Time.Demo.Start),1)-1;
 
 TimeInd=Time.Demo.StartInd-1;
 SimulationDemoInit;
-for TimeInd=Time.Demo.StartInd:length(Time.Demo.Vec)
+for TimeInd=Time.Demo.StartInd:Time.Demo.StepInd:length(Time.Demo.Vec)
     SimulationDemoLoop;
 end
 
