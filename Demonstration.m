@@ -31,34 +31,16 @@ end
 %% Load Spotmarket Prediction
 
 if ~exist("SpotmarketPred", "var") && ShowStockmarketPred
-    PredMethodName="LSQ";
-    StorageFiles=dir(strcat(Path.Prediction, "DayaheadRealH_", PredMethodName, "*"));
-    PredStart=NaT(size(StorageFiles,1), 'TimeZone', 'Africa/Tunis');
-    PredEnd=NaT(size(StorageFiles,1), 'TimeZone', 'Africa/Tunis');
-    TimeStamps=NaT(size(StorageFiles,1), 'TimeZone', 'Africa/Tunis');
-    FileFits=false(0);
-    for n=1:size(StorageFiles,1)
-        PredStart(n)=datetime(StorageFiles(n).name(end-34:end-27), 'InputFormat', 'yyyyMMdd', 'TimeZone', 'Africa/Tunis') + hours(0);
-        PredEnd(n)=datetime(StorageFiles(n).name(end-25:end-18), 'InputFormat', 'yyyyMMdd', 'TimeZone', 'Africa/Tunis')+hours(23)+minutes(45);
-        if PredStart(n) <= Time.Vec(DemoStart) & PredEnd(n)>=Time.End
-        	TimeStamps(n)=datetime(StorageFiles(n).name(end-16:end-4), 'InputFormat', 'yyyyMMdd-HHmm', 'TimeZone', 'Africa/Tunis');
-        end
-    end
-    if all(TimeStamps==NaT('TimeZone', 'Africa/Tunis'))
-        disp("No matching prediction data could be found")
-    else
-        [~,LatestPrediction]=max(TimeStamps);
-        load(strcat(Path.Prediction, StorageFiles(LatestPrediction).name))
-        SpotmarketPred=repelem(Pred.Data, Pred.Time.StepInd/Time.StepInd);
-        SpotmarketPredMat=repelem(Pred.DataMat, Pred.Time.StepInd/Time.StepInd,1);
-        
+    StorageFile=uigetfile(strcat(Path.Prediction, Dl),'Select the Prediction data');
+    load(StorageFile)
+    SpotmarketPred=repelem(Pred.Data, Time.StepInd/Pred.Time.StepPredInd);
+    SpotmarketPredMat=repelem(Pred.DataMat, Time.StepInd/Pred.Time.StepPredInd,Time.StepInd/Pred.Time.StepPredInd);
 %         SpotmarketPred=interp1(Time.Pred(ismember(Time.Pred, Time.Vec)),Prediction(ismember(Time.Pred, Time.Vec)), Time.Vec);
 %         SpotmarketPred(end-2:end)=SpotmarketPred(end-3);
 %         SpotmarketPredMat=interp1(1:ForecastIntervalPredInd, upsample(PredictionMat(:,ismember(Time.Pred, Time.Vec))',4)',1:1/Time.StepInd:ForecastIntervalPredInd+(Time.StepInd-1)/Time.StepInd);
 %         SpotmarketPredMat(end-2:end,:)=ones(3,1)*SpotmarketPredMat(end-3,:);
-    end
 end
-ForecastIntervalInd=ForecastIntervalPredInd*Time.StepInd;
+ForecastIntervalInd=Pred.ForecastIntervalInd*Time.StepInd;
 
 
 % if length(SpotmarketReal)~= length(Time.Vec) && length(SpotmarketReal) == length(Time.H)
@@ -80,14 +62,15 @@ Time.Demo.Start=max([Time.Vec(1), Range.TestDate(1), Users{1}.Time.Vec(1), Pred.
 Time.Demo.End=min([Time.Vec(end), Range.TestDate(2), Users{1}.Time.Vec(end), Pred.Time.Vec(end)]);
 Time.Demo.Vec=(Time.Demo.Start:Time.Step:Time.Demo.End)';
 Time.Demo.VecDateNum=datenum(Time.Demo.Vec);
+Time.Demo.StartInd=48*Time.StepInd+1;
 
-TimeInds.General=find(ismember(Time.Vec,Time.Demo.Start),1)+24*Time.StepInd;
-TimeInds.SpotmarketPred=find(ismember(Pred.Time.Vec,Time.Demo.Start),1)+24*Time.StepInd;
-TimeInds.User=find(ismember(Users{1}.Time.Vec,Time.Demo.Start),1)+24*Time.StepInd;
+TimeDiffs.General=find(ismember(Time.Vec,Time.Demo.Start),1)-1;
+TimeDiffs.SpotmarketPred=find(ismember(Pred.Time.Vec,Time.Demo.Start),1)-1;
+TimeDiffs.User=find(ismember(Users{1}.Time.Vec,Time.Demo.Start),1)-1;
 
-TimeInd=24*Time.StepInd;
+TimeInd=Time.Demo.StartInd-1;
 SimulationDemoInit;
-for TimeInd=1:length(Time.Demo.Vec)
+for TimeInd=Time.Demo.StartInd:length(Time.Demo.Vec)
     SimulationDemoLoop;
 end
 
