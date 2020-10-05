@@ -38,12 +38,12 @@ if ~exist("SpotmarketPred", "var") && ShowStockmarketPred
         load(strcat(Path.Prediction, StorageFiles(find(datetime({StorageFiles(FileFits).date}, 'InputFormat', "dd-MMM-yyyy HH:mm:ss")==max(datetime({StorageFiles(FileFits).date}, 'InputFormat', "dd-MMM-yyyy HH:mm:ss")),1)).name))
         SpotmarketPred=interp1(Time.VecPred(ismember(Time.VecPred, Time.Vec)),Prediction(ismember(Time.VecPred, Time.Vec)), Time.Vec);
         SpotmarketPred(end-2:end)=SpotmarketPred(end-3);
-%         SpotmarketPredMat=interp1((1:Pred.ForecastIntervalInd)',PredictionMat(:,:), (1:1/Time.StepInd:Pred.ForecastIntervalInd+1-1/Time.StepInd));
-        SpotmarketPredMat=interp1(1:Pred.ForecastIntervalInd, upsample(PredictionMat(:,ismember(Time.VecPred, Time.Vec))',4)',1:1/Time.StepInd:Pred.ForecastIntervalInd+(Time.StepInd-1)/Time.StepInd);
+%         SpotmarketPredMat=interp1((1:ForecastIntervalPredInd)',PredictionMat(:,:), (1:1/Time.StepInd:ForecastIntervalPredInd+1-1/Time.StepInd));
+        SpotmarketPredMat=interp1(1:ForecastIntervalPredInd, upsample(PredictionMat(:,ismember(Time.VecPred, Time.Vec))',4)',1:1/Time.StepInd:ForecastIntervalPredInd+(Time.StepInd-1)/Time.StepInd);
         SpotmarketPredMat(end-2:end,:)=ones(3,1)*SpotmarketPredMat(end-3,:);
     end
 end
-Pred.ForecastIntervalInd;=Pred.ForecastIntervalInd*Time.StepInd;
+ForecastIntervalInd=ForecastIntervalPredInd*Time.StepInd;
     
 if length(SpotmarketReal)~= length(Time.Vec) && length(SpotmarketReal) == length(TimeH)
     SpotmarketReal=interp1(TimeH,SpotmarketReal, Time.Vec); % DayaheadRealQH
