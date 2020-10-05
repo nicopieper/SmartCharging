@@ -2,7 +2,7 @@ tic
 ActivateWaitbar=true;
 PublicChargingThreshold=uint32(15); % in %
 PThreshold=1.2;
-NumUsers=1; % size(Users)-1;
+NumUsers=size(Users,1)-1;
 
 
 if ~exist('PublicChargerDistribution', 'var')
@@ -20,7 +20,7 @@ for n=2:size(Users,1)
 end
 
 if ActivateWaitbar
-    h=waitbar(0, "Simuliere Ladevorgänge");
+    h=waitbar(0, "Simuliere Ladevorgï¿½nge");
     TotalIterations=Range.TestInd(2)-(Range.TrainInd(1)+1);
 end
 
@@ -143,12 +143,12 @@ end
 SimulatedUsers=@(User) (isfield(User, 'Time') || User.LogbookBase(2, 7)>0);
 Users=Users(cellfun(SimulatedUsers, Users));
 Users{1}.Time.Stamp=datetime('now');
-Users{1}.FileName=strcat(Path.Simulation, Dl, "Users_", num2str(PThreshold), "_", num2str(NumUsers), "_", Time.IntervalFile, "_", datestr(Users{1}.Time.Stamp, "yyyy-mm-dd_HH-MM"), ".mat");
+Users{1}.FileName=strcat(Path.Simulation, "Users_", num2str(PThreshold), "_", num2str(NumUsers), "_", Time.IntervalFile, "_", datestr(Users{1}.Time.Stamp, "yyyymmdd-HHMM"), ".mat");
 
-save(strcat(Path.Simulation, Dl, "Users_", num2str(PThreshold), "_", num2str(NumUsers), "_", datestr(Users{1}.TimeStamp, "yyyy-mm-dd_HH-MM"), ".mat"), "Users", "-v7.3");
+save(Users{1}.FileName, "Users", "-v7.3");
 disp(strcat("Successfully simulated within ", num2str(toc), " seconds"))
  
 clearvars TimeInd n ActivateWaitbar Consumption24h ParkingDuration ConsumptionTilNextHomeStop TripDistance
 clearvars NextHomeStop PublicChargerPower ChargingPower EnergyDemandLeft TimeStepIndsNeededForCharging EndOfShift
 clearvars NumPredMethod TotalIterations PublicChargingThreshold NumUsers TimeOfForecast P PlugInTime PThreshold
-clearvars SimulatedUsers PublicChargerDistribution h 
+clearvars SimulatedUsers PublicChargerDistribution h k
