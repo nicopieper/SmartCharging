@@ -1,5 +1,7 @@
 Functions/MatlabFunctions
 
+*.Ink
+
 # Windows default autosave extension
 *.asv
 

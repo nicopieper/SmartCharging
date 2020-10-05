@@ -84,7 +84,7 @@
 
 NumUsers=800; % number of users
 LikelihoodPV=0.45; % 44 % der privaten und 46 % der gewerblichen Nutzer über eine eigene Photovoltaikanlage, https://elib.dlr.de/96491/1/Ergebnisbericht_E-Nutzer_2015.pdf S. 10
-AddPV=false; % determines wheter PV plants shall be assigned to the users. In general true, only false for test purposes
+AddPV=true; % determines wheter PV plants shall be assigned to the users. In general true, only false for test purposes
 MeanPrivateElectricityPrice=30.43/1.19-3.7513; % [ct/kWh] average German electricity price in 2019 according to Strom-Report without VAT (19%) and electricity production price (avg. Dayahead price was 3.7513 ct/kWh in 2019)
 PublicACChargingPrices=[29, 39];
 PublicDCChargingPrices=[39, 49];
@@ -98,9 +98,6 @@ VehiclePointer=zeros(length(VehicleSizes),1); % the pointers that indicate which
 
 if ~exist('Vehicles', 'var')
     GetVehicleData; % load the driving profiles
-end
-if AddPV && ~exist('PVPlants', 'var')
-    GetSMAPlantData;
 end
 
 VehicleDatabase=cell(length(VehicleSizes),1); % covers all vehicle numbers for each vehicle size class

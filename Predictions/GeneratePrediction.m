@@ -91,7 +91,7 @@ if ~exist('PredVarsInput', 'var') || ~isequaln(PredVarsInput,{MaxDelayHours, Tar
 end
 ForecastIntervalPredInd=ForecastIntervalHours*Time.StepPredInd;
 
-TimeIntervalFile=strcat(datestr(Time.Start, 'yyyymmdd'), "_", datestr(Time.End, 'yyyymmdd'));
+Time.IntervalFile=strcat(datestr(Time.Start, 'yyyymmdd'), "-", datestr(Time.End, 'yyyymmdd'));
 StorageFileLSQ=strcat(Path.TrainedModel, 'LSQ_', TargetTitle, '_', num2str(ForecastIntervalPredInd), '_', num2str(MaxDelayHours*Time.StepPredInd+size(PredictorMat,2)), '_', TimeIntervalFile, '.mat'); % Path where the LSQ model shall be stored
 StorageFileNarxnet=strcat(Path.TrainedModel, 'Narxnet_', TargetTitle, '_', num2str(ForecastIntervalPredInd), '_', num2str(MaxDelayHours*Time.StepPredInd+size(PredictorMat,2)), '_', TimeIntervalFile, '.mat'); % Path where the LSQ model shall be stored
 
