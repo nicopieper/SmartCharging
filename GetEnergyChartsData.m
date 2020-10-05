@@ -35,12 +35,12 @@
 % Description of important variables
 %   DateStartEC:        Data that was once downloaded is stored in files
 %                       that cover one month. Therefore, this variable 
-%                       finds day of DateStart's month. datetime (1,1)
-%   DateEndEC:          This variable finds the last day of DateEnd's
+%                       finds day of Time.Start's month. datetime (1,1)
+%   DateEndEC:          This variable finds the last day of Time.End's
 %                       month. datetime (1,1)
-%   TimeECH:            Equals TimeVec but considers only full hours.
+%   TimeECH:            Equals Time.Vec but considers only full hours.
 %                       Needed for interpolation of quaterly Dayahead
-%                       price. datetime (1,length(TimeVec)/4)
+%                       price. datetime (1,length(Time.Vec)/4)
 %   MonthVec:           This vector includes the first day of each month
 %                       between DateStartEC and DateEndEC. datetime (1,N)
 %   ECData:             A container with all the loaded data. One row
@@ -53,12 +53,11 @@
 %% Initialisation
 
 tic
-PathECData=[Path 'Predictions' Dl 'EnergyChartsData' Dl];
 
-DateStartEC=datetime(year(DateStart), month(DateStart), 1, 0,0,0, 'TimeZone','Europe/Berlin'); % first day of month of DateStart
-DateEndEC=dateshift(datetime(year(DateEnd), month(DateEnd), day(DateEnd), 23,59,59, 'TimeZone','Europe/Berlin'), 'end', 'month')+hours(23)+minutes(59); % last day of month of DateEnd
-MonthVec=DateStartEC:calmonths(1):DateEndEC; % all months covered by DateStart and DateEnd
-TimeECH=DateStart:hours(1):DateEnd; % Time covered by TimeVec in hourly time steps
+DateStartEC=datetime(year(Time.Start), month(Time.Start), 1, 0,0,0, 'TimeZone','Europe/Berlin'); % first day of month of Time.Start
+DateEndEC=dateshift(datetime(year(Time.End), month(Time.End), day(Time.End), 23,59,59, 'TimeZone','Europe/Berlin'), 'end', 'month')+hours(23)+minutes(59); % last day of month of Time.End
+MonthVec=DateStartEC:calmonths(1):DateEndEC; % all months covered by Time.Start and Time.End
+TimeECH=Time.Start:hours(1):Time.End; % Time covered by Time.Vec in hourly time steps
 
 EnergyChartsURL='https://www.energy-charts.info/charts/'; % the data is stored in json files which can be accessed by a regular URL that starts like this
 options=weboptions;
@@ -80,13 +79,13 @@ for Month=MonthVec % iterate through the months
         
         for k=1:str2double(Pages(2,i)) % as i is only 1, iterate through hourly data (k==1) and quater hourly data (k==2)
             
-            StoragePath=strcat(PathECData, Pages(1,i), Dl, TimeLabels(1,k), Dl, YearStr);
+            StoragePath=strcat(Path.EC, Pages(1,i), Dl, TimeLabels(1,k), Dl, YearStr);
             if ~exist(StoragePath, 'dir') % if folder for storage does not exist, make it
                 mkdir(StoragePath)
             end
             
             StorageFile=strcat(StoragePath, Dl, 'ECData', TimeLabels(2,k), '_', YearStr, '-', MonthStr, '.mat');
-            if isfile(StorageFile) && ProcessDataNewEC==0 % if the wanted exsist as a mat file, load it
+            if isfile(StorageFile) && ProcessDataNew.EC==0 % if the wanted exsist as a mat file, load it
                 load(StorageFile);
                 
             else % load the data from the energy-charts.info website
@@ -99,14 +98,14 @@ for Month=MonthVec % iterate through the months
                 ECDataLoaded=struct;
                 
                 for n=1:size(RawData,1) % start to process the data
-                    Time=datetime(RawData{n,1}.values(:,1)/1000,'ConvertFrom', 'posixtime', 'TimeZone', 'Europe/Berlin'); % extract the time of the downloaded data
-                    DSTChanges=find(isdst(Time(1:end-1))~=isdst(Time(2:end))); % if there is a dst transition, delete the inconsistencies
-                    if size(Time,1)~=168*(-k*3+7) % [1 2] => [4 1]
-                        DSTChanges=[DSTChanges month(Time(DSTChanges))];
+                    TimeData=datetime(RawData{n,1}.values(:,1)/1000,'ConvertFrom', 'posixtime', 'TimeZone', 'Europe/Berlin'); % extract the time of the downloaded data
+                    DSTChanges=find(isdst(TimeData(1:end-1))~=isdst(TimeData(2:end))); % if there is a dst transition, delete the inconsistencies
+                    if size(TimeData,1)~=168*(-k*3+7) % [1 2] => [4 1]
+                        DSTChanges=[DSTChanges month(TimeData(DSTChanges))];
                     end
-                    Time=DeleteDST(Time, DSTChanges, -k*3+7); 
+                    TimeData=DeleteDST(TimeData, DSTChanges, -k*3+7); 
                     ECDataLoaded.(erase(RawData{n,1}.key.en, [" ", ">", "-", ","])).Values=DeleteDST(RawData{n,1}.values(:,2), DSTChanges, -k*3+7); % extract the data category from RawData{n,1} and assign a new field to ECDataLoaded with this name. assign the corresponding data values dst corrected
-                    ECDataLoaded.(erase(RawData{n,1}.key.en, [" ", ">", "-", ","])).Time=datetime(datestr(Time, 'dd.mm.yyyy HH:MM:ss'), 'InputFormat', 'dd.MM.yyyy HH:mm:ss', 'TimeZone', 'Africa/Tunis'); % same as above but assign the time as values
+                    ECDataLoaded.(erase(RawData{n,1}.key.en, [" ", ">", "-", ","])).Time=datetime(datestr(TimeData, 'dd.mm.yyyy HH:MM:ss'), 'InputFormat', 'dd.MM.yyyy HH:mm:ss', 'TimeZone', 'Africa/Tunis'); % same as above but assign the time as values
                 end
                 save(StorageFile, 'ECDataLoaded', '-v7.3') % save the struct
 
@@ -144,20 +143,20 @@ for Month=MonthVec % iterate through the months
             end                            
         end        
     end
-    waitbar((Month-DateStart)/(DateEnd-DateStart))
+    waitbar((Month-Time.Start)/(Time.End-Time.Start))
 end
 close(h);
 
 %%
 
 FieldNames=fieldnames(ECData);
-for n=1:numel(FieldNames) % iterate through the categories and delete surplus values. that happens if DateStart is not the beginning of a month or DateEnd not the end. then some values have to be deleted such that data is aligned to TimeVec
+for n=1:numel(FieldNames) % iterate through the categories and delete surplus values. that happens if Time.Start is not the beginning of a month or Time.End not the end. then some values have to be deleted such that data is aligned to Time.Vec
     
-    DatePointerStart=find(ECData.(FieldNames{n}).Time==DateStart, 1); % find the index that corresponds to DateStart
+    DatePointerStart=find(ECData.(FieldNames{n}).Time==Time.Start, 1); % find the index that corresponds to Time.Start
     if isempty(DatePointerStart)
         DatePointerStart=1;
     end
-    DatePointerEnd=find(ECData.(FieldNames{n}).Time>DateEnd, 1); % find the index that corresponds to DateEnd
+    DatePointerEnd=find(ECData.(FieldNames{n}).Time>Time.End, 1); % find the index that corresponds to Time.End
     if isempty(DatePointerEnd)
         DatePointerEnd=length(ECData.(FieldNames{n}).Time);
     else
@@ -167,7 +166,7 @@ for n=1:numel(FieldNames) % iterate through the categories and delete surplus va
     ECData.(FieldNames{n}).Values=ECData.(FieldNames{n}).Values(DatePointerStart:DatePointerEnd); % Only use values between both indices
     ECData.(FieldNames{n}).Time=ECData.(FieldNames{n}).Time(DatePointerStart:DatePointerEnd);
     
-    if (length(ECData.(FieldNames{n}).Values)~=round(days(DateEnd-DateStart))*24 && length(ECData.(FieldNames{n}).Values)~=round(days(DateEnd-DateStart))*96) || length(ECData.(FieldNames{n}).Values)~=length(ECData.(FieldNames{n}).Time) % check for consistency, if cutting the data was successful then the length of the data vector equals the length of TimeVec or TimeVec hourly
+    if (length(ECData.(FieldNames{n}).Values)~=round(days(Time.End-Time.Start))*24 && length(ECData.(FieldNames{n}).Values)~=round(days(Time.End-Time.Start))*96) || length(ECData.(FieldNames{n}).Values)~=length(ECData.(FieldNames{n}).Time) % check for consistency, if cutting the data was successful then the length of the data vector equals the length of Time.Vec or Time.Vec hourly
         disp(strcat(FieldNames{n}, " could not be loaded over the full time range. It starts at ", datestr(ECData.(FieldNames{n}).Time(1), 'dd.mm.yyyy'), " and ends at ", datestr(ECData.(FieldNames{n}).Time(end), 'dd.mm.yyyy')))
     end
     if ~(round(days(ECData.(FieldNames{n}).Time(end)-ECData.(FieldNames{n}).Time(1)))*24*hours(1)/(ECData.(FieldNames{n}).Time(2)-ECData.(FieldNames{n}).Time(1))==length(ECData.(FieldNames{n}).Time) && length(ECData.(FieldNames{n}).Time)==length(ECData.(FieldNames{n}).Values))
@@ -178,23 +177,23 @@ end
 
 %% Store Data in Variables
 
-DayaheadRealH=FillMissingValues(ECData.DayAheadAuctionH.Values,1); % assign variables from container and exchange NaN values by interpolation
-DayaheadRealQH=interp1(TimeECH,DayaheadRealH, TimeVec); % get quater hourly dayahead values by interpolation
+EC.DayaheadReal1H=FillMissingValues(ECData.DayAheadAuctionH.Values,1); % assign variables from container and exchange NaN values by interpolation
+EC.DayaheadReal1QH=interp1(TimeECH,EC.DayaheadReal1H, Time.Vec); % get quater hourly dayahead values by interpolation
 if size(ECData.IntradayContinuousIndexPriceH.Values,1)==size(ECData.IntradayContinuousID3PriceH.Values,1) && size(ECData.IntradayContinuousID3PriceH.Values,1)==size(ECData.IntradayContinuousID1PriceH.Values,1)
-    IntradayRealH=FillMissingValues([ECData.IntradayContinuousIndexPriceH.Values, ECData.IntradayContinuousID3PriceH.Values, ECData.IntradayContinuousID1PriceH.Values],1);
-    IntradayRealQH=FillMissingValues([ECData.IntradayContinuous15minutesIndexPriceQH.Values, ECData.IntradayContinuous15minutesID3PriceQH.Values, ECData.IntradayContinuous15minutesID1PriceQH.Values],4);
+    EC.IntradayRealH=FillMissingValues([ECData.IntradayContinuousIndexPriceH.Values, ECData.IntradayContinuousID3PriceH.Values, ECData.IntradayContinuousID1PriceH.Values],1);
+    EC.IntradayRealQH=FillMissingValues([ECData.IntradayContinuous15minutesIndexPriceQH.Values, ECData.IntradayContinuous15minutesID3PriceQH.Values, ECData.IntradayContinuous15minutesID1PriceQH.Values],4);
 else
-    IntradayRealH=FillMissingValues([ECData.IntradayContinuousIndexPriceH.Values, ECData.IntradayContinuousID3PriceH.Values],1);
-    IntradayRealQH=FillMissingValues([ECData.IntradayContinuous15minutesIndexPriceQH.Values, ECData.IntradayContinuous15minutesID3PriceQH.Values],4);
+    EC.IntradayRealH=FillMissingValues([ECData.IntradayContinuousIndexPriceH.Values, ECData.IntradayContinuousID3PriceH.Values],1);
+    EC.IntradayRealQH=FillMissingValues([ECData.IntradayContinuous15minutesIndexPriceQH.Values, ECData.IntradayContinuous15minutesID3PriceQH.Values],4);
 end
-ExportRealH=FillMissingValues(-ECData.ImportBalanceH.Values,1);
-ExportRealQH=FillMissingValues(-ECData.ImportBalanceQH.Values,4);
+EC.ExportRealH=FillMissingValues(-ECData.ImportBalanceH.Values,1);
+EC.ExportRealQH=FillMissingValues(-ECData.ImportBalanceQH.Values,4);
 %GenRealECQH=FillMissingValues([ECData.HydroPowerQH.Values, ECData.BiomassQH.Values, ECData.UraniumQH.Values, ECData.BrownCoalQH.Values, ECData.HardCoalQH.Values, ECData.OilQH.Values, ECData.GasQH.Values, ECData.OthersQH.Values, ECData.PumpedStorageQH.Values, ECData.WindQH.Values, ECData.SolarQH.Values], 1);
 
 %% Clean up Workspace
-clearvars k i n Date DSTChanges ECDataLoaded EnergyChartsURL FieldNames FName h Pages RawData StorageFile StoragePath Time TimeLabels Weeknum Year options PathECData 
+clearvars k i n Date DSTChanges ECDataLoaded EnergyChartsURL FieldNames FName h Pages RawData StorageFile StoragePath  TimeLabels Weeknum Year options Path.EC 
 clearvars ECData MonthStr YearStr MonthVec DatePointerEnd DatePointerStart DateStartEC DateEndEC
-clearvars TimeECH TimeECQH 
+clearvars TimeECH TimeECQH DataTag TimeData
     
 disp(['Energy charts data successfully imported ' num2str(toc) 's'])
    

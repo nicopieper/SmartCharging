@@ -73,7 +73,7 @@ end
 
 Target=Availability1; % double(PVPlants{1}.Profile); %DayaheadRealH;
 TargetTitle="Availability";  % "DayaheadRealH"; "PVPlants_1"
-TimeVecPred=TimeVec;
+Time.VecPred=Time.Vec;
 Predictors= [SoC1, Weekday];% [GenPredQH(:,4)]; [LoadPredH, GenPredH]
 PredMethod={2};
 TrainModelNew=0;
@@ -83,17 +83,17 @@ ForecastIntervalHours=52; % 52h  % The model must be able to predict the value o
 Demo=0;
 ActivateWaitbar=1;
 
-if ~exist('PredVarsInput', 'var') || ~isequaln(PredVarsInput,{MaxDelayHours, Target, TimeVecPred, Predictors})
+if ~exist('PredVarsInput', 'var') || ~isequaln(PredVarsInput,{MaxDelayHours, Target, Time.VecPred, Predictors})
     disp('Calculate Predictor Variables')
-    [PredictorMat, TargetDelayed, TimeStepPred, TimeStepPredInd, MaxDelayInd, RangeTrainPredInd, RangeTestPredInd]=PredVars(MaxDelayHours, Target, TimeVecPred, Predictors, DateStart, DateEnd, ShareTrain, ShareTest, RangeTrainDate, RangeTestDate);
-    PredVarsInput={MaxDelayHours, Target, TimeVecPred, Predictors};
+    [PredictorMat, TargetDelayed, TimeStepPred, TimeStepPredInd, MaxDelayInd, RangeTrainPredInd, RangeTestPredInd]=PredVars(MaxDelayHours, Target, Time.VecPred, Predictors, Time.Start, Time.End, Range.ShareTrain, Range.ShareTest, RangeTrainDate, RangeTestDate);
+    PredVarsInput={MaxDelayHours, Target, Time.VecPred, Predictors};
     disp('Successfully calculated Predictor Variables')
 end
 ForecastIntervalPredInd=ForecastIntervalHours*TimeStepPredInd;
 
-TimeIntervalFile=strcat(datestr(DateStart, 'yyyymmdd'), "_", datestr(DateEnd, 'yyyymmdd'));
-StorageFileLSQ=strcat(Path, 'Predictions', Dl, 'TrainedModels', Dl, 'LSQ_', TargetTitle, '_', num2str(ForecastIntervalPredInd), '_', num2str(MaxDelayHours*TimeStepPredInd+size(PredictorMat,2)), '_', TimeIntervalFile, '.mat'); % Path where the LSQ model shall be stored
-StorageFileNarxnet=strcat(Path, 'Predictions', Dl, 'TrainedModels', Dl, 'Narxnet_', TargetTitle, '_', num2str(ForecastIntervalPredInd), '_', num2str(MaxDelayHours*TimeStepPredInd+size(PredictorMat,2)), '_', TimeIntervalFile, '.mat'); % Path where the LSQ model shall be stored
+TimeIntervalFile=strcat(datestr(Time.Start, 'yyyymmdd'), "_", datestr(Time.End, 'yyyymmdd'));
+StorageFileLSQ=strcat(Path.TrainedModels, 'LSQ_', TargetTitle, '_', num2str(ForecastIntervalPredInd), '_', num2str(MaxDelayHours*TimeStepPredInd+size(PredictorMat,2)), '_', TimeIntervalFile, '.mat'); % Path where the LSQ model shall be stored
+StorageFileNarxnet=strcat(Path.TrainedModels, 'Narxnet_', TargetTitle, '_', num2str(ForecastIntervalPredInd), '_', num2str(MaxDelayHours*TimeStepPredInd+size(PredictorMat,2)), '_', TimeIntervalFile, '.mat'); % Path where the LSQ model shall be stored
 
 %% Load trained Models or if they do not exist train them
 if sum(ismember(cell2mat(PredMethod(:,1)),1)) && (TrainModelNew || ~isfile(StorageFileLSQ))
@@ -125,8 +125,8 @@ for n=1:size(PredMethod,1)  % Fill the Matrix with the Model
         PredMethod(n,2:3)=[{Narxnets}, {Ai}];
     end
 end   
-[Prediction, PredictionMat, TargetMat, MAE, mMAPE, RMSE] = TestPred(PredMethod, PredictorMat, TargetDelayed, Target, TimeVecPred,...
-    TimeStepPredInd, RangeTrainPredInd, RangeTestPredInd, RangeTrainDate, RangeTestDate, MaxDelayInd, ForecastIntervalPredInd, Demo, TargetTitle, ActivateWaitbar, PredictionDataPath, TimeIntervalFile); % The actual Prediction
+[Prediction, PredictionMat, TargetMat, MAE, mMAPE, RMSE] = TestPred(PredMethod, PredictorMat, TargetDelayed, Target, Time.VecPred,...
+    TimeStepPredInd, RangeTrainPredInd, RangeTestPredInd, RangeTrainDate, RangeTestDate, MaxDelayInd, ForecastIntervalPredInd, Demo, TargetTitle, ActivateWaitbar, Path.Prediction, TimeIntervalFile); % The actual Prediction
 
 clearvars TimeIntervalFile
 

@@ -78,27 +78,26 @@ MaxHomeSpotDistanceDiff=0.1; % [km]
 MaxPlausibleVelocity=60; % [m/s]
 MinPlausibleVelocity=2; % [m/s]
 TimeNoiseStdFac=0.05; % Std=TimeNoiseStdFac*TripTime
-PathVehicleData=[Path 'Predictions' Dl 'VehicleData' Dl];
-StorageFile=strcat(PathVehicleData, "VehicleData_", num2str(NumVehicles), "_", num2str(MaxHomeSpotDistanceDiff), "_", num2str(MinShareHomeParking), "_", num2str(AddNoise));
+StorageFile=strcat(Path.Vehicle, "VehicleData_", num2str(NumVehicles), "_", num2str(MaxHomeSpotDistanceDiff), "_", num2str(MinShareHomeParking), "_", num2str(AddNoise));
 StorageFiles=dir(strcat(StorageFile, "*"));
 
 NumTripsDays=0;
 close all hidden
 
 if ProcessNewVehicles==false && ~isempty(StorageFiles)
-    [~, StorageInd]=max(datetime({StorageFiles.date}, "InputFormat", "dd-MMM-yyyy HH:mm:ss"));
-    load(strcat(PathVehicleData, StorageFiles(StorageInd).name))
+    [~, StorageInd]=max(datetime({StorageFiles.date}, "InputFormat", "dd-MMM-yyyy HH:mm:ss", 'Locale', 'de_DE'));
+    load(strcat(Path.Vehicle, StorageFiles(StorageInd).name))
 else
     
     Trips=[];
     DayTrips=[];
 
-    LogbookTime=(DateStart:TimeStep:DateEnd)'; % the time vector with is relevant for all vehicle logbooks
+    LogbookTime=(Time.Start:Time.Step:Time.End)'; % the time vector with is relevant for all vehicle logbooks
     LogbookTimePosix=posixtime(LogbookTime); % ... converted to posixtime, used later for performance reasons
 
-    VehiclePropertiesMat=readmatrix(strcat(PathVehicleData, 'REM2030_v2015_car_info.csv'), 'OutputType', 'string'); % id, vehicle_size, economic_sector, nace_section, economic_segment, nace_division, description_of_the_economic_sector_according_to_company, city_size, company_size, comment, vehicle_utilization, number_of_users, parking_spot, federal_state, company_id
+    VehiclePropertiesMat=readmatrix(strcat(Path.Vehicle, 'REM2030_v2015_car_info.csv'), 'OutputType', 'string'); % id, vehicle_size, economic_sector, nace_section, economic_segment, nace_division, description_of_the_economic_sector_according_to_company, city_size, company_size, comment, vehicle_utilization, number_of_users, parking_spot, federal_state, company_id
 
-    DrivingProfileMat=readmatrix(strcat(PathVehicleData, 'REM2030_v2015.csv')); % id, deptyear, deptmonth, deptday, depthour, deptminute, arryear, arrmonth, arrday, arrhour, arrminute, , _to_company
+    DrivingProfileMat=readmatrix(strcat(Path.Vehicle, 'REM2030_v2015.csv')); % id, deptyear, deptmonth, deptday, depthour, deptminute, arryear, arrmonth, arrday, arrhour, arrminute, , _to_company
     DrivingProfileMat(:,12)=DrivingProfileMat(:,12)*1000; % Use meters rather than km for the distance such that integers can be used
 
     DateMatStr=string(DrivingProfileMat(:,2:11)); % Convert the columns for departure and arrival time to two datetime columns
@@ -106,8 +105,8 @@ else
     DateMat=[datetime(DateMatStr(:,1), 'InputFormat', "d.M.yyyy H:m", 'TimeZone','Africa/Tunis'), datetime(DateMatStr(:,2), 'InputFormat', "d.M.yyyy H:m", 'TimeZone','Africa/Tunis')]; % the arrival and departure times of all trips of all vehicles
     
     Vehicles=cell(min([NumVehicles size(VehiclePropertiesMat,1)])+1,1); % The vehicle profiles are stored in a cell array, each vehicle has one cell
-    Vehicles{1}.TimeVec=TimeVec; % store properties of data processing in first cell
-    Vehicles{1}.TimeStep=TimeStep;
+    Vehicles{1}.Time.Vec=Time.Vec; % store properties of data processing in first cell
+    Vehicles{1}.Time.Step=Time.Step;
     Vehicles{1}.MinShareHomeParking=MinShareHomeParking;
     Vehicles{1}.MaxHomeSpotDistanceDiff=MaxHomeSpotDistanceDiff;
     Vehicles{1}.MaxPlausibleVelocity=MaxPlausibleVelocity;
@@ -203,7 +202,7 @@ else
         NumTripsDays=NumTripsDays+caldays(DateRange); % record the total trip distance of every day of all vehicles for evaluation reasons
 
         DrivingProfileTime(:,2)=DrivingProfileTime(:,2)-seconds(1); % Ensures that one ride never ends when a transition of TimeVar happens. The -1 represents one second
-        DrivingProfileTime=DrivingProfileTime+between(DrivingProfileTime(1,1),DateStart, 'days')-days(mod(7+(weekday(DateStart)-weekday(DrivingProfileTime(1,1))),7))+days(1); % Shift the dates such that the first ride starts at the first day before (or exactly at) DateStart that is the same weekday as the weekday of the first ride. 
+        DrivingProfileTime=DrivingProfileTime+between(DrivingProfileTime(1,1),Time.Start, 'days')-days(mod(7+(weekday(Time.Start)-weekday(DrivingProfileTime(1,1))),7))+days(1); % Shift the dates such that the first ride starts at the first day before (or exactly at) Time.Start that is the same weekday as the weekday of the first ride. 
 
         RemainingDates=mod(caldays(DateRange), 7); % One driving profile should cover a integer number of full weeks. Mostly this is not the case. 7-RemainingDates equals the number of missing days to complete the last week
         if RemainingDates~=0
@@ -231,10 +230,10 @@ else
         DateRange=caldays(between(dateshift(DrivingProfileTime(1,1), 'start', 'day'), dateshift(DrivingProfileTime(end,2), 'start', 'day'), 'days')+caldays(1)); % Recalculate DateRange as it might have changed due to the fill up of the week
 
         if ~AddNoise
-            DrivingProfileTimeExt=repmat(DrivingProfileTime, ceil(days(DateEnd-DateStart)/DateRange)+1,1); % The driving profile of this few weeks (2-5) is used a multiple times in order to fill the duration defined by DateStart and DateEnd. Therefore, this few weeks driving profile is repeated several times until the duration is reached
-            DrivingProfileExt=repmat(DrivingProfile, ceil(days(DateEnd-DateStart)/DateRange)+1,1); % same as above with the trip distances and compan distances
+            DrivingProfileTimeExt=repmat(DrivingProfileTime, ceil(days(Time.End-Time.Start)/DateRange)+1,1); % The driving profile of this few weeks (2-5) is used a multiple times in order to fill the duration defined by Time.Start and Time.End. Therefore, this few weeks driving profile is repeated several times until the duration is reached
+            DrivingProfileExt=repmat(DrivingProfile, ceil(days(Time.End-Time.Start)/DateRange)+1,1); % same as above with the trip distances and compan distances
 
-            for n=1:ceil(days(DateEnd-DateStart)/DateRange)+1-1 % shift all departure and arrival times of the repeated profiles such that they match the interval specified by DateStart and DateEnd. So the first trip starts at or shortly after DateStart and the last trip ends shortly before or at DateEnd
+            for n=1:ceil(days(Time.End-Time.Start)/DateRange)+1-1 % shift all departure and arrival times of the repeated profiles such that they match the interval specified by Time.Start and Time.End. So the first trip starts at or shortly after Time.Start and the last trip ends shortly before or at Time.End
                 DrivingProfileTimeExt(n*size(DrivingProfile,1)+1:(n+1)*size(DrivingProfile,1),:)=DrivingProfileTimeExt(n*size(DrivingProfile,1)+1:(n+1)*size(DrivingProfile,1),:)+days(n*DateRange);
             end
             
@@ -250,8 +249,8 @@ else
                 WeekdayTable{weekday(DayProfileVec(n)), ceil((n)/7)}=find(DayShiftedTimeProfiles(:,1)==DayProfileVec(n)); % first cell captures all driving profile times of all Sundays (weekday==1), seconds of all Mondays (weekday==2) and so on
             end
             
-            RandDays=[(mod((0:ceil(days(DateEnd-DrivingProfileTime(end,2))-2))+weekday(DayShiftedTimeProfiles(1,1)+caldays(DateRange))-1,7)+1)', randi([1 ceil(DateRange/7)],ceil(days(DateEnd-DrivingProfileTime(end,2))-1),1)];
-            DaysVec=(0:ceil(days(DateEnd-DrivingProfileTime(end,2))-2))'+DateRange;
+            RandDays=[(mod((0:ceil(days(Time.End-DrivingProfileTime(end,2))-2))+weekday(DayShiftedTimeProfiles(1,1)+caldays(DateRange))-1,7)+1)', randi([1 ceil(DateRange/7)],ceil(days(Time.End-DrivingProfileTime(end,2))-1),1)];
+            DaysVec=(0:ceil(days(Time.End-DrivingProfileTime(end,2))-2))'+DateRange;
             DrivingProfileTimeExt=[DrivingProfileTime; DayOneShiftedTimeProfiles(cell2mat(WeekdayTable((RandDays(:,2)-1)*7+RandDays(:,1))),:) + repmat(caldays(repelem(DaysVec,cellfun('length',WeekdayTable((RandDays(:,2)-1)*7+RandDays(:,1))))),1,2)];
             DrivingProfileExt=[DrivingProfile; DrivingProfile(cell2mat(WeekdayTable((RandDays(:,2)-1)*7+RandDays(:,1))),:)];
             
@@ -304,8 +303,8 @@ else
             k
         end
 
-        DrivingProfileExt(DrivingProfileTimeExtPosix(:,1)<posixtime(DateStart) | DrivingProfileTimeExtPosix(:,1)>posixtime(DateEnd),:)=[]; % Delete all trips which are not between DateStart and DateEnd
-        DrivingProfileTimeExtPosix(DrivingProfileTimeExtPosix(:,1)<posixtime(DateStart) | DrivingProfileTimeExtPosix(:,1)>posixtime(DateEnd),:)=[];
+        DrivingProfileExt(DrivingProfileTimeExtPosix(:,1)<posixtime(Time.Start) | DrivingProfileTimeExtPosix(:,1)>posixtime(Time.End),:)=[]; % Delete all trips which are not between Time.Start and Time.End
+        DrivingProfileTimeExtPosix(DrivingProfileTimeExtPosix(:,1)<posixtime(Time.Start) | DrivingProfileTimeExtPosix(:,1)>posixtime(Time.End),:)=[];
         
 
         LargestValue=max(DrivingProfile); % Check whether uint32 can be used
@@ -328,31 +327,31 @@ else
         end
 
         LogbookPointer=1; % Pointer that iterates through the logbook entries. Points to the current trip in Vehicles{k}.Logbook
-        DrivingProfilePointer=1; % Pointer that iterates trough the time from DateStart to DateEnd in TimeStep intervals. Pointer points to index in LogbookTime and LogbookTimePosix
+        DrivingProfilePointer=1; % Pointer that iterates trough the time from Time.Start to Time.End in Time.Step intervals. Pointer points to index in LogbookTime and LogbookTimePosix
 
         for TimeVar=LogbookTimePosix(2:end)' % The time of TimeVar represents the the current real time. If TimeVar==15:15 then it is 15:15 right now, so the Logbook must give the status and SoC at 15:15. Hence, insided the loop, for each element of LogbookTime the past 15 minutes (15:00:00 - 15:14:59) are evaluated
 
             LogbookPointer=LogbookPointer+1;
-            Distance=0; % Distance traveld during current TimeStep time interval [m]
-            TripTime=0; % The duration of the current trip within during the TimeStep time interval [s]
-            TimeStepDrivingTime=0; % Time driven during current TimeStep time interval [s]
+            Distance=0; % Distance traveld during current Time.Step time interval [m]
+            TripTime=0; % The duration of the current trip within during the Time.Step time interval [s]
+            TimeStepDrivingTime=0; % Time driven during current Time.Step time interval [s]
             Vehicles{k}.Logbook(LogbookPointer,1)=0; % first state is undefined
 
-            while DrivingProfilePointer<=size(DrivingProfileTimeExtPosix,1) && TimeVar>=DrivingProfileTimeExtPosix(DrivingProfilePointer,1) % if DrivingProfilePointer does not exceed DateEnd and the current time is larger than the departure time of the Logbook entry DrivingProfilePointer is pointing to, then the car is driving within this interval. Iterate through all logbook entries whichs trips are (partly) within the time interval pointed to by DrivingProfilePointer
+            while DrivingProfilePointer<=size(DrivingProfileTimeExtPosix,1) && TimeVar>=DrivingProfileTimeExtPosix(DrivingProfilePointer,1) % if DrivingProfilePointer does not exceed Time.End and the current time is larger than the departure time of the Logbook entry DrivingProfilePointer is pointing to, then the car is driving within this interval. Iterate through all logbook entries whichs trips are (partly) within the time interval pointed to by DrivingProfilePointer
                 
-                if TimeVar-TimeStepMin*60 >= DrivingProfileTimeExtPosix(DrivingProfilePointer,1)  && TimeVar >= DrivingProfileTimeExtPosix(DrivingProfilePointer,2) % trip begins before interval and ends within
-                    TripTime=DrivingProfileTimeExtPosix(DrivingProfilePointer,2)+1-TimeVar+TimeStepMin*60;
-                elseif TimeVar-TimeStepMin*60 <= DrivingProfileTimeExtPosix(DrivingProfilePointer,1)  && TimeVar >= DrivingProfileTimeExtPosix(DrivingProfilePointer,2) % trip begins within interval and ends within
+                if TimeVar-Time.StepMin*60 >= DrivingProfileTimeExtPosix(DrivingProfilePointer,1)  && TimeVar >= DrivingProfileTimeExtPosix(DrivingProfilePointer,2) % trip begins before interval and ends within
+                    TripTime=DrivingProfileTimeExtPosix(DrivingProfilePointer,2)+1-TimeVar+Time.StepMin*60;
+                elseif TimeVar-Time.StepMin*60 <= DrivingProfileTimeExtPosix(DrivingProfilePointer,1)  && TimeVar >= DrivingProfileTimeExtPosix(DrivingProfilePointer,2) % trip begins within interval and ends within
                     TripTime=DrivingProfileTimeExtPosix(DrivingProfilePointer,2)+1-DrivingProfileTimeExtPosix(DrivingProfilePointer,1);
-                elseif TimeVar-TimeStepMin*60 <= DrivingProfileTimeExtPosix(DrivingProfilePointer,1)  && TimeVar <= DrivingProfileTimeExtPosix(DrivingProfilePointer,2) % trip begins within interval and ends after
+                elseif TimeVar-Time.StepMin*60 <= DrivingProfileTimeExtPosix(DrivingProfilePointer,1)  && TimeVar <= DrivingProfileTimeExtPosix(DrivingProfilePointer,2) % trip begins within interval and ends after
                     TripTime=TimeVar-DrivingProfileTimeExtPosix(DrivingProfilePointer,1);
-                elseif TimeVar-TimeStepMin*60 >= DrivingProfileTimeExtPosix(DrivingProfilePointer,1)  && TimeVar <= DrivingProfileTimeExtPosix(DrivingProfilePointer,2) % trip begins before interval and ends after
-                    TripTime=TimeStepMin*60;
+                elseif TimeVar-Time.StepMin*60 >= DrivingProfileTimeExtPosix(DrivingProfilePointer,1)  && TimeVar <= DrivingProfileTimeExtPosix(DrivingProfilePointer,2) % trip begins before interval and ends after
+                    TripTime=Time.StepMin*60;
                 else
                     disp(strcat("An error occured during vehicle ", num2str(k)))
                 end
                 
-%                 TripTime=min([TimeStepMin*60, DrivingProfileTimeExtPosix(DrivingProfilePointer,2)+1-DrivingProfileTimeExtPosix(DrivingProfilePointer,1), DrivingProfileTimeExtPosix(DrivingProfilePointer,2)+1-(TimeVar-TimeStepMin*60), TimeVar-DrivingProfileTimeExtPosix(DrivingProfilePointer,1)]); % [s] The driving time of this time interval is maximal TimeStepMin in seconds (therefore *60) long. This is the case, if depature time is before the beginning of the interval and the arrival time after it. If one of them was during the last TimeStepMin minutes, the part of the trip time that is within the interval is calculated
+%                 TripTime=min([Time.StepMin*60, DrivingProfileTimeExtPosix(DrivingProfilePointer,2)+1-DrivingProfileTimeExtPosix(DrivingProfilePointer,1), DrivingProfileTimeExtPosix(DrivingProfilePointer,2)+1-(TimeVar-Time.StepMin*60), TimeVar-DrivingProfileTimeExtPosix(DrivingProfilePointer,1)]); % [s] The driving time of this time interval is maximal Time.StepMin in seconds (therefore *60) long. This is the case, if depature time is before the beginning of the interval and the arrival time after it. If one of them was during the last Time.StepMin minutes, the part of the trip time that is within the interval is calculated
                 if TripTime<0
                     k
                 end
@@ -391,8 +390,8 @@ else
             end
         end
         Vehicles{k}.Logbook(1,1)=Vehicles{k}.Logbook(2,1); % copy the state of the second logbook entry to the first one, as it was undefined
-        Vehicles{k}.AverageMileageDay_m=uint32(sum(Vehicles{k}.Logbook(:,3))/days(DateEnd-DateStart)); %[m] 
-        Vehicles{k}.AverageMileageYear_km=uint32(sum(Vehicles{k}.Logbook(:,3))/days(DateEnd-DateStart)*365.25/1000); %[km]
+        Vehicles{k}.AverageMileageDay_m=uint32(sum(Vehicles{k}.Logbook(:,3))/days(Time.End-Time.Start)); %[m] 
+        Vehicles{k}.AverageMileageYear_km=uint32(sum(Vehicles{k}.Logbook(:,3))/days(Time.End-Time.Start)*365.25/1000); %[km]
         Vehicles{k}.DistanceCompanyToHome=DistanceCompanyToHome;
         Vehicles{k}.AvgHomeParkingTime=AvgHomeParkingTime;
         
@@ -408,14 +407,14 @@ else
     end
 
     Vehicles=Vehicles(~cellfun('isempty', Vehicles)); % delete all cells of those vehicles that weren't furhter considered
-    CheckField = @(Vehicle, Field) (isfield(Vehicle, 'Logbook') || isfield(Vehicle, 'TimeVec'));
+    CheckField = @(Vehicle, Field) (isfield(Vehicle, 'Logbook') || isfield(Vehicle, 'Time'));
     Vehicles=Vehicles(cellfun(CheckField, Vehicles));
 
     Vehicles{1}.TimeStamp=datetime('now');
     Vehicles{1}.FileName=strcat(StorageFile, "_", datestr(Vehicles{1}.TimeStamp, "yyyy-mm-dd_HH-MM"), ".mat");
     save(Vehicles{1}.FileName, "Vehicles", "-v7.3") % save the data in a file
 
-    clearvars TimeVar DrivingProfilePointer DrivingProfileMatrix PathVehicleData VehicleID DateMat DrivingProfileTime DrivingProfileTimeExt Distance DrivingTime LogbookPointer DistanceCompanyToHome    
+    clearvars TimeVar DrivingProfilePointer DrivingProfileMatrix Path.Vehicle VehicleID DateMat DrivingProfileTime DrivingProfileTimeExt Distance DrivingTime LogbookPointer DistanceCompanyToHome    
     clearvars DateMat DateMatStr DateRange DeleteIndices DrivingProfile Distances DrivingProfileMat DrivingProfileTimePosix h HomeSpotFound 
     clearvars Indices k LargestValue LogbookTime LogbookTimePosix CheckField StorageFiles StorageFile StorageInd AvgHomeParkingTime
     clearvars n Ranges RemainingDates SpotParkingTime TargetDate VehicleInfoMat VehicleMatIndices VehiclePropertiesMat VehicleDataRep
@@ -424,7 +423,7 @@ else
     clearvars Velocities WeekdayTable ShiftStart ShiftEnd
 end
 
-clearvars ActivateWaitbar AddNoise NumVehicles MaxHomeSpotDistanceDiff StorageFile PathVehicleData
+clearvars ActivateWaitbar AddNoise NumVehicles MaxHomeSpotDistanceDiff StorageFile Path.Vehicle
 
 disp(['Vehicle Data successfully imported ' num2str(toc) 's'])
 
@@ -439,7 +438,7 @@ if Evaluation
     for k=1:length(Vehicles)
         EvalMat{k+1,1}=Vehicles{k}.VehicleSize;
         EvalMat{k+1,2}=Vehicles{k}.NumberUsers;
-        EvalMat{k+1,3}=sum(Vehicles{k}.Logbook(:,3))/years(DateEnd-DateStart)/1000; % [km]
+        EvalMat{k+1,3}=sum(Vehicles{k}.Logbook(:,3))/years(Time.End-Time.Start)/1000; % [km]
 
         DistanceYearPerVehicle=DistanceYearPerVehicle+sum(Vehicles{k}.Logbook(:,3))/1000;
         a(k,1)=sum(Vehicles{k}.Logbook(:,3))/1000;
@@ -448,7 +447,7 @@ if Evaluation
             [~, ind]=max(Vehicles{k}.Logbook(:,3))
         end
     end
-    DistanceYearPerVehicle=DistanceYearPerVehicle/length(Vehicles)/years(DateEnd-DateStart)
+    DistanceYearPerVehicle=DistanceYearPerVehicle/length(Vehicles)/years(Time.End-Time.Start)
     
     if exist('Trips', 'var')
         histogram(Trips/1000, 0:5:max(Trips)/1000)
@@ -471,4 +470,5 @@ if Evaluation
     MileageMap(3,:)=[{"yearly mileage [km]"}, num2cell([mean(cell2mat(EvalMat([false;string(EvalMat(2:end,1))=="small"],3))), mean(cell2mat(EvalMat([false;string(EvalMat(2:end,1))=="medium"],3))), mean(cell2mat(EvalMat([false;string(EvalMat(2:end,1))=="large"],3))), mean(cell2mat(EvalMat([false;string(EvalMat(2:end,1))=="transporter"],3)))])];
 end
 
-clearvars Evaluation 
+clearvars Evaluation AvgVelocity DrivingProfileExt DrivingProfileTimeExt1 DrivingProfileTimeExt2 MinPlausibleVelocity ParkingTimeHalf ProcessNewVehicles 
+clearvars TimeStepDrivingTime TripTimeHalf MaxPlausibleVelocity TimeNoiseStdFac VehicleProperties StorageFiles NumTripsDays MinShareHomeParking StorageInd

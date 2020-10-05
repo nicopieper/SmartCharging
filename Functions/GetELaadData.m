@@ -1,25 +1,26 @@
 formatSpec = '%s';
-PathVehicleData=[Path 'Predictions' Dl 'VehicleData' Dl];
 
-File=fopen(strcat(PathVehicleData, 'Distribution_of_arrival_times_on_weekdays.csv'),  'r');  % Time, Private, Public, Workplace
-ArrivalWeekdaysELaad=fscanf(File,formatSpec);
-fclose(File);
-ArrivalWeekdaysELaad=strrep(ArrivalWeekdaysELaad, '";', ';');
-ArrivalWeekdaysELaad=strrep(ArrivalWeekdaysELaad, '"', ';');
-ArrivalWeekdaysELaad=strsplit(ArrivalWeekdaysELaad, ";");
-ArrivalWeekdaysELaad=reshape(ArrivalWeekdaysELaad(6:end)', 4, [])';
-ArrivalWeekdaysELaad=str2double(strrep(ArrivalWeekdaysELaad(1:end, 2:end), ",", "."));
+File=fopen(strcat(Path.Vehicle, 'Distribution_of_arrival_times_on_weekdays.csv'),  'r');  % Time, Private, Public, Workplace
+ELaad.ArrivalWeekdays=string(fscanf(File,formatSpec));
+[~]=fclose(File);
+LineBreaks=strfind(ELaad.ArrivalWeekdays, ":");
+for n=flip(LineBreaks-2)
+    ELaad.ArrivalWeekdays=insertBefore(ELaad.ArrivalWeekdays,n,";");
+end
+ELaad.ArrivalWeekdays=strsplit(ELaad.ArrivalWeekdays, ";");
+ELaad.ArrivalWeekdays=reshape(ELaad.ArrivalWeekdays(5:end)', 4, [])';
+ELaad.ArrivalWeekdays=str2double(ELaad.ArrivalWeekdays(1:end, 2:end));
 
-ArrivalWeekendsELaad=readmatrix(strcat(PathVehicleData, 'Distribution_of_arrival_times_on_weekends.csv'), 'NumHeaderLines', 1, 'OutputType', 'string');
-ArrivalWeekendsELaad=str2double(strrep(ArrivalWeekendsELaad(:,2:3), ',', '.')); % Private, Public
+ELaad.ArrivalWeekends=readmatrix(strcat(Path.Vehicle, 'Distribution_of_arrival_times_on_weekends.csv'), 'NumHeaderLines', 1, 'OutputType', 'string');
+ELaad.ArrivalWeekends=str2double(strrep(ELaad.ArrivalWeekends(:,2:3), ',', '.')); % Private, Public
 
-ArrivalTimesELaad=[(ArrivalWeekdaysELaad(:,1:2)*5+ArrivalWeekendsELaad*2)/7, ArrivalWeekdaysELaad(:,3)];
+ELaad.ArrivalTimes=[(ELaad.ArrivalWeekdays(:,1:2)*5+ELaad.ArrivalWeekends*2)/7, ELaad.ArrivalWeekdays(:,3)];
 
-ConnectionTimeELaad=readmatrix(strcat(PathVehicleData, 'Distribution_of_connection_time_per_charging_event.csv'), 'NumHeaderLines', 1, 'OutputType', 'string');
-ConnectionTimeELaad=str2double(strrep(ConnectionTimeELaad, ',', '.')); % Length in hours, Private, Public, Workplace
+ELaad.ConnectionTime=readmatrix(strcat(Path.Vehicle, 'Distribution_of_connection_time_per_charging_event.csv'), 'NumHeaderLines', 1, 'OutputType', 'string');
+ELaad.ConnectionTime=str2double(strrep(ELaad.ConnectionTime, ',', '.')); % Length in hours, Private, Public, Workplace
 
-EnergyDemandELaad=readmatrix(strcat(PathVehicleData, 'Distribution_of_energy_demand_time_per_charging_event.csv'), 'NumHeaderLines', 1, 'OutputType', 'string');
-EnergyDemandELaad=str2double(strrep(EnergyDemandELaad, ',', '.')); % Length in hours, Private, Public, Workplace
+ELaad.EnergyDemand=readmatrix(strcat(Path.Vehicle, 'Distribution_of_energy_demand_time_per_charging_event.csv'), 'NumHeaderLines', 1, 'OutputType', 'string');
+ELaad.EnergyDemand=str2double(strrep(ELaad.EnergyDemand, ',', '.')); % Length in hours, Private, Public, Workplace
 
 
-clearvars File formatSpec
+clearvars File formatSpec LineBreaks n

@@ -13,16 +13,16 @@ autocorr(Availability,96*3)
 SoC=double(Users{User}.LogbookBase(:,7))/double(Users{User}.BatterySize);
 SoC1=repelem(SoC(1:24:end), 24);
 
-Weekday=mod(weekday(TimeVec)+5, 7)+1<=5;
+Weekday=mod(weekday(Time.Vec)+5, 7)+1<=5;
 
 %%
 
 GeneratePrediction;
 a=Prediction;
 figure
-plot(TimeVec, a)
+plot(Time.Vec, a)
 hold on
-plot(TimeVec, Availability1)
+plot(Time.Vec, Availability1)
 ylim([-0.1 1.1])
 
 %%
@@ -46,8 +46,8 @@ accuracy=sqrt(TP/(TP+FP)*TP/(TP+FN))
 %%
 
 figure
-plot(TimeVec, a)
+plot(Time.Vec, a)
 hold on
-plot(TimeVec, Availability2)
-plot(TimeVec, Weekday/7)
+plot(Time.Vec, Availability2)
+plot(Time.Vec, Weekday/7)
 ylim([-0.1 1.1])

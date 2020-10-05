@@ -1,4 +1,4 @@
-function [PredictorMat, TargetDelayed, TimeStepPred, TimeStepPredInd, MaxDelayInd, RangeTrainPredInd, RangeTestPredInd]=PredVars(MaxDelayHours, Target, Time, Predictors, DateStart, DateEnd, ShareTrain, ShareTest, RangeTrainDate, RangeTestDate)
+function [PredictorMat, TargetDelayed, TimeStepPred, TimeStepPredInd, MaxDelayInd, RangeTrainPredInd, RangeTestPredInd]=PredVars(MaxDelayHours, Target, TimeData, Predictors, Time.Start, Time.End, Range.ShareTrain, Range.ShareTest, RangeTrainDate, RangeTestDate)
 %% Description
 % This function generates the input variables for the DayAhead Price
 % predictions.
@@ -10,7 +10,7 @@ function [PredictorMat, TargetDelayed, TimeStepPred, TimeStepPredInd, MaxDelayIn
 %                       prediction is MaxDelayInd Hours ago. (1,1).
 %   Target:             The Time Series, Predictor Variables shall be
 %                       created for. (N,1)
-%   Time:               A Vector indicating the datetime of each
+%   TimeData:           A Vector indicating the datetime of each
 %                       corresponding Target Value with the same index.
 %                       (N,1)
 %   Predictors          A Matrix covering all Predictor Variables that
@@ -28,19 +28,19 @@ function [PredictorMat, TargetDelayed, TimeStepPred, TimeStepPredInd, MaxDelayIn
 %                       values, thus it is aligned with other Time Series
 %   TimeCut:            Aligned Time vector without the first MaxDelayInd
 %                       values
-%   RangeTrainInd:         Start and end Index of the Training set. Is
+%   Range.TrainInd:     Start and end Index of the Training set. Is
 %                       corrected for MaxDelayInd
-%   RangeTestInd:          Start and end Index of the Testing set. Is
+%   Range.TestInd:      Start and end Index of the Testing set. Is
 %                       corrected for MaxDelayInd
-%   TimeStepInd:    1/TimeStepInd equals the time in hours between two
+%   Time.StepInd:       1/Time.StepInd equals the time in hours between two
 %                       consecutive values of all used Time Series
-%   MaxDelayInd:           The oldest Target Value used for the
+%   MaxDelayInd:        The oldest Target Value used for the
 %                       prediction is MaxDelayInd values ago. (1,1).
 %
 %  Used in Function
 
-%   ShareTrain:         Share of the Data set that is used for Training
-%   ShareTest:          Share of the Data set that is used for Testing
+%   Range.ShareTrain:	Share of the Data set that is used for Training
+%   Range.ShareTest:	Share of the Data set that is used for Testing
 %   MeanTargetD:        Mean hourly Target Value over the Training set
 %   MeanPricesWDW:      Mean weekly Target Value over the Training set
 %         ...circ:      Circular Repetition of the value, such every Time
@@ -49,18 +49,18 @@ function [PredictorMat, TargetDelayed, TimeStepPred, TimeStepPredInd, MaxDelayIn
 
 %% Initialisation
 
-TimeStepPred=Time(2)-Time(1);
-TimeStepPredInd=1/(minutes(Time(2)-Time(1))/60); % H:1, HH: 2, QH: 4
+TimeStepPred=TimeData(2)-TimeData(1);
+TimeStepPredInd=1/(minutes(TimeData(2)-TimeData(1))/60); % H:1, HH: 2, QH: 4
 MaxDelayInd=MaxDelayHours*TimeStepPredInd;
 
 % TimeVecTrainPred=RangeTrainDate(1):
 if exist('RangeTrainDate', 'var') && exist('RangeTestDate', 'var')
-    TimeVecPred=DateStart:TimeStepPred:DateEnd;
+    TimeVecPred=Time.Start:TimeStepPred:Time.End;
     RangeTrainPredInd=[max([find(RangeTrainDate(1)==TimeVecPred,1), find(~isnan(Target),1)])  find(dateshift(RangeTrainDate(2),'end','day')-TimeStepPred==TimeVecPred,1)];
     %RangeVal=[RangeTrain(2)+1 RangeTrain(2)+floor(length(Target)*ShareVal/24)*24-MaxDelayInd];
     RangeTestPredInd=[find(RangeTestDate(1)==TimeVecPred,1) find(dateshift(RangeTestDate(2),'end','day')-TimeStepPred==TimeVecPred,1)];
 else
-    RangeTrainPredInd=[1 floor(length(Target)*ShareTrain/(24*TimeStepInd))*(24*TimeStepInd)];
+    RangeTrainPredInd=[1 floor(length(Target)*Range.ShareTrain/(24*Time.StepInd))*(24*Time.StepInd)];
     %RangeVal=[RangeTrain(2)+1 RangeTrain(2)+floor(length(Target)*ShareVal/24)*24-MaxDelayInd];
     RangeTestPredInd=[RangeTrainPredInd(2)+1 length(Target)];
 end
@@ -72,7 +72,7 @@ MeanTargetD=mean(reshape(Target(RangeTrainPredInd(1):RangeTrainPredInd(2)),TimeS
 for k=1:7                       % Get mean Target value for every Weekday
     temp=[];
     for n=RangeTrainPredInd(1):RangeTrainPredInd(2)
-        if weekday(Time(n))==k
+        if weekday(TimeData(n))==k
             temp=[temp;Target(n)];
         end
     end
@@ -82,7 +82,7 @@ end
 MeanTargetDCirc=repmat(MeanTargetD,ceil((RangeTestPredInd(2)+MaxDelayInd)/(24*TimeStepPredInd)),1); % Repeat hourly mean time, thus it is aligned with other Time Series 
 MeanTargetDCirc=MeanTargetDCirc(1:RangeTestPredInd(2)+MaxDelayInd);
 
-MeanTargetWCirc=circshift(MeanTargetW, 7-mod(weekday(Time(RangeTrainPredInd(1))+6),7)+1); % Shift, thus Weekday at RangeTrainInd(1) is in first row.
+MeanTargetWCirc=circshift(MeanTargetW, 7-mod(weekday(TimeData(RangeTrainPredInd(1))+6),7)+1); % Shift, thus Weekday at Range.TrainInd(1) is in first row.
 temp=repmat(MeanTargetWCirc(1:1:end),1,24*TimeStepPredInd)'; %  Now, repeat daily values, thus every 24h of a Day has the same value.
 MeanTargetWCirc=temp(1:end)';
 MeanTargetWCirc=repmat(MeanTargetWCirc,ceil((RangeTestPredInd(2)+MaxDelayInd)/(24*TimeStepPredInd)/7),1); % Repeat daily mean values, thus it is aligned with other Time Series

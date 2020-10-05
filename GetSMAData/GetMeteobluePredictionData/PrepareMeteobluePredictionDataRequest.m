@@ -72,7 +72,7 @@ for n=1:size(Files,1)
     DailyProfile=mean(reshape(PVPlants{k}.Profile, 96, []),2);
     [~, temp]=max(DailyProfile);
     MaxPowerTime(counter,1)=hours(temp/4);
-    Yield(counter,1)=sum(double(PVPlants{k}.Profile))/4/ceil(days(DateEnd-DateStart))/1000*365.25;
+    Yield(counter,1)=sum(double(PVPlants{k}.Profile))/4/ceil(days(Time.End-Time.Start))/1000*365.25;
     
     PVPlantsNum(counter,1)=k;
     

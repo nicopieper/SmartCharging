@@ -1,16 +1,16 @@
-function [PredictorMat, TargetDelayed, TargetCut, TimeCut, RangeTrain, RangeTest]=PredVars(MaxDelay, Target, Time, Predictors)
+function [PredictorMat, TargetDelayed, TargetCut, TimeCut, RangeTrain, RangeTest]=PredVars(MaxDelay, Target, TimeData, Predictors)
 
 %% Description
 % This function generates the input variables for the DayAhead Price
 % predictions.
 %
 % Variable description
-%   TimeStep:           The 1/TimeStep equlas the time in hours between two
+%   TimeStepData:       The 1/TimeStepData equlas the time in hours between two
 %                       consecutive values of all used Time Series
 %   MaxDelay:           The oldest Target value used for the
 %                       prediction is MaxDelay values ago
-%   ShareTrain:         Share of the Data set that is used for Training
-%   ShareTest:          Share of the Data set that is used for Testing
+%   Range.ShareTrain:	Share of the Data set that is used for Training
+%   Range.ShareTest:	Share of the Data set that is used for Testing
 %   RangeTrain:         Start and end Index of the Training set. Is
 %                       corrected for MaxDelay
 %   RangeTrain:         Start and end Index of the Testing set. Is
@@ -34,25 +34,25 @@ function [PredictorMat, TargetDelayed, TargetCut, TimeCut, RangeTrain, RangeTest
 
 %% Initialisation
 
-TimeStep=minutes(Time(2)-Time(1))/60; % H:1, HH: 2, QH: 4
-MaxDelay=MaxDelay*TimeStep;
+TimeStepData=minutes(TimeData(2)-TimeData(1))/60; % H:1, HH: 2, QH: 4
+MaxDelay=MaxDelay*TimeStepData;
 
-ShareTrain=0.8;             	% Share of the Training Data Set
+Range.ShareTrain=0.8;             	% Share of the Training Data Set
 %ShareVal=0.0;                  % Share of the Validation Data Set
-ShareTest=1-ShareTrain;         % Share of the Test Data Set
+Range.ShareTest=1-Range.ShareTrain;         % Share of the Test Data Set
 
-RangeTrain=[1 floor(length(Target)*ShareTrain/(24*TimeStep))*(24*TimeStep)-MaxDelay];
+RangeTrain=[1 floor(length(Target)*Range.ShareTrain/(24*TimeStepData))*(24*TimeStepData)-MaxDelay];
 %RangeVal=[RangeTrain(2)+1 RangeTrain(2)+floor(length(Target)*ShareVal/24)*24-MaxDelay];
 RangeTest=[RangeTrain(2)+1 length(Target)-MaxDelay];
 
 %% Calc Daily and Weekly Mean Values
 
-MeanTargetD=mean(reshape(Target(RangeTrain(1):RangeTrain(2)),TimeStep*24,[]),2); % Get hourly mean Price for every time of day. 00:00 in first row, 23:00 in last row        
+MeanTargetD=mean(reshape(Target(RangeTrain(1):RangeTrain(2)),TimeStepData*24,[]),2); % Get hourly mean Price for every time of day. 00:00 in first row, 23:00 in last row        
 
 for k=1:7                       % Get mean Target value for every Weekday
     temp=[];
     for n=RangeTrain(1):RangeTrain(2)
-      if weekday(Time(n))==k
+      if weekday(TimeData(n))==k
         temp=[temp;Target(n)];
       end
     end
@@ -62,7 +62,7 @@ end
 MeanTargetDCirc=repmat(MeanTargetD,ceil((RangeTest(2)+MaxDelay-RangeTrain(1)+1)/24),1); % Repeat hourly mean time, thus it is aligned with other Time Series 
 MeanTargetDCirc=MeanTargetDCirc(RangeTrain(1):RangeTest(2)+MaxDelay);
 
-MeanTargetWCirc=circshift(MeanTargetW, 7-mod(weekday(Time(RangeTrain(1))+6),7)+1); % Shift, thus Weekday at RangeTrain(1) is in first row.
+MeanTargetWCirc=circshift(MeanTargetW, 7-mod(weekday(TimeData(RangeTrain(1))+6),7)+1); % Shift, thus Weekday at RangeTrain(1) is in first row.
 temp=repmat(MeanTargetWCirc(1:1:end),1,24)'; %  Now, repeat daily values, thus every 24h of a Day has the same value.
 MeanTargetWCirc=temp(1:end)';
 MeanTargetWCirc=repmat(MeanTargetWCirc,ceil((RangeTest(2)+MaxDelay-RangeTrain(1)+1)/24/7),1); % Repeat daily mean values, thus it is aligned with other Time Series
@@ -78,7 +78,7 @@ for n=1:MaxDelay
 end
 
 TargetCut=Target(RangeTrain(1)+MaxDelay:end,:);
-TimeCut=Time(RangeTrain(1)+MaxDelay:end,:);
+TimeCut=TimeData(RangeTrain(1)+MaxDelay:end,:);
 
 PredictorMat = [Predictors(RangeTrain(1)+MaxDelay:end,:), ...         
                 MeanTargetDCirc(RangeTrain(1)+MaxDelay:end,:), ...

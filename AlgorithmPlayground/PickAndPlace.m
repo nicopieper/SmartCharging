@@ -1,7 +1,7 @@
 %%
-clearvars -except DayaheadRealQH ResEnPricesRealQH ResPoDemRealQH ResPoPricesReal4H TimeVec UsersT PVPlants
+clearvars -except DayaheadRealQH ResEnPricesRealQH ResPoDemRealQH ResPoPricesReal4H Time.Vec UsersT PVPlants
 Vehicles=800;
-Periods=length(TimeVec);
+Periods=length(Time.Vec);
 ControlPeriods=96*1.5;
 
 if ~exist("Users", "var")

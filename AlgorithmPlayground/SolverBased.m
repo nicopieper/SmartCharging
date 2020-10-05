@@ -1,7 +1,7 @@
 %% 
-clearvars -except DayaheadReal1QH ResEnPricesRealQH ResPoDemRealQH ResPoPricesReal4H TimeVec Users PVPlants NumUsersTemp
+clearvars -except DayaheadReal1QH ResEnPricesRealQH ResPoDemRealQH ResPoPricesReal4H Time.Vec Users PVPlants NumUsersTemp
 NumUsers=400;
-Periods=length(TimeVec);
+Periods=length(Time.Vec);
 ControlPeriods=96*1.5;
 ElectricityBasePrice=0.222;
 CostCats=3;
@@ -99,14 +99,14 @@ z = zeros(size(x));
 col = (Load./repmat(max(Load, [], 2),1,3))';
 surface([x;x],[y;y],[z;z],[permute(repmat(col,1,1,2),[3,2,1])], 'facecol','no', 'edgecol','interp', 'linew',2);
 xticks(1:16:96)
-xticklabels({datestr(TimeVec(1:16:96),'HH:MM')})
+xticklabels({datestr(Time.Vec(1:16:96),'HH:MM')})
 
 hold on
 plot(squeeze(mean(reshape(ChargingType(:,1),96,[],1),2)), "LineWidth", 1.2, "Color", [1, 0, 0])
 plot(squeeze(mean(reshape(ChargingType(:,2),96,[],1),2)), "LineWidth", 1.2, "Color", [0, 1, 0])
 plot(squeeze(mean(reshape(ChargingType(:,3),96,[],1),2)), "LineWidth", 1.2, "Color", [0, 0, 1])
 xticks(1:16:96)
-xticklabels({datestr(TimeVec(1:16:96),'HH:MM')})
+xticklabels({datestr(Time.Vec(1:16:96),'HH:MM')})
 legend(["All", "Spotmarket", "PV", "Secondary Reserve Energy"])
 
 figure

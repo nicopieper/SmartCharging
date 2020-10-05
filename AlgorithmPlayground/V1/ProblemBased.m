@@ -1,7 +1,7 @@
 %%
-clearvars -except DayaheadRealQH ResEnPricesRealQH ResPoDemRealQH ResPoPricesReal4H TimeVec Users PVPlants VehiclesTemp
+clearvars -except DayaheadRealQH ResEnPricesRealQH ResPoDemRealQH ResPoPricesReal4H Time.Vec Users PVPlants VehiclesTemp
 Vehicles=800;
-Periods=length(TimeVec);
+Periods=length(Time.Vec);
 ControlPeriods=96*1.5;
 
 

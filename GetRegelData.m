@@ -40,7 +40,7 @@
 %                       imported to Maltab and stored in mat files is not 
 %                       processed newly. Only lists that were not imported
 %                       yet are processed, in this case independent whether
-%                       they lay inside TimeVec or not! logical (1,1)
+%                       they lay inside Time.Vec or not! logical (1,1)
 %   ProcessDataNewRegelDemand: Control variable. If true, the section that
 %                       processes the demand data will be executed. If data
 %                       is processed completly new depends on 
@@ -54,11 +54,11 @@
 %                       market offers will be executed. If data is 
 %                       processed completly new depends on OnlyAddNewLists.
 %                       logical (1,1)
-%   ProcessDataNewRegel: Control variable. Regardless of all other control
+%   ProcessDataNew.Regel: Control variable. Regardless of all other control
 %                       variables, if this variable is false, no data will
 %                       be processed newly but only stored data from local
 %                       mat files. logical (1,1)
-%   DateStartOffers:    Determines the data at which the pricing data is
+%   Time.StartRegelOffers:    Determines the data at which the pricing data is
 %                       started to be calculated. After the change of the
 %                       pricing mechanism at 01.08.2019 it took a while
 %                       (one could say it took round about 2.5 months)
@@ -69,37 +69,36 @@
 %                       processed. Yet, only aFRR and mFRR are valid
 %                       inputs. FCR has a different pricing mechanism.
 %                       String scalar or vector
-%   DateVec:            All dates covered by TimeVec. datetime vector
+%   DateVec:            All dates covered by Time.Vec. datetime vector
 
 
 %% Initialisation
 
 tic
-PathRegelData=[Path 'Predictions' Dl 'RegelData' Dl];
 OnlyAddNewLists=false;
 ProcessDataNewRegelDemand=false;
 ProcessDataNewRegelOfferLists=false;
 ProcessDataNewRegelPrices=false;
-DateStartOffers=datetime(2019,08,10,0,0,0,'TimeZone', 'Africa/Tunis');
+Time.StartRegelOffers=datetime(2019,08,10,0,0,0,'TimeZone', 'Africa/Tunis');
 RegelTypeLoad="aFRR";
 
 StrRange = @(Str, Start, End) Str(Start:End);
 close all hidden
 
-DateVec=DateStart:caldays(1):DateEnd;
-DateVecPrices=max(DateStart, DateStartOffers):caldays(1):DateEnd;
-if DateStart<DateStartOffers
-    disp("DateStart is smaller than the beginning of the record of the reserve capacity market (01.09.2019)! Data from this date until DateEnd was loaded instead.")
+DateVec=Time.Start:caldays(1):Time.End;
+DateVecPrices=max(Time.Start, Time.StartRegelOffers):caldays(1):Time.End;
+if Time.Start<Time.StartRegelOffers
+    disp("Time.Start is smaller than the beginning of the record of the reserve capacity market (01.09.2019)! Data from this date until Time.End was loaded instead.")
 end
 
-if ProcessDataNewRegel==1
+if ProcessDataNew.Regel
     
     for RegelType=["aFRR" "mFRR"]  % FCR: PRL, aFRR: SRL, mFRR: MRL   iterate through the reserve types     
         
         %% Demand Lists  Date, TimeOfDate_From, TimeOfDate_To, Value Negative Reserve Power[MW], Value Positive Reserve Power[MW], Last Changes
         
         if ProcessDataNewRegelDemand % if true, add new lists or process completely new, if false only load data at the end of the script
-            StorageFileMonth=strcat(PathRegelData, RegelType, Dl, 'Ergebnislisten', Dl, 'ABGERUFENE*');
+            StorageFileMonth=strcat(Path.Regel, RegelType, Dl, 'Ergebnislisten', Dl, 'ABGERUFENE*');
             Files=dir(StorageFileMonth); % find all demand data csv files in local path. the files are all stored in one folder, in this case not in a tree structure
             
             h=waitbar(0, "Verarbeite Regelleistungsabrufwerte");
@@ -112,7 +111,7 @@ if ProcessDataNewRegel==1
                 if OnlyAddNewLists % if true, only import demand lists to matlab of months that have no corresponding mat file yet
                     DayVec=datetime(strcat(Year, ".", Month, ".01 00:00:00"), 'InputFormat', 'yyyy.MM.dd HH:mm:ss'):caldays(1):dateshift(datetime(strcat(Year, ".", Month, ".01 00:00:00"), 'InputFormat', 'yyyy.MM.dd HH:mm:ss'),'end','month'); % all days of the month of the file n
                     DataComplete=true;
-                    MonthFiles=dir(strcat(PathRegelData, RegelType, Dl, "Demand", Dl, Year, Dl, Month, Dl, "DemandData_*")); % check for which days of this month mat files already exist by reading all existing mat files of this month for demand data
+                    MonthFiles=dir(strcat(Path.Regel, RegelType, Dl, "Demand", Dl, Year, Dl, Month, Dl, "DemandData_*")); % check for which days of this month mat files already exist by reading all existing mat files of this month for demand data
                     ExistingDates=NaT(0,0);
                     
                     for k=1:size(MonthFiles,1)
@@ -126,24 +125,24 @@ if ProcessDataNewRegel==1
                 end
                 
                 LoadedDemandDataMonth=readmatrix([Files(n).folder Dl Files(n).name], 'NumHeaderLines', 5, 'OutputType', 'string'); % if at least one day is not covered, read the data from the csv file. this csv file have following structure: [date, TimeTntervalStart, TimeTntervalEnd, Neg. Demand, Pos. Demand, Comment, Comment, Qual. Neg. Demand, Qual. Pos. Demand]. One row corresponds to one quater hour of recorded demand energy. The Qual. data is similiar to that in the columns before but is published only two months later as it represent more accurate values
-                Time=datetime(strcat(LoadedDemandDataMonth(:,1), " ", LoadedDemandDataMonth(:,2)),'InputFormat','dd.MM.yyyy HH:mm', 'TimeZone', 'Europe/Berlin'); % extract the beginning of the timer invertal 
+                TimeData=datetime(strcat(LoadedDemandDataMonth(:,1), " ", LoadedDemandDataMonth(:,2)),'InputFormat','dd.MM.yyyy HH:mm', 'TimeZone', 'Europe/Berlin'); % extract the beginning of the timer invertal 
                 if strcmp(LoadedDemandDataMonth(1,8),'-') % in general, use the qual data for better accuracy but sometimes values are not present yet or missing, then use the normal values
                     LoadedDemandDataMonth=strrep(erase(LoadedDemandDataMonth(:,4:5),'.'), ',','.'); % convert from German decimal format to English
                     disp(strcat("In ", Month, '.', Year, ", for ", RegelType, " the operative Reserve Energy Values had to be used, as the quality-ensured Values are not available."))
                 else
                     LoadedDemandDataMonth=strrep(erase(LoadedDemandDataMonth(:,8:9),'.'), ',','.');
                 end
-                %Time=datetime(strcat(LoadedDemandDataMonth(:,1), " ", LoadedDemandDataMonth(:,2)),'InputFormat','dd.MM.yyyy HH:mm', 'TimeZone', 'Africa/Tunis');            
-                DSTChangesQH=find(isdst(Time(1:end-1))~=isdst(Time(2:end))); % List all DST transitions
-                DSTChangesQH=[DSTChangesQH month(Time(DSTChangesQH))]; % Add, whether a transitions occurs in October or March            
+                %TimeData=datetime(strcat(LoadedDemandDataMonth(:,1), " ", LoadedDemandDataMonth(:,2)),'InputFormat','dd.MM.yyyy HH:mm', 'TimeZone', 'Africa/Tunis');            
+                DSTChangesQH=find(isdst(TimeData(1:end-1))~=isdst(TimeData(2:end))); % List all DST transitions
+                DSTChangesQH=[DSTChangesQH month(TimeData(DSTChangesQH))]; % Add, whether a transitions occurs in October or March            
                 LoadedDemandDataMonth=DeleteDST(str2double(LoadedDemandDataMonth), DSTChangesQH, 4); % the demand data of the complete month, without DST inconsistencies
-                Time=DeleteDST(Time, DSTChangesQH, 4); % the corresponding time vector
+                TimeData=DeleteDST(TimeData, DSTChangesQH, 4); % the corresponding TimeData vector
 
-                StoragePath=strcat(PathRegelData, RegelType, Dl, 'Demand', Dl, Year, Dl, Month, Dl); % the loaded data is stored in mat files. there is one folder for each reserve type, inside one folder for each year, one folder for each month. inside the month folders there is one mat file for ine day of demand data
+                StoragePath=strcat(Path.Regel, RegelType, Dl, 'Demand', Dl, Year, Dl, Month, Dl); % the loaded data is stored in mat files. there is one folder for each reserve type, inside one folder for each year, one folder for each month. inside the month folders there is one mat file for ine day of demand data
                 if ~exist(StoragePath, 'dir') % if the folder does not exist, make it
                     mkdir(StoragePath)
                 end
-                DateChanges=[0; find(strcmp(string(datestr(Time(1:end-1,:), 'yyyy-mm-dd')),string(datestr(Time(2:end,:), 'yyyy-mm-dd')))==0); size(Time,1)]; % the indices at which there is a date transition in the time vector and LoadedDemandDataMonth vector. Used to split the month into days. One day covers 96 values
+                DateChanges=[0; find(strcmp(string(datestr(TimeData(1:end-1,:), 'yyyy-mm-dd')),string(datestr(TimeData(2:end,:), 'yyyy-mm-dd')))==0); size(TimeData,1)]; % the indices at which there is a date transition in the TimeData vector and LoadedDemandDataMonth vector. Used to split the month into days. One day covers 96 values
                 for k=1:size(DateChanges,1)-1 % iterate through the day transitions
                     LoadedDemandData=LoadedDemandDataMonth(DateChanges(k)+1:DateChanges(k+1),:); % split the data into days
                         save(strcat(StoragePath, 'DemandData_', Year, '-', Month, '-', ExtDateStr(num2str(k))), 'LoadedDemandData', '-v7.3') % save one mat file per day
@@ -160,7 +159,7 @@ if ProcessDataNewRegel==1
             
             h=waitbar(0, "Verarbeite Regelleistungsangebotslisten");
             
-            StorageFileMonth=strcat(PathRegelData, RegelType, Dl, 'Angebotslisten', Dl, 'RESULT_LIST*'); % All OfferLists are located in this path 
+            StorageFileMonth=strcat(Path.Regel, RegelType, Dl, 'Angebotslisten', Dl, 'RESULT_LIST*'); % All OfferLists are located in this path 
             Files=dir(StorageFileMonth); % they are named like RESULT_LIST_ANONYM_aFRR_DE_2020-01-01_2020-01-31.xlsx
             
             for n=1:size(Files,1) % iterate through all found OfferList files
@@ -175,7 +174,7 @@ if ProcessDataNewRegel==1
                     end
                     
                     DataComplete=true; 
-                    MonthFiles=dir(strcat(PathRegelData, RegelType, Dl, "Offers", Dl, Year, Dl, Month, Dl, "OfferLists_*")); % check if which corresponding mat files exist
+                    MonthFiles=dir(strcat(Path.Regel, RegelType, Dl, "Offers", Dl, Year, Dl, Month, Dl, "OfferLists_*")); % check if which corresponding mat files exist
                     ExistingDates=NaT(0,0);
                     
                     for k=1:size(MonthFiles,1)
@@ -200,13 +199,13 @@ if ProcessDataNewRegel==1
 
 %                 DemandData=[];
 %                           
-%                 StoragePathMonth=strcat(PathRegelData, RegelType, Dl, 'Demand', Dl, Year, Dl, Month); % start to load the corresponding demand data for this month from mat files generated before
+%                 StoragePathMonth=strcat(Path.Regel, RegelType, Dl, 'Demand', Dl, Year, Dl, Month); % start to load the corresponding demand data for this month from mat files generated before
 %                 for Date=datetime(LoadedOfferListData(1,1), 'InputFormat', 'dd.MM.yyyy'):caldays(1):datetime(LoadedOfferListData(end,1), 'InputFormat', 'dd.MM.yyyy') % open demand data file for each day of the month
 %                     load(strcat(StoragePathMonth, Dl, 'DemandData_', Year, '-', Month, '-', datestr(Date, 'dd'), '.mat')) % load it to workspace
 %                     DemandData=[DemandData; LoadedDemandData]; % add it to this time series
 %                 end
   
-                StoragePath=strcat(PathRegelData, RegelType, Dl, 'Offers', Dl, Year, Dl, Month, Dl); % make a path where the results can be stored
+                StoragePath=strcat(Path.Regel, RegelType, Dl, 'Offers', Dl, Year, Dl, Month, Dl); % make a path where the results can be stored
                 if ~exist(StoragePath, 'dir')
                     mkdir(StoragePath)
                 end
@@ -243,7 +242,7 @@ if ProcessDataNewRegel==1
                         End=size(LoadedOfferListData,1);
                     end
                     if mod(k,12)==0 % if all sublists of one day are generated, store the data in a mat file
-                        StoragePath=strcat(PathRegelData, RegelType, Dl, 'Offers', Dl, Year, Dl, Month, Dl);
+                        StoragePath=strcat(Path.Regel, RegelType, Dl, 'Offers', Dl, Year, Dl, Month, Dl);
                         save(strcat(StoragePath, 'OfferLists_', Year, '-', Month, '-', datestr(LoadedOfferLists{1,1},'dd')), 'LoadedOfferLists', '-v7.3')
                         LoadedOfferLists={}; % Capacity Price [€/MW], Energy Price [€/MWh], Allocated Capacity [MW]
                     end
@@ -281,7 +280,7 @@ if ProcessDataNewRegel==1
                 
                 Year=datestr(Date, 'yyyy'); % extract year
                 Month=datestr(Date, 'mm'); % and month
-                StoragePath=strcat(PathRegelData, RegelType, Dl, 'Prices', Dl, Year, Dl, Month, Dl); % to open the Demand data OfferLists mat files from local path for this day specified by Date
+                StoragePath=strcat(Path.Regel, RegelType, Dl, 'Prices', Dl, Year, Dl, Month, Dl); % to open the Demand data OfferLists mat files from local path for this day specified by Date
                 
                 if OnlyAddNewLists && isfile(strcat(StoragePath, 'ResEnPricesData', Year, '-', Month, '-', datestr(Date,'dd'), ".mat")) && isfile(strcat(StoragePath, 'ResPoPricesData', Year, '-', Month, '-', datestr(Date,'dd'), ".mat")) % check if the price data already exists
                     DateCounter=DateCounter+1;
@@ -289,8 +288,8 @@ if ProcessDataNewRegel==1
                     continue % if it exists, go ahead with the next date
                 end                
                 
-                load(strcat(PathRegelData, RegelType, Dl, 'Demand', Dl, Year, Dl, Month, Dl, 'DemandData_', Year, '-', Month, '-', datestr(Date, 'dd'), '.mat')); % load demand data 
-                load(strcat(PathRegelData, RegelType, Dl, 'Offers', Dl, Year, Dl, Month, Dl, 'OfferLists_', Year, '-', Month, '-', datestr(Date, 'dd'), '.mat')); % load OfferLists
+                load(strcat(Path.Regel, RegelType, Dl, 'Demand', Dl, Year, Dl, Month, Dl, 'DemandData_', Year, '-', Month, '-', datestr(Date, 'dd'), '.mat')); % load demand data 
+                load(strcat(Path.Regel, RegelType, Dl, 'Offers', Dl, Year, Dl, Month, Dl, 'OfferLists_', Year, '-', Month, '-', datestr(Date, 'dd'), '.mat')); % load OfferLists
                 LoadedResEnPrices=[zeros(length(LoadedDemandData),4), -1000*ones(length(LoadedDemandData),2), zeros(length(LoadedDemandData),2)]; % [Total Amount Payed for Energy Neg [€],  Total Amount Payed for Energy Pos [€], Mean Price Energy Neg [€/MWh], Mean Price Energy Pos [€/MWh], Marginal Price Energy Neg [€/MWh], Marginal Price Energy Pos [€/MWh], Min Price Energy Neg [€/MWh], Min Price Energy Pos [€/MWh]]. in this matrix all information about the real paid energy prices will be stored
                 
                 for Col=1:2 % iterate through the columns of LoadedOfferLists. (Col==1: negative reserve energy, Col==2: positive reserve energy)
@@ -351,26 +350,26 @@ end
 
 %% Load Data from Storage
 
-ResPoDemRealQH=NaN(round(days(DateEnd-DateStart))*96,2); % ReservePowerDemandRealMeasuredQuaterHourly
-OfferLists=cell(6*round(days(DateEnd-DateStart)),3);
-ResEnPricesRealQH=NaN(round(days(DateEnd-DateStart))*96,8); % ReserveEnergyPricesQuaterHourly
-ResPoPricesReal4H=NaN(round(days(DateEnd-DateStart))*6,8); % ReservePowerPrices4hInterval
+ResPoDemRealQH=NaN(round(days(Time.End-Time.Start))*96,2); % ReservePowerDemandRealMeasuredQuaterHourly
+OfferLists=cell(6*round(days(Time.End-Time.Start)),3);
+ResEnPricesRealQH=NaN(round(days(Time.End-Time.Start))*96,8); % ReserveEnergyPricesQuaterHourly
+ResPoPricesReal4H=NaN(round(days(Time.End-Time.Start))*6,8); % ReservePowerPrices4hInterval
 
 h=waitbar(0, 'Lade Regelleistungsmarktdaten von lokalem Pfad');
 DateCounter=0;
-for Date=DateVec % iterate through the days between DateStart and DateEnd
+for Date=DateVec % iterate through the days between Time.Start and Time.End
     Year=datestr(Date, 'yyyy');
     Month=datestr(Date, 'mm');
 
-    load(strcat(PathRegelData, RegelTypeLoad, Dl, 'Demand', Dl, Year, Dl, Month, Dl, 'DemandData_', Year, '-', Month, '-', datestr(Date, 'dd'), '.mat')); % load processed demand file
-    ResPoDemRealQH(DateCounter*96+1:(DateCounter+1)*96,:)=LoadedDemandData; % add it to ResPoDemRealQH at the right place within the vector, such that the rows of this variable correspomd to the rows of TimeVec
+    load(strcat(Path.Regel, RegelTypeLoad, Dl, 'Demand', Dl, Year, Dl, Month, Dl, 'DemandData_', Year, '-', Month, '-', datestr(Date, 'dd'), '.mat')); % load processed demand file
+    ResPoDemRealQH(DateCounter*96+1:(DateCounter+1)*96,:)=LoadedDemandData; % add it to ResPoDemRealQH at the right place within the vector, such that the rows of this variable correspomd to the rows of Time.Vec
 
-    if Date>=DateStartOffers % if price data exists
-        load(strcat(PathRegelData, RegelTypeLoad, Dl, 'Offers', Dl, Year, Dl, Month, Dl, 'OfferLists_', Year, '-', Month, '-', datestr(Date, 'dd'), '.mat')); % same mechanism as above
+    if Date>=Time.StartRegelOffers % if price data exists
+        load(strcat(Path.Regel, RegelTypeLoad, Dl, 'Offers', Dl, Year, Dl, Month, Dl, 'OfferLists_', Year, '-', Month, '-', datestr(Date, 'dd'), '.mat')); % same mechanism as above
         OfferLists(DateCounter*6+1:(DateCounter+1)*6,:)=LoadedOfferLists; % [Time, Neg. OfferLists, Pos. OfferLists]
-        load(strcat(PathRegelData, RegelTypeLoad, Dl, 'Prices', Dl, Year, Dl, Month, Dl, 'ResEnPricesData', Year, '-', Month, '-', datestr(Date,'dd')));
+        load(strcat(Path.Regel, RegelTypeLoad, Dl, 'Prices', Dl, Year, Dl, Month, Dl, 'ResEnPricesData', Year, '-', Month, '-', datestr(Date,'dd')));
         ResEnPricesRealQH(DateCounter*96+1:(DateCounter+1)*96,:)=LoadedResEnPrices; % [Total Amount Payed for Energy Neg [€],  Total Amount Payed for Energy Pos [€], Mean Price Energy Neg [€/MWh], Mean Price Energy Pos [€/MWh], Marginal Price Energy Neg [€/MWh], Marginal Price Energy Pos [€/MWh], Min Price Energy Neg [€/MWh], Min Price Energy Pos [€/MWh]]
-        load(strcat(PathRegelData, RegelTypeLoad, Dl, 'Prices', Dl, Year, Dl, Month, Dl, 'ResPoPricesData', Year, '-', Month, '-', datestr(Date,'dd')));
+        load(strcat(Path.Regel, RegelTypeLoad, Dl, 'Prices', Dl, Year, Dl, Month, Dl, 'ResPoPricesData', Year, '-', Month, '-', datestr(Date,'dd')));
         ResPoPricesReal4H(DateCounter*6+1:(DateCounter+1)*6,:)=LoadedResPoPrices; % [Total Amount Payed for Neg Power [€],  Total Amount Payed for Pos Power [€], Neg. average price [€/MW], Pos. average price [€/MW], Neg. marginal price [€/MW], Pos. marginal price [€/MW], Neg. minimum prices [€/MW], Pos. minimum price [€/MW]]
     end
 
@@ -379,12 +378,13 @@ for Date=DateVec % iterate through the days between DateStart and DateEnd
 end
 close(h)
 
-TimeRegelQH=(DateVec(1):TimeStep:DateEnd)';
-TimeRegel4H=(DateVec(1):hours(4):DateEnd)';
+Time.H4=(DateVec(1):hours(4):Time.End)';
 
 disp(['Reserve energy data successfully imported ' num2str(toc) 's'])
 
 %% Clean up workspace
 
-clearvars Date LoadedDemandData LoadedOfferLists LoadedResEnPrices LoadedResPoPrices Month PathRegelData RegelType RegelTypeLoad Start StrRange Year 
-clearvars ProcessDataNewRegelOfferLists ProcessDataNewRegelDemand DateCounter DateVec h DayVec
+clearvars Date LoadedDemandData LoadedOfferLists LoadedResEnPrices LoadedResPoPrices Month Path.Regel RegelType RegelTypeLoad Start StrRange Year 
+clearvars ProcessDataNewRegelOfferLists ProcessDataNewRegelDemand DateCounter DateVec h DayVec Row RowDem RowOffer SatisfiedOffer sortedValues sortOrder 
+clearvars StartDate StorageFileMonth TimeData TimeTemp  ProcessDataNewRegelPrices OnlyAddNewLists LoadedOfferListData LoadedOfferListData2 Files End DSTChangesQH
+clearvars DateVecPrices DateChanges Col AllocatedDemand LoadedDemandDataMonth SatisfiedDemand

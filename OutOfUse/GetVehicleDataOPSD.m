@@ -18,7 +18,7 @@
 %     Range=find(EV{n},1):find(EV{n}~=0,1,'last');
 %     EV{n}=EV{n}(Range);
 %     EV{n}(EV{n}<0.0007)=0;
-%     TimeVec{n}=datetime(strrep(erase(erase(d(Range,2), '+0100'), '+0200'), "T", " "), 'InputFormat', 'yyyy-MM-dd HH:mm:ss', 'TimeZone', 'Africa/Tunis');
+%     Time.Vec{n}=datetime(strrep(erase(erase(d(Range,2), '+0100'), '+0200'), "T", " "), 'InputFormat', 'yyyy-MM-dd HH:mm:ss', 'TimeZone', 'Africa/Tunis');
 % end
 
 ChargingTime=NaT(0,2, 'TimeZone', 'Africa/Tunis');
@@ -37,7 +37,7 @@ for n=1:2
         if ~isempty(Ind)
             Pointer=Pointer1+Ind;
             TempEV=TempEV(Ind:end);
-            ChargingTime{n}(end+1,1)=TimeVec{n}(Pointer);
+            ChargingTime{n}(end+1,1)=Time.Vec{n}(Pointer);
             Ind1=find(TempEV==0,1);
             if isempty(Ind1)
                 Ind1=length(TempEV);
@@ -45,7 +45,7 @@ for n=1:2
             end
             Pointer1=Pointer+Ind1-2;
             TempEV=TempEV(Ind1:end);
-            ChargingTime{n}(end,2)=TimeVec{n}(Pointer1);
+            ChargingTime{n}(end,2)=Time.Vec{n}(Pointer1);
             ChargingPower{n}=[ChargingPower{n}; EV{n}(Pointer:Pointer1)];
         end
     end

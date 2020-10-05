@@ -1,4 +1,4 @@
-function [Prediction, PredictionMat, TargetMat, MAEConst, mMAPEConst, RMSEConst] = TestPred(PredMethod, PredictorMat, TargetDelayed, Target, TimeVecPred, TimeStepPredInd, RangeTrainPredInd, RangeTestPredInd, RangeTrainDate, RangeTestDate, MaxDelayInd, ForecastIntervalPredInd, Demo, TargetName, ActivateWaitbar, PredictionDataPath, TimeIntervalFile)
+function [Prediction, PredictionMat, TargetMat, MAEConst, mMAPEConst, RMSEConst] = TestPred(PredMethod, PredictorMat, TargetDelayed, Target, TimeVecPred, TimeStepPredInd, RangeTrainPredInd, RangeTestPredInd, RangeTrainDate, RangeTestDate, MaxDelayInd, ForecastIntervalPredInd, Demo, TargetName, ActivateWaitbar, Path, TimeIntervalFile)
 %% Description
 % This function generates predictions basing on trained LSQ and NARXNET
 % models. The predictions can be visualised in a live demonstration.
@@ -182,7 +182,16 @@ for p=1:NumPredMethod
     Prediction=PredcitionTemp(:,p);
     PredictionMat=PredictionMatTemp(:,:,p);
     PredMethod=PredMethodTemp(p,:);
-    save(strcat(PredictionDataPath, TargetName, "_", LegendVec(p), "_", num2str(ForecastIntervalPredInd), "_", "_", num2str(size(PredictorMatInput,2)), "_", TimeIntervalFile, "_", datestr(datetime('now'), "yyyy-mm-dd_HH-MM"), ".mat"), "Prediction", "PredictionMat", "PredMethod", "Target", "TimeVecPred", "ForecastIntervalPredInd", "-v7.3");
+    Pred.Data=Prediction;
+    Pred.DataMat=PredictionMat;
+    Pred.Method=PredMethod;
+    Pred.Target=Target;
+    Pred.Time.Vec=TimeVecPred;
+    Pred.Time.StepInd=TimeStepPredInd;
+    Pred.Time.Stamp=datetime('now');
+    Pred.FileName=strcat(Path.Prediction, TargetName, "_", LegendVec(p), "_", num2str(ForecastIntervalPredInd), "_", "_", num2str(size(PredictorMatInput,2)), "_", TimeIntervalFile, "_", datestr(Pred.Time.Stamp, ".mat");
+    Pred.ForecastIntervalInd;
+    save(Pred.FileName, "Pred", "-v7.3");
 end
 Prediction=PredcitionTemp;
 PredictionMat=PredictionMatTemp;

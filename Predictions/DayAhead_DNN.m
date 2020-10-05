@@ -1,8 +1,8 @@
-ShareTrain=0.65;                         % Share of the Training Data Set
+Range.ShareTrain=0.65;                         % Share of the Training Data Set
 ShareVal=0.15;                           % Share of the Validation Data Set
-ShareTest=1-ShareTrain-ShareVal;        % Share of the Test Data Set
+Range.ShareTest=1-Range.ShareTrain-ShareVal;        % Share of the Test Data Set
 
-RangeTrain=[1 floor(length(PricesRealH)*ShareTrain/24)*24-MaxDelay];
+RangeTrain=[1 floor(length(PricesRealH)*Range.ShareTrain/24)*24-MaxDelay];
 RangeVal=[RangeTrain(2)+1 RangeTrain(2)+floor(length(PricesRealH)*ShareVal/24)*24-MaxDelay];
 RangeTest=[RangeVal(2)+1 length(PricesRealH)-MaxDelay];
 

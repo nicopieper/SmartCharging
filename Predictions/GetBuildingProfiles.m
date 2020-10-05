@@ -1,11 +1,10 @@
 tic
-PathOPSData=[Path 'Predictions' Dl 'OPSData' Dl];
-StorageFile=strcat(PathOPSData, 'OPSData', '.mat');
+StorageFile=strcat(Path.OPS, 'OPSData', '.mat');
 Nth = @(M, varargin) M(varargin{:});
 
 if ~isfile(StorageFile) || ProcessDataNewOPS==1
-    OPSData=readmatrix(strcat(PathOPSData, 'household_data_15min_singleindex_filtered.csv'), 'OutputType', 'string');        
-    [~,OPSDataHeader]=xlsread(strcat(PathOPSData, 'household_data_15min_singleindex_filtered.csv'), '1:1'); 
+    OPSData=readmatrix(strcat(Path.OPS, 'household_data_15min_singleindex_filtered.csv'), 'OutputType', 'string');        
+    [~,OPSDataHeader]=xlsread(strcat(Path.OPS, 'household_data_15min_singleindex_filtered.csv'), '1:1'); 
     OPSDataHeader=strsplit(OPSDataHeader{1,1}, ',');
     OPSDataHeader=OPSDataHeader(:,4:end);
     
@@ -17,8 +16,8 @@ if ~isfile(StorageFile) || ProcessDataNewOPS==1
     OPSData=DeleteDST(str2double(OPSData(:,4:end)), DSTChangesQH, 4);
     TimeOPSQH=DeleteDST(TimeOPSQH, DSTChangesQH, 4);
 %%        
-    NextDay = @(Time, Start) Start+96-hour(Time(Start))*4-minute(Time(Start))/15;
-    LastDay= @(Time, End) End-hour(Time(End))*4-minute(Time(End))/15-1;
+    NextDay = @(TimeData, Start) Start+96-hour(TimeData(Start))*4-minute(TimeData(Start))/15;
+    LastDay= @(TimeData, End) End-hour(TimeData(End))*4-minute(TimeData(End))/15-1;
     n=1;
     k=1;
     OPSProfiles={cell(0,0)};
@@ -53,7 +52,7 @@ if ~isfile(StorageFile) || ProcessDataNewOPS==1
 end
 
 PathSmardData=[Path 'Predictions' Dl 'SmardData' Dl];
-TimeIntervalLabel=strcat(datestr(DateStart, 'yyyymmdd'), '0000_', datestr(DateEnd, 'yyyymmdd'), '23');
+TimeIntervalLabel=strcat(datestr(Time.Start, 'yyyymmdd'), '0000_', datestr(Time.End, 'yyyymmdd'), '23');
 StorageFile=strcat(PathSmardData, 'SmardData', TimeIntervalFile, '.mat');
 GenPredFREQH=readmatrix(strcat(PathSmardData, 'Prognostizierte_Erzeugung_', TimeIntervalLabel, '59.xlsx'), 'NumHeaderLines', 7,  'OutputType', 'string');
 TimeQH=datetime(strcat(GenPredFREQH(:,1), " ", GenPredFREQH(:,2)),'InputFormat','dd.MM.yyyy HH:mm', 'TimeZone', 'Africa/Tunis');

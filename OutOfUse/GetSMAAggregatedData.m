@@ -1,7 +1,7 @@
 tic
 PathSMAData=[Path 'Predictions' Dl 'SMAData' Dl];
-DateStartSMA=NextMonday(datetime(year(DateStart), month(DateStart), day(DateStart), 0,0,0, 'TimeZone','Europe/Berlin'));
-DateEndSMA=LastSunday(datetime(year(DateEnd), month(DateEnd), day(DateEnd), 0,0,0, 'TimeZone','Europe/Berlin'));
+Time.StartSMA=NextMonday(datetime(year(Time.Start), month(Time.Start), day(Time.Start), 0,0,0, 'TimeZone','Europe/Berlin'));
+DateEndSMA=LastSunday(datetime(year(Time.End), month(Time.End), day(Time.End), 0,0,0, 'TimeZone','Europe/Berlin'));
 SMAURL='https://pvd.sunny-portal.com/powermapapi/powermap/profile/?callback=jQuery110207461584445988432_1595249669310&token=test&date='; 
 TimeLabels=["QuarterHourly", "Hourly"; "QH", "H";];
 SMAData=struct;
@@ -9,7 +9,7 @@ options = weboptions('CertificateFilename', '', 'Timeout', 10);
 
 %% Download or load Data
 h=waitbar(0, 'Lade PV-Profile von SMA.de');
-for Date=DateStartSMA:caldays(1):DateEndSMA
+for Date=Time.StartSMA:caldays(1):DateEndSMA
     Day=datestr(Date, 'dd');
     Month=datestr(Date, 'mm');   
     Year=datestr(Date, 'yyyy');
@@ -37,15 +37,15 @@ for Date=DateStartSMA:caldays(1):DateEndSMA
             SMAData.(FName)=[SMADataLoaded.(FieldNames{n})];
         end    
     end
-    waitbar((Date-DateStart)/(DateEnd-DateStart))
+    waitbar((Date-Time.Start)/(Time.End-Time.Start))
 end
 close(h);
 
 %% Store Data in Variables
 PVProfiles1=cell2mat(struct2cell(SMAData)');
-TimeQH=(NextMonday(DateStart):minutes(15):LastSunday(DateEnd))';
+TimeQH=(NextMonday(Time.Start):minutes(15):LastSunday(Time.End))';
 
 %% Clean up Workspace
-clearvars n Date Month Year Data DateStartSMA DateEndSMA Day FieldNames options SMAData SMADataLoaded SMAURL Zips 
+clearvars n Date Month Year Data Time.StartSMA DateEndSMA Day FieldNames options SMAData SMADataLoaded SMAURL Zips 
     
 disp(['SMA Data successfully imported ' num2str(toc) 's'])

@@ -70,10 +70,10 @@
 %                       represents the month number, the second column the
 %                       temperature indicator. (12, 2)
 %   TemperatureTimeVec  The temperature indicator for each entry within
-%                       TimeVec. Therefore the months of TimeVec are
+%                       Time.Vec. Therefore the months of Time.Vec are
 %                       matched with the first col of TemperatureMonths.
 %                       (M,1)
-%   UsersTimeVecLogical Indicates which entries of Vehicles logbook are
+%   UsersTime.VecLogical Indicates which entries of Vehicles logbook are
 %                       used within the given time interval set in
 %                       Initialisation. If the Vehicles were processed with
 %                       the same time interval, than all entries of this
@@ -99,6 +99,9 @@ VehiclePointer=zeros(length(VehicleSizes),1); % the pointers that indicate which
 if ~exist('Vehicles', 'var')
     GetVehicleData; % load the driving profiles
 end
+if AddPV && ~exist('PVPlants', 'var')
+    GetSMAPlantData;
+end
 
 VehicleDatabase=cell(length(VehicleSizes),1); % covers all vehicle numbers for each vehicle size class
 for n=2:length(Vehicles)
@@ -109,20 +112,20 @@ for n=2:length(Vehicles)
 end
     
 if ~exist('VehicleProperties', 'var')
-    PathVehicleData=[Path 'Predictions' Dl 'VehicleData' Dl]; 
-    VehicleProperties=readmatrix(strcat(PathVehicleData, 'Vehicle_Properties.xlsx'), 'NumHeaderLines', 1, 'OutputType', 'string'); % load the real car properties. Model Name, Fleet Share cum., Battery Capacity [kWh], Consumption [kWh/km], Share Charging Point Power
+    VehicleProperties=readmatrix(strcat(Path.Simulation, 'Vehicle_Properties.xlsx'), 'NumHeaderLines', 1, 'OutputType', 'string'); % load the real car properties. Model Name, Fleet Share cum., Battery Capacity [kWh], Consumption [kWh/km], Share Charging Point Power
 end
 
 TemperatureMonths=[1, 1; 2, 1; 3, 1.2; 4, 1.3; 5, 1.7; 6, 1.9; 7, 2; 8, 2; 9, 1.7; 10, 1.4; 11, 1.2; 12, 1.1]; 
-TemperatureTimeVec=TemperatureMonths(month(TimeVec), 2);
+TemperatureTimeVec=TemperatureMonths(month(Time.Vec), 2);
 
 %% Store processing information
 
 Users{1}.VehicleDataFileName=Vehicles{1}.FileName; % save general processing information in the first cell
 Users{1}.NumVehicles=length(Vehicles)-1;
-Users{1}.TimeVec=intersect(TimeVec, Vehicles{1}.TimeVec);
-UsersTimeVecLogical=ismember(Vehicles{1}.TimeVec,Users{1}.TimeVec);
-Users{1}.TimeStep=TimeStep;
+Users{1}.Time.Vec=intersect(Time.Vec, Vehicles{1}.Time.Vec);
+UsersTime.VecLogical=ismember(Vehicles{1}.Time.Vec,Users{1}.Time.Vec);
+Users{1}.Time.Step=Time.Step;
+Users{1}.AddPV=AddPV;
 
 %% Initialise the users
 
@@ -170,7 +173,7 @@ for n=2:NumUsers+1
     Users{n}.DistanceCompanyToHome=Vehicles{VehicleDatabase{SizeNum}(VehiclePointer(SizeNum))}.DistanceCompanyToHome;
     Users{n}.VehicleUtilisation=Vehicles{VehicleDatabase{SizeNum}(VehiclePointer(SizeNum))}.VehicleUtilisation;
     Users{n}.AvgHomeParkingTime=Vehicles{VehicleDatabase{SizeNum}(VehiclePointer(SizeNum))}.AvgHomeParkingTime;
-    Users{n}.LogbookSource=Vehicles{VehicleDatabase{SizeNum}(VehiclePointer(SizeNum))}.Logbook(UsersTimeVecLogical, :);
+    Users{n}.LogbookSource=Vehicles{VehicleDatabase{SizeNum}(VehiclePointer(SizeNum))}.Logbook(UsersTime.VecLogical, :);
     
     Velocities=double(Users{n}.LogbookSource(:,3))./double(Users{n}.LogbookSource(:,2))/60; % [m/s] depending on the velocity of each trip and the temperature indicator of its month, determine the energy consumption of the trip
     Velocities(Velocities<14)=1; % all trips with velocities smaller 14 m/s have the city consumption value
@@ -181,11 +184,12 @@ for n=2:NumUsers+1
     
     Users{n}.LogbookSource(:,4)=uint32(double(Users{n}.LogbookSource(:,3)).*Consumption); % add consumption to logbook
     Users{n}.LogbookSource(1,7)=uint32(double(Users{n}.BatterySize)*0.7+TruncatedGaussian(0.1,[0.4 1]-0.7,1)); % Initial SoC between 0.4 and 1 of BatterySize. Distribution is normal
-    Users{n}.AverageMileageDay_m=uint32(sum(Users{n}.LogbookSource(:,3))/days(DateEnd-DateStart)); %[m]
-    Users{n}.AverageMileageYear_km=uint32(sum(Users{n}.LogbookSource(:,3))/days(DateEnd-DateStart)*365.25/1000); %[km]
+    Users{n}.AverageMileageDay_m=uint32(sum(Users{n}.LogbookSource(:,3))/days(Time.End-Time.Start)); %[m]
+    Users{n}.AverageMileageYear_km=uint32(sum(Users{n}.LogbookSource(:,3))/days(Time.End-Time.Start)*365.25/1000); %[km]
 end
 
 %% Clean up Workspace
 
 clearvars LikelihoodPV PVPlantPointer Consumption Velocities SizeNum VehiclePointer VehicleDatabase AddPV TemperatureMonths TemperatureTimeVec
-clearvars a n Model VehicleSizes UsersTimeVecLog
+clearvars a n Model VehicleSizes MeanPrivateElectricityPrice NumTripDays NumUsers PublicACChargingPrices PublicDCChargingPrices StorageFiles StorageInd
+clearvars TimeNoiseStdFac UsersTime VehicleProperties 

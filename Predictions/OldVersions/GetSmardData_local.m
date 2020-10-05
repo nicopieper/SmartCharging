@@ -27,7 +27,7 @@
 %Initialisation;
 tic
 PathSmardData=[Path 'Predictions' Dl 'SmardData' Dl];
-TimeIntervalLabel=strcat(datestr(DateStart, 'yyyymmdd'), '0000_', datestr(DateEnd, 'yyyymmdd'), '23');
+TimeIntervalLabel=strcat(datestr(Time.Start, 'yyyymmdd'), '0000_', datestr(Time.End, 'yyyymmdd'), '23');
 StorageFile=strcat(PathSmardData, 'SmardData', TimeIntervalFile, '.mat');
 
 if ~isfile(StorageFile) || ProcessDataNewSmard==1
@@ -53,8 +53,8 @@ if ~isfile(StorageFile) || ProcessDataNewSmard==1
     temp=datetime(strcat(GenRealQH(:,1), " ", GenRealQH(:,2)),'InputFormat','dd.MM.yyyy HH:mm', 'TimeZone', 'Europe/Berlin');
     DSTChangesQH=find(isdst(temp(1:end-1))~=isdst(temp(2:end)));
     DSTChangesQH=[DSTChangesQH month(temp(DSTChangesQH))];    
-    GenRealQH=DeleteDST(FillMissingValues(str2double(strrep(erase(GenRealQH(:, 3:end), '.'), ',', '.')), 4)*4, DSTChangesQH, 4);
-    GenRealH=GenRealQH(1:4:end,:)*4;
+    GenRealQH=DeleteDST(FillMissingValues(str2double(strrep(erase(GenRealQH(:, 3:end), '.'), ',', '.')), 4), DSTChangesQH, 4);
+    GenRealH=GenRealQH(1:4:end,:);
     GenRealFREQH=GenRealQH(:,3:5);  % Fluctuating Renewables: Wind Offshore, Wind Onshore, Photovoltaics      
     GenRealFREH=GenRealFREQH(1:4:end,:); 
     TimeQH=DeleteDST(TimeQH, DSTChangesQH, 4);
@@ -62,7 +62,7 @@ if ~isfile(StorageFile) || ProcessDataNewSmard==1
 
     %% Prediction Energy Generation  Date, Time of Date, Total[MWh] (hourly), Wind Offhore[MWh] (quater hourly), Wind Onshore[MWh] (quater hourly), Photovoltaics[MWh] (quater hourly), Others[MWh] (hourly)
     GenPredQH=readmatrix(strcat(PathSmardData, 'Prognostizierte_Erzeugung_', TimeIntervalLabel, '59.xlsx'), 'NumHeaderLines', 7,  'OutputType', 'string');       
-    GenPredQH=DeleteDST([str2double(strrep(erase(GenPredQH(:,3), '.'), ',', '.')), str2double(strrep(erase(GenPredQH(:,4:6), '.'), ',', '.'))*4, str2double(strrep(erase(GenPredQH(:,7), '.'), ',', '.'))], DSTChangesQH, 4);    
+    GenPredQH=DeleteDST(str2double(strrep(erase(GenPredQH(:,3:7),'.'), ',', '.')), DSTChangesQH, 4);    
     GenPredH=FillMissingValues(GenPredQH(1:4:end,:), 1);   % Total, Wind Offhore, Wind Onshore, Photovoltaics, Others    
     GenPredFREQH=FillMissingValues(GenPredQH(:,2:4), 4);   % Wind Offhore, Wind Onshore, Photovoltaics    
     GenPredQH=[interpolateTS(GenPredQH(:,1), TimeQH), GenPredFREQH, interpolateTS(GenPredQH(:,5), TimeQH)];
@@ -70,13 +70,13 @@ if ~isfile(StorageFile) || ProcessDataNewSmard==1
 
     %% Prediction Load   Date, Time of Date, Total Load[MWh]
     LoadPredQH=readmatrix(strcat(PathSmardData, 'Prognostizierter_Stromverbrauch_', TimeIntervalLabel, '45.xlsx'), 'NumHeaderLines', 7,  'OutputType', 'string');    
-    LoadPredQH=DeleteDST(FillMissingValues(str2double(strrep(erase(LoadPredQH(:,3), '.'), ',', '.'))*4, 4), DSTChangesQH, 4); % Given in MWh, so multiplied with 4
+    LoadPredQH=DeleteDST(FillMissingValues(str2double(strrep(erase(LoadPredQH(:,3), '.'), ',', '.')), 4), DSTChangesQH, 4);
     LoadPredH=LoadPredQH(1:4:end,:);
 
     %% Real Load   Date, Time of Date, Total Load[MWh]
     PathDir=dir(strcat(PathSmardData, 'Realisierter_Stromverbrauch_', TimeIntervalLabel, '*'));
     LoadRealQH=readmatrix(PathDir.name, 'NumHeaderLines', 7, 'OutputType', 'string');    
-    LoadRealQH=DeleteDST(FillMissingValues(str2double(strrep(erase(LoadRealQH(:,3), '.'), ',', '.'))*4, 4), DSTChangesQH, 4);
+    LoadRealQH=DeleteDST(FillMissingValues(str2double(strrep(erase(LoadRealQH(:,3), '.'), ',', '.')), 4), DSTChangesQH, 4);
     LoadRealH=LoadRealQH(1:4:end,:);
     
     %% Foreign Trade   Date, Time of Date, Net Export[MWh], Netherlands Export[MWh], Netherlands Import[MWH], ...

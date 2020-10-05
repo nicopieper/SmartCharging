@@ -1,7 +1,7 @@
 %%
-clearvars -except DayaheadReal1QH ResEnPricesRealQH ResPoDemRealQH OfferLists ResPoPricesReal4H TimeVec Users PVPlants VehiclesTemp
+clearvars -except DayaheadReal1QH ResEnPricesRealQH ResPoDemRealQH OfferLists ResPoPricesReal4H Time Users PVPlants VehiclesTemp
 Vehicles=10;
-Periods=length(TimeVec);
+Time.Vec
 ControlPeriods=96*1.5;
 ElectricityBasePrice=0.222;
 CostCats=3;

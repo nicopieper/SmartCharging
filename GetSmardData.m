@@ -32,23 +32,23 @@
 % Description of important variables
 %   DateStartSmard:     Data that was once downloaded is stored in files
 %                       that cover one week. Therefore, this variable finds
-%                       the first Monday before DateStart (if DateStart is
+%                       the first Monday before Time.Start (if Time.Start is
 %                       a Monday than they are equal). datetime (1,1)
-%   DateEndSmard:       This variable finds first Sunday after DateEnd 
-%                       (if DateStart is a Sunday than they are equal).
+%   DateEndSmard:       This variable finds first Sunday after Time.End 
+%                       (if Time.Start is a Sunday than they are equal).
 %                       datetime (1,1)
 %   DateVec             All Mondays between DateStartSmard and 
 %                       DateEndSmard. Each Moday represents one week. Data
 %                       is loaded for each week (Monday) in DataVec.
 %                       datetime (1, number weeks)
-%   DaysDiffStart:      If DateStart is not a Monday, data for some
+%   DaysDiffStart:      If Time.Start is not a Monday, data for some
 %                       unwanted dates will be loaded. DaysDiffStart counts
 %                       the number of days with unwanted data before
-%                       DateStart. double (1,1)
-%   DaysDiffEnd:        If DateStart is not a Sunday, data for some
+%                       Time.Start. double (1,1)
+%   DaysDiffEnd:        If Time.Start is not a Sunday, data for some
 %                       unwanted dates will be loaded too. DaysDiffEnd 
 %                       counts the number of days with unwanted data after
-%                       DateEnd. double (1,1)
+%                       Time.End. double (1,1)
 %   IDList:             smard.de assigns each data category with an ID.
 %                       Dayahead has to IDs at it changed when Germany,
 %                       Austria and Lucembourg joined a collaborative spot
@@ -63,13 +63,12 @@
 
 %% Initialisation
 tic
-PathSmardData=[Path 'Predictions' Dl 'SmardData' Dl];
 
-DateStartSmard=LastMonday(datetime(year(DateStart), month(DateStart), day(DateStart), 0,0,0, 'TimeZone','Europe/Berlin')); % search for the last monday before DateStart
-DateEndSmard=NextSunday(datetime(year(DateEnd), month(DateEnd), day(DateEnd), 23,59,59, 'TimeZone','Europe/Berlin')); % search for the next Sunday after DateStart
+DateStartSmard=LastMonday(datetime(year(Time.Start), month(Time.Start), day(Time.Start), 0,0,0, 'TimeZone','Europe/Berlin')); % search for the last monday before Time.Start
+DateEndSmard=NextSunday(datetime(year(Time.End), month(Time.End), day(Time.End), 23,59,59, 'TimeZone','Europe/Berlin')); % search for the next Sunday after Time.Start
 DateVec=DateStartSmard:caldays(7):DateEndSmard; 
-DaysDiffStart=round(days(DateStart-DateStartSmard));
-DaysDiffEnd=round(days(DateEndSmard-DateEnd));
+DaysDiffStart=round(days(Time.Start-DateStartSmard));
+DaysDiffEnd=round(days(DateEndSmard-Time.End));
 
 SmardURL='https://smard.de/app/chart_data/'; % the data is saved in json files available thorugh links that begin with this URL
 TimeLabels=["Hourly", "QuarterHourly"; "hour", "quarterhour"; "H", "QH"];
@@ -107,13 +106,13 @@ for Date=DateVec % iterate thorugh the weeks and load the data
     for n=1:size(IDList,1) % iterate trough the data categories 
         for k=1:2 % 1: hourly, 2: quater hourly
             
-            StoragePath=strcat(PathSmardData, IDList(n,1), Dl, TimeLabels(1,k), Dl, Year, Dl); % use a tree folder structure. each data category has a folder. this folder is seperated folders for hourly and quater hourly data. Each folder has folders for each year. in the year folders there is one mat file for each week of downloaded data
+            StoragePath=strcat(Path.Smard, IDList(n,1), Dl, TimeLabels(1,k), Dl, Year, Dl); % use a tree folder structure. each data category has a folder. this folder is seperated folders for hourly and quater hourly data. Each folder has folders for each year. in the year folders there is one mat file for each week of downloaded data
             if ~exist(StoragePath, 'dir')
                 mkdir(StoragePath) % if a folder does not exist yet, make it
             end
             
             StorageFile=strcat(StoragePath, IDList(n,1), TimeLabels(3,k), '_', Year, '-', Weeknum, '.mat');
-            if isfile(StorageFile) && ProcessDataNewSmard==0 % if the required data for the week given by Date and the data category given by IDList(n,1) does already exsit as a mat file, then load it
+            if isfile(StorageFile) && ProcessDataNew.Smard==0 % if the required data for the week given by Date and the data category given by IDList(n,1) does already exsit as a mat file, then load it
                 %% load data from local path
                 load(StorageFile);
                     
@@ -131,12 +130,12 @@ for Date=DateVec % iterate thorugh the weeks and load the data
                 end   
                 
                 RawData=webread(strcat(SmardURL, IDList(n,IDCol), '/', CountryCode, '/', IDList(n,IDCol), '_', CountryCode, '_', TimeLabels(2,k), '_', strcat(string(posixtime(Date)), '000'), '.json')); % download the json file for the week and data category via the correct URL
-                Time=datetime(RawData.series(:,1)/1000,'ConvertFrom', 'posixtime', 'TimeZone', 'Europe/Berlin'); % from the downloaded data save the corresponding time
+                RawTime=datetime(RawData.series(:,1)/1000,'ConvertFrom', 'posixtime', 'TimeZone', 'Europe/Berlin'); % from the downloaded data save the corresponding time
                 SmardDataLoaded=RawData.series(:,2); % and the data values
                 
-                if size(Time,1)~=168*(k^2) % if one week does not contain 168 values of hourly data or 168*4 values for quater hourly data, then this week must contain a date in which the daylight saving time changes.
-                    DSTChanges=find(isdst(Time(1:end-1))~=isdst(Time(2:end))); % within the time vector, find the index where the transition of the daylight saving time happens. dst checks whether a datetime value is part of the daylight saving time or not. if the result changes between to consecutive values, then this must be the transition
-                    DSTChanges=[DSTChanges month(Time(DSTChanges))]; % store the transitions and add the month. it is important to know whether it is march or october in order to correct the inconsistencies due to DST
+                if size(RawTime,1)~=168*(k^2) % if one week does not contain 168 values of hourly data or 168*4 values for quater hourly data, then this week must contain a date in which the daylight saving time changes.
+                    DSTChanges=find(isdst(RawTime(1:end-1))~=isdst(RawTime(2:end))); % within the time vector, find the index where the transition of the daylight saving time happens. dst checks whether a datetime value is part of the daylight saving time or not. if the result changes between to consecutive values, then this must be the transition
+                    DSTChanges=[DSTChanges month(RawTime(DSTChanges))]; % store the transitions and add the month. it is important to know whether it is march or october in order to correct the inconsistencies due to DST
                     SmardDataLoaded=DeleteDST(SmardDataLoaded, DSTChanges, k^2); % in march values for the missing hour are interpolated, such as if there was no DST. in october the surplus values are deleted such as if there was no DST
                 end
                 
@@ -146,7 +145,7 @@ for Date=DateVec % iterate thorugh the weeks and load the data
             SmardData{n,k}=[SmardData{n,k}; SmardDataLoaded]; % store the data in the container
         end
     end
-    waitbar((Date-DateStart)/(DateEnd-DateStart))
+    waitbar((Date-Time.Start)/(Time.End-Time.Start))
 end
 close(h);
 
@@ -154,7 +153,7 @@ close(h);
 
 for n=1:size(IDList,1)
     for k=1:2
-        SmardData{n,k}=SmardData{n,k}(DaysDiffStart*k^2*24+1:end-DaysDiffEnd*k^2*24); % delete surplus values that were loaded because the first or last week exceeds partly TimeVec
+        SmardData{n,k}=SmardData{n,k}(DaysDiffStart*k^2*24+1:end-DaysDiffEnd*k^2*24); % delete surplus values that were loaded because the first or last week exceeds partly Time.Vec
     end
 end
 
@@ -162,25 +161,25 @@ SmardData(:,3)=cellstr(IDList(:,1)); % add categroy descriptions
 
 %% Store Data in Variables
 
-TimeH=(DateStart:hours(1):DateEnd)';
-TimeQH=(DateStart:minutes(15):DateEnd)';
-GenRealH=FillMissingValues([SmardData{2:13,1}], 1); % GenBiomasseReal, GenWasserkraftReal, GenWindOffshoreReal, GenWindOnshoreReal, GenPhotovoltaikReal, GenSonstigeErneuerbareReal, GenKernenergieReal, GenBraunkohelReal, GenSteinkohle RealGenErdgasReal, GenPumpspeicherReal, GenSonstigeKonvetionelleReal
-GenRealQH=FillMissingValues([SmardData{2:13,2}], 4)*4; % GenBiomasseReal, GenWasserkraftReal, GenWindOffshoreReal, GenWindOnshoreReal, GenPhotovoltaikReal, GenSonstigeErneuerbareReal, GenKernenergieReal, GenBraunkohelReal, GenSteinkohle RealGenErdgasReal, GenPumpspeicherReal, GenSonstigeKonvetionelleReal
-GenPredH=FillMissingValues([SmardData{14:18,1}], 1); % GenGesamtPred, GenWindOffshorePred, GenWindOnshorePred, GenPhotovoltaikPred, GenGesamtSonstigePred
-GenPredQH=FillMissingValues([interpolateTS(SmardData{14,2}, TimeQH), SmardData{15:17,2}, interpolateTS(SmardData{18,2}, TimeQH)],4)*4; % GenGesamtPred, GenWindOffshorePred, GenWindOnshorePred, GenPhotovoltaikPred, GenGesamtSonstigePred
-LoadRealH=FillMissingValues([SmardData{19,1}], 1);
-LoadRealQH=FillMissingValues([SmardData{19,2}], 4)*4;
-LoadPredH=FillMissingValues([SmardData{20,1}], 1);
-LoadPredQH=FillMissingValues([SmardData{20,2}], 4)*4;
-DayaheadReal1H=FillMissingValues([SmardData{1,1}], 1);
-DayaheadReal1QH=FillMissingValues([SmardData{1,2}], 4);
+Time.H=(Time.Start:hours(1):Time.End)';
+Time.QH=(Time.Start:minutes(15):Time.End)';
+Smard.GenRealH=FillMissingValues([SmardData{2:13,1}], 1); % GenBiomasseReal, GenWasserkraftReal, GenWindOffshoreReal, GenWindOnshoreReal, GenPhotovoltaikReal, GenSonstigeErneuerbareReal, GenKernenergieReal, GenBraunkohelReal, GenSteinkohle RealGenErdgasReal, GenPumpspeicherReal, GenSonstigeKonvetionelleReal
+Smard.GenRealQH=FillMissingValues([SmardData{2:13,2}], 4)*4; % GenBiomasseReal, GenWasserkraftReal, GenWindOffshoreReal, GenWindOnshoreReal, GenPhotovoltaikReal, GenSonstigeErneuerbareReal, GenKernenergieReal, GenBraunkohelReal, GenSteinkohle RealGenErdgasReal, GenPumpspeicherReal, GenSonstigeKonvetionelleReal
+Smard.GenPredH=FillMissingValues([SmardData{14:18,1}], 1); % GenGesamtPred, GenWindOffshorePred, GenWindOnshorePred, GenPhotovoltaikPred, GenGesamtSonstigePred
+Smard.GenPredQH=FillMissingValues([interpolateTS(SmardData{14,2}, Time.QH), SmardData{15:17,2}, interpolateTS(SmardData{18,2}, Time.QH)],4)*4; % GenGesamtPred, GenWindOffshorePred, GenWindOnshorePred, GenPhotovoltaikPred, GenGesamtSonstigePred
+Smard.LoadRealH=FillMissingValues([SmardData{19,1}], 1);
+Smard.LoadRealQH=FillMissingValues([SmardData{19,2}], 4)*4;
+Smard.LoadPredH=FillMissingValues([SmardData{20,1}], 1);
+Smard.LoadPredQH=FillMissingValues([SmardData{20,2}], 4)*4;
+Smard.DayaheadRealH=FillMissingValues([SmardData{1,1}], 1);
+Smard.DayaheadRealQH=FillMissingValues([SmardData{1,2}], 4);
 
-if length(SmardData{2,2})~=round(days(DateEnd-DateStart))*24*4==length(TimeQH) || length(SmardData{2,1})~=round(days(DateEnd-DateStart))*24==length(TimeH) % check data for consistency
+if length(SmardData{2,2})~=round(days(Time.End-Time.Start))*24*4==length(Time.QH) || length(SmardData{2,1})~=round(days(Time.End-Time.Start))*24==length(Time.H) % check data for consistency
     disp(strcat("The length of the Smard Data vectors does not correspond to the range of the end and start date"))
 end
 
 disp(['Smard Data successfully imported ' num2str(toc) 's'])
 
 %% Clean up Workspace
-clearvars Date h IDList k n SmardDataLoaded SmardURL StorageFile StoragePath TimeLabels Weeknum Year DateStartSmard DateEndSmard PathSmardData DaysDiffStart DaysDiffEnd DateVec
-clearvars SmardData
+clearvars Date h IDList k n SmardDataLoaded SmardURL StorageFile StoragePath TimeLabels Weeknum Year DateStartSmard DateEndSmard Path.Smard DaysDiffStart DaysDiffEnd DateVec
+clearvars SmardData CountryCode IDCol RawTime RawData
