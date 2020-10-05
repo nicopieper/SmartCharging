@@ -1,8 +1,11 @@
+%% Intitialisation 
 ShowStockmarketPred=true;
 ShowPVPred=true;
 ShowBaseScenario=true;
 TimeOfForecast=datetime(1,1,1,08,0,0,'TimeZone','Africa/Tunis');
-Time.StepIndDemo=4;
+Time.Demo.Step=minutes(60);
+Time.Demo.StepInd=hours(1)/Time.Demo.Step;
+
 
 NumPredMethod=1;
 SpotmarketLabel=strcat("Dayahead Auction Price");
@@ -13,10 +16,19 @@ if ~exist('Users', 'var') && ShowBaseScenario
     load(StorageFile)
 end
 
+%% Find DemoUser
+
 DemoUser=2;
-while (Users{DemoUser}.PVPlantExists==false && ShowPVPred) || sum(Users{DemoUser}.LogbookSource(:,1)>2)<100
+while (ShowPVPred && (Users{DemoUser}.PVPlantExists==false || ~isfield(PVPlants{Users{DemoUser}.PVPlant}, 'PredictionH'))) || sum(Users{DemoUser}.LogbookSource(:,1)>2)<100
     DemoUser=DemoUser+1;
 end
+
+%% Extend SpotmarketReal if its hourly value
+if length(SpotmarketReal)~= length(Time.Vec) && length(SpotmarketReal) == length(Time.H)
+    SpotmarketReal=repelem(SpotmarketReal, 4);
+end
+
+%% Load Spotmarket Prediction
 
 if ~exist("SpotmarketPred", "var") && ShowStockmarketPred
     PredMethodName="LSQ";
@@ -37,45 +49,24 @@ if ~exist("SpotmarketPred", "var") && ShowStockmarketPred
     else
         [~,LatestPrediction]=max(TimeStamps);
         load(strcat(Path.Prediction, StorageFiles(LatestPrediction).name))
-        SpotmarketPred=interp1(Time.Pred(ismember(Time.Pred, Time.Vec)),Prediction(ismember(Time.Pred, Time.Vec)), Time.Vec);
-        SpotmarketPred(end-2:end)=SpotmarketPred(end-3);
-%         SpotmarketPredMat=interp1((1:ForecastIntervalPredInd)',PredictionMat(:,:), (1:1/Time.StepInd:ForecastIntervalPredInd+1-1/Time.StepInd));
-        SpotmarketPredMat=interp1(1:ForecastIntervalPredInd, upsample(PredictionMat(:,ismember(Time.Pred, Time.Vec))',4)',1:1/Time.StepInd:ForecastIntervalPredInd+(Time.StepInd-1)/Time.StepInd);
-        SpotmarketPredMat(end-2:end,:)=ones(3,1)*SpotmarketPredMat(end-3,:);
+        SpotmarketPred=repelem(Pred.Data, Pred.Time.StepInd/Time.StepInd);
+        SpotmarketPredMat=repelem(Pred.DataMat, Pred.Time.StepInd/Time.StepInd,1);
+        
+%         SpotmarketPred=interp1(Time.Pred(ismember(Time.Pred, Time.Vec)),Prediction(ismember(Time.Pred, Time.Vec)), Time.Vec);
+%         SpotmarketPred(end-2:end)=SpotmarketPred(end-3);
+%         SpotmarketPredMat=interp1(1:ForecastIntervalPredInd, upsample(PredictionMat(:,ismember(Time.Pred, Time.Vec))',4)',1:1/Time.StepInd:ForecastIntervalPredInd+(Time.StepInd-1)/Time.StepInd);
+%         SpotmarketPredMat(end-2:end,:)=ones(3,1)*SpotmarketPredMat(end-3,:);
     end
 end
 ForecastIntervalInd=ForecastIntervalPredInd*Time.StepInd;
 
 
-DemoStartTime=max([Time.Vec(1), Range.TestDate(1), Users{1}.Time.Vec(1), Pred.Time.Vec(1)]);
-UserStartInd=find(ismember(Time.Vec, Users{1}.Time.Vec(1)),1);
-DemoStart=max(Range.TestInd(1), UserStartInd);
+% if length(SpotmarketReal)~= length(Time.Vec) && length(SpotmarketReal) == length(Time.H)
+%     SpotmarketReal=interp1(Time.H,SpotmarketReal, Time.Vec); % DayaheadRealQH
+%     SpotmarketReal(end-2:end)=SpotmarketReal(end-3);
+% end
 
-    
-if length(SpotmarketReal)~= length(Time.Vec) && length(SpotmarketReal) == length(Time.H)
-    SpotmarketReal=interp1(Time.H,SpotmarketReal, Time.Vec); % DayaheadRealQH
-    SpotmarketReal(end-2:end)=SpotmarketReal(end-3);
-end
-
-if ShowPVPred
-    PredMethodName="LSQ";
-    StorageFiles=dir(strcat(Path.Prediction, "PVPlants_1", "_", PredMethodName, "*"));
-    PredStart=NaT(size(StorageFiles,1), 'TimeZone', 'Africa/Tunis');
-    PredEnd=NaT(size(StorageFiles,1), 'TimeZone', 'Africa/Tunis');
-    FileFits=false(0);
-    for n=1:size(StorageFiles,1)
-        PredStart(n)=datetime(StorageFiles(n).name(end-37:end-30), 'InputFormat', 'yyyyMMdd', 'TimeZone', 'Africa/Tunis') + hours(0);
-        PredEnd(n)=datetime(StorageFiles(n).name(end-28:end-21), 'InputFormat', 'yyyyMMdd', 'TimeZone', 'Africa/Tunis')+hours(23)+minutes(45);
-        FileFits(n)=PredStart(n) <= Time.Vec(DemoStart) & PredEnd(n)>=Time.End;
-    end
-    if sum(FileFits)==0
-        disp("No matching prediction data could be found")
-    else
-        load(strcat(Path.Prediction, StorageFiles(find(datetime({StorageFiles(FileFits).date}, 'InputFormat', "dd-MMM-yyyy HH:mm:ss")==max(datetime({StorageFiles(FileFits).date}, 'InputFormat', "dd-MMM-yyyy HH:mm:ss")),1)).name))
-        PVPredQH=Prediction(ismember(Time.Pred, Time.Vec));
-        PVPredMat=PredictionMat;
-    end
-end
+%% Initialise Plot Labels
 
 ResPoDemLabel="Secondary Reserve Capacity Energy Demand";
 ResEnPricesLabel="Secondary Reserve Capacity & Energy Price";
@@ -83,11 +74,20 @@ ResEnPricesLabel="Secondary Reserve Capacity & Energy Price";
 SoCPlotLabel=strcat("SoC of the Vehicle of User ", num2str(DemoUser));
 PVPlotLabel=strcat("PV Generation Power of User ", num2str(DemoUser));
 
-Time.VecDateNum=datenum(Time.Vec);
+%% Resolve Time issues
 
-TimeInd=DemoStart;
+Time.Demo.Start=max([Time.Vec(1), Range.TestDate(1), Users{1}.Time.Vec(1), Pred.Time.Vec(1)]);
+Time.Demo.End=min([Time.Vec(end), Range.TestDate(2), Users{1}.Time.Vec(end), Pred.Time.Vec(end)]);
+Time.Demo.Vec=(Time.Demo.Start:Time.Step:Time.Demo.End)';
+Time.Demo.VecDateNum=datenum(Time.Demo.Vec);
+
+TimeInds.General=find(ismember(Time.Vec,Time.Demo.Start),1)+24*Time.StepInd;
+TimeInds.SpotmarketPred=find(ismember(Pred.Time.Vec,Time.Demo.Start),1)+24*Time.StepInd;
+TimeInds.User=find(ismember(Users{1}.Time.Vec,Time.Demo.Start),1)+24*Time.StepInd;
+
+TimeInd=24*Time.StepInd;
 SimulationDemoInit;
-for TimeInd=DemoStart:Time.StepIndDemo:Range.TestInd(2)
+for TimeInd=1:length(Time.Demo.Vec)
     SimulationDemoLoop;
 end
 

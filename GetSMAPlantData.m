@@ -15,7 +15,7 @@
 % file. If such a file already satisfies the defined interval, instead of
 % the csv files, this script loads the .mat file. The data of the plants
 % are stored into the cell array PVPlants including generation power
-% PVPlants{n}.Profile and further properties like PVPlants{n}.PeakPower.
+% PVPlants{n}.ProfileQH and further properties like PVPlants{n}.PeakPower.
 %
 % Depended scripts / folders
 %   Initialisation          Needed for the execution of this script
@@ -24,7 +24,7 @@
 %
 % Description of important variables
 %   PVPlants:           The cell array that contains the data of all PV
-%                       plants. The data of PVPlants{n}.Profile is aligned
+%                       plants. The data of PVPlants{n}.ProfileQH is aligned
 %                       with Time.Vec defined  in the Initialisation script.
 %                       cell (N,1)
 %   NumberPlantsToLoad: Maximum number of plants that shall be loaded into
@@ -59,7 +59,7 @@
 tic
 NumberPlantsToLoad=800; % Maximum number of plants to load. if larger than number existing plants, only number of existing plants are loaded
 AddPredictions=true; % if true the prediction data is added to plants for those which have prediction data
-LoadOnlyPlantsWithPrediction=false; % if true only plants with available prediction data are loaded
+LoadOnlyPlantsWithPrediction=true; % if true only plants with available prediction data are loaded
 
 NumberPlantsLoaded=0; % counter how many plants were loaded
 formatSpec = '%s'; % needed for reading of csv files
@@ -136,6 +136,7 @@ for n=1:size(Folders,1) % iterate through the plants
             load(strcat(PlantPath, Dl, "PredictionData", Dl, "PlantDataComplete_2018-01-01_2020-08-31", ".mat")); % if that is the case, load it
             if length(PlantDataComplete)==23376 % the number of quater hours from 01.01.2018 until 31.08.2020. check whether the loaded data matches this size
                 PVPlants{n}.PredictionH=PlantDataComplete(UsedTime.VecLogical); % assign prediction data to plant
+                PVPlants{n}.PredictionQH=[interp1(1:length(PVPlants{n}.PredictionH),PVPlants{n}.PredictionH, 1:0.25:length(PVPlants{n}.PredictionH))'; ones(3,1).*PVPlants{n}.PredictionH(end)]; % interpolate hourly values to quater hourly values
             elseif LoadOnlyPlantsWithPrediction
                 continue
             end
@@ -232,7 +233,7 @@ for n=1:size(Folders,1) % iterate through the plants
     
     %% Assign the loaded data to the PVPlants variable
     
-    DatesDiffStart=round(days(Time.Start-ExistingDataTimeStart)); % if the range of the loaded data exceeds TimVec, throw all values outside Time.Vec. therefore calculate how many exceeding values are there at the beginning
+    DatesDiffStart=round(days(Time.Start-ExistingDataTimeStart)); % if the range of the loaded data exceeds Time.Vec, throw all values outside Time.Vec. therefore calculate how many exceeding values are there at the beginning
     DatesDiffEnd=round(days(ExistingDataTime.End-Time.End)); % and how many are there at the end
     LoadedSMAPlantDataComplete=[0;LoadedSMAPlantDataComplete(1:end-1)]; % The SMA Data starts always at 00:15 --> Add a zero at beginning to shift ift
     
@@ -243,7 +244,9 @@ for n=1:size(Folders,1) % iterate through the plants
         PVPlants{n}.ActivationDate=datetime(Properties{2}, 'InputFormat', 'dd.MM.yyyy');
         PVPlants{n}.PeakPower=str2double(strrep(erase(extractBefore(Properties{3}, 'kWp'), ' '), ',', '.'));
         PVPlants{n}.ID=Properties{4};
-        PVPlants{n}.Profile=uint16(LoadedSMAPlantDataComplete(DatesDiffStart*96+1:end-DatesDiffEnd*96)*1000); % Unit: W not kW! in order to save memory 
+        PVPlants{n}.ProfileQH=uint16(LoadedSMAPlantDataComplete(DatesDiffStart*96+1:end-DatesDiffEnd*96)*1000); % Unit: W not kW! in order to save memory. Cut Vector to Time.Vec range 
+        PVPlants{n}.PredictionH=uint16(PVPlants{n}.PredictionH*1000);  % Unit: W not kW! in order to save memory.
+        PVPlants{n}.PredictionQH=uint16(PVPlants{n}.PredictionQH*1000); % Unit: W not kW! in order to save memory.
     
         NumberPlantsLoaded=NumberPlantsLoaded+1; % increase the counter
 
