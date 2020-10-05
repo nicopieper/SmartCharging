@@ -69,7 +69,7 @@ tic
 
 AddNoise=true;
 ActivateWaitbar=true;
-ProcessNewVehicles=false;
+ProcessNewVehicles=true;
 Evaluation=false;
 
 MinShareHomeParking=10/24;
