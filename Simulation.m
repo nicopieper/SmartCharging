@@ -4,7 +4,7 @@ ActivateWaitbar=true;
 PublicChargingThreshold=uint32(15); % in %
 PThreshold=1.2;
 NumUsers=200; % size(Users,1)-1;
-SmartCharging=true;
+SmartCharging=false;
 
 
 if ~exist('PublicChargerDistribution', 'var')
@@ -40,7 +40,6 @@ end
 
 if ActivateWaitbar
     h=waitbar(0, "Simulate charging processes");
-    TotalIterations=Time.Sim.Start-(Time.Sim.Start);
 end
 
 Users{1}.PThreshold=PThreshold;
@@ -142,7 +141,7 @@ for TimeInd=2:length(Time.Sim.Vec)
     end
     
     if ActivateWaitbar && mod(TimeInd+TD.User,1000)==0
-        waitbar((TimeInd+TD.User-Range.TrainInd(1)+1)/TotalIterations);
+        waitbar(TimeInd/length(Time.Sim.Vec));
     end
 end
 if ActivateWaitbar
