@@ -15,7 +15,7 @@ NumUsers=min(NumUsers, size(Users,1)-1);
 ChargingPower=zeros(NumUsers,1);
 EnergyDemandLeft=zeros(NumUsers+1,1);
 % ChargingEfficiency=zeros(NumUsers+1,1);
-close hidden
+%close hidden
 
 Time.Sim.Start=max([Range.TrainDate(1), Users{1}.Time.Vec(1)]);
 Time.Sim.End=min([Range.TestDate(2), Users{1}.Time.Vec(end)]);
@@ -30,11 +30,12 @@ for n=2:size(Users,1)
         Users{n}.Logbook=Users{n}.LogbookSource;
     else
         Users{n}.Logbook=Users{n}.LogbookBase;
-        TimeOfForecast=datetime(1,1,1,0,0,0,'TimeZone','Africa/Tunis');
     end
 end
 
 if SmartCharging
+    TimeOfForecast=datetime(1,1,1,0,0,0,'TimeZone','Africa/Tunis');
+	ShiftInds=(hour(TimeOfForecast)*Time.StepInd + minute(TimeOfForecast)/minutes(Time.Step));
     InitialisePreAlgo;
 end
 
@@ -48,6 +49,8 @@ Users{1}.PThreshold=PThreshold;
 
 for TimeInd=2:length(Time.Sim.Vec)
     
+    DecideNow=true;
+       
     for n=2:NumUsers+1
         
         % Public charging: Only charge at public charging point if it is requiered due to low SoC
@@ -128,8 +131,12 @@ for TimeInd=2:length(Time.Sim.Vec)
                 Users{n}.Logbook(TimeInd+TD.User,5)=min((Time.StepMin-Users{n}.Logbook(TimeInd+TD.User,2))*Users{n}.ACChargingPowerHomeCharging/60, Users{n}.BatterySize-Users{n}.Logbook(TimeInd+TD.User-1,9)); %[Wh]
             end
         else
-            if hour(Time.Sim.Vec(TimeInd))==hour(TimeOfForecast) & minute(Time.Sim.Vec(TimeInd))==minute(TimeOfForecast)
+            if DecideNow==true && hour(Time.Sim.Vec(TimeInd))==hour(TimeOfForecast) && minute(Time.Sim.Vec(TimeInd))==minute(TimeOfForecast)
                 PreAlgo;
+                DecideNow=false;
+                
+                Users{n}.Logbook(find((TimeInd+TD.User:TimeInd+TD.User+24*Time.StepInd-1) .* sum(OptimalChargingEnergies(1:24*Time.StepInd,:,n-1), 2))>0)=5;
+                Users{n}.Logbook(TimeInd+TD.User:TimeInd+TD.User+24*Time.StepInd-1, 5:7)=OptimalChargingEnergies(1:24*Time.StepInd,:,n-1);
             end
         end
         
@@ -176,10 +183,10 @@ if SmartCharging
 
     figure
     Load=mean(reshape(ChargingType',3,96,[]),3)';
-    %Load=circshift(Load, [(24-hour(TimeOfForecast))*Time.StepInd, 0]);
+    Load=circshift(Load, [ShiftInds, 0]);
     x = 1:96;
-%     y = circshift(mean(reshape(ChargingSum, 96, []), 2)', [(24-hour(TimeOfForecast))*Time.StepInd, 0]);
-    y = mean(reshape(ChargingSum, 96, []), 2)';
+    y = circshift(mean(reshape(ChargingSum, 96, []), 2)', [0,ShiftInds]);
+%     y = mean(reshape(ChargingSum, 96, []), 2)';
     z = zeros(size(x));
     col = (Load./repmat(max(Load, [], 2),1,3))';
     surface([x;x],[y;y],[z;z],[permute(repmat(col,1,1,2),[3,2,1])], 'facecol','no', 'edgecol','interp', 'linew',2);
@@ -187,15 +194,15 @@ if SmartCharging
     xticklabels({datestr(Time.Vec(1:16:96),'HH:MM')})
 
     hold on
-    plot(squeeze(mean(reshape(ChargingType(:,1),96,[],1),2)), "LineWidth", 1.2, "Color", [1, 0, 0])
-    plot(squeeze(mean(reshape(ChargingType(:,2),96,[],1),2)), "LineWidth", 1.2, "Color", [0, 1, 0])
-    plot(squeeze(mean(reshape(ChargingType(:,3),96,[],1),2)), "LineWidth", 1.2, "Color", [0, 0, 1])
+    plot(circshift(squeeze(mean(reshape(ChargingType(:,1),96,[],1),2)), ShiftInds), "LineWidth", 1.2, "Color", [1, 0, 0])
+    plot(circshift(squeeze(mean(reshape(ChargingType(:,2),96,[],1),2)), ShiftInds), "LineWidth", 1.2, "Color", [0, 1, 0])
+    plot(circshift(squeeze(mean(reshape(ChargingType(:,3),96,[],1),2)), ShiftInds), "LineWidth", 1.2, "Color", [0, 0, 1])
     xticks(1:16:96)
     xticklabels({datestr(Time.Vec(1:16:96),'HH:MM')})
     legend(["All", "Spotmarket", "PV", "Secondary Reserve Energy"])
 
     figure
-    plot(x, mean(sum(AvailabilityMat,3),2))
+    plot(x, circshift(mean(sum(AvailabilityMat,3),2), ShiftInds))
     xticks(1:16:96)
     xticklabels({datestr(Time.Vec(1:16:96),'HH:MM')})
 end

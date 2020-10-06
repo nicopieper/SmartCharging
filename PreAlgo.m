@@ -25,7 +25,8 @@ ub=ConsPowerb;
 
 %% Evaluate result
 
-ChargingMat(:,:,:,end+1)=reshape(x,ControlPeriods, NumCostCats, NumUsers);
+OptimalChargingEnergies=reshape(x,ControlPeriods, NumCostCats, NumUsers);
+ChargingMat(:,:,:,end+1)=OptimalChargingEnergies;
 ChargingVehicle=[ChargingVehicle; sum(ChargingMat(1:96,:,:,end),2)];
 ChargingType=[ChargingType; sum(ChargingMat(1:96,:,:,end),3)];
 AvailabilityMat=[AvailabilityMat, Availability(1:96,1,:)];
