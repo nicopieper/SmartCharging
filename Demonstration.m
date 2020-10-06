@@ -74,3 +74,8 @@ for TimeInd=Time.Demo.StartInd:Time.Demo.StepInd:length(Time.Demo.Vec)
     SimulationDemoLoop;
 end
 
+clearvars DemoUser EndCounter figPVPlot figPVPred figResPoDemRealNeg figResPoDemRealPos figSoCPlot figSpotmarketPred figSpotmarketReal
+clearvars ForcastLength ForecastDuration ForecastIntervalInd NumPredMethod p PlotColors Pred PVPlotLabel PVPredQH PVQH ResEnPricesLabel 
+clearvars ResPoDemLabel ShowBaseScenario ShowPVPred ShowStockmarketPred SoCPlotLabel SpotmarketLabel SpotmarketPred SpotmarketPredMat
+clearvars SpotmarketReal StorageFile TimeDiffs TimeInd TimeOfForecast ymaxResPoDem ymaxSpotmarket yminResPoDem yminSpotmarket
+

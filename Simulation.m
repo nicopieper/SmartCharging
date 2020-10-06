@@ -1,8 +1,10 @@
+%% Initialisation
 tic
 ActivateWaitbar=true;
 PublicChargingThreshold=uint32(15); % in %
 PThreshold=1.2;
 NumUsers=size(Users,1)-1;
+SmartCharging=true;
 
 
 if ~exist('PublicChargerDistribution', 'var')
@@ -20,19 +22,21 @@ for n=2:size(Users,1)
 end
 
 if ActivateWaitbar
-    h=waitbar(0, "Simuliere Ladevorg�nge");
+    h=waitbar(0, "Simulate charging processes");
     TotalIterations=Range.TestInd(2)-(Range.TrainInd(1)+1);
 end
 
 Users{1}.PThreshold=PThreshold;
 
+%% Start Simulation
+
 for TimeInd=Range.TrainInd(1)+1:Range.TestInd(2)
     
     for n=2:NumUsers+1
         
+        % Public charging: Only charge at public charging point if it is requiered due to low SoC
         if (Users{n}.LogbookBase(TimeInd,1)==1 && Users{n}.LogbookBase(TimeInd-1,7)*100/Users{n}.BatterySize<PublicChargingThreshold) || (TimeInd+1<=size(Users{n}.LogbookBase,1) && Users{n}.LogbookBase(TimeInd,4)>=Users{n}.LogbookBase(TimeInd-1,7))
             
-%             NextHomeStop=min([length(Users{n}.LogbookBase), find(Users{n}.LogbookBase(TimeInd:end,1)==3,1)+TimeInd-1]); %[TimeIndices]
             k=TimeInd;
             while k < length(Users{n}.LogbookBase) && Users{n}.LogbookBase(k,1)~=3
                 k=k+1;
@@ -55,11 +59,7 @@ for TimeInd=Range.TrainInd(1)+1:Range.TestInd(2)
                     k=k+1;
                 end
                 EndOfShift=k+TimeStepIndsNeededForCharging-1;
-%                 EndOfShift=[strfind(Users{n}.LogbookBase(TimeInd:end,3)',zeros(1,TimeStepIndsNeededForCharging)), 1e9]; % Find the next time, when the vehicle parks for TimeStepIndsNeededForCharging complete TimeSteps
-%                 EndOfShift=min([length(Users{n}.LogbookBase), EndOfShift(1)+TimeInd+TimeStepIndsNeededForCharging-1-1]);
-%                 if EndOfShift1~=EndOfShift
-%                     1
-%                 end
+
                 Users{n}.LogbookBase(TimeInd:EndOfShift,:)=Users{n}.LogbookBase(TimeInd-TimeStepIndsNeededForCharging:EndOfShift-TimeStepIndsNeededForCharging,:);
                 TimeStepIndsNeededForCharging=min(length(Users{n}.LogbookBase)-(TimeInd-1), TimeStepIndsNeededForCharging);
                 Users{n}.LogbookBase(TimeInd:TimeInd+TimeStepIndsNeededForCharging-1,1:7)=ones(TimeStepIndsNeededForCharging,1)*[6 + double(PublicChargerPower>30000), zeros(1,6)]; % Public charging due to low SoC
@@ -71,6 +71,7 @@ for TimeInd=Range.TrainInd(1)+1:Range.TestInd(2)
             EnergyDemandLeft(n)=EnergyDemandLeft(n)-Users{n}.LogbookBase(TimeInd,6); 
         end
         
+        % Private charging: Decide whether to plug in the car the or not
         if Users{n}.LogbookBase(TimeInd,1)==3
             
             if Users{n}.LogbookBase(TimeInd-1,1)<3
@@ -104,11 +105,19 @@ for TimeInd=Range.TrainInd(1)+1:Range.TestInd(2)
         end
         
         Users{n}.LogbookBase(TimeInd,7)=Users{n}.LogbookBase(TimeInd-1,7)-Users{n}.LogbookBase(TimeInd,4);
-        if Users{n}.LogbookBase(TimeInd,1)==4 && Users{n}.LogbookBase(TimeInd,7)<Users{n}.BatterySize
-            Users{n}.LogbookBase(TimeInd,1)=5;
-%             Users{n}.LogbookBase(TimeInd,5)=min(max(minutes(0), Time.Step-minutes(Users{n}.LogbookBase(TimeInd,2))-minutes(1))/hours(1)*Users{n}.ChargingPower, Users{n}.BatterySize-Users{n}.LogbookBase(TimeInd-1,7)); %[Wh]
-            Users{n}.LogbookBase(TimeInd,5)=min((Time.StepMin-Users{n}.LogbookBase(TimeInd,2))*Users{n}.ACChargingPowerHomeCharging/60, Users{n}.BatterySize-Users{n}.LogbookBase(TimeInd-1,7)); %[Wh]
-        end
+        
+        if ~SmartCharging
+            
+            if Users{n}.LogbookBase(TimeInd,1)==4 && Users{n}.LogbookBase(TimeInd,7)<Users{n}.BatterySize % Charging starts always when the car is plugged in, until the Battery is fully charged
+                Users{n}.LogbookBase(TimeInd,1)=5;
+                Users{n}.LogbookBase(TimeInd,5)=min((Time.StepMin-Users{n}.LogbookBase(TimeInd,2))*Users{n}.ACChargingPowerHomeCharging/60, Users{n}.BatterySize-Users{n}.LogbookBase(TimeInd-1,7)); %[Wh]
+            end
+            
+        else
+            
+            
+        
+        
         
         if  Users{n}.LogbookBase(TimeInd,7)<Users{n}.BatterySize && Users{n}.LogbookBase(TimeInd,1)>=5
             Users{n}.LogbookBase(TimeInd,7)=Users{n}.LogbookBase(TimeInd,7)+Users{n}.LogbookBase(TimeInd,5)+Users{n}.LogbookBase(TimeInd,6);
@@ -130,15 +139,18 @@ if ~exist('Smard', 'var')
     GetSmardData;
 end
 for n=2:NumUsers+1
-    Users{n}.FinListBase=uint32(double(Users{n}.LogbookBase(:,5))/1000.*(Users{n}.PrivateElectricityPrice+Smard.DayaheadRealQH/10)*1.19); % [ct] total electricity costs equal base price of user + current production costs. VAT applies to the end price
+    if isfield(Users{n}, 'NNEEnergyPrice')
+        Users{n}.FinListBase=uint32(double(Users{n}.LogbookBase(:,5))/1000 .* (Users{n}.PrivateElectricityPrice + Smard.DayaheadRealQH/10 + Users{n}.NNEEnergyPrice)*1.19); % [ct] total electricity costs equal base price of user + realtime current production costs + NNE energy price. VAT applies to the end price
+    else
+        Users{n}.FinListBase=uint32(double(Users{n}.LogbookBase(:,5))/1000 .* (Users{n}.PrivateElectricityPrice + Smard.DayaheadRealQH/10 + 7.06)*1.19); % [ct] total electricity costs equal base price of user + realtime current production costs + NNE energy price. VAT applies to the end price
+    end
     Users{n}.FinListBase(:,2)=uint32(zeros(length(Time.Vec),1) + double(Users{n}.LogbookBase(:,6))/1000.*Users{n}.PublicACChargingPrices.*double(Users{n}.LogbookBase(:,1)==6)); % [ct] fixed price for public AC charging
     Users{n}.FinListBase(:,2)=Users{n}.FinListBase(:,2) + uint32(double(Users{n}.LogbookBase(:,6))/1000.*Users{n}.PublicDCChargingPrices.*double(Users{n}.LogbookBase(:,1)==7)); % [ct] fixed price for public DC charging
     
     Users{n}.AverageConsumptionBaseYear_kWh=sum(Users{n}.LogbookBase(:,5:6), 'all')/1000/days(Time.End-Time.Start)*365.25;
 end
 
-%%
-
+%% Save Data
 
 SimulatedUsers=@(User) (isfield(User, 'Time') || User.LogbookBase(2, 7)>0);
 Users=Users(cellfun(SimulatedUsers, Users));
@@ -147,6 +159,8 @@ Users{1}.FileName=strcat(Path.Simulation, "Users_", num2str(PThreshold), "_", nu
 
 save(Users{1}.FileName, "Users", "-v7.3");
 disp(strcat("Successfully simulated within ", num2str(toc), " seconds"))
+
+%% Clean up workspace
  
 clearvars TimeInd n ActivateWaitbar Consumption24h ParkingDuration ConsumptionTilNextHomeStop TripDistance
 clearvars NextHomeStop PublicChargerPower ChargingPower EnergyDemandLeft TimeStepIndsNeededForCharging EndOfShift
