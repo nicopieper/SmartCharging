@@ -13,7 +13,7 @@ options.Display = 'off';
 
 for n=2:NumUsers+1
     Users{n}.GridConvenientChargingAvailabilityControlPeriod=repmat(Users{n}.GridConvenientChargingAvailability,2,1);
-    Users{n}.GridConvenientChargingAvailabilityControlPeriod=Users{n}.GridConvenientChargingAvailabilityControlPeriod(1:ControlPeriods);
+    Users{n}.GridConvenientChargingAvailabilityControlPeriod=circshift(Users{n}.GridConvenientChargingAvailabilityControlPeriod(1:ControlPeriods), -(hour(TimeOfForecast)+Time.StepInd + minute(TimeOfForecast)/minutes(Time.Step)));
 end
 
 %% Initialise Optimisation Variables
