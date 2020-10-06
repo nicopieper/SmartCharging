@@ -113,7 +113,7 @@ if ~exist('VehicleProperties', 'var')
     VehicleProperties=readmatrix(strcat(Path.Simulation, 'Vehicle_Properties.xlsx'), 'NumHeaderLines', 1, 'OutputType', 'string'); % load the real car properties. Model Name, Fleet Share cum., Battery Capacity [kWh], Consumption [kWh/km], Share Charging Point Power
 end
 if ~exist('GridConvenienChargingDistribution', 'var')
-    GridConvenienChargingDistribution=readmatrix(strcat(Path.Simulation, 'GridConvenientCharging_Distribution.xlsx'), 'NumHeaderLines', 1, 'OutputType', 'string');
+    GridConvenienChargingDistribution=readmatrix(strcat(Path.Simulation, 'GridConvenientCharging_Distribution.csv'), 'NumHeaderLines', 1, 'OutputType', 'string');
     GridConvenienChargingDistribution=str2double(GridConvenienChargingDistribution(:,2:end));
 end
 
@@ -179,7 +179,7 @@ for n=2:NumUsers+1
     else
         LikelihoodGridConvenientCharging=false;
         Users{n}.GridConvenientChargingAvailability=ones(24*Time.StepInd,1);
-        Users{n}.NNEEnergyPrice=GridConvenienChargingDistribution(2,GridConvenientChargingProfile); % [ct/kWh] netto (without VAT). normal NNE prices
+        Users{n}.NNEEnergyPrice=GridConvenienChargingDistribution(1,GridConvenientChargingProfile); % [ct/kWh] netto (without VAT). normal NNE prices
         Users{n}.NNEExtraBasePrice=0; % not extra electricity meter required
         Users{n}.NNEBonus=0; % no extra Bonus
     end
