@@ -319,10 +319,10 @@ else
         % at home charging point, 6==charging at public AC charger, 
         % 7==charging at public DC charger
         
-        if LargestValue<2^32 % State, DrivingTime [min], Distance [m], Consumption [Wh], Charged energy at home spot [Wh], Charged energy at public chagrer [Wh] SoC [Wh]
-            Vehicles{k}.Logbook=uint32(zeros(size(LogbookTime,1),7)); 
+        if LargestValue<2^32 % [State, DrivingTime [min], Distance [m]] other columns will be added in InitialiseUsers
+            Vehicles{k}.Logbook=uint32(zeros(size(LogbookTime,1),3)); 
         else 
-            Vehicles{k}.Logbook=uint64(zeros(size(LogbookTime,1),7));
+            Vehicles{k}.Logbook=uint64(zeros(size(LogbookTime,1),3));
             disp(strcat("The largest value of Logbook ", num2str(n), " is larger than 2^32!"))
         end
 

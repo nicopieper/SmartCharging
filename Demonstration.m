@@ -64,9 +64,9 @@ Time.Demo.Vec=(Time.Demo.Start:Time.Step:Time.Demo.End)';
 Time.Demo.VecDateNum=datenum(Time.Demo.Vec);
 Time.Demo.StartInd=48*Time.StepInd+1;
 
-TimeDiffs.General=find(ismember(Time.Vec,Time.Demo.Start),1)-1;
-TimeDiffs.SpotmarketPred=find(ismember(Pred.Time.Vec,Time.Demo.Start),1)-1;
-TimeDiffs.User=find(ismember(Users{1}.Time.Vec,Time.Demo.Start),1)-1;
+TD.Main=find(ismember(Time.Vec,Time.Demo.Start),1)-1;
+TD.SpotmarketPred=find(ismember(Pred.Time.Vec,Time.Demo.Start),1)-1;
+TD.User=find(ismember(Users{1}.Time.Vec,Time.Demo.Start),1)-1;
 
 TimeInd=Time.Demo.StartInd-1;
 SimulationDemoInit;

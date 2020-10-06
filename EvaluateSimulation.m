@@ -54,8 +54,8 @@ ChargeProcesses=cell(length(Targets),2);
 ChargeProcessesPerWeek=cell(length(Targets),2);
 for k=ExistingTargets
     for n=TargetGroups{k}
-        Users{n}.ChargeProcessesHomeBase=sum(Users{n}.LogbookBase(2:end,5)>0 & Users{n}.LogbookBase(1:end-1,5)==0);
-        Users{n}.ChargeProcessesOtherBase=sum(Users{n}.LogbookBase(2:end,6)>0 & Users{n}.LogbookBase(1:end-1,6)==0);
+        Users{n}.ChargeProcessesHomeBase=sum(sum(Users{n}.LogbookBase(2:end,5:7),2)>0 & sum(Users{n}.LogbookBase(1:end-1,5:7),2)==0);
+        Users{n}.ChargeProcessesOtherBase=sum(Users{n}.LogbookBase(2:end,8)>0 & Users{n}.LogbookBase(1:end-1,8)==0);
         ChargeProcesses{k,1}(n)=Users{n}.ChargeProcessesHomeBase;
         ChargeProcesses{k,2}(n)=Users{n}.ChargeProcessesOtherBase;
     end
@@ -72,16 +72,18 @@ EnergyPerChargingProcess=cell(length(Targets),2);
 for k=ExistingTargets
     EnergyPerChargingProcess{k,1}=-ones(length(Users)-1*1000,1);
     EnergyPerChargingProcess{k,2}=-ones(length(Users)-1*1000,1);
-    for col=5:6
+    cols=[(5:7)', [8;0;0]];
+    for col=cols
+        col=col(col~=0);
         counter=1;
         for n=TargetGroups{k}
-            ChargingBlocks=[find(Users{n}.LogbookBase(1:end,col)>0 & [0; Users{n}.LogbookBase(1:end-1,col)]==0)+1, find(Users{n}.LogbookBase(1:end,col)>0 & [Users{n}.LogbookBase(2:end,col);0]==0)];
+            ChargingBlocks=[find(sum(Users{n}.LogbookBase(1:end,col),2)>0 & [0; sum(Users{n}.LogbookBase(1:end-1,col),2)]==0)+1, find(sum(Users{n}.LogbookBase(1:end,col),2)>0 & [sum(Users{n}.LogbookBase(2:end,col),2);0]==0)];
             for h=1:size(ChargingBlocks,1)
-                EnergyPerChargingProcess{k,col-4}(counter,1)=sum(Users{n}.LogbookBase(ChargingBlocks(h,1):ChargingBlocks(h,2),col));
+                EnergyPerChargingProcess{k,find(sum(col==cols,1))}(counter,1)=sum(Users{n}.LogbookBase(ChargingBlocks(h,1):ChargingBlocks(h,2),col), 'all');
                 counter=counter+1;
             end
         end
-        EnergyPerChargingProcess{k,col-4}=EnergyPerChargingProcess{k,col-4}(EnergyPerChargingProcess{k,col-4}~=-1);
+        EnergyPerChargingProcess{k,find(sum(col==cols,1))}=EnergyPerChargingProcess{k,find(sum(col==cols,1))}(EnergyPerChargingProcess{k,find(sum(col==cols,1))}~=-1);
     end
 end
 
@@ -123,8 +125,8 @@ DataTable.EnergyPerChargingProcess=round(cellfun(@mean,EnergyPerChargingProcess)
 EnergyCharged=cell(length(Targets),2);
 for k=ExistingTargets
     for n=TargetGroups{k}
-        EnergyCharged{k,1}(end+1)=sum(Users{n}.LogbookBase(1:end,5),1);
-        EnergyCharged{k,2}(end+1)=sum(Users{n}.LogbookBase(1:end,6),1);
+        EnergyCharged{k,1}(end+1)=sum(Users{n}.LogbookBase(1:end,5:7),'all');
+        EnergyCharged{k,2}(end+1)=sum(Users{n}.LogbookBase(1:end,8));
     end
 end
 EnergyCharged=EnergyCharged(ExistingTargets,:);
@@ -222,8 +224,8 @@ for k=ExistingTargets
     Load{k,1}=zeros(96,1);
     Load{k,2}=zeros(96,1);
     for n=TargetGroups{k}
-        Load{k,1}=Load{k,1}+sum(reshape(Users{n}.LogbookBase(:,5), 96, []),2)*4/1e3/days(Users{1}.Time.Vec(end)-Users{1}.Time.Vec(1));
-        Load{k,2}=Load{k,2}+sum(reshape(Users{n}.LogbookBase(:,6), 96, []),2)*4/1e3/days(Users{1}.Time.Vec(end)-Users{1}.Time.Vec(1));
+        Load{k,1}=Load{k,1}+sum(reshape(sum(Users{n}.LogbookBase(:,5:7), 2), 96, []),2)*4/1e3/days(Users{1}.Time.Vec(end)-Users{1}.Time.Vec(1));
+        Load{k,2}=Load{k,2}+sum(reshape(Users{n}.LogbookBase(:,8), 96, []),2)*4/1e3/days(Users{1}.Time.Vec(end)-Users{1}.Time.Vec(1));
     end
     Load{k,1}=Load{k,1};
     Load{k,2}=Load{k,2};
@@ -283,7 +285,7 @@ disp(strcat(num2str(length(unique(VehicleNums))), " unique Vehicles are covered 
 
 EmptyBattery=0;
 for n=2:length(Users)
-    EmptyBattery(n)=sum(Users{n}.LogbookBase(2:end,7)<=0 & Users{n}.LogbookBase(1:end-1,7)>0);
+    EmptyBattery(n)=sum(Users{n}.LogbookBase(2:end,9)<=0 & Users{n}.LogbookBase(1:end-1,9)>0);
 end
 disp(strcat(num2str(sum(EmptyBattery>0)), " users experienced empty batteries"))
 if sum(EmptyBattery>0)==0

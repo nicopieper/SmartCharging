@@ -16,9 +16,9 @@ end
 
 
 if hour(Time.Demo.Vec(TimeInd))==hour(TimeOfForecast) && minute(Time.Demo.Vec(TimeInd))==minute(TimeOfForecast)
-    yminSpotmarket=min([SpotmarketReal(TimeInd+TimeDiffs.General-24*7*Time.Demo.StepInd:min(length(Time.Vec),TimeInd+TimeDiffs.General+24*7*Time.Demo.StepInd)); SpotmarketPred(TimeInd+TimeDiffs.SpotmarketPred-24*7*Time.Demo.StepInd:min(length(Time.Vec),TimeInd+TimeDiffs.SpotmarketPred+24*7*Time.Demo.StepInd))]);
+    yminSpotmarket=min([SpotmarketReal(TimeInd+TD.Main-24*7*Time.Demo.StepInd:min(length(Time.Vec),TimeInd+TD.Main+24*7*Time.Demo.StepInd)); SpotmarketPred(TimeInd+TD.SpotmarketPred-24*7*Time.Demo.StepInd:min(length(Time.Vec),TimeInd+TD.SpotmarketPred+24*7*Time.Demo.StepInd))]);
     yminSpotmarket=round(yminSpotmarket-abs(yminSpotmarket)*0.1);
-    ymaxSpotmarket=max([SpotmarketReal(TimeInd+TimeDiffs.General-24*7*Time.Demo.StepInd:min(length(Time.Vec),TimeInd+TimeDiffs.General+24*7*Time.Demo.StepInd)); SpotmarketPred(TimeInd+TimeDiffs.SpotmarketPred-24*7*Time.Demo.StepInd:min(length(Time.Vec),TimeInd+TimeDiffs.SpotmarketPred+24*7*Time.Demo.StepInd))]);
+    ymaxSpotmarket=max([SpotmarketReal(TimeInd+TD.Main-24*7*Time.Demo.StepInd:min(length(Time.Vec),TimeInd+TD.Main+24*7*Time.Demo.StepInd)); SpotmarketPred(TimeInd+TD.SpotmarketPred-24*7*Time.Demo.StepInd:min(length(Time.Vec),TimeInd+TD.SpotmarketPred+24*7*Time.Demo.StepInd))]);
     ymaxSpotmarket=round(ymaxSpotmarket+abs(ymaxSpotmarket)*0.1);
 
     
@@ -35,13 +35,13 @@ if hour(Time.Demo.Vec(TimeInd))==hour(TimeOfForecast) && minute(Time.Demo.Vec(Ti
             subplot(2,2,1)
             EndCounter=max(EndCounter,TimeInd+ForecastDuration+Time.Demo.StepInd-1);
 %             SpotmarketPred(TimeInd+ForecastDuration:TimeInd+ForecastDuration+Time.Demo.StepInd-1)=SpotmarketPredMat(ForecastDuration+1:ForecastDuration+Time.Demo.StepInd,round(days(Time.Demo.Vec(TimeInd)-Time.Demo.StartIndDay)+1));
-            SpotmarketPred(TimeInd+TimeDiffs.SpotmarketPred+ForecastDuration:TimeInd+TimeDiffs.SpotmarketPred+ForecastDuration+Time.Demo.StepInd-1)=SpotmarketPredMat(ForecastDuration+1:ForecastDuration+Time.Demo.StepInd,TimeInd+TimeDiffs.SpotmarketPred);
+            SpotmarketPred(TimeInd+TD.SpotmarketPred+ForecastDuration:TimeInd+TD.SpotmarketPred+ForecastDuration+Time.Demo.StepInd-1)=SpotmarketPredMat(ForecastDuration+1:ForecastDuration+Time.Demo.StepInd,TimeInd+TD.SpotmarketPred);
             if ForecastDuration<=ForcastLength-24*Time.Demo.StepInd
                 clearpoints(figSpotmarketPred{p})
-                addpoints(figSpotmarketPred{p},Time.Demo.VecDateNum(max([Time.Demo.StartInd, TimeInd-300]):EndCounter),SpotmarketPred(max([Time.Demo.StartInd+TimeDiffs.SpotmarketPred, TimeInd+TimeDiffs.SpotmarketPred-300]):EndCounter+TimeDiffs.SpotmarketPred))
+                addpoints(figSpotmarketPred{p},Time.Demo.VecDateNum(max([Time.Demo.StartInd, TimeInd-300]):EndCounter),SpotmarketPred(max([Time.Demo.StartInd+TD.SpotmarketPred, TimeInd+TD.SpotmarketPred-300]):EndCounter+TD.SpotmarketPred))
 %                 b{end+1,1}=SpotmarketPred(max([Time.Demo.StartInd, TimeInd-300]):EndCounter);
             else
-                addpoints(figSpotmarketPred{p},Time.Demo.VecDateNum(TimeInd+ForecastDuration:TimeInd+ForecastDuration+Time.Demo.StepInd-1),SpotmarketPred(TimeInd+TimeDiffs.SpotmarketPred+ForecastDuration:TimeInd+TimeDiffs.SpotmarketPred+ForecastDuration+Time.Demo.StepInd-1))
+                addpoints(figSpotmarketPred{p},Time.Demo.VecDateNum(TimeInd+ForecastDuration:TimeInd+ForecastDuration+Time.Demo.StepInd-1),SpotmarketPred(TimeInd+TD.SpotmarketPred+ForecastDuration:TimeInd+TD.SpotmarketPred+ForecastDuration+Time.Demo.StepInd-1))
             end
             %title(strcat(SpotmarketLabel, " ", datestr(Time.Demo.Vec(TimeInd),'dd.mm.yyyy HH:MM')),'Interpreter','none')
             xlim([Time.Demo.VecDateNum(TimeInd-36*Time.StepInd+max(0,-ForecastIntervalInd+24*Time.StepInd+ForecastDuration+Time.Demo.StepInd)) Time.Demo.VecDateNum(EndCounter+3)]) % Create a moving plot 
@@ -59,9 +59,9 @@ if hour(Time.Demo.Vec(TimeInd))==hour(TimeOfForecast) && minute(Time.Demo.Vec(Ti
                 %PVPredQH(TimeInd+ForecastDuration:TimeInd+ForecastDuration+Time.Demo.StepInd-1)=PVPredMat(ForecastDuration+1:ForecastDuration+Time.Demo.StepInd,TimeInd);
                 if ForecastDuration<=ForcastLength-24*Time.Demo.StepInd
                     clearpoints(figPVPred{p})
-                    addpoints(figPVPred{p},Time.Demo.VecDateNum(max([Time.Demo.StartInd, TimeInd-300]):EndCounter),PVPredQH(max([Time.Demo.StartInd+TimeDiffs.General, TimeInd+TimeDiffs.General-300]):EndCounter+TimeDiffs.General))
+                    addpoints(figPVPred{p},Time.Demo.VecDateNum(max([Time.Demo.StartInd, TimeInd-300]):EndCounter),PVPredQH(max([Time.Demo.StartInd+TD.Main, TimeInd+TD.Main-300]):EndCounter+TD.Main))
                 else
-                    addpoints(figPVPred{p},Time.Demo.VecDateNum(TimeInd+ForecastDuration:TimeInd+ForecastDuration+Time.Demo.StepInd-1),PVPredQH(TimeInd+TimeDiffs.General+ForecastDuration:TimeInd+TimeDiffs.General+ForecastDuration+Time.Demo.StepInd-1))
+                    addpoints(figPVPred{p},Time.Demo.VecDateNum(TimeInd+ForecastDuration:TimeInd+ForecastDuration+Time.Demo.StepInd-1),PVPredQH(TimeInd+TD.Main+ForecastDuration:TimeInd+TD.Main+ForecastDuration+Time.Demo.StepInd-1))
                 end
                 %title(strcat(SpotmarketLabel, " ", datestr(Time.Demo.Vec(TimeInd),'dd.mm.yyyy HH:MM')),'Interpreter','none')
                 xlim([Time.Demo.VecDateNum(TimeInd-36*Time.StepInd+max(0,-ForecastIntervalInd+24*Time.Demo.StepInd+ForecastDuration+Time.Demo.StepInd)) Time.Demo.VecDateNum(EndCounter+3)]) % Create a moving plot 
@@ -102,9 +102,9 @@ if hour(Time.Demo.Vec(TimeInd))==hour(TimeOfForecast) && minute(Time.Demo.Vec(Ti
         end
     end
 
-    yminResPoDem=min(ResPoDemRealQH(TimeInd+TimeDiffs.General-24*7*Time.Demo.StepInd:min(length(Time.Vec),TimeInd+TimeDiffs.General+24*7*Time.Demo.StepInd),:),[],'all');
+    yminResPoDem=min(ResPoDemRealQH(TimeInd+TD.Main-24*7*Time.Demo.StepInd:min(length(Time.Vec),TimeInd+TD.Main+24*7*Time.Demo.StepInd),:),[],'all');
     yminResPoDem=round(yminResPoDem-abs(yminResPoDem)*0.1);
-    ymaxResPoDem=max(ResPoDemRealQH(TimeInd+TimeDiffs.General-24*7*Time.Demo.StepInd:min(length(Time.Vec),TimeInd+TimeDiffs.General+24*7*Time.Demo.StepInd)),[],'all');
+    ymaxResPoDem=max(ResPoDemRealQH(TimeInd+TD.Main-24*7*Time.Demo.StepInd:min(length(Time.Vec),TimeInd+TD.Main+24*7*Time.Demo.StepInd)),[],'all');
     ymaxResPoDem=round(ymaxResPoDem+abs(ymaxResPoDem)*0.1);
 
 end
@@ -113,20 +113,20 @@ end
 
 
 subplot(2,2,1)
-addpoints(figSpotmarketReal,Time.Demo.VecDateNum(TimeInd:TimeInd+Time.Demo.StepInd-1),SpotmarketReal(TimeInd+TimeDiffs.General:TimeInd+TimeDiffs.General+Time.Demo.StepInd-1))
+addpoints(figSpotmarketReal,Time.Demo.VecDateNum(TimeInd:TimeInd+Time.Demo.StepInd-1),SpotmarketReal(TimeInd+TD.Main:TimeInd+TD.Main+Time.Demo.StepInd-1))
 ylim([yminSpotmarket ymaxSpotmarket])
 
 subplot(2,2,2)
-addpoints(figResPoDemRealNeg,Time.Demo.VecDateNum(TimeInd:TimeInd+Time.Demo.StepInd-1),ResPoDemRealQH(TimeInd+TimeDiffs.General:TimeInd+TimeDiffs.General+Time.Demo.StepInd-1,1))
-addpoints(figResPoDemRealPos,Time.Demo.VecDateNum(TimeInd:TimeInd+Time.Demo.StepInd-1),ResPoDemRealQH(TimeInd+TimeDiffs.General:TimeInd+TimeDiffs.General+Time.Demo.StepInd-1,2))
+addpoints(figResPoDemRealNeg,Time.Demo.VecDateNum(TimeInd:TimeInd+Time.Demo.StepInd-1),ResPoDemRealQH(TimeInd+TD.Main:TimeInd+TD.Main+Time.Demo.StepInd-1,1))
+addpoints(figResPoDemRealPos,Time.Demo.VecDateNum(TimeInd:TimeInd+Time.Demo.StepInd-1),ResPoDemRealQH(TimeInd+TD.Main:TimeInd+TD.Main+Time.Demo.StepInd-1,2))
 ylim([yminResPoDem ymaxResPoDem])
 
 subplot(2,2,3)
-addpoints(figSoCPlot,Time.Demo.VecDateNum(TimeInd:TimeInd+Time.Demo.StepInd-1),double(Users{DemoUser}.LogbookBase(TimeInd+TimeDiffs.User:TimeInd+TimeDiffs.User+Time.Demo.StepInd-1,7))/double(Users{DemoUser}.BatterySize))
+addpoints(figSoCPlot,Time.Demo.VecDateNum(TimeInd:TimeInd+Time.Demo.StepInd-1),double(Users{DemoUser}.LogbookBase(TimeInd+TD.User:TimeInd+TD.User+Time.Demo.StepInd-1,7))/double(Users{DemoUser}.BatterySize))
 
 if ShowPVPred
     subplot(2,2,4)
-    addpoints(figPVPlot,Time.Demo.VecDateNum(TimeInd:TimeInd+Time.Demo.StepInd-1),PVQH(TimeInd+TimeDiffs.SpotmarketPred:TimeInd+TimeDiffs.General+Time.Demo.StepInd-1))
+    addpoints(figPVPlot,Time.Demo.VecDateNum(TimeInd:TimeInd+Time.Demo.StepInd-1),PVQH(TimeInd+TD.SpotmarketPred:TimeInd+TD.Main+Time.Demo.StepInd-1))
 end
     
 drawnow
