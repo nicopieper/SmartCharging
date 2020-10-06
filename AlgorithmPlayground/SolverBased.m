@@ -6,6 +6,8 @@ ControlPeriods=96*1.5;
 ElectricityBasePrice=0.222;
 CostCats=3;
 ConstantRLPowerPeriods=16;
+RLFactor=[0.8];
+AEFactor=-0.1;
 
 
 if ~exist("Users", "var")
@@ -53,6 +55,7 @@ ConsRLOfferbeq=zeros((ConstantRLPowerPeriods-1)*ControlPeriods/ConstantRLPowerPe
 
 for k=1:Periods/96-1
     CalcOptVars;
+    Costs=[SpotmarketCosts, PVCosts, ReserveMarketCosts];
     
     ConsSumPowerb=repelem(MaxPower(:)/4, ControlPeriods);
     ConsPowerb=[reshape(repelem(MaxPower(:)/4, ControlPeriods), ControlPeriods, 1, []), PVPower/4, reshape(repelem(MaxPower(:)/4, ControlPeriods), ControlPeriods, 1, [])];

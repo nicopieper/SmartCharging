@@ -172,7 +172,7 @@ for n=2:NumUsers+1
     GridConvenientChargingProfile=max(double(RandomNumbers(8)>=(0:1/size(GridConvenienChargingDistribution,2):1-1/size(GridConvenienChargingDistribution,2))).*(1:size(GridConvenienChargingDistribution,2)));
     if RandomNumbers(8)>=LikelihoodGridConvenientCharging
         Users{n}.GridConvenientCharging=true;
-        Users{n}.GridConvenientChargingAvailability=GridConvenienChargingDistribution(5:end,Users{n}.GridConvenientChargingProfile);
+        Users{n}.GridConvenientChargingAvailability=GridConvenienChargingDistribution(5:end,GridConvenientChargingProfile);
         Users{n}.NNEEnergyPrice=GridConvenienChargingDistribution(3,GridConvenientChargingProfile); % [ct/kWh] netto (without VAT). reduced NNE energy price due to the allowance for the DSO to manage the charging
         Users{n}.NNEExtraBasePrice=GridConvenienChargingDistribution(2,GridConvenientChargingProfile)*100; % [ct/a] netto (without VAT) due to the extra electricity meter
         Users{n}.NNEBonus=GridConvenienChargingDistribution(4,GridConvenientChargingProfile)*100; % [ct] a single bonus paid by the DSO
