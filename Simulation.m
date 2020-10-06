@@ -3,8 +3,8 @@ tic
 ActivateWaitbar=true;
 PublicChargingThreshold=uint32(15); % in %
 PThreshold=1.2;
-NumUsers=size(Users,1)-1;
-SmartCharging=true;
+NumUsers=200; % size(Users,1)-1;
+SmartCharging=false;
 
 
 if ~exist('PublicChargerDistribution', 'var')
@@ -119,7 +119,7 @@ for TimeInd=Range.TrainInd(1)+1:Range.TestInd(2)
             
         else
             
-            
+        end    
         
         
         
@@ -137,31 +137,23 @@ if ActivateWaitbar
     close(h);
 end
 
-
-for n=2:NumUsers+1
-    if ~SmartCharging
-        Users{n}.LogbookBase=Users{n}.Logbook;
-    else 
-        Users{n}.LogbookSmart=Users{n}.Logbook;
-    end
-    Users{n}.rmfield(Users{n}, 'Logbook');
-end
-
 %% Evaluate base electricity costs
 
-if ~exist('Smard', 'var')
-    GetSmardData;
-end
-for n=2:NumUsers+1
-    if isfield(Users{n}, 'NNEEnergyPrice')
-        Users{n}.FinListBase=uint32(double(Users{n}.Logbook(:,5))/1000 .* (Users{n}.PrivateElectricityPrice + Smard.DayaheadRealQH/10 + Users{n}.NNEEnergyPrice)*1.19); % [ct] total electricity costs equal base price of user + realtime current production costs + NNE energy price. VAT applies to the end price
-    else
-        Users{n}.FinListBase=uint32(double(Users{n}.Logbook(:,5))/1000 .* (Users{n}.PrivateElectricityPrice + Smard.DayaheadRealQH/10 + 7.06)*1.19); % [ct] total electricity costs equal base price of user + realtime current production costs + NNE energy price. VAT applies to the end price
+if ~SmartCharging
+    if ~exist('Smard', 'var')
+        GetSmardData;
     end
-    Users{n}.FinListBase(:,2)=uint32(zeros(length(Time.Vec),1) + double(Users{n}.Logbook(:,6))/1000.*Users{n}.PublicACChargingPrices.*double(Users{n}.Logbook(:,1)==6)); % [ct] fixed price for public AC charging
-    Users{n}.FinListBase(:,2)=Users{n}.FinListBase(:,2) + uint32(double(Users{n}.Logbook(:,6))/1000.*Users{n}.PublicDCChargingPrices.*double(Users{n}.Logbook(:,1)==7)); % [ct] fixed price for public DC charging
-    
-    Users{n}.AverageConsumptionBaseYear_kWh=sum(Users{n}.Logbook(:,5:6), 'all')/1000/days(Time.End-Time.Start)*365.25;
+    for n=2:NumUsers+1
+        if isfield(Users{n}, 'NNEEnergyPrice')
+            Users{n}.FinListBase=uint32(double(Users{n}.Logbook(:,5))/1000 .* (Users{n}.PrivateElectricityPrice + Smard.DayaheadRealQH/10 + Users{n}.NNEEnergyPrice)*1.19); % [ct] total electricity costs equal base price of user + realtime current production costs + NNE energy price. VAT applies to the end price
+        else
+            Users{n}.FinListBase=uint32(double(Users{n}.Logbook(:,5))/1000 .* (Users{n}.PrivateElectricityPrice + Smard.DayaheadRealQH/10 + 7.06)*1.19); % [ct] total electricity costs equal base price of user + realtime current production costs + NNE energy price. VAT applies to the end price
+        end
+        Users{n}.FinListBase(:,2)=uint32(zeros(length(Time.Vec),1) + double(Users{n}.Logbook(:,6))/1000.*Users{n}.PublicACChargingPrices.*double(Users{n}.Logbook(:,1)==6)); % [ct] fixed price for public AC charging
+        Users{n}.FinListBase(:,2)=Users{n}.FinListBase(:,2) + uint32(double(Users{n}.Logbook(:,6))/1000.*Users{n}.PublicDCChargingPrices.*double(Users{n}.Logbook(:,1)==7)); % [ct] fixed price for public DC charging
+
+        Users{n}.AverageConsumptionBaseYear_kWh=sum(Users{n}.Logbook(:,5:6), 'all')/1000/days(Time.End-Time.Start)*365.25;
+    end
 end
 
 %% Save Data
@@ -170,6 +162,15 @@ SimulatedUsers=@(User) (isfield(User, 'Time') || User.Logbook(2, 7)>0);
 Users=Users(cellfun(SimulatedUsers, Users));
 Users{1}.Time.Stamp=datetime('now');
 Users{1}.FileName=strcat(Path.Simulation, "Users_", num2str(PThreshold), "_", num2str(NumUsers), "_", Time.IntervalFile, "_", datestr(Users{1}.Time.Stamp, "yyyymmdd-HHMM"), ".mat");
+
+for n=2:NumUsers+1
+    if ~SmartCharging
+        Users{n}.LogbookBase=Users{n}.Logbook;
+    else 
+        Users{n}.LogbookSmart=Users{n}.Logbook;
+    end
+    Users{n}=rmfield(Users{n}, 'Logbook');
+end
 
 save(Users{1}.FileName, "Users", "-v7.3");
 disp(strcat("Successfully simulated within ", num2str(toc), " seconds"))

@@ -29,7 +29,7 @@ Path.Base=pwd;
 if strcmp(Path.Base(1:5), '/home')
     Dl='/';
     Path.Database='/home/ma-student/Seafile/SmartChargingDatabase/';
-    Path.SMAPlant='/home/ma-student/Seafile/SMAPlantData\PlantData\';
+    Path.SMAPlant='/home/ma-student/Seafile/SMAPlantData/PlantData/';
 elseif strcmp(Path.Base(1:14), 'C:\Users\nicop')
     Dl='\';
     Path.Database='C:\Users\nicop\Seafile\SmartChargingDatabase\';
