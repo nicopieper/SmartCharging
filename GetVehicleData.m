@@ -411,10 +411,10 @@ else
     Vehicles=Vehicles(cellfun(CheckField, Vehicles));
 
     Vehicles{1}.TimeStamp=datetime('now');
-    Vehicles{1}.FileName=strcat(StorageFile, "_", datestr(Vehicles{1}.TimeStamp, "yyyy-mm-dd_HH-MM"), ".mat");
+    Vehicles{1}.FileName=strcat(StorageFile, "_", datestr(Vehicles{1}.TimeStamp, "yyyymmdd-HHMM"), ".mat");
     save(Vehicles{1}.FileName, "Vehicles", "-v7.3") % save the data in a file
 
-    clearvars TimeVar DrivingProfilePointer DrivingProfileMatrix Path.Vehicle VehicleID DateMat DrivingProfileTime DrivingProfileTimeExt Distance DrivingTime LogbookPointer DistanceCompanyToHome    
+    clearvars TimeVar DrivingProfilePointer DrivingProfileMatrix VehicleID DateMat DrivingProfileTime DrivingProfileTimeExt Distance DrivingTime LogbookPointer DistanceCompanyToHome    
     clearvars DateMat DateMatStr DateRange DeleteIndices DrivingProfile Distances DrivingProfileMat DrivingProfileTimePosix h HomeSpotFound 
     clearvars Indices k LargestValue LogbookTime LogbookTimePosix CheckField StorageFiles StorageFile StorageInd AvgHomeParkingTime
     clearvars n Ranges RemainingDates SpotParkingTime TargetDate VehicleInfoMat VehicleMatIndices VehiclePropertiesMat VehicleDataRep
