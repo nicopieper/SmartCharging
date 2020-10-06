@@ -78,8 +78,8 @@ MaxHomeSpotDistanceDiff=0.1; % [km]
 MaxPlausibleVelocity=60; % [m/s]
 MinPlausibleVelocity=2; % [m/s]
 TimeNoiseStdFac=0.05; % Std=TimeNoiseStdFac*TripTime
-StorageFile=strcat(Path.Vehicle, "VehicleData_", num2str(NumVehicles), "_", num2str(MaxHomeSpotDistanceDiff), "_", num2str(MinShareHomeParking), "_", num2str(AddNoise));
-StorageFiles=dir(strcat(StorageFile, "*"));
+StorageFile=strcat(Path.Vehicle, "VehicleData_*", num2str(NumVehicles), "_", num2str(MaxHomeSpotDistanceDiff), "_", num2str(MinShareHomeParking), "_", num2str(AddNoise));
+StorageFiles=dir(StorageFile);
 
 NumTripsDays=0;
 close all hidden
