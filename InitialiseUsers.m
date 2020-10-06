@@ -83,7 +83,7 @@
 %% Initialisation
 
 NumUsers=800; % number of users
-LikelihoodPV=0.45; % 44 % der privaten und 46 % der gewerblichen Nutzer über eine eigene Photovoltaikanlage, https://elib.dlr.de/96491/1/Ergebnisbericht_E-Nutzer_2015.pdf S. 10
+LikelihoodPV=0.45; % 44 % der privaten und 46 % der gewerblichen Nutzer ï¿½ber eine eigene Photovoltaikanlage, https://elib.dlr.de/96491/1/Ergebnisbericht_E-Nutzer_2015.pdf S. 10
 AddPV=true; % determines wheter PV plants shall be assigned to the users. In general true, only false for test purposes
 MeanPrivateElectricityPrice=30.43/1.19 - 3.7513 - 7.06; % [ct/kWh] average German electricity price in 2019 according to Strom-Report without VAT (19%), electricity production price (avg. Dayahead price was 3.7513 ct/kWh in 2019) and NNE energy price (avg. was 7.06 ct/kWh in 2019)
 PublicACChargingPrices=[29, 39];
@@ -151,7 +151,7 @@ for n=2:NumUsers+1
     Users{n}.PublicACChargingPrices=max((RandomNumbers(4)>=[0, 0.5]).*PublicACChargingPrices);
     Users{n}.PublicDCChargingPrices=max((RandomNumbers(5)>=[0, 0.5]).*PublicDCChargingPrices);
     
-    % Hinzufügen einer PV-Anlage
+    % Hinzufï¿½gen einer PV-Anlage
     if RandomNumbers(6)>=LikelihoodPV && AddPV 
         Users{n}.PVPlant=uint8(PVPlantPointer); % save the assigned PV plant number
         Users{n}.PVPlantExists=true; % and set this variable to true to indicate that this user owns a PV plant
@@ -199,9 +199,9 @@ for n=2:NumUsers+1
     Users{n}.DistanceCompanyToHome=Vehicles{VehicleDatabase{SizeNum}(VehiclePointer(SizeNum))}.DistanceCompanyToHome;
     Users{n}.VehicleUtilisation=Vehicles{VehicleDatabase{SizeNum}(VehiclePointer(SizeNum))}.VehicleUtilisation;
     Users{n}.AvgHomeParkingTime=Vehicles{VehicleDatabase{SizeNum}(VehiclePointer(SizeNum))}.AvgHomeParkingTime;
-    Users{n}.LogbookSource=Vehicles{VehicleDatabase{SizeNum}(VehiclePointer(SizeNum))}.Logbook(UsersTime.VecLogical, :);
+    Users{n}.LogbookSource=Vehicles{VehicleDatabase{SizeNum}(VehiclePointer(SizeNum))}.Logbook(UsersTimeVecLogical, :);
     
-    % Berechnung der Verbräuche im Fahrtenbuch aus den Verbräuchen des Modells
+    % Berechnung der Verbrï¿½uche im Fahrtenbuch aus den Verbrï¿½uchen des Modells
     Velocities=double(Users{n}.LogbookSource(:,3))./double(Users{n}.LogbookSource(:,2))/60; % [m/s] depending on the velocity of each trip and the temperature indicator of its month, determine the energy consumption of the trip
     Velocities(Velocities<11)=1; % all trips with velocities smaller 11 m/s have the city consumption value
     Velocities(Velocities>=11 & Velocities<=28)=(Velocities(Velocities>=11 & Velocities<=28)-14)/(28-11)+1; % in between the consumption value is interpolated
