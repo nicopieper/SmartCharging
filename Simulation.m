@@ -3,7 +3,7 @@ tic
 ActivateWaitbar=true;
 PublicChargingThreshold=uint32(15); % in %
 PThreshold=1.2;
-NumUsers=200; % size(Users,1)-1;
+NumUsers=400; % size(Users,1)-1;
 SmartCharging=false;
 
 
