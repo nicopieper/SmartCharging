@@ -1,6 +1,6 @@
 %% Spotmarket and Reserve Market prices
 
-RLOfferPrices=repelem(ResPoPricesReal4H(TimeInd+TD.Main:TimeInd+TD.Main-1+ControlPeriods/4/4,3)/1000,16); % [€/kW]
+RLOfferPrices=repelem(ResPoPricesReal4H((TimeInd+TD.Main-1)/16+1:(TimeInd+TD.Main-1)/16+1+ControlPeriods/4/4,3)/1000,16); % [€/kW]
 RLOfferPrices=RLOfferPrices(1:ControlPeriods);
 AEOfferPrices=(ResEnPricesRealQH(TimeInd+TD.Main:TimeInd+TD.Main-1+ControlPeriods,7)-AEFactor*abs(ResEnPricesRealQH(TimeInd+TD.Main:TimeInd+TD.Main-1+ControlPeriods,7)))/1000; % [€/kWh]
 
@@ -16,7 +16,7 @@ end
 CostsPV=ones(ControlPeriods, 1, NumUsers)*0.097;
 PVPower=zeros(ControlPeriods, 1,NumUsers);
 for n=2:NumUsers+1
-    Availability(:,1,n-1)=ismember(Users{n}.Logbook(TimeInd+TD.Main:TimeInd+TD.Main-1+ControlPeriods,1), 4:5) & Users{n}.GridConvenientChargingAvailabilityControlPeriod;
+    Availability(:,1,n-1)=double(ismember(Users{n}.Logbook(TimeInd+TD.Main:TimeInd+TD.Main-1+ControlPeriods,1), 4:5)) .* Users{n}.GridConvenientChargingAvailabilityControlPeriod;
     EnergyDemand(1,1,n-1)=double(Users{n}.BatterySize - (Users{n}.Logbook(TimeInd+TD.Main-1+ControlPeriods,9) - sum(Users{n}.Logbook(TimeInd+TD.Main:TimeInd+TD.Main-1+ControlPeriods,5:8), 'all')));
     if Users{n}.PVPlantExists==true
         PVPower(:,1,n-1)=double(PVPlants{Users{n}.PVPlant}.ProfileQH(TimeInd+TD.Main:TimeInd+TD.Main-1+ControlPeriods));

@@ -4,7 +4,7 @@ ActivateWaitbar=true;
 PublicChargingThreshold=uint32(15); % in %
 PThreshold=1.2;
 NumUsers=200; % size(Users,1)-1;
-SmartCharging=false;
+SmartCharging=true;
 
 
 if ~exist('PublicChargerDistribution', 'var')
@@ -30,7 +30,7 @@ for n=2:size(Users,1)
         Users{n}.Logbook=Users{n}.LogbookSource;
     else
         Users{n}.Logbook=Users{n}.LogbookBase;
-        TimeOfForecast=datetime(1,1,1,08,0,0,'TimeZone','Africa/Tunis');
+        TimeOfForecast=datetime(1,1,1,0,0,0,'TimeZone','Africa/Tunis');
     end
 end
 
@@ -128,7 +128,7 @@ for TimeInd=2:length(Time.Sim.Vec)
                 Users{n}.Logbook(TimeInd+TD.User,5)=min((Time.StepMin-Users{n}.Logbook(TimeInd+TD.User,2))*Users{n}.ACChargingPowerHomeCharging/60, Users{n}.BatterySize-Users{n}.Logbook(TimeInd+TD.User-1,9)); %[Wh]
             end
         else
-            if hour(Time.Sim.Vec(TimeInd))==hour(TimeOfForecast)
+            if hour(Time.Sim.Vec(TimeInd))==hour(TimeOfForecast) & minute(Time.Sim.Vec(TimeInd))==minute(TimeOfForecast)
                 PreAlgo;
             end
         end
@@ -165,6 +165,39 @@ if ~SmartCharging
 
         Users{n}.AverageConsumptionBaseYear_kWh=sum(Users{n}.Logbook(:,5:8), 'all')/1000/days(Time.End-Time.Start)*365.25;
     end
+end
+
+%% Evaluate Smart Charging
+
+if SmartCharging
+    ChargingSum=sum(ChargingVehicle, 3);
+    [sum(ChargingType(:,1,:),'all'), sum(ChargingType(:,2,:),'all'), sum(ChargingType(:,3,:),'all')]/sum(ChargingType(:,:,:),'all')
+    toc
+
+    figure
+    Load=mean(reshape(ChargingType',3,96,[]),3)';
+    %Load=circshift(Load, [(24-hour(TimeOfForecast))*Time.StepInd, 0]);
+    x = 1:96;
+%     y = circshift(mean(reshape(ChargingSum, 96, []), 2)', [(24-hour(TimeOfForecast))*Time.StepInd, 0]);
+    y = mean(reshape(ChargingSum, 96, []), 2)';
+    z = zeros(size(x));
+    col = (Load./repmat(max(Load, [], 2),1,3))';
+    surface([x;x],[y;y],[z;z],[permute(repmat(col,1,1,2),[3,2,1])], 'facecol','no', 'edgecol','interp', 'linew',2);
+    xticks(1:16:96)
+    xticklabels({datestr(Time.Vec(1:16:96),'HH:MM')})
+
+    hold on
+    plot(squeeze(mean(reshape(ChargingType(:,1),96,[],1),2)), "LineWidth", 1.2, "Color", [1, 0, 0])
+    plot(squeeze(mean(reshape(ChargingType(:,2),96,[],1),2)), "LineWidth", 1.2, "Color", [0, 1, 0])
+    plot(squeeze(mean(reshape(ChargingType(:,3),96,[],1),2)), "LineWidth", 1.2, "Color", [0, 0, 1])
+    xticks(1:16:96)
+    xticklabels({datestr(Time.Vec(1:16:96),'HH:MM')})
+    legend(["All", "Spotmarket", "PV", "Secondary Reserve Energy"])
+
+    figure
+    plot(x, mean(sum(AvailabilityMat,3),2))
+    xticks(1:16:96)
+    xticklabels({datestr(Time.Vec(1:16:96),'HH:MM')})
 end
 
 %% Save Data
