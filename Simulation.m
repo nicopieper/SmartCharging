@@ -162,7 +162,7 @@ end
 SimulatedUsers=@(User) (isfield(User, 'Time') || User.Logbook(2, 7)>0);
 Users=Users(cellfun(SimulatedUsers, Users));
 Users{1}.Time.Stamp=datetime('now');
-Users{1}.FileName=strcat(Path.Simulation, "Users_", datestr(Users{1}.Time.Stamp, "yyyymmdd-HHMM"), "_", Time.IntervalFile, "_", num2str(PThreshold), "_", num2str(NumUsers), "_", ".mat");
+Users{1}.FileName=strcat(Path.Simulation, "Users_", datestr(Users{1}.Time.Stamp, "yyyymmdd-HHMM"), "_", Time.IntervalFile, "_", num2str(PThreshold), "_", num2str(NumUsers), "_", num2str(SmartCharging), ".mat");
 
 for n=2:NumUsers+1
     if ~SmartCharging
