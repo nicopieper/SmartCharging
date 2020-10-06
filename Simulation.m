@@ -25,6 +25,10 @@ for n=2:size(Users,1)
     end
 end
 
+if SmartCharging
+    InitialisePreAlgo;
+end
+
 if ActivateWaitbar
     h=waitbar(0, "Simulate charging processes");
     TotalIterations=Range.TestInd(2)-(Range.TrainInd(1)+1);
@@ -111,16 +115,13 @@ for TimeInd=Range.TrainInd(1)+1:Range.TestInd(2)
         Users{n}.Logbook(TimeInd,7)=Users{n}.Logbook(TimeInd-1,7)-Users{n}.Logbook(TimeInd,4);
         
         if ~SmartCharging
-            
             if Users{n}.Logbook(TimeInd,1)==4 && Users{n}.Logbook(TimeInd,7)<Users{n}.BatterySize % Charging starts always when the car is plugged in, until the Battery is fully charged
                 Users{n}.Logbook(TimeInd,1)=5;
                 Users{n}.Logbook(TimeInd,5)=min((Time.StepMin-Users{n}.Logbook(TimeInd,2))*Users{n}.ACChargingPowerHomeCharging/60, Users{n}.BatterySize-Users{n}.Logbook(TimeInd-1,7)); %[Wh]
             end
-            
         else
-            
-        end    
-        
+            PreAlgo;
+        end
         
         
         if  Users{n}.Logbook(TimeInd,7)<Users{n}.BatterySize && Users{n}.Logbook(TimeInd,1)>=5

@@ -125,7 +125,7 @@ TemperatureTimeVec=TemperatureMonths(month(Time.Vec), 2);
 Users{1}.VehicleDataFileName=Vehicles{1}.FileName; % save general processing information in the first cell
 Users{1}.NumVehicles=length(Vehicles)-1;
 Users{1}.Time.Vec=intersect(Time.Vec, Vehicles{1}.Time.Vec);
-UsersTime.VecLogical=ismember(Vehicles{1}.Time.Vec,Users{1}.Time.Vec);
+UsersTimeVecLogical=ismember(Vehicles{1}.Time.Vec,Users{1}.Time.Vec);
 Users{1}.Time.Step=Time.Step;
 Users{1}.AddPV=AddPV;
 
@@ -222,4 +222,4 @@ end
 
 clearvars LikelihoodPV PVPlantPointer Consumption Velocities SizeNum VehiclePointer VehicleDatabase AddPV TemperatureMonths TemperatureTimeVec
 clearvars RandomNumbers n Model VehicleSizes MeanPrivateElectricityPrice NumTripDays NumUsers PublicACChargingPrices PublicDCChargingPrices StorageFiles StorageInd
-clearvars TimeNoiseStdFac UsersTime VehicleProperties GridConvenientChargingProfile=
+clearvars TimeNoiseStdFac UsersTime VehicleProperties GridConvenientChargingProfile UsersTimeVecLogical
