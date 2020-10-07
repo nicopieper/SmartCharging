@@ -1,3 +1,6 @@
+%% Availability anteilig berechnen. Wenn erste Zelle teilweise mit Fahrt besetzt nur x% Availability
+
+
 %% Initialisation
 tic
 ActivateWaitbar=true;
@@ -15,7 +18,7 @@ NumUsers=min(NumUsers, size(Users,1)-1);
 ChargingPower=zeros(NumUsers,1);
 EnergyDemandLeft=zeros(NumUsers+1,1);
 % ChargingEfficiency=zeros(NumUsers+1,1);
-%close hidden
+delete(findall(0,'type','figure','tag','TMWWaitbar'));
 
 Time.Sim.Start=max([Range.TrainDate(1), Users{1}.Time.Vec(1)]);
 Time.Sim.End=min([Range.TestDate(2), Users{1}.Time.Vec(end)]);
@@ -30,11 +33,12 @@ for n=2:size(Users,1)
         Users{n}.Logbook=Users{n}.LogbookSource;
     else
         Users{n}.Logbook=Users{n}.LogbookBase;
+        Users{n}.Logbook(2:end, 5:9)=0;
     end
 end
 
 if SmartCharging
-    TimeOfForecast=datetime(1,1,1,0,0,0,'TimeZone','Africa/Tunis');
+    TimeOfForecast=datetime(1,1,1,8,0,0,'TimeZone','Africa/Tunis');
 	ShiftInds=(hour(TimeOfForecast)*Time.StepInd + minute(TimeOfForecast)/minutes(Time.Step));
     InitialisePreAlgo;
 end
@@ -48,16 +52,14 @@ Users{1}.PThreshold=PThreshold;
 %% Start Simulation
 
 for TimeInd=2:length(Time.Sim.Vec)
-    
-    DecideNow=true;
-       
+          
     for n=2:NumUsers+1
         
         % Public charging: Only charge at public charging point if it is requiered due to low SoC
         if (Users{n}.Logbook(TimeInd+TD.User,1)==1 && Users{n}.Logbook(TimeInd+TD.User-1,9)*100/Users{n}.BatterySize<PublicChargingThreshold) || (TimeInd+TD.User+1<=size(Users{n}.Logbook,1) && Users{n}.Logbook(TimeInd+TD.User,4)>=Users{n}.Logbook(TimeInd+TD.User-1,9))
             
             k=TimeInd+TD.User;
-            while k < length(Users{n}.Logbook) && Users{n}.Logbook(k,1)~=3
+            while k < length(Users{n}.Logbook) && ~ismember(Users{n}.Logbook(k,1), 3:5)
                 k=k+1;
             end
             NextHomeStop=k;
@@ -91,6 +93,8 @@ for TimeInd=2:length(Time.Sim.Vec)
         end
         
         % Private charging: Decide whether to plug in the car the or not
+        
+        % Analyse this sequence. What happens due to change to 3:5?
         if Users{n}.Logbook(TimeInd+TD.User,1)==3
             
             if Users{n}.Logbook(TimeInd+TD.User-1,1)<3
@@ -125,17 +129,24 @@ for TimeInd=2:length(Time.Sim.Vec)
         
         Users{n}.Logbook(TimeInd+TD.User,9)=Users{n}.Logbook(TimeInd+TD.User-1,9)-Users{n}.Logbook(TimeInd+TD.User,4);
         
+    end
+    
+    if SmartCharging && hour(Time.Sim.Vec(TimeInd))==hour(TimeOfForecast) && minute(Time.Sim.Vec(TimeInd))==minute(TimeOfForecast)
+        PreAlgo;
+    end
+        
+    for n=2:NumUsers-1
+        
         if ~SmartCharging
             if Users{n}.Logbook(TimeInd+TD.User,1)==4 && Users{n}.Logbook(TimeInd+TD.User,9)<Users{n}.BatterySize % Charging starts always when the car is plugged in, until the Battery is fully charged
                 Users{n}.Logbook(TimeInd+TD.User,1)=5;
                 Users{n}.Logbook(TimeInd+TD.User,5)=min((Time.StepMin-Users{n}.Logbook(TimeInd+TD.User,2))*Users{n}.ACChargingPowerHomeCharging/60, Users{n}.BatterySize-Users{n}.Logbook(TimeInd+TD.User-1,9)); %[Wh]
             end
         else
-            if DecideNow==true && hour(Time.Sim.Vec(TimeInd))==hour(TimeOfForecast) && minute(Time.Sim.Vec(TimeInd))==minute(TimeOfForecast)
-                PreAlgo;
-                DecideNow=false;
-                
-                Users{n}.Logbook(find((TimeInd+TD.User:TimeInd+TD.User+24*Time.StepInd-1) .* sum(OptimalChargingEnergies(1:24*Time.StepInd,:,n-1), 2))>0)=5;
+            if hour(Time.Sim.Vec(TimeInd))==hour(TimeOfForecast) && minute(Time.Sim.Vec(TimeInd))==minute(TimeOfForecast)
+                %Users{n}.Logbook(TimeInd+TD.User+find((TimeInd+TD.User:TimeInd+TD.User+24*Time.StepInd-1)' .* sum(OptimalChargingEnergies(1:24*Time.StepInd,:,n-1), 2)>0))=5;
+                Users{n}.Logbook(TimeInd+TD.User+find(ismember(Users{n}.Logbook(TimeInd+TD.User:TimeInd+TD.User+24*Time.StepInd-1,1), 4:5))-1,1)=4;
+                Users{n}.Logbook(TimeInd+TD.User+find(sum(OptimalChargingEnergies(1:24*Time.StepInd,:,n-1), 2)>0)-1, 1) = 5;
                 Users{n}.Logbook(TimeInd+TD.User:TimeInd+TD.User+24*Time.StepInd-1, 5:7)=OptimalChargingEnergies(1:24*Time.StepInd,:,n-1);
             end
         end
