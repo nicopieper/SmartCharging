@@ -7,7 +7,7 @@ ActivateWaitbar=true;
 PublicChargingThreshold=uint32(15); % in %
 PThreshold=1.2;
 NumUsers=400; % size(Users,1)-1;
-SmartCharging=true;
+SmartCharging=false;
 UsePV=true;
 ApplyGridConvenientCharging=true;
 
@@ -23,8 +23,9 @@ EnergyDemandLeft=zeros(NumUsers+1,1);
 delete(findall(0,'type','figure','tag','TMWWaitbar'));
 
 Time.Sim.Start=max([Range.TrainDate(1), Users{1}.Time.Vec(1)]);
-Time.Sim.End=min([Range.TestDate(2), Users{1}.Time.Vec(end)]);
+Time.Sim.End=min([Range.TestDate(2), Users{1}.Time.Vec(end)-days(3)]);
 Time.Sim.Vec=Time.Sim.Start:Time.Step:Time.Sim.End;
+Time.Sim.VecInd=1:length(Time.Sim.Vec);
 TD.Main=find(ismember(Time.Vec,Time.Sim.Start),1)-1;
 %TimeDiffs.SpotmarketPred=find(ismember(Pred.Time.Vec,Time.Sim.Start),1)-1;
 TD.User=find(ismember(Users{1}.Time.Vec,Time.Sim.Start),1)-1;
@@ -53,7 +54,7 @@ Users{1}.PThreshold=PThreshold;
 
 %% Start Simulation
 
-for TimeInd=2:length(Time.Sim.Vec)-3*24*Time.StepInd
+for TimeInd=Time.Sim.VecInd(2:end)
           
     for n=2:NumUsers+1
         
@@ -176,7 +177,7 @@ if ActivateWaitbar
 end
 
 for n=2:NumUsers
-    Users{n}.Logbook=Users{n}.Logbook(1:TimeInd);
+    Users{n}.Logbook=Users{n}.Logbook(1:TimeInd,:);
 end
 
 %% Evaluate base electricity costs
@@ -185,16 +186,25 @@ if ~SmartCharging
     if ~exist('Smard', 'var')
         GetSmardData;
     end
+    
+    if ApplyGridConvenientCharging
+        IMSYSPrices=readmatrix(strcat(Path.Simulation, "IMSYS_Prices.csv"), 'NumHeaderLines', 1);
+    end        
+    
     for n=2:NumUsers+1
         if isfield(Users{n}, 'NNEEnergyPrice')
-            Users{n}.FinListBase=uint32(double(Users{n}.Logbook(:,5))/1000 .* (Users{n}.PrivateElectricityPrice + Smard.DayaheadRealQH/10 + Users{n}.NNEEnergyPrice)*1.19); % [ct] total electricity costs equal base price of user + realtime current production costs + NNE energy price. VAT applies to the end price
+            Users{n}.FinListBase=uint32(double(Users{n}.Logbook(Time.Sim.VecInd+TD.User,5))/1000 .* (Users{n}.PrivateElectricityPrice + Smard.DayaheadRealQH(Time.Sim.VecInd+TD.Main)/10 + Users{n}.NNEEnergyPrice)*1.19); % [ct] total electricity costs equal base price of user + realtime current production costs + NNE energy price. VAT applies to the end price
         else
-            Users{n}.FinListBase=uint32(double(Users{n}.Logbook(:,5))/1000 .* (Users{n}.PrivateElectricityPrice + Smard.DayaheadRealQH/10 + 7.06)*1.19); % [ct] total electricity costs equal base price of user + realtime current production costs + NNE energy price. VAT applies to the end price
+            Users{n}.FinListBase=uint32(double(Users{n}.Logbook(Time.Sim.VecInd+TD.User,5))/1000 .* (Users{n}.PrivateElectricityPrice + Smard.DayaheadRealQH(Time.Sim.VecInd+TD.Main)/10 + 7.06)*1.19); % [ct] total electricity costs equal base price of user + realtime current production costs + NNE energy price. VAT applies to the end price
         end
-        Users{n}.FinListBase(:,2)=uint32(zeros(length(Time.Vec),1) + double(Users{n}.Logbook(:,8))/1000.*Users{n}.PublicACChargingPrices.*double(Users{n}.Logbook(:,1)==6)); % [ct] fixed price for public AC charging
-        Users{n}.FinListBase(:,2)=Users{n}.FinListBase(:,2) + uint32(double(Users{n}.Logbook(:,8))/1000.*Users{n}.PublicDCChargingPrices.*double(Users{n}.Logbook(:,1)==7)); % [ct] fixed price for public DC charging
+        Users{n}.FinListBase(:,2)=uint32(double(Users{n}.Logbook(Time.Sim.VecInd+TD.User,8))/1000.*Users{n}.PublicACChargingPrices.*double(Users{n}.Logbook(Time.Sim.VecInd+TD.User,1)==6)); % [ct] fixed price for public AC charging
+        Users{n}.FinListBase(:,2)=Users{n}.FinListBase(:,2) + uint32(double(Users{n}.Logbook(Time.Sim.VecInd+TD.User,8))/1000.*Users{n}.PublicDCChargingPrices.*double(Users{n}.Logbook(Time.Sim.VecInd+TD.User,1)==7)); % [ct] fixed price for public DC charging
 
         Users{n}.AverageConsumptionBaseYear_kWh=sum(Users{n}.Logbook(:,5:8), 'all')/1000/days(Time.End-Time.Start)*365.25;
+        
+        if Users{n}.NNEExtraBasePrice==-100
+            Users{n}.NNEExtraBasePrice=IMSYSPrices(Users{n}.AverageConsumptionBaseYear_kWh>=IMSYSPrices(:,1) & Users{n}.AverageConsumptionBaseYear_kWh<IMSYSPrices(:,2),3)*100;
+        end
         
     end
 end
