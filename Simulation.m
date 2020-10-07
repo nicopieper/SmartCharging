@@ -53,7 +53,7 @@ Users{1}.PThreshold=PThreshold;
 
 %% Start Simulation
 
-for TimeInd=2:length(Time.Sim.Vec)-3*Time.StepInd
+for TimeInd=2:length(Time.Sim.Vec)-3*24*Time.StepInd
           
     for n=2:NumUsers+1
         
@@ -175,6 +175,10 @@ if ActivateWaitbar
     close(h);
 end
 
+for n=2:NumUsers
+    Users{n}.Logbook=Users{n}.Logbook(1:TimeInd);
+end
+
 %% Evaluate base electricity costs
 
 if ~SmartCharging
@@ -223,9 +227,9 @@ if SmartCharging
     legend(["All", "Spotmarket", "PV", "Secondary Reserve Energy"])
 
     figure
-    plot(x, circshift(mean(sum(AvailabilityMat,3),2), ShiftInds))
-    xticks(1:16:96)
-    xticklabels({datestr(Time.Vec(1:16:96),'HH:MM')})
+    plot(datetime(1,1,1,0,0,0, 'TimeZone', 'Africa/Tunis'):minutes(Time.StepMin):datetime(1,1,1,23,45,0, 'TimeZone', 'Africa/Tunis'), circshift(mean(sum(AvailabilityMat,3),2), ShiftInds))
+    xticks(datetime(1,1,1,0,0,0, 'TimeZone', 'Africa/Tunis'):hours(4):datetime(1,1,2,0,0,0, 'TimeZone', 'Africa/Tunis'))
+    xticklabels(datestr(datetime(1,1,1,0,0,0, 'TimeZone', 'Africa/Tunis'):hours(4):datetime(1,1,2,0,0,0, 'TimeZone', 'Africa/Tunis'), "HH:MM"))
 end
 
 %% Save Data
