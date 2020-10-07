@@ -177,7 +177,7 @@ for n=2:NumUsers+1
         Users{n}.NNEExtraBasePrice=GridConvenienChargingDistribution(2,GridConvenientChargingProfile)*100; % [ct/a] netto (without VAT) due to the extra electricity meter
         Users{n}.NNEBonus=GridConvenienChargingDistribution(4,GridConvenientChargingProfile)*100; % [ct] a single bonus paid by the DSO
     else
-        LikelihoodGridConvenientCharging=false;
+        Users{n}.GridConvenientCharging=false;
         Users{n}.GridConvenientChargingAvailability=ones(24*Time.StepInd,1);
         Users{n}.NNEEnergyPrice=GridConvenienChargingDistribution(1,GridConvenientChargingProfile); % [ct/kWh] netto (without VAT). normal NNE prices
         Users{n}.NNEExtraBasePrice=0; % not extra electricity meter required

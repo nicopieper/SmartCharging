@@ -8,6 +8,8 @@ PublicChargingThreshold=uint32(15); % in %
 PThreshold=1.2;
 NumUsers=200; % size(Users,1)-1;
 SmartCharging=true;
+UsePV=true;
+ApplyGridConvenientCharging=true;
 
 
 if ~exist('PublicChargerDistribution', 'var')
@@ -76,10 +78,13 @@ for TimeInd=2:length(Time.Sim.Vec)
             
             if TimeStepIndsNeededForCharging>0
                 k=TimeInd+TD.User;
-                while k < length(Users{n}.Logbook)-TimeStepIndsNeededForCharging+1 && ~isequal(Users{n}.Logbook(k:k+TimeStepIndsNeededForCharging-1,3),zeros(TimeStepIndsNeededForCharging,1))
+                while k < length(Users{1}.Time.Vec)-TimeStepIndsNeededForCharging && ~isequal(Users{n}.Logbook(k:k+TimeStepIndsNeededForCharging-1,3),zeros(TimeStepIndsNeededForCharging,1))
                     k=k+1;
                 end
                 EndOfShift=k+TimeStepIndsNeededForCharging-1;
+                if EndOfShift>length(Users{1}.Time.Vec)
+                    error(strcat("Logbook would be falsly extended for Users ", num2str(n)))
+                end
 
                 Users{n}.Logbook(TimeInd+TD.User:EndOfShift,:)=Users{n}.Logbook(TimeInd+TD.User-TimeStepIndsNeededForCharging:EndOfShift-TimeStepIndsNeededForCharging,:);
                 TimeStepIndsNeededForCharging=min(length(Users{n}.Logbook)-(TimeInd+TD.User-1), TimeStepIndsNeededForCharging);
@@ -138,9 +143,13 @@ for TimeInd=2:length(Time.Sim.Vec)
     for n=2:NumUsers-1
         
         if ~SmartCharging
-            if Users{n}.Logbook(TimeInd+TD.User,1)==4 && Users{n}.Logbook(TimeInd+TD.User,9)<Users{n}.BatterySize % Charging starts always when the car is plugged in, until the Battery is fully charged
+            if Users{n}.Logbook(TimeInd+TD.User,1)==4 && Users{n}.Logbook(TimeInd+TD.User,9)<Users{n}.BatterySize && (~ApplyGridConvenientCharging || Users{n}.GridConvenientChargingAvailability(mod(TimeInd+TD.User-1, 24*Time.StepInd)+1)) % Charging starts always when the car is plugged in, until the Battery is fully charged
                 Users{n}.Logbook(TimeInd+TD.User,1)=5;
-                Users{n}.Logbook(TimeInd+TD.User,5)=min((Time.StepMin-Users{n}.Logbook(TimeInd+TD.User,2))*Users{n}.ACChargingPowerHomeCharging/60, Users{n}.BatterySize-Users{n}.Logbook(TimeInd+TD.User-1,9)); %[Wh]
+                ChargingEnergy=min((Time.StepMin-Users{n}.Logbook(TimeInd+TD.User,2))*Users{n}.ACChargingPowerHomeCharging/60, Users{n}.BatterySize-Users{n}.Logbook(TimeInd+TD.User-1,9)); %[Wh]
+                if UsePV && Users{n}.PVPlantExists
+                    Users{n}.Logbook(TimeInd+TD.User,6)=min(uint32(PVPlants{Users{n}.PVPlant}.ProfileQH(TimeInd+TD.Main)), ChargingEnergy);
+                end
+                Users{n}.Logbook(TimeInd+TD.User,5)=ChargingEnergy-Users{n}.Logbook(TimeInd+TD.User,6);
             end
         else
             if hour(Time.Sim.Vec(TimeInd))==hour(TimeOfForecast) && minute(Time.Sim.Vec(TimeInd))==minute(TimeOfForecast)
@@ -182,6 +191,7 @@ if ~SmartCharging
         Users{n}.FinListBase(:,2)=Users{n}.FinListBase(:,2) + uint32(double(Users{n}.Logbook(:,8))/1000.*Users{n}.PublicDCChargingPrices.*double(Users{n}.Logbook(:,1)==7)); % [ct] fixed price for public DC charging
 
         Users{n}.AverageConsumptionBaseYear_kWh=sum(Users{n}.Logbook(:,5:8), 'all')/1000/days(Time.End-Time.Start)*365.25;
+        
     end
 end
 
