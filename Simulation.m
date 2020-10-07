@@ -53,7 +53,7 @@ Users{1}.PThreshold=PThreshold;
 
 %% Start Simulation
 
-for TimeInd=2:length(Time.Sim.Vec)
+for TimeInd=2:length(Time.Sim.Vec)-3*Time.StepInd
           
     for n=2:NumUsers+1
         
