@@ -7,15 +7,19 @@ CalcOptVars;
 Costf=Costs(:);
 
 ConsSumPowerb=repelem(MaxPower(:)/4, ControlPeriods);
-ConsPowerb=[reshape(repelem(MaxPower(:)/4, ControlPeriods), ControlPeriods, 1, []), PVPower/4, reshape(repelem(MaxPower(:)/4, ControlPeriods), ControlPeriods, 1, [])];
+ConsPowerb=[reshape(repelem(MaxPower(:)/4, ControlPeriods), ControlPeriods, 1, []), PVPower/4, reshape(repelem(MaxPower(:)/4, ControlPeriods), ControlPeriods, 1, [])] .*Availability;
 ConsPowerb=ConsPowerb(:,CostCats,:);
 ConsPowerb=ConsPowerb(:);
-ConsEnergybeq=squeeze(min(EnergyDemand, sum(Availability, 1).*MaxPower/4));
+ConsEnergybeq=squeeze(min(EnergyDemandControlPeriod, sum(Availability, 1).*MaxPower/4));
+ConsEnergyDemandEssentialOneDayb=EnergyDemandEssentialOneDay(:);
+ConsMaxEnergyChargedb=MaxEnergyCharged(:);
 
-A=[ConsSumPowerA];% ConsPowerA];
-b=[ConsSumPowerb(:)];% ConsPowerb];
-Aeq=[ConsEnergyAeq;ConsRLOfferAeq];
-beq=[ConsEnergybeq;ConsRLOfferbeq];
+A=[ConsSumPowerA; ConsEnergyDemandA; -ConsEnergyDemandA];% ConsPowerA];
+b=[ConsSumPowerb(:); ConsMaxEnergyChargedb; -ConsEnergyDemandEssentialOneDayb];% ConsPowerb];
+
+Aeq=[ConsEnergyAeq; ConsRLOfferAeq;ConsMatchLastReservePowerOffersAeq];
+beq=[ConsEnergybeq; ConsRLOfferbeq;ConsMatchLastReservePowerOffersbeq];
+
 lb=zeros(ControlPeriods, NumCostCats, NumUsers);
 ub=ConsPowerb;
 
@@ -25,10 +29,12 @@ ub=ConsPowerb;
 
 %% Evaluate result
 
-ChargingMat(:,:,:,end+1)=reshape(x,ControlPeriods, NumCostCats, NumUsers);
+OptimalChargingEnergies=reshape(x,ControlPeriods, NumCostCats, NumUsers);
+ChargingMat(:,:,:,end+1)=OptimalChargingEnergies;
 ChargingVehicle=[ChargingVehicle; sum(ChargingMat(1:96,:,:,end),2)];
 ChargingType=[ChargingType; sum(ChargingMat(1:96,:,:,end),3)];
 AvailabilityMat=[AvailabilityMat, Availability(1:96,1,:)];
+ConsMatchLastReservePowerOffersbeq=sum(squeeze(OptimalChargingEnergies(1:4*Time.StepInd:24*Time.StepInd-ShiftInds,3,:)), 2);
 
 if sum(x)<ConsEnergybeq
     1
