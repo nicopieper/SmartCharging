@@ -4,7 +4,7 @@ ActivateWaitbar=true;
 PublicChargingThreshold=uint32(15); % in %
 PThreshold=1.2;
 NumUsers=400; % size(Users,1)-1;
-SmartCharging=true;
+SmartCharging=false;
 UsePV=true;
 ApplyGridConvenientCharging=true;
 
