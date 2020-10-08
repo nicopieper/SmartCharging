@@ -9,19 +9,14 @@ Costf=Costs(:);
 ConsSumPowerb=repelem(MaxPower(:)/4, ControlPeriods);
 ConsPowerb=[reshape(repelem(MaxPower(:)/4, ControlPeriods), ControlPeriods, 1, []), PVPower/4, reshape(repelem(MaxPower(:)/4, ControlPeriods), ControlPeriods, 1, [])] .*Availability;
 ConsPowerb=ConsPowerb(:,CostCats,:);
-ConsPowerb=ConsPowerb(:);
+
 ConsEnergybeq=squeeze(min(EnergyDemandControlPeriod, sum(Availability, 1).*MaxPower/4));
 ConsEnergyDemandEssentialOneDayb=EnergyDemandEssentialOneDay(:);
 ConsMaxEnergyChargedb=MaxEnergyCharged(:);
 
-A=[ConsSumPowerA; ConsEnergyDemandA; -ConsEnergyDemandA];% ConsPowerA];
-b=[ConsSumPowerb(:); ConsMaxEnergyChargedb; -ConsEnergyDemandEssentialOneDayb];% ConsPowerb];
-
-Aeq=[ConsEnergyAeq; ConsRLOfferAeq;ConsMatchLastReservePowerOffersAeq];
+b=[ConsSumPowerb(:); ConsMaxEnergyChargedb; -ConsEnergyDemandEssentialOneDayb];
 beq=[ConsEnergybeq; ConsRLOfferbeq;ConsMatchLastReservePowerOffersbeq];
-
-lb=zeros(ControlPeriods, NumCostCats, NumUsers);
-ub=ConsPowerb;
+ub=ConsPowerb(:);
 
 %% Calc optimal charging powers
 

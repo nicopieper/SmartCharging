@@ -23,7 +23,7 @@ while (ShowPVPred && (Users{DemoUser}.PVPlantExists==false || ~isfield(PVPlants{
     DemoUser=DemoUser+1;
 end
 
-%% Extend SpotmarketReal if its hourly value
+%% Extend SpotmarketReal if it is hourly value
 if length(SpotmarketReal)~= length(Time.Vec) && length(SpotmarketReal) == length(Time.H)
     SpotmarketReal=repelem(SpotmarketReal, 4);
 end
