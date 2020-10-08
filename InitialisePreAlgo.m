@@ -46,10 +46,18 @@ x=0:ConstantRLPowerPeriods-2;
 RLOfferEqualiyMat1(x*ConstantRLPowerPeriods+1)=1;
 RLOfferEqualiyMat1(x*ConstantRLPowerPeriods+1+ConstantRLPowerPeriods-1)=-1;
 RLOfferEqualiyMat2=sparse(kron(eye(ControlPeriods/ConstantRLPowerPeriods, ControlPeriods/ConstantRLPowerPeriods), RLOfferEqualiyMat1));
-ConsRLOfferAeq=sparse(repmat([zeros((ConstantRLPowerPeriods-1)*ControlPeriods/ConstantRLPowerPeriods,ControlPeriods*2), RLOfferEqualiyMat2],1,NumUsers)); % one row represents one time step. within one Zeitscheibe the sum of reserve powers offered by all vehicles must be equal. hence it must be the power in timestep=1 must be the same as in timestep=2. this is represented by  a one followed by a -1 per vehicle
+ConsRLOfferAeq=sparse(repmat([zeros((ConstantRLPowerPeriods-1)*ControlPeriods/ConstantRLPowerPeriods,ControlPeriods*sum(CostCats(1:2))), RLOfferEqualiyMat2],1,NumUsers)); % one row represents one time step. within one Zeitscheibe the sum of reserve powers offered by all vehicles must be equal. hence it must be the power in timestep=1 must be the same as in timestep=2. this is represented by  a one followed by a -1 per vehicle
 ConsRLOfferbeq=zeros((ConstantRLPowerPeriods-1)*ControlPeriods/ConstantRLPowerPeriods,1);
 
 ConsMatchLastReservePowerOffersAeq=repmat([zeros(ControlPeriods/(4*Time.StepInd),ControlPeriods*sum(CostCats(1:2))), kron(eye(ControlPeriods/(4*Time.StepInd), ControlPeriods/(4*Time.StepInd)),ones(1,4*Time.StepInd))], 1, NumUsers);
 ConsMatchLastReservePowerOffersAeq=ConsMatchLastReservePowerOffersAeq(1:(24*Time.StepInd-ShiftInds)/(4*Time.StepInd),:);
-ConsMatchLastReservePowerOffersbeq=zeros((24*Time.StepInd-ShiftInds)/(4*Time.StepInd),1);
+
+if TimeOfForecast <= TimeOfReserveMarketOffer
+    ConsPeriods=(24*Time.StepInd-ShiftInds)/(4*Time.StepInd);
+else
+    ConsPeriods=(2*24*Time.StepInd-ShiftInds)/(4*Time.StepInd);
+end
+ConsMatchLastReservePowerOffersAeq=repmat([zeros(ControlPeriods/(4*Time.StepInd),ControlPeriods*sum(CostCats(1:2))), kron(eye(ControlPeriods/(4*Time.StepInd), ControlPeriods/(4*Time.StepInd)),ones(1,4*Time.StepInd))], 1, NumUsers);
+ConsMatchLastReservePowerOffersAeq=ConsMatchLastReservePowerOffersAeq(1:ConsPeriods,:);
+ConsMatchLastReservePowerOffersbeq=zeros(ConsPeriods,1);
 
