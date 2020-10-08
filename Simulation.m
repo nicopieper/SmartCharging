@@ -4,7 +4,7 @@ ActivateWaitbar=true;
 PublicChargingThreshold=uint32(15); % in %
 PThreshold=1.2;
 NumUsers=400; % size(Users,1)-1;
-SmartCharging=true;
+SmartCharging=false;
 UsePV=true;
 ApplyGridConvenientCharging=true;
 
@@ -58,7 +58,7 @@ Users{1}.PThreshold=PThreshold;
 
 for TimeInd=Time.Sim.VecInd(2:end)
           
-    parfor n=2:NumUsers+1
+    for n=2:NumUsers+1
         
         % Public charging: Only charge at public charging point if it is requiered due to low SoC
         if (Users{n}.Logbook(TimeInd+TD.User,1)==1 && Users{n}.Logbook(TimeInd+TD.User-1,9)*100/Users{n}.BatterySize<PublicChargingThreshold) || (TimeInd+TD.User+1<=size(Users{n}.Logbook,1) && Users{n}.Logbook(TimeInd+TD.User,4)>=Users{n}.Logbook(TimeInd+TD.User-1,9))
