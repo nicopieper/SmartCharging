@@ -21,7 +21,7 @@ for k=2:NumUsers+1
     CostsSpotmarket(1:ControlPeriods, 1, k-1)=(Users{k}.PrivateElectricityPrice + Users{k}.NNEEnergyPrice + Smard.DayaheadRealQH(TimeInd+TD.Main:TimeInd+TD.Main-1+ControlPeriods)/10)/100*1.19;
     
     if Users{k}.PVPlantExists==true
-        PVPower(:,1,k-1)=double(PVPlants{Users{k}.PVPlant}.ProfileQH(TimeInd+TD.Main:TimeInd+TD.Main-1+ControlPeriods));
+        PVPower(:,1,k-1)=double(PVPlants{Users{k}.PVPlant}.(PVPlants_Profile_Prediction)(TimeInd+TD.Main:TimeInd+TD.Main-1+ControlPeriods));
     else
         CostsPV(:,1,k-1)=10000*ones(ControlPeriods,1); % Ensure never use PVPlant if there is non. Also ensured by PowerCons as PVPower is constantly zero
     end

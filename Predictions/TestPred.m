@@ -158,24 +158,6 @@ if ActivateWaitbar
     close(h)
 end
 
-if strcmp("PVPlants_1", TargetTitle)
-    Prediction(Prediction<20)=0;
-    PredictionMat(PredictionMat<20)=0;
-    DayTestVec=Range.TrainDate(1):caldays(1):Range.TestDate(2);
-    
-    SunTab=[1, 8, 17; 2, 7, 18; 3, 6, 20; 4, 6, 21; 5, 5, 22; 6, 5, 22; 7, 5, 22; 8, 6, 21; 9, 7, 20; 10, 7, 19; 11, 8, 17; 12, 8, 16];
-%     for n=1:size(PredictionMat,2)
-    for n=1:floor((Range.TestPredInd(2)-Range.TestPredInd(1))/(24*Time.StepPredInd))
-        Month=find(month(DayTestVec(n))==SunTab(:,1),1);
-        DayVec=mod((hour(Range.TestDate(1))*Time.StepPredInd:1:size(PredictionMat,1)+hour(Range.TestDate(1))*Time.StepPredInd-1)/Time.StepPredInd, 24);
-        Sunrise=DayVec<SunTab(Month,2);
-        Sunset=DayVec>SunTab(Month,3);
-        PredictionMat(Sunrise, n)=0;
-        PredictionMat(Sunset, n)=0;
-    end
-end
-
-
 PredcitionTemp=Prediction;
 PredictionMatTemp=PredictionMat;
 PredMethodTemp=PredMethod;
@@ -188,10 +170,10 @@ for p=1:NumPredMethod
     Pred.Method=PredMethod;
     Pred.Target=Target;
     Pred.Time=Time;
-    Pred.Time.Stamp=datetime('now');
     Pred.Range=Range;
-    Pred.FileName=strcat(Path.Prediction, TargetTitle, "_", LegendVec(p), "_", num2str(ForecastIntervalPredInd), "_", "_", num2str(size(PredictorMatInput,2)), "_", TimeIntervalFile, "_", datestr(Pred.Time.Stamp, 'yyyymmdd-HHMM'), ".mat");
     Pred.ForecastIntervalInd=ForecastIntervalPredInd;
+    Pred.Time.Stamp=datetime('now');
+    Pred.FileName=strcat(Path.Prediction, datestr(Pred.Time.Stamp, 'yyyymmdd-HHMM'), TimeIntervalFile, "_", TargetTitle, "_", LegendVec(p), "_", num2str(ForecastIntervalPredInd), "_", "_", num2str(size(PredictorMatInput,2)), "_", ".mat");
     save(Pred.FileName, "Pred", "-v7.3");
 end
 Prediction=PredcitionTemp;

@@ -8,6 +8,7 @@ RLFactor=[0.8];
 AEFactor=-0.1;
 options = optimoptions('linprog','Algorithm','dual-simplex');
 options.Display = 'off';
+    
 
 %% Prepare Users
 
@@ -61,3 +62,6 @@ ConsMatchLastReservePowerOffersAeq=repmat([zeros(ControlPeriods/(4*Time.StepInd)
 ConsMatchLastReservePowerOffersAeq=ConsMatchLastReservePowerOffersAeq(1:ConsPeriods,:);
 ConsMatchLastReservePowerOffersbeq=zeros(ConsPeriods,1);
 
+A=[ConsSumPowerA; ConsEnergyDemandA; -ConsEnergyDemandA];
+Aeq=[ConsEnergyAeq; ConsRLOfferAeq;ConsMatchLastReservePowerOffersAeq];
+lb=zeros(ControlPeriods, NumCostCats, NumUsers);
