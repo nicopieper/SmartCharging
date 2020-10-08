@@ -26,7 +26,7 @@ else
     Time.Sim.End=min([Range.TestDate(2), Users{1}.Time.Vec(end)-days(3)]);
 end
 Time.Sim.Vec=Time.Sim.Start:Time.Step:Time.Sim.End;
-Time.Sim.VecInd=1:length(Time.Sim.Vec);
+Time.Sim.VecInd=1:96*20;%length(Time.Sim.Vec);
 TD.Main=find(ismember(Time.Vec,Time.Sim.Start),1)-1;
 %TimeDiffs.SpotmarketPred=find(ismember(Pred.Time.Vec,Time.Sim.Start),1)-1;
 TD.User=find(ismember(Users{1}.Time.Vec,Time.Sim.Start),1)-1;
@@ -58,7 +58,7 @@ Users{1}.PThreshold=PThreshold;
 
 for TimeInd=Time.Sim.VecInd(2:end)
           
-    for n=2:NumUsers+1
+    parfor n=2:NumUsers+1
         
         % Public charging: Only charge at public charging point if it is requiered due to low SoC
         if (Users{n}.Logbook(TimeInd+TD.User,1)==1 && Users{n}.Logbook(TimeInd+TD.User-1,9)*100/Users{n}.BatterySize<PublicChargingThreshold) || (TimeInd+TD.User+1<=size(Users{n}.Logbook,1) && Users{n}.Logbook(TimeInd+TD.User,4)>=Users{n}.Logbook(TimeInd+TD.User-1,9))
@@ -142,7 +142,7 @@ for TimeInd=Time.Sim.VecInd(2:end)
         PreAlgo;
     end
         
-    for n=2:NumUsers-1
+    parfor n=2:NumUsers-1
         
         if ~SmartCharging
             if Users{n}.Logbook(TimeInd+TD.User,1)==4 && Users{n}.Logbook(TimeInd+TD.User,9)<Users{n}.BatterySize && (~ApplyGridConvenientCharging || Users{n}.GridConvenientChargingAvailability(mod(TimeInd+TD.User-1, 24*Time.StepInd)+1)) % Charging starts always when the car is plugged in, until the Battery is fully charged
@@ -177,7 +177,7 @@ end
 if ActivateWaitbar
     close(h);
 end
-
+toc
 for n=2:NumUsers
     Users{n}.Logbook=Users{n}.Logbook(1:TimeInd,:);
 end
