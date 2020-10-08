@@ -1,6 +1,6 @@
 %% Availability, EnergyDemand and Prices
 
-RLOfferPrices=repelem(ResPoPricesReal4H(floor((TimeInd+TD.Main-1)/16)+1:floor((TimeInd+TD.Main-1)/16)+1+ControlPeriods/4/4,3)/1000,16); % [€/kW]
+RLOfferPrices=repelem(ResPoPricesReal4H(floor((TimeInd+TD.Main-1)/(4*Time.StepInd))+1:floor((TimeInd+TD.Main-1)/(4*Time.StepInd))+1+ControlPeriods/(4*Time.StepInd),3)/1000,4*Time.StepInd); % [€/kW]
 RLOfferPrices=RLOfferPrices(1:ControlPeriods);
 AEOfferPrices=(ResEnPricesRealQH(TimeInd+TD.Main:TimeInd+TD.Main-1+ControlPeriods,7)-AEFactor*abs(ResEnPricesRealQH(TimeInd+TD.Main:TimeInd+TD.Main-1+ControlPeriods,7)))/1000; % [€/kWh]
 

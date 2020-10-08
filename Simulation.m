@@ -1,6 +1,3 @@
-%% Availability anteilig berechnen. Wenn erste Zelle teilweise mit Fahrt besetzt nur x% Availability
-
-
 %% Initialisation
 tic
 ActivateWaitbar=true;
@@ -23,7 +20,11 @@ EnergyDemandLeft=zeros(NumUsers+1,1);
 delete(findall(0,'type','figure','tag','TMWWaitbar'));
 
 Time.Sim.Start=max([Range.TrainDate(1), Users{1}.Time.Vec(1)]);
-Time.Sim.End=min([Range.TestDate(2), Users{1}.Time.Vec(end)-days(3)]);
+if ~SmartCharging
+    Time.Sim.End=min([Range.TestDate(2), Users{1}.Time.Vec(end)]);
+else
+    Time.Sim.End=min([Range.TestDate(2), Users{1}.Time.Vec(end)-days(3)]);
+end
 Time.Sim.Vec=Time.Sim.Start:Time.Step:Time.Sim.End;
 Time.Sim.VecInd=1:length(Time.Sim.Vec);
 TD.Main=find(ismember(Time.Vec,Time.Sim.Start),1)-1;
