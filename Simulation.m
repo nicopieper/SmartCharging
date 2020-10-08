@@ -142,7 +142,7 @@ for TimeInd=Time.Sim.VecInd(2:end)
         PreAlgo;
     end
         
-    parfor n=2:NumUsers-1
+    for n=2:NumUsers-1
         
         if ~SmartCharging
             if Users{n}.Logbook(TimeInd+TD.User,1)==4 && Users{n}.Logbook(TimeInd+TD.User,9)<Users{n}.BatterySize && (~ApplyGridConvenientCharging || Users{n}.GridConvenientChargingAvailability(mod(TimeInd+TD.User-1, 24*Time.StepInd)+1)) % Charging starts always when the car is plugged in, until the Battery is fully charged

@@ -30,6 +30,9 @@ ub=ConsPowerb;
 %% Evaluate result
 
 OptimalChargingEnergies=reshape(x,ControlPeriods, NumCostCats, NumUsers);
+% PostPreAlgo;
+% OptimalChargingEnergies(:,1,:)=OptimalChargingEnergiesSpotmarket;
+
 ChargingMat(:,:,:,end+1)=OptimalChargingEnergies;
 ChargingVehicle=[ChargingVehicle; sum(ChargingMat(1:96,:,:,end),2)];
 ChargingType=[ChargingType; sum(ChargingMat(1:96,:,:,end),3)];
