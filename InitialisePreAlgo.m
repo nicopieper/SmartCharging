@@ -53,4 +53,3 @@ ConsMatchLastReservePowerOffersAeq=repmat([zeros(ControlPeriods/(4*Time.StepInd)
 ConsMatchLastReservePowerOffersAeq=ConsMatchLastReservePowerOffersAeq(1:(24*Time.StepInd-ShiftInds)/(4*Time.StepInd),:);
 ConsMatchLastReservePowerOffersbeq=zeros((24*Time.StepInd-ShiftInds)/(4*Time.StepInd),1);
 
-
