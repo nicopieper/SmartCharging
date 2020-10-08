@@ -43,6 +43,7 @@ end
 
 if SmartCharging
     TimeOfForecast=datetime(1,1,1,8,0,0,'TimeZone','Africa/Tunis');
+    TimeOfReserveMarketOffer=datetime(1,1,1,8,0,0,'TimeZone','Africa/Tunis');
 	ShiftInds=(hour(TimeOfForecast)*Time.StepInd + minute(TimeOfForecast)/minutes(Time.Step));
     InitialisePreAlgo;
 end
@@ -101,8 +102,7 @@ for TimeInd=Time.Sim.VecInd(2:end)
         
         % Private charging: Decide whether to plug in the car the or not
         
-        % Analyse this sequence. What happens due to change to 3:5?
-        if Users{n}.Logbook(TimeInd+TD.User,1)==3
+        if ~SmartCharging && Users{n}.Logbook(TimeInd+TD.User,1)==3
             
             if Users{n}.Logbook(TimeInd+TD.User-1,1)<3
 
@@ -156,6 +156,7 @@ for TimeInd=Time.Sim.VecInd(2:end)
         else
             if hour(Time.Sim.Vec(TimeInd))==hour(TimeOfForecast) && minute(Time.Sim.Vec(TimeInd))==minute(TimeOfForecast)
                 %Users{n}.Logbook(TimeInd+TD.User+find((TimeInd+TD.User:TimeInd+TD.User+24*Time.StepInd-1)' .* sum(OptimalChargingEnergies(1:24*Time.StepInd,:,n-1), 2)>0))=5;
+                
                 Users{n}.Logbook(TimeInd+TD.User+find(ismember(Users{n}.Logbook(TimeInd+TD.User:TimeInd+TD.User+24*Time.StepInd-1,1), 4:5))-1,1)=4;
                 Users{n}.Logbook(TimeInd+TD.User+find(sum(OptimalChargingEnergies(1:24*Time.StepInd,:,n-1), 2)>0)-1, 1) = 5;
                 Users{n}.Logbook(TimeInd+TD.User:TimeInd+TD.User+24*Time.StepInd-1, 5:7)=OptimalChargingEnergies(1:24*Time.StepInd,:,n-1);
@@ -164,7 +165,7 @@ for TimeInd=Time.Sim.VecInd(2:end)
         
         
         if  Users{n}.Logbook(TimeInd+TD.User,9)<Users{n}.BatterySize && Users{n}.Logbook(TimeInd+TD.User,1)>=5
-            Users{n}.Logbook(TimeInd+TD.User,9)=Users{n}.Logbook(TimeInd+TD.User,9)+Users{n}.Logbook(TimeInd+TD.User,5)+Users{n}.Logbook(TimeInd+TD.User,8);
+            Users{n}.Logbook(TimeInd+TD.User,9)=Users{n}.Logbook(TimeInd+TD.User,9)+sum(Users{n}.Logbook(TimeInd+TD.User,5:8));
         end
             
     end
@@ -215,24 +216,25 @@ end
 if SmartCharging
     ChargingSum=sum(ChargingVehicle, 3);
     [sum(ChargingType(:,1,:),'all'), sum(ChargingType(:,2,:),'all'), sum(ChargingType(:,3,:),'all')]/sum(ChargingType(:,:,:),'all')
-    toc
 
     figure
     Load=mean(reshape(ChargingType',3,96,[]),3)';
     Load=circshift(Load, [ShiftInds, 0]);
     x = 1:96;
-    y = circshift(mean(reshape(ChargingSum, 96, []), 2)', [0,ShiftInds]);
-%     y = mean(reshape(ChargingSum, 96, []), 2)';
+    y = circshift(mean(reshape(ChargingSum/1000*4, 96, []), 2)', [0,ShiftInds]);
     z = zeros(size(x));
     col = (Load./repmat(max(Load, [], 2),1,3))';
     surface([x;x],[y;y],[z;z],[permute(repmat(col,1,1,2),[3,2,1])], 'facecol','no', 'edgecol','interp', 'linew',2);
     xticks(1:16:96)
     xticklabels({datestr(Time.Vec(1:16:96),'HH:MM')})
+    ylabel("Charging power in kW")
+    xlabel("Time")
+    grid on
 
     hold on
-    plot(circshift(squeeze(mean(reshape(ChargingType(:,1),96,[],1),2)), ShiftInds), "LineWidth", 1.2, "Color", [1, 0, 0])
-    plot(circshift(squeeze(mean(reshape(ChargingType(:,2),96,[],1),2)), ShiftInds), "LineWidth", 1.2, "Color", [0, 1, 0])
-    plot(circshift(squeeze(mean(reshape(ChargingType(:,3),96,[],1),2)), ShiftInds), "LineWidth", 1.2, "Color", [0, 0, 1])
+    plot(circshift(squeeze(mean(reshape(ChargingType(:,1)/1000*4,96,[],1),2)), ShiftInds), "LineWidth", 1.2, "Color", [1, 0, 0])
+    plot(circshift(squeeze(mean(reshape(ChargingType(:,2)/1000*4,96,[],1),2)), ShiftInds), "LineWidth", 1.2, "Color", [0, 1, 0])
+    plot(circshift(squeeze(mean(reshape(ChargingType(:,3)/1000*4,96,[],1),2)), ShiftInds), "LineWidth", 1.2, "Color", [0, 0, 1])
     xticks(1:16:96)
     xticklabels({datestr(Time.Vec(1:16:96),'HH:MM')})
     legend(["All", "Spotmarket", "PV", "Secondary Reserve Energy"])
