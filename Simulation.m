@@ -81,11 +81,11 @@ for TimeInd=Time.Sim.VecInd(2:end)
             
             if TimeStepIndsNeededForCharging>0
                 k=TimeInd+TD.User;
-                while k < length(Users{1}.Time.Vec)-TimeStepIndsNeededForCharging && ~isequal(Users{n}.Logbook(k:k+TimeStepIndsNeededForCharging-1,3),zeros(TimeStepIndsNeededForCharging,1))
+                while k < length(Time.Sim.VecInd)-TimeStepIndsNeededForCharging && ~isequal(Users{n}.Logbook(k:k+TimeStepIndsNeededForCharging-1,3),zeros(TimeStepIndsNeededForCharging,1))
                     k=k+1;
                 end
-                EndOfShift=k+TimeStepIndsNeededForCharging-1;
-                if EndOfShift>length(Users{1}.Time.Vec)
+                EndOfShift=min(length(Time.Sim.VecInd), k+TimeStepIndsNeededForCharging-1);
+                if EndOfShift>length(Time.Sim.VecInd)
                     error(strcat("Logbook would be falsly extended for Users ", num2str(n)))
                 end
 
