@@ -122,11 +122,11 @@ addpoints(figResPoDemRealPos,Time.Demo.VecDateNum(TimeInd:TimeInd+Time.Demo.Step
 ylim([yminResPoDem ymaxResPoDem])
 
 subplot(2,2,3)
-addpoints(figSoCPlot,Time.Demo.VecDateNum(TimeInd:TimeInd+Time.Demo.StepInd-1),double(Users{DemoUser}.LogbookBase(TimeInd+TD.User:TimeInd+TD.User+Time.Demo.StepInd-1,7))/double(Users{DemoUser}.BatterySize))
+addpoints(figSoCPlot,Time.Demo.VecDateNum(TimeInd:TimeInd+Time.Demo.StepInd-1),double(Users{DemoUser}.LogbookBase(TimeInd+TD.User:TimeInd+TD.User+Time.Demo.StepInd-1,9))/double(Users{DemoUser}.BatterySize))
 
 if ShowPVPred
     subplot(2,2,4)
-    addpoints(figPVPlot,Time.Demo.VecDateNum(TimeInd:TimeInd+Time.Demo.StepInd-1),PVQH(TimeInd+TD.SpotmarketPred:TimeInd+TD.Main+Time.Demo.StepInd-1))
+    addpoints(figPVPlot,Time.Demo.VecDateNum(TimeInd:TimeInd+Time.Demo.StepInd-1),PVQH(TimeInd+TD.Main:TimeInd+TD.Main+Time.Demo.StepInd-1))
 end
     
 drawnow

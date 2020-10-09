@@ -33,7 +33,7 @@ end
 ExistingTargets=find(cellfun('length', TargetGroups)>0)';
 % ExistingTargets=[1,2, 3,4];
 NumExistingTargets=numel(ExistingTargets);
-ShowTargets=true;
+ShowTargets=false;
 ShowAll=true;
 ShowELaad=true;
 ClearWorkspace=true;
@@ -77,8 +77,10 @@ for k=ExistingTargets
         col=col(col~=0);
         counter=1;
         for n=TargetGroups{k}
-            ChargingBlocks=[find(sum(Users{n}.LogbookBase(1:end,col),2)>0 & [0; sum(Users{n}.LogbookBase(1:end-1,col),2)]==0)+1, find(sum(Users{n}.LogbookBase(1:end,col),2)>0 & [sum(Users{n}.LogbookBase(2:end,col),2);0]==0)];
+            ChargingBlocks=[find(sum(Users{n}.LogbookBase(1:end,col),2)>0 & [0; sum(Users{n}.LogbookBase(1:end-1,col),2)]==0), find(sum(Users{n}.LogbookBase(1:end,col),2)>0 & [sum(Users{n}.LogbookBase(2:end,col),2);0]==0)];
             for h=1:size(ChargingBlocks,1)
+                % Target 2, other last two rows have way too high energy
+                % charged. needs to be fixed!
                 EnergyPerChargingProcess{k,find(sum(col==cols,1))}(counter,1)=sum(Users{n}.LogbookBase(ChargingBlocks(h,1):ChargingBlocks(h,2),col), 'all');
                 counter=counter+1;
             end
@@ -97,7 +99,7 @@ for col=1:2
     if ShowAll
         [counts, centers]=hist(cat(1, EnergyPerChargingProcess{:,col})/1000, 0:4:100);
         plot(centers, counts./sum(counts))
-        legappend(l, "All");
+        legappend(l, "Simulation");
     end
     if ShowTargets
         for k=1:NumExistingTargets
@@ -116,7 +118,7 @@ for col=1:2
     ylabel("Probability")
 end
 
-disp(strcat("In average per charging event, ", num2str(mean(cell2mat(EnergyPerChargingProcess(:,1))/1000)), " kWh were charged at home and ", num2str(mean(cell2mat(EnergyPerChargingProcess(:,2))/1000)), " at other places"))
+disp(strcat("In average per charging event, ", num2str(mean(cell2mat(EnergyPerChargingProcess(:,1))/1000)), " kWh were charged at home and ", num2str(mean(cell2mat(EnergyPerChargingProcess(:,2))/1000)), " kWh at other places"))
 
 DataTable.EnergyPerChargingProcess=round(cellfun(@mean,EnergyPerChargingProcess)/1000*100)/100;
 
@@ -166,7 +168,7 @@ for col=1:2
     if ShowAll
         [counts, centers]=hist(cat(1, ConnectionTime{:,col}), (0:2:48)*60);
         plot(centers/60, counts./sum(counts))
-        legappend(l, "All");
+        legappend(l, "Simulation");
     end
     if ShowTargets
         for k=1:NumExistingTargets
@@ -195,7 +197,7 @@ for col=1:2
         [counts, edges]=histcounts(cat(1, ArrivalTimes{:,col}), DayVecHourly);
         centers=edges(1:end-1)+(edges(2)-edges(1))/2;
         plot(centers, counts./sum(counts))
-        legappend(l, "All");
+        legappend(l, "Simulation");
     end
     if ShowTargets
         [nrows,~] = cellfun(@size, ArrivalTimes(:,col));
@@ -240,7 +242,7 @@ for col=1:2
     l=legend;
     if ShowAll
         plot(DayVecQuaterly, sum(cat(2, Load{:,col}),2)/numel(cat(2,TargetGroups{:})))
-        legappend(l, "All");
+        legappend(l, "Simulation");
     end
     if ShowTargets
         for k=1:NumExistingTargets

@@ -88,7 +88,7 @@ ylabel('SoC')
 grid on
 hold on
 
-figSoCPlot=animatedline(Time.Demo.VecDateNum(TimeInd-24*Time.StepInd+1:TimeInd), double(Users{DemoUser}.LogbookBase(TimeInd+TD.User-24*Time.StepInd+1:TimeInd+TD.User,7))/double(Users{DemoUser}.BatterySize), 'MaximumNumPoints',400,  'Color', PlotColors(1,:));
+figSoCPlot=animatedline(Time.Demo.VecDateNum(TimeInd-24*Time.StepInd+1:TimeInd), double(Users{DemoUser}.LogbookBase(TimeInd+TD.User-24*Time.StepInd+1:TimeInd+TD.User,9))/double(Users{DemoUser}.BatterySize), 'MaximumNumPoints',400,  'Color', PlotColors(1,:));
 set(figSoCPlot, {'color'}, {[0.0000, 0.4470, 0.7410]});
 %     for p=1:NumPredMethod % Create one Figure Property for each model
 %         figPred{p}=plot(Time.Vec(max(TimeInd-ForecastIntervalInd+ForecastDuration, DemoStart):TimeInd+ForecastDuration), SpotmarketPred(max(TimeInd-ForecastIntervalInd+ForecastDuration, DemoStart):TimeInd+ForecastDuration,p), 'Color', PlotColors(p,:));
@@ -159,7 +159,7 @@ end
 % grid on
 % hold on
 % 
-% figSoCPlot=plot(Time.Vec(TimeInd-24*Time.Demo.StepInd+1:TimeInd), single(Users{DemoUser}.LogbookBase(TimeInd-24*Time.Demo.StepInd+1:TimeInd,7))/single(Users{DemoUser}.BatterySize));
+% figSoCPlot=plot(Time.Vec(TimeInd-24*Time.Demo.StepInd+1:TimeInd), single(Users{DemoUser}.LogbookBase(TimeInd-24*Time.Demo.StepInd+1:TimeInd,9))/single(Users{DemoUser}.BatterySize));
 % set(figSoCPlot, {'color'}, {[0.0000, 0.4470, 0.7410]});
 % %     for p=1:NumPredMethod % Create one Figure Property for each model
 % %         figPred{p}=plot(Time.Vec(max(TimeInd-ForecastIntervalInd+ForecastDuration, DemoStart):TimeInd+ForecastDuration), SpotmarketPred(max(TimeInd-ForecastIntervalInd+ForecastDuration, DemoStart):TimeInd+ForecastDuration,p), 'Color', PlotColors(p,:));
