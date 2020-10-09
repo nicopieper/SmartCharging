@@ -12,8 +12,8 @@ SpotmarketLabel=strcat("Dayahead Auction Price");
 SpotmarketReal=Smard.DayaheadRealH;
 
 if ~exist('Users', 'var') && ShowBaseScenario
-    StorageFile=uigetfile(strcat(Path.Simulation, Dl),'Select the User data');
-    load(StorageFile)
+    StorageFile=uigetfile(Path.Simulation,'Select the User data');
+    load(strcat(Path.Simulation, StorageFile))
 end
 
 %% Find DemoUser
@@ -31,8 +31,8 @@ end
 %% Load Spotmarket Prediction
 
 if ~exist("SpotmarketPred", "var") && ShowStockmarketPred
-    StorageFile=uigetfile(strcat(Path.Prediction, Dl),'Select the Prediction data');
-    load(StorageFile)
+    StorageFile=uigetfile(Path.Prediction,'Select the Prediction data');
+    load(strcat(Path.Prediction, StorageFile))
     SpotmarketPred=repelem(Pred.Data, Time.StepInd/Pred.Time.StepPredInd);
     SpotmarketPredMat=repelem(Pred.DataMat, Time.StepInd/Pred.Time.StepPredInd,Time.StepInd/Pred.Time.StepPredInd);
 %         SpotmarketPred=interp1(Time.Pred(ismember(Time.Pred, Time.Vec)),Prediction(ismember(Time.Pred, Time.Vec)), Time.Vec);

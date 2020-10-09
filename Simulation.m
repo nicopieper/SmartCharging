@@ -167,7 +167,7 @@ for TimeInd=Time.Sim.VecInd(2:end)
     end
     
     if ~SmartCharging 
-        for n=2:NumUsers-1
+        for n=2:NumUsers+1
             if Users{n}.Logbook(TimeInd+TD.User,1)==4 && Users{n}.Logbook(TimeInd+TD.User,9)<Users{n}.BatterySize && (~ApplyGridConvenientCharging || Users{n}.GridConvenientChargingAvailability(mod(TimeInd+TD.User-1, 24*Time.StepInd)+1)) % Charging starts always when the car is plugged in, until the Battery is fully charged
                 Users{n}.Logbook(TimeInd+TD.User,1)=5;
                 ChargingEnergy=min((Time.StepMin-Users{n}.Logbook(TimeInd+TD.User,2))*Users{n}.ACChargingPowerHomeCharging/60, Users{n}.BatterySize-Users{n}.Logbook(TimeInd+TD.User-1,9)); %[Wh]
@@ -179,14 +179,14 @@ for TimeInd=Time.Sim.VecInd(2:end)
         end
     elseif ismember(TimeInd, TimesOfPreAlgo)
                 %Users{n}.Logbook(TimeInd+TD.User+find((TimeInd+TD.User:TimeInd+TD.User+24*Time.StepInd-1)' .* sum(OptimalChargingEnergies(1:24*Time.StepInd,:,n-1), 2)>0))=5;
-        for n=2:NumUsers-1
+        for n=2:NumUsers+1
             Users{n}.Logbook(TimeInd+TD.User+find(ismember(Users{n}.Logbook(TimeInd+TD.User:TimeInd+TD.User+24*Time.StepInd-1,1), 4:5))-1,1)=4;
             Users{n}.Logbook(TimeInd+TD.User+find(sum(OptimalChargingEnergies(1:24*Time.StepInd,:,n-1), 2)>0)-1, 1) = 5;
             Users{n}.Logbook(TimeInd+TD.User:TimeInd+TD.User+24*Time.StepInd-1, 5:7)=OptimalChargingEnergies(1:24*Time.StepInd,:,n-1);
         end
     end
         
-	for n=2:NumUsers-1
+	for n=2:NumUsers+1
         if  Users{n}.Logbook(TimeInd+TD.User,9)<Users{n}.BatterySize && Users{n}.Logbook(TimeInd+TD.User,1)>=5
             Users{n}.Logbook(TimeInd+TD.User,9)=Users{n}.Logbook(TimeInd+TD.User,9)+sum(Users{n}.Logbook(TimeInd+TD.User,5:8));
         end
@@ -200,7 +200,7 @@ if ActivateWaitbar
     close(h);
 end
 toc
-for n=2:NumUsers
+for n=2:NumUsers+1
     Users{n}.Logbook=Users{n}.Logbook(1:TimeInd,:);
 end
 
