@@ -40,7 +40,7 @@
 %   ActivateWaitbar     Indicates whether the waitbar is active or not
 %
 %                                                   mMAPE                                                       mMAPE
-%                               Prädiktoren     LSQ     Narxnet                             Prädiktoren     LSQ     Narxnet
+%                               Prï¿½diktoren     LSQ     Narxnet                             Prï¿½diktoren     LSQ     Narxnet
 %   
 %   ResPoPricesReal4H(:,3)      []              0.736   0.832       ResEnPricesRealQH(:,3)  []              0.746   0.838
 %   ResPoPricesReal4H(:,3)      [Load, Gen]     0.803   0.792       ResEnPricesRealQH(:,3)  [Load, Gen]     0.790   0.919
@@ -56,9 +56,9 @@
 %   IntradayRealH(:,2)          []              0.296   0.298       DayaheadRealH           []              0.324   0.334
 %   IntradayRealH(:,2)          [Load, Gen]     0.243   0.229       DayaheadRealH           [Load, Gen]     0.279   0.266
 
-%   Erhöhung von MaxDelayHours von 1 Tag auf 3 Tage senkte mMAPE bei
+%   Erhï¿½hung von MaxDelayHours von 1 Tag auf 3 Tage senkte mMAPE bei
 %   DayaheadRealH signifikant. Tests wurden mit geringen MaxDelayHours 
-%   (meistens 1 Tag) durchgeführt und teils mit verminderten 
+%   (meistens 1 Tag) durchgefï¿½hrt und teils mit verminderten 
 %   ForecastIntervalHours
 
 
@@ -78,7 +78,7 @@ Predictors=[Smard.LoadPredH, Smard.GenPredH];% [Smard.GenPredQH(:,4)]; [Smard.Lo
 PredMethod={1};
 TrainModelNew=0;
 
-MaxDelayHours=7*24/7*3;
+MaxDelayHours=7*24/7*;
 ForecastIntervalHours=52; % 52h  % The model must be able to predict the value of Wednesday 12:00 at Monday 8:00 --> 52 forecast interval
 Demo=0;
 ActivateWaitbar=1;
