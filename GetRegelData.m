@@ -75,9 +75,9 @@
 %% Initialisation
 
 tic
-OnlyAddNewLists=true;
-ProcessDataNewRegelDemand=true;
-ProcessDataNewRegelOfferLists=true;
+OnlyAddNewLists=false;
+ProcessDataNewRegelDemand=false;
+ProcessDataNewRegelOfferLists=false;
 ProcessDataNewRegelPrices=true;
 Time.StartRegelOffers=datetime(2019,08,10,0,0,0,'TimeZone', 'Africa/Tunis');
 RegelTypeLoad="aFRR";
@@ -308,13 +308,14 @@ if ProcessDataNew.Regel
                             RowOffer=RowOffer+1; % jump to the next supplier in the merit order list
                         end
                         
-                        LoadedResEnPrices(RowDem,6+Col)=LoadedOfferLists{ceil(RowDem/16),Col+1}(1,2); % save the lowest reserve energy offer;
-                        
+                        LoadedResEnPrices(RowDem,6+Col)=LoadedOfferLists{ceil(RowDem/16),Col+1}(1,2); % save the lowest reserve energy offer
+
                     end
                 end
                 LoadedResEnPrices(:,1:2)=LoadedResEnPrices(:,1:2)/4; % Total Amount Payed for Negative/Positve Energy [€]. has to be divided by 4 as the prices are given in €/MWh but we consider quater hours
                 LoadedResEnPrices(:,3)=LoadedResEnPrices(:,1)./LoadedDemandData(:,1)*4; % Mean Price for Negative Energy [€/MWh]. Same as above, the 4 corrects for the fact that LoadedDemandData covers 15min Intervals. In order to get €/MWh, the Power must be multiplied with 0.25h, hence the whole term is multiplied with 4/h.
                 LoadedResEnPrices(:,4)=LoadedResEnPrices(:,2)./LoadedDemandData(:,2)*4; % Mean Price for Positive Energy [€/MWh]
+                LoadedResEnPrices(:,9:10)=reshape(ones(16,1).*min(reshape(LoadedResEnPrices(:,5:6), 16, [], 2), [], 1), [], 2); % Min marginal price per 4h Zeitscheibe [€/MWh]
                 
                 % now the real paid resevere power prices are calculated,
                 % which is much more easy, as they are fixed and given in
@@ -328,10 +329,9 @@ if ProcessDataNew.Regel
                         LoadedResPoPrices(Row, Col)=sum(LoadedOfferLists{Row, Col+1}(:,1).*LoadedOfferLists{Row, Col+1}(:,3)); % [€] toal amount payed for reserve capacity by TSOs
                         LoadedResPoPrices(Row, Col+2)=sum(LoadedOfferLists{Row, Col+1}(:,1).*LoadedOfferLists{Row, Col+1}(:,3))/sum(LoadedOfferLists{Row, Col+1}(:,3)); % [€/MW] average price. multiply power and price for each supplier. sum all products up and divide by the overall power demand in order to get an average
                         LoadedResPoPrices(Row, Col+4)=max(LoadedOfferLists{Row, Col+1}(:,1)); % [€/MW] find the marginal price
-                        LoadedResPoPrices(Row, Col+6)=min(LoadedOfferLists{Row, Col+1}(:,1)); % [€/MW] find the minimum price 
+                        LoadedResPoPrices(Row, Col+6)=min(LoadedOfferLists{Row, Col+1}(:,1)); % [€/MW] find the lowest offered price 
                     end
                 end
-
                 
                 if ~exist(StoragePath, 'dir') % make dir if it not exists
                     mkdir(StoragePath)
@@ -352,7 +352,7 @@ end
 
 ResPoDemRealQH=NaN(round(days(Time.End-Time.Start))*96,2); % ReservePowerDemandRealMeasuredQuaterHourly
 OfferLists=cell(6*round(days(Time.End-Time.Start)),3);
-ResEnPricesRealQH=NaN(round(days(Time.End-Time.Start))*96,8); % ReserveEnergyPricesQuaterHourly
+ResEnPricesRealQH=NaN(round(days(Time.End-Time.Start))*96,10); % ReserveEnergyPricesQuaterHourly
 ResPoPricesReal4H=NaN(round(days(Time.End-Time.Start))*6,8); % ReservePowerPrices4hInterval
 
 h=waitbar(0, 'Lade Regelleistungsmarktdaten von lokalem Pfad');

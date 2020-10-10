@@ -25,61 +25,112 @@ EndCounter=TimeInd;
 % uicontrol('Style','text', 'units','norm', 'pos', [0.1 0.3 0.5 0.08], 'string', 'Home Location:', 'FontSize', 16, 'HorizontalAlignment', 'left')
 % uicontrol('Style','text', 'units','norm', 'pos', [0.5 0.3 0.5 0.08], 'string', erase(PVPlants{Users{DemoUser}.PVPlant}.Location, '"'), 'FontSize', 16, 'HorizontalAlignment', 'left')
 
+
+%% Initialise Plots
+figure(11)
+NumPlotsCol=ceil(sqrt(length(DemoPlots)));
+NumPlotsRow=ceil(length(DemoPlots)/NumPlotsCol);
+for n=1:length(DemoPlots)
+    subplot(NumPlotsRow,NumPlotsCol,n)
+    cla
+    title(strcat(DemoPlots{n}.Title, " ", datestr(Time.Demo.Vec(TimeInd),'dd.mm.yyyy HH:MM')),'Interpreter','none')
+    xlabel('Time')
+    grid on
+    hold on
+    l=legend('Interpreter','none', 'Location', 'northwest');
+    
+    for k=1:length(DemoPlots{n}.Data)
+        DemoPlots{n}.Fig{k}=animatedline(Time.Demo.VecDateNum(TimeInd-24*Time.StepInd+1:TimeInd), DemoPlots{n}.Data{k}(TimeInd+DemoPlots{n}.Time.TD{k}-24*Time.StepInd+1:TimeInd+DemoPlots{n}.Time.TD{k},1), 'MaximumNumPoints',400,  'Color', PlotColors(k,:));
+        ylabel(DemoPlots{n}.YLabel{k})
+        
+        if ~strcmp(DemoPlots{n}.YMin{k}, 'dynamic')
+            ymin=DemoPlots{n}.YMMin{k};
+        else    
+            ymin=min([DemoPlots{n}.Data{k}(TimeInd+DemoPlots{n}.Time.TD{k}-24*7*Time.Demo.StepInd:min(length(DemoPlots{n}.Data{k}),TimeInd+DemoPlots{n}.Time.TD{k}+24*7*Time.Demo.StepInd)); DemoPlots{n}.Data{k}(TimeInd+DemoPlots{n}.Time.TD{k}-24*7*Time.Demo.StepInd:min(length(DemoPlots{n}.Data{k}),TimeInd+DemoPlots{n}.Time.TD{k}+24*7*Time.Demo.StepInd))]);
+            ymin=round(ymin-abs(ymin)*0.1);
+        end
+
+
+        if ~strcmp(DemoPlots{n}.YMax{k}, 'dynamic')
+            ymax=DemoPlots{n}.YMax{k};
+        else    
+            ymax=max([DemoPlots{n}.Data{k}(TimeInd+DemoPlots{n}.Time.TD{k}-24*7*Time.Demo.StepInd:min(length(DemoPlots{n}.Data{k}),TimeInd+DemoPlots{n}.Time.TD{k}+24*7*Time.Demo.StepInd)); DemoPlots{n}.Data{k}(TimeInd+DemoPlots{n}.Time.TD{k}-24*7*Time.Demo.StepInd:min(length(DemoPlots{n}.Data{k}),TimeInd+DemoPlots{n}.Time.TD{k}+24*7*Time.Demo.StepInd))]);
+            ymax=round(ymax+abs(ymax)*0.1);
+        end
+
+        ylim([ymin ymax])
+        
+        legappend(l, DemoPlots{n}.Label{k});
+        
+        
+    end
+    
+    xticks(Time.Demo.VecDateNum(TimeInd-24*Time.StepInd+1:48:end));
+    xticklabels({datestr(Time.Demo.VecDateNum(TimeInd-24*Time.StepInd+1:48:end),'dd.mm HH:MM')});
+    xlim([Time.Demo.VecDateNum(TimeInd-36*Time.StepInd+max(0,-ForecastIntervalInd+24*Time.StepInd+ForecastDuration+Time.StepInd)) Time.Demo.VecDateNum(EndCounter+3)]) % Create a moving plot 
+    
+end
+
+%% Old
+
+    
+    
+
 figure(11)
 subplot(2,2,1)
 cla
-title(strcat(SpotmarketLabel, " ", datestr(Time.Demo.Vec(TimeInd),'dd.mm.yyyy HH:MM')),'Interpreter','none')
+title(strcat(DemoPlots{n}.Label{1}, " ", datestr(Time.Demo.Vec(TimeInd),'dd.mm.yyyy HH:MM')),'Interpreter','none')
 xlabel('Time')
 ylabel('Price [MWh/€]')
 grid on
 hold on
 
-figSpotmarketReal = animatedline(Time.Demo.VecDateNum(TimeInd-24*Time.StepInd+1:TimeInd), SpotmarketReal(TimeInd+TD.Main-24*Time.StepInd+1:TimeInd+TD.Main,1), 'MaximumNumPoints',400,  'Color', PlotColors(1,:));
+figDemoPlots{n}.Data = animatedline(Time.Demo.VecDateNum(TimeInd-24*Time.StepInd+1:TimeInd), DemoPlots{n}.Data(TimeInd+DemoPlots{n}.Time.TD{k}-24*Time.StepInd+1:TimeInd+DemoPlots{n}.Time.TD{k},1), 'MaximumNumPoints',400,  'Color', PlotColors(1,:));
 xticks(Time.Demo.VecDateNum(TimeInd-24*Time.StepInd+1:48:end))
 xticklabels({datestr(Time.Demo.VecDateNum(TimeInd-24*Time.StepInd+1:48:end),'dd.mm HH:MM')})
 
 for p=1:NumPredMethod
-    figSpotmarketPred{p}=animatedline(Time.Demo.VecDateNum(max(TimeInd-ForecastIntervalInd+ForecastDuration, TimeInd):TimeInd+ForecastDuration), SpotmarketPred(max(TimeInd+TD.SpotmarketPred-ForecastIntervalInd+ForecastDuration, TimeInd+TD.SpotmarketPred):TimeInd+TD.SpotmarketPred+ForecastDuration,p), 'MaximumNumPoints',400, 'Color', PlotColors(p+1,:));
+    figDemoPlots{n}.Data{2}{p}=animatedline(Time.Demo.VecDateNum(max(TimeInd-ForecastIntervalInd+ForecastDuration, TimeInd):TimeInd+ForecastDuration), DemoPlots{n}.Data{2}(max(TimeInd+TD.DemoPlots{n}.Data{2}-ForecastIntervalInd+ForecastDuration, TimeInd+TD.DemoPlots{n}.Data{2}):TimeInd+TD.DemoPlots{n}.Data{2}+ForecastDuration,p), 'MaximumNumPoints',400, 'Color', PlotColors(p+1,:));
 end
 
 legend(["Real" "Prediction"],'Interpreter','none', 'Location', 'northwest')
 
 xlim([Time.Demo.VecDateNum(TimeInd-36*Time.StepInd+max(0,-ForecastIntervalInd+24*Time.StepInd+ForecastDuration+Time.StepInd)) Time.Demo.VecDateNum(EndCounter+3)]) % Create a moving plot 
-yminSpotmarket=min([SpotmarketReal(TimeInd+TD.Main-24*7*Time.Demo.StepInd:min(length(SpotmarketReal),TimeInd+TD.Main+24*7*Time.Demo.StepInd)); SpotmarketPred(TimeInd+TD.SpotmarketPred-24*7*Time.Demo.StepInd:min(length(SpotmarketPred),TimeInd+TD.SpotmarketPred+24*7*Time.Demo.StepInd))]);
-yminSpotmarket=round(yminSpotmarket-abs(yminSpotmarket)*0.1);
-ymaxSpotmarket=max([SpotmarketReal(TimeInd+TD.Main-24*7*Time.Demo.StepInd:min(length(SpotmarketReal),TimeInd+TD.Main+24*7*Time.Demo.StepInd)); SpotmarketPred(TimeInd+TD.SpotmarketPred-24*7*Time.Demo.StepInd:min(length(SpotmarketPred),TimeInd+TD.SpotmarketPred+24*7*Time.Demo.StepInd))]);
+ymin=min([DemoPlots{n}.Data(TimeInd+DemoPlots{n}.Time.TD{k}-24*7*Time.Demo.StepInd:min(length(DemoPlots{n}.Data),TimeInd+DemoPlots{n}.Time.TD{k}+24*7*Time.Demo.StepInd)); DemoPlots{n}.Data{2}(TimeInd+TD.DemoPlots{n}.Data{2}-24*7*Time.Demo.StepInd:min(length(DemoPlots{n}.Data{2}),TimeInd+TD.DemoPlots{n}.Data{2}+24*7*Time.Demo.StepInd))]);
+ymin=round(ymin-abs(ymin)*0.1);
+ymaxSpotmarket=max([DemoPlots{n}.Data(TimeInd+DemoPlots{n}.Time.TD{k}-24*7*Time.Demo.StepInd:min(length(DemoPlots{n}.Data),TimeInd+DemoPlots{n}.Time.TD{k}+24*7*Time.Demo.StepInd)); DemoPlots{n}.Data{2}(TimeInd+TD.DemoPlots{n}.Data{2}-24*7*Time.Demo.StepInd:min(length(DemoPlots{n}.Data{2}),TimeInd+TD.DemoPlots{n}.Data{2}+24*7*Time.Demo.StepInd))]);
 ymaxSpotmarket=round(ymaxSpotmarket+abs(ymaxSpotmarket)*0.1);
 
 
 
 subplot(2,2,2)
 cla
-title(strcat(ResPoDemLabel, " ", datestr(Time.Demo.Vec(TimeInd),'dd.mm.yyyy HH:MM')),'Interpreter','none')
+title(strcat(DemoPlots{2}.Label{1}, " ", datestr(Time.Demo.Vec(TimeInd),'dd.mm.yyyy HH:MM')),'Interpreter','none')
 xlabel('Time')
 ylabel('Demand [MW]')
 grid on
 hold on
 
-figResPoDemRealNeg=animatedline(Time.Demo.VecDateNum(TimeInd-24*Time.StepInd+1:TimeInd), ResPoDemRealQH(TimeInd+TD.Main-24*Time.StepInd+1:TimeInd+TD.Main,1), 'MaximumNumPoints',400, 'Color', PlotColors(1,:));
-figResPoDemRealPos=animatedline(Time.Demo.VecDateNum(TimeInd-24*Time.StepInd+1:TimeInd), ResPoDemRealQH(TimeInd+TD.Main-24*Time.StepInd+1:TimeInd+TD.Main,2), 'MaximumNumPoints',400, 'Color', PlotColors(2,:));
+figResPoDemRealNeg=animatedline(Time.Demo.VecDateNum(TimeInd-24*Time.StepInd+1:TimeInd), ResPoDemRealQH(TimeInd+DemoPlots{n}.Time.TD{k}-24*Time.StepInd+1:TimeInd+DemoPlots{n}.Time.TD{k},1), 'MaximumNumPoints',400, 'Color', PlotColors(1,:));
+figResPoDemRealPos=animatedline(Time.Demo.VecDateNum(TimeInd-24*Time.StepInd+1:TimeInd), ResPoDemRealQH(TimeInd+DemoPlots{n}.Time.TD{k}-24*Time.StepInd+1:TimeInd+DemoPlots{n}.Time.TD{k},2), 'MaximumNumPoints',400, 'Color', PlotColors(2,:));
 %     for p=1:NumPredMethod % Create one Figure Property for each model
-%         figPred{p}=plot(Time.Vec(max(TimeInd-ForecastIntervalInd+ForecastDuration, DemoStart):TimeInd+ForecastDuration), SpotmarketPred(max(TimeInd-ForecastIntervalInd+ForecastDuration, DemoStart):TimeInd+ForecastDuration,p), 'Color', PlotColors(p,:));
+%         figPred{p}=plot(Time.Vec(max(TimeInd-ForecastIntervalInd+ForecastDuration, DemoStart):TimeInd+ForecastDuration), DemoPlots{n}.Data{2}(max(TimeInd-ForecastIntervalInd+ForecastDuration, DemoStart):TimeInd+ForecastDuration,p), 'Color', PlotColors(p,:));
 %     end
 xticks(Time.Demo.VecDateNum(TimeInd-24*Time.StepInd+1:48:end))
 xticklabels({datestr(Time.Demo.VecDateNum(TimeInd-24*Time.StepInd+1:48:end),'dd.mm HH:MM')})
 legend(["Negative" "Positive"],'Interpreter','none', 'Location', 'northwest')
 
 xlim([Time.Demo.VecDateNum(TimeInd-36*Time.StepInd+max(0,-ForecastIntervalInd+24*Time.StepInd+ForecastDuration+Time.StepInd)) Time.Demo.VecDateNum(EndCounter+3)]) % Create a moving plot 
-yminResPoDem=min(ResPoDemRealQH(TimeInd+TD.Main-24*7*Time.Demo.StepInd:min(length(Time.Vec),TimeInd+TD.Main+24*7*Time.Demo.StepInd),:),[],'all');
+yminResPoDem=min(ResPoDemRealQH(TimeInd+DemoPlots{n}.Time.TD{k}-24*7*Time.Demo.StepInd:min(length(Time.Vec),TimeInd+DemoPlots{n}.Time.TD{k}+24*7*Time.Demo.StepInd),:),[],'all');
 yminResPoDem=round(yminResPoDem-abs(yminResPoDem)*0.1);
-ymaxResPoDem=max(ResPoDemRealQH(TimeInd+TD.Main-24*7*Time.Demo.StepInd:min(length(Time.Vec),TimeInd+TD.Main+24*7*Time.Demo.StepInd)),[],'all');
+ymaxResPoDem=max(ResPoDemRealQH(TimeInd+DemoPlots{n}.Time.TD{k}-24*7*Time.Demo.StepInd:min(length(Time.Vec),TimeInd+DemoPlots{n}.Time.TD{k}+24*7*Time.Demo.StepInd)),[],'all');
 ymaxResPoDem=round(ymaxResPoDem+abs(ymaxResPoDem)*0.1);
 
 
 
 subplot(2,2,3)
 cla
-title(strcat(SoCPlotLabel, " ", datestr(Time.Demo.Vec(TimeInd),'dd.mm.yyyy HH:MM')),'Interpreter','none')
+title(strcat(DemoPlots{3}.Label{1}, " ", datestr(Time.Demo.Vec(TimeInd),'dd.mm.yyyy HH:MM')),'Interpreter','none')
 xlabel('Time')
 ylabel('SoC')
 grid on
@@ -88,7 +139,7 @@ hold on
 figSoCPlot=animatedline(Time.Demo.VecDateNum(TimeInd-24*Time.StepInd+1:TimeInd), double(Users{DemoUser}.LogbookBase(TimeInd+TD.User-24*Time.StepInd+1:TimeInd+TD.User,9))/double(Users{DemoUser}.BatterySize), 'MaximumNumPoints',400,  'Color', PlotColors(1,:));
 set(figSoCPlot, {'color'}, {[0.0000, 0.4470, 0.7410]});
 %     for p=1:NumPredMethod % Create one Figure Property for each model
-%         figPred{p}=plot(Time.Vec(max(TimeInd-ForecastIntervalInd+ForecastDuration, DemoStart):TimeInd+ForecastDuration), SpotmarketPred(max(TimeInd-ForecastIntervalInd+ForecastDuration, DemoStart):TimeInd+ForecastDuration,p), 'Color', PlotColors(p,:));
+%         figPred{p}=plot(Time.Vec(max(TimeInd-ForecastIntervalInd+ForecastDuration, DemoStart):TimeInd+ForecastDuration), DemoPlots{n}.Data{2}(max(TimeInd-ForecastIntervalInd+ForecastDuration, DemoStart):TimeInd+ForecastDuration,p), 'Color', PlotColors(p,:));
 %     end
 xlim([Time.Demo.VecDateNum(TimeInd-36*Time.StepInd+max(0,-ForecastIntervalInd+24*Time.StepInd+ForecastDuration+Time.StepInd)) Time.Demo.VecDateNum(EndCounter+3)]) % Create a moving plot 
 xticks(Time.Demo.VecDateNum(TimeInd-24*Time.StepInd+1:48:end))
@@ -107,11 +158,11 @@ if ShowPVPred
     hold on
 
     PVQH=double(PVPlants{Users{DemoUser}.PVPlant}.ProfileQH);
-    figPVPlot=animatedline(Time.Demo.VecDateNum(TimeInd-24*Time.StepInd+1:TimeInd),PVQH(TimeInd+TD.Main-24*Time.StepInd+1:TimeInd+TD.Main), 'MaximumNumPoints',400,  'Color', PlotColors(1,:));
+    figPVPlot=animatedline(Time.Demo.VecDateNum(TimeInd-24*Time.StepInd+1:TimeInd),PVQH(TimeInd+DemoPlots{n}.Time.TD{k}-24*Time.StepInd+1:TimeInd+DemoPlots{n}.Time.TD{k}), 'MaximumNumPoints',400,  'Color', PlotColors(1,:));
     
     PVPredQH=double(PVPlants{Users{DemoUser}.PVPlant}.PredictionQH);
     for p=1:NumPredMethod % Create one Figure Property for each model
-        figPVPred{p}=animatedline(Time.Demo.VecDateNum(TimeInd-24*Time.StepInd+1:TimeInd), PVPredQH(TimeInd+TD.Main-24*Time.StepInd+1:TimeInd+TD.Main,p), 'MaximumNumPoints',400, 'Color', PlotColors(p+1,:));
+        figPVPred{p}=animatedline(Time.Demo.VecDateNum(TimeInd-24*Time.StepInd+1:TimeInd), PVPredQH(TimeInd+DemoPlots{n}.Time.TD{k}-24*Time.StepInd+1:TimeInd+DemoPlots{n}.Time.TD{k},p), 'MaximumNumPoints',400, 'Color', PlotColors(p+1,:));
     end
     xticks(Time.Demo.VecDateNum(TimeInd-24*Time.Demo.StepInd+1:48:end))
     xticklabels({datestr(Time.Demo.VecDateNum(TimeInd-24*Time.Demo.StepInd+1:48:end),'dd.mm HH:MM')})
