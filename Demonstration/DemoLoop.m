@@ -1,3 +1,35 @@
+for n=1:length(DemoPlots)
+    subplot(NumPlotsRow,NumPlotsCol,n)
+    title(strcat(DemoPlots{n}.Title, " at ", datestr(Time.Demo.Vec(TimeInd),'dd.mm.yyyy HH:MM')),'Interpreter','none')
+end
+
+if ismember(TimeInd, TimesOfPreAlgo)
+    DemoGetYLimits;
+    DemoUpdateYLimits;
+    
+    ForcastLength=min(ForecastIntervalInd-1, length(Time.Demo.Vec)-TimeInd);
+    for ForecastDuration=0:Time.Demo.StepInd:min(ForecastIntervalInd-1, length(Time.Demo.Vec)-TimeInd)
+        
+        EndCounter=max(EndCounter,TimeInd+ForecastDuration+Time.Demo.StepInd-1);
+        
+        for n=1:length(DemoPlots)
+            subplot(NumPlotsRow,NumPlotsCol,n)
+            
+            DemoPlots{1}.Data{2}(TimeInd+TD.DemoPlots{1}.Data{2}+ForecastDuration:TimeInd+TD.DemoPlots{1}.Data{2}+ForecastDuration+Time.Demo.StepInd-1)=DemoPlots{1}.DataMat{2}(ForecastDuration+1:ForecastDuration+Time.Demo.StepInd,TimeInd+TD.DemoPlots{1}.Data{2});
+            if ForecastDuration<=ForcastLength-24*Time.Demo.StepInd
+                clearpoints(figDemoPlots{1}.Data{2}{p})
+                addpoints(figDemoPlots{1}.Data{2}{p},Time.Demo.VecDateNum(max([Time.Demo.StartInd, TimeInd-300]):EndCounter),DemoPlots{1}.Data{2}(max([Time.Demo.StartInd+TD.DemoPlots{1}.Data{2}, TimeInd+TD.DemoPlots{1}.Data{2}-300]):EndCounter+TD.DemoPlots{1}.Data{2}))
+            else
+                addpoints(figDemoPlots{1}.Data{2}{p},Time.Demo.VecDateNum(TimeInd+ForecastDuration:TimeInd+ForecastDuration+Time.Demo.StepInd-1),DemoPlots{1}.Data{2}(TimeInd+TD.DemoPlots{1}.Data{2}+ForecastDuration:TimeInd+TD.DemoPlots{1}.Data{2}+ForecastDuration+Time.Demo.StepInd-1))
+            end
+
+            xlim([Time.Demo.VecDateNum(TimeInd-36*Time.StepInd+max(0,-ForecastIntervalInd+24*Time.StepInd+ForecastDuration+Time.Demo.StepInd)) Time.Demo.VecDateNum(EndCounter+3)]) % Create a moving plot 
+            ylim([yminSpotmarket ymaxSpotmarket])
+
+    
+    
+    
+
 subplot(2,2,1)
 title(strcat(DemoPlots{1}.Label{1}, " ", datestr(Time.Demo.Vec(TimeInd),'dd.mm.yyyy HH:MM')),'Interpreter','none')
 

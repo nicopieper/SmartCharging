@@ -19,6 +19,7 @@ DemoPlots{1}.Data{1}=repelem(Smard.DayaheadRealH, 4);
 DemoPlots{1}.Time.Vec{1}=Time.Vec;
 DemoPlots{1}.YMin{1}='dynamic';
 DemoPlots{1}.YMax{1}='dynamic';
+DemoPlots{1}.YAxis{1}=1;
 
 
 DemoPlots{1}.Label{2}="Prediction";
@@ -30,9 +31,10 @@ if length(DemoPlots{1}.Data)<=1
 end
 
 DemoPlots{1}.DataMat{2}=repelem(Pred.DataMat, Time.StepInd/Pred.Time.StepPredInd,Time.StepInd/Pred.Time.StepPredInd);
-DemoPlots{1}.Time.Vec{2}=Pred.Time.Pred;
+DemoPlots{1}.Time.Vec{2}=repelem(Pred.Time.Pred, Time.StepInd/Pred.Time.StepPredInd,Time.StepInd/Pred.Time.StepPredInd);
 DemoPlots{1}.YMin{2}='dynamic';
 DemoPlots{1}.YMax{2}='dynamic';
+DemoPlots{1}.YAxis{2}=1;
 
 ForecastIntervalInd=Pred.ForecastIntervalInd*Time.StepInd;
 
@@ -47,6 +49,7 @@ DemoPlots{2}.Label{1}="Energy demand";
 DemoPlots{2}.Time.Vec{1}=Time.Vec;
 DemoPlots{2}.YMin{1}=-0.1;
 DemoPlots{2}.YMax{1}='dynamic';
+DemoPlots{2}.YAxis{1}=1;
 
 DemoPlots{2}.Label{2}="Mean energy price";
 DemoPlots{2}.YLabel{2}="Energy price in €/MWh";
@@ -54,6 +57,7 @@ DemoPlots{2}.Data{2}=ResEnPricesRealQH(:,3);
 DemoPlots{2}.Time.Vec{2}=Time.Vec;
 DemoPlots{2}.YMin{2}='dynamic';
 DemoPlots{2}.YMax{2}='dynamic';
+DemoPlots{2}.YAxis{2}=2;
 
 
 %% Plot 3
@@ -69,13 +73,14 @@ while sum(Users{DemoUser}.LogbookSource(:,1)>2)<100
 end
 
 DemoPlots{3}.Title=strcat("Vehicle properties of user ", num2str(DemoUser));
-DemoPlots{3}.YLabel{1}="SoC in %";
 
+DemoPlots{3}.YLabel{1}="SoC in %";
 DemoPlots{3}.Data{1}=double(Users{DemoUser}.LogbookBase(:,9)/Users{DemoUser}.BatterySize)*100;
 DemoPlots{3}.Label{1}="SoC";
 DemoPlots{3}.Time.Vec{1}=Users{1}.Time.Vec;
 DemoPlots{3}.YMin{1}=0;
 DemoPlots{3}.YMax{1}=110;
+DemoPlots{3}.YAxis{1}=1;
 
 %% Plot 4
 
@@ -87,6 +92,7 @@ DemoPlots{4}.Data{1}=double(PVPlants{Users{DemoUser}.PVPlant}.ProfileQH)/1000;
 DemoPlots{4}.Time.Vec{1}=Time.Vec;
 DemoPlots{4}.YMin{2}=-0.1;
 DemoPlots{4}.YMax{2}=max(DemoPlots{4}.Data{1});
+DemoPlots{4}.YAxis{1}=1;
 
 DemoPlots{4}.Label{2}=strcat("Prediction");
 DemoPlots{4}.YLabel{2}="Power in kW";
@@ -94,6 +100,7 @@ DemoPlots{4}.Data{2}=double(PVPlants{Users{DemoUser}.PVPlant}.PredictionQH)/1000
 DemoPlots{4}.Time.Vec{2}=Time.Vec;
 DemoPlots{4}.YMin{2}=-0.1;
 DemoPlots{4}.YMax{2}=max(DemoPlots{4}.Data{2});
+DemoPlots{4}.YAxis{2}=1;
 
 
 %% Resolve Time issues
@@ -117,15 +124,17 @@ for n=1:length(DemoPlots)
     end
 end
 
+TimesOfPreAlgo=(hour(TimeOfForecast)*Time.StepInd + minute(TimeOfForecast)/60*Time.StepInd)+1:24*Time.StepInd:length(Time.Demo.Vec);
+
 %% DemoInit
 
 TimeInd=Time.Demo.StartInd-1;
-SimulationDemoInit;
+DemoInit;
 
 %% Start Demo
 
 for TimeInd=Time.Demo.StartInd:Time.Demo.StepInd:length(Time.Demo.Vec)
-    SimulationDemoLoop;
+    DemoLoop;
 end
 
 clearvars DemoUser EndCounter figPVPlot figPVPred figResPoDemRealNeg figResPoDemRealPos figSoCPlot figDemoPlots{1}.Data{2} figDemoPlots{1}.Data{1}
