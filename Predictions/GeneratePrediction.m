@@ -71,14 +71,14 @@ if ~exist('Smard', 'var') || ~exist('ResPoPricesReal4H', 'var')
     disp('Successfully initialised')
 end
 
-Target=Smard.DayaheadRealH; % double(PVPlants{1}.Profile); %DayaheadRealH; Availability1
-TargetTitle="DayaheadRealH";  % "DayaheadRealH"; "PVPlants_1"
-Time.Pred=Time.H;
-Predictors=[Smard.LoadPredH, Smard.GenPredH];% [Smard.GenPredQH(:,4)]; [Smard.LoadPredH, Smard.GenPredH]; [SoC1, Weekday]
+Target=ResEnPricesRealQH(:,7); % double(PVPlants{1}.Profile); %DayaheadRealH; Availability1
+TargetTitle="ResEnPricesRealQH_NegMin";  % "DayaheadRealH"; "PVPlants_1"
+Time.Pred=Time.QH;
+Predictors=[Smard.LoadPredQH, Smard.GenPredQH];% [Smard.GenPredQH(:,4)]; [Smard.LoadPredH, Smard.GenPredH]; [SoC1, Weekday]
 PredMethod={1};
 TrainModelNew=0;
 
-MaxDelayHours=7*24/7*;
+MaxDelayHours=7*24/7*3;
 ForecastIntervalHours=52; % 52h  % The model must be able to predict the value of Wednesday 12:00 at Monday 8:00 --> 52 forecast interval
 Demo=0;
 ActivateWaitbar=1;
@@ -125,9 +125,9 @@ for n=1:size(PredMethod,1)  % Fill the Matrix with the Model
     end
 end   
 [Prediction, PredictionMat, TargetMat, MAE, mMAPE, RMSE] = TestPred(PredMethod, PredictorMat, TargetDelayed, Target, Time,...
-    Range, MaxDelayInd, ForecastIntervalPredInd, Demo, TargetTitle, ActivateWaitbar, Path, Time.IntervalFile); % The actual Prediction
+    Range, MaxDelayInd, ForecastIntervalPredInd, Demo, TargetTitle, ActivateWaitbar, Path); % The actual Prediction
 
-clearvars 
+clearvars StorageFileNarxnet MaxDelayInd ForecastIntervalPredInd Demo TargetTitle ActivateWaitbar PredMethod TrainFun LSQCoeffs Narxnets Ai StorageFileLSQ
 
 
 toc
