@@ -3,7 +3,7 @@ tic
 ActivateWaitbar=true;
 PublicChargingThreshold=uint32(15); % in %
 PThreshold=1.2;
-NumUsers=400; % size(Users,1)-1;
+NumUsers=1000; % size(Users,1)-1;
 SmartCharging=true;
 UsePV=true;
 ApplyGridConvenientCharging=true;
@@ -28,11 +28,13 @@ else
     Time.Sim.End=min([Range.TestDate(2), Users{1}.Time.Vec(end)-days(3)]);
 end
 Time.Sim.Vec=Time.Sim.Start:Time.Step:Time.Sim.End;
-if ~SmartCharging
+
+% if ~SmartCharging
     Time.Sim.VecInd=1:length(Time.Sim.Vec);
-else
-    Time.Sim.VecInd=1:96*20;%length(Time.Sim.Vec);
-end
+% else
+%     Time.Sim.VecInd=1:96*20;%length(Time.Sim.Vec);
+% end
+
 TD.Main=find(ismember(Time.Vec,Time.Sim.Start),1)-1;
 TD.User=find(ismember(Users{1}.Time.Vec,Time.Sim.Start),1)-1;
 

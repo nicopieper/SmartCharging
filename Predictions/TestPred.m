@@ -1,5 +1,5 @@
 function [Prediction, PredictionMat, TargetMat, MAEConst, mMAPEConst, RMSEConst] = TestPred(PredMethod, PredictorMat, TargetDelayed, Target, Time,...
-    Range, MaxDelayInd, ForecastIntervalPredInd, Demo, TargetTitle, ActivateWaitbar, Path, TimeIntervalFile)
+    Range, MaxDelayInd, ForecastIntervalPredInd, Demo, TargetTitle, ActivateWaitbar, Path)
 %% Description
 % This function generates predictions basing on trained LSQ and NARXNET
 % models. The predictions can be visualised in a live demonstration.
@@ -86,7 +86,7 @@ if Demo
     cla
     title(strcat(TargetTitle, " Prediction vs. Target at ", datestr(Time.Pred(TimeInd),'dd.mm.yyyy HH:MM')),'Interpreter','none')
     xlabel('Time.Pred')
-    ylabel('Price [MWh/€]')
+    ylabel('Price [MWh/ï¿½]')
     grid on   
     hold on    
     
@@ -173,7 +173,7 @@ for p=1:NumPredMethod
     Pred.Range=Range;
     Pred.ForecastIntervalInd=ForecastIntervalPredInd;
     Pred.Time.Stamp=datetime('now');
-    Pred.FileName=strcat(Path.Prediction, datestr(Pred.Time.Stamp, 'yyyymmdd-HHMM'), TimeIntervalFile, "_", TargetTitle, "_", LegendVec(p), "_", num2str(ForecastIntervalPredInd), "_", "_", num2str(size(PredictorMatInput,2)), "_", ".mat");
+    Pred.FileName=strcat(Path.Prediction, datestr(Pred.Time.Stamp, 'yyyymmdd-HHMM'), Time.IntervalFile, "_", TargetTitle, "_", LegendVec(p), "_", num2str(ForecastIntervalPredInd), "_", "_", num2str(size(PredictorMatInput,2)), "_", ".mat");
     save(Pred.FileName, "Pred", "-v7.3");
 end
 Prediction=PredcitionTemp;
