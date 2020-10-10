@@ -153,7 +153,7 @@ if ProcessDataNew.Regel
             close(h);
         end
         
-        %% Offer Lists  Date_From, Date_To, Type_Of_Reserve, Product, Capacity_Price[ï¿½/MW], Energy_Price[ï¿½/MWh], Offered_Capacity[MW], Allocated_Capacity[MW], Country    
+        %% Offer Lists  Date_From, Date_To, Type_Of_Reserve, Product, Capacity_Price[€/MW], Energy_Price[€/MWh], Offered_Capacity[MW], Allocated_Capacity[MW], Country    
         
         if ProcessDataNewRegelOfferLists==1
             
@@ -216,7 +216,7 @@ if ProcessDataNew.Regel
                 % of 01.01.2020). all 12 lists of one day are stored in 
                 % one LoadedOfferLists and saved as one mat file
 
-                LoadedOfferLists={}; % Capacity Price [ï¿½/MW], Energy Price [ï¿½/MWh], Allocated Capacity [MW] only those information are relevant, the time can be extracted from the position in the vector (row index)
+                LoadedOfferLists={}; % Capacity Price [€/MW], Energy Price [€/MWh], Allocated Capacity [MW] only those information are relevant, the time can be extracted from the position in the vector (row index)
                 Start=1; % only initialisation. the OfferList has to be sperated into sub lists. one sub lists covers all offers of one product. this is the start index
                 End=Start+find(strcmp(LoadedOfferListData(Start:end,2),LoadedOfferListData(Start,2))==0, 1)-2; % and this is the end index of the sublist
                 k=1;  
@@ -231,7 +231,7 @@ if ProcessDataNew.Regel
                             LoadedOfferLists{Row,1}=datetime(strcat(LoadedOfferListData(Start,1), " ", TimeTemp(5:6)), 'InputFormat', 'dd-MMM-yyyy HH', 'Locale', 'de_DE');
                         end
                     end
-                    LoadedOfferLists{Row,Col}=[str2double(LoadedOfferListData(Start:End,4)), str2double(LoadedOfferListData(Start:End,5)).*str2double(LoadedOfferListData(Start:End,3)), str2double(LoadedOfferListData(Start:End,6))]; % OfferLists  CapacityPrice[ï¿½/MW], EnergyPrice[ï¿½/MWh], AllocatedCapacity[MW]. store extracted sublist in variable
+                    LoadedOfferLists{Row,Col}=[str2double(LoadedOfferListData(Start:End,4)), str2double(LoadedOfferListData(Start:End,5)).*str2double(LoadedOfferListData(Start:End,3)), str2double(LoadedOfferListData(Start:End,6))]; % OfferLists  CapacityPrice[€/MW], EnergyPrice[€/MWh], AllocatedCapacity[MW]. store extracted sublist in variable
                     [sortedValues, sortOrder] = sort(LoadedOfferLists{Row,Col}(:,2)); % sort it according to energy price so that the merit order is generated
                     LoadedOfferLists{Row,Col} = LoadedOfferLists{Row,Col}(sortOrder, :);   
                     Start=End+1; % the starting index of the next sublist
@@ -244,7 +244,7 @@ if ProcessDataNew.Regel
                     if mod(k,12)==0 % if all sublists of one day are generated, store the data in a mat file
                         StoragePath=strcat(Path.Regel, RegelType, Dl, 'Offers', Dl, Year, Dl, Month, Dl);
                         save(strcat(StoragePath, 'OfferLists_', Year, '-', Month, '-', datestr(LoadedOfferLists{1,1},'dd')), 'LoadedOfferLists', '-v7.3')
-                        LoadedOfferLists={}; % Capacity Price [ï¿½/MW], Energy Price [ï¿½/MWh], Allocated Capacity [MW]
+                        LoadedOfferLists={}; % Capacity Price [€/MW], Energy Price [€/MWh], Allocated Capacity [MW]
                     end
                     k=k+1; % counter for the sublists
                 end
@@ -290,7 +290,7 @@ if ProcessDataNew.Regel
                 
                 load(strcat(Path.Regel, RegelType, Dl, 'Demand', Dl, Year, Dl, Month, Dl, 'DemandData_', Year, '-', Month, '-', datestr(Date, 'dd'), '.mat')); % load demand data 
                 load(strcat(Path.Regel, RegelType, Dl, 'Offers', Dl, Year, Dl, Month, Dl, 'OfferLists_', Year, '-', Month, '-', datestr(Date, 'dd'), '.mat')); % load OfferLists
-                LoadedResEnPrices=[zeros(length(LoadedDemandData),4), -1000*ones(length(LoadedDemandData),2), zeros(length(LoadedDemandData),2)]; % [Total Amount Payed for Energy Neg [ï¿½],  Total Amount Payed for Energy Pos [ï¿½], Mean Price Energy Neg [ï¿½/MWh], Mean Price Energy Pos [ï¿½/MWh], Marginal Price Energy Neg [ï¿½/MWh], Marginal Price Energy Pos [ï¿½/MWh], Min Price Energy Neg [ï¿½/MWh], Min Price Energy Pos [ï¿½/MWh]]. in this matrix all information about the real paid energy prices will be stored
+                LoadedResEnPrices=[zeros(length(LoadedDemandData),4), -1000*ones(length(LoadedDemandData),2), zeros(length(LoadedDemandData),2)]; % [Total Amount Payed for Energy Neg [€],  Total Amount Payed for Energy Pos [€], Mean Price Energy Neg [€/MWh], Mean Price Energy Pos [€/MWh], Marginal Price Energy Neg [€/MWh], Marginal Price Energy Pos [€/MWh], Min Price Energy Neg [€/MWh], Min Price Energy Pos [€/MWh]]. in this matrix all information about the real paid energy prices will be stored
                 
                 for Col=1:2 % iterate through the columns of LoadedOfferLists. (Col==1: negative reserve energy, Col==2: positive reserve energy)
                     for RowDem=1:length(LoadedDemandData) % iterate through the quater hours one day. length(LoadedDemandData)==96
@@ -312,9 +312,9 @@ if ProcessDataNew.Regel
                         
                     end
                 end
-                LoadedResEnPrices(:,1:2)=LoadedResEnPrices(:,1:2)/4; % Total Amount Payed for Negative/Positve Energy [ï¿½]. has to be divided by 4 as the prices are given in ï¿½/MWh but we consider quater hours
-                LoadedResEnPrices(:,3)=LoadedResEnPrices(:,1)./LoadedDemandData(:,1)*4; % Mean Price for Negative Energy [ï¿½/MWh]. Same as above, the 4 corrects for the fact that LoadedDemandData covers 15min Intervals. In order to get ï¿½/MWh, the Power must be multiplied with 0.25h, hence the whole term is multiplied with 4/h.
-                LoadedResEnPrices(:,4)=LoadedResEnPrices(:,2)./LoadedDemandData(:,2)*4; % Mean Price for Positive Energy [ï¿½/MWh]
+                LoadedResEnPrices(:,1:2)=LoadedResEnPrices(:,1:2)/4; % Total Amount Payed for Negative/Positve Energy [€]. has to be divided by 4 as the prices are given in €/MWh but we consider quater hours
+                LoadedResEnPrices(:,3)=LoadedResEnPrices(:,1)./LoadedDemandData(:,1)*4; % Mean Price for Negative Energy [€/MWh]. Same as above, the 4 corrects for the fact that LoadedDemandData covers 15min Intervals. In order to get €/MWh, the Power must be multiplied with 0.25h, hence the whole term is multiplied with 4/h.
+                LoadedResEnPrices(:,4)=LoadedResEnPrices(:,2)./LoadedDemandData(:,2)*4; % Mean Price for Positive Energy [€/MWh]
                 
                 % now the real paid resevere power prices are calculated,
                 % which is much more easy, as they are fixed and given in
@@ -322,13 +322,13 @@ if ProcessDataNew.Regel
                 % capacities the the offered power prices for each
                 % supplier and add the products all up.
 
-                LoadedResPoPrices=zeros(length(LoadedOfferLists),8); % [Total Amount Payed for Neg Power [ï¿½],  Total Amount Payed for Pos Power [ï¿½], Neg. average price [ï¿½/MW], Pos. average price [ï¿½/MW], Neg. marginal price [ï¿½/MW], Pos. marginal price [ï¿½/MW], Neg. minimum prices [ï¿½/MW], Pos. minimum price [ï¿½/MW]]
+                LoadedResPoPrices=zeros(length(LoadedOfferLists),8); % [Total Amount Payed for Neg Power [€],  Total Amount Payed for Pos Power [€], Neg. average price [€/MW], Pos. average price [€/MW], Neg. marginal price [€/MW], Pos. marginal price [€/MW], Neg. minimum prices [€/MW], Pos. minimum price [€/MW]]
                 for Col=1:2 % iterate through the columns of LoadedOfferLists. (Col==1: negative reserve energy, Col==2: positive reserve energy)
                     for Row=1:length(LoadedOfferLists) % iterate through the quater hours one day. length(LoadedDemandData)==96
-                        LoadedResPoPrices(Row, Col)=sum(LoadedOfferLists{Row, Col+1}(:,1).*LoadedOfferLists{Row, Col+1}(:,3)); % [ï¿½] toal amount payed for reserve capacity by TSOs
-                        LoadedResPoPrices(Row, Col+2)=sum(LoadedOfferLists{Row, Col+1}(:,1).*LoadedOfferLists{Row, Col+1}(:,3))/sum(LoadedOfferLists{Row, Col+1}(:,3)); % [ï¿½/MW] average price. multiply power and price for each supplier. sum all products up and divide by the overall power demand in order to get an average
-                        LoadedResPoPrices(Row, Col+4)=max(LoadedOfferLists{Row, Col+1}(:,1)); % [ï¿½/MW] find the marginal price
-                        LoadedResPoPrices(Row, Col+6)=min(LoadedOfferLists{Row, Col+1}(:,1)); % [ï¿½/MW] find the minimum price 
+                        LoadedResPoPrices(Row, Col)=sum(LoadedOfferLists{Row, Col+1}(:,1).*LoadedOfferLists{Row, Col+1}(:,3)); % [€] toal amount payed for reserve capacity by TSOs
+                        LoadedResPoPrices(Row, Col+2)=sum(LoadedOfferLists{Row, Col+1}(:,1).*LoadedOfferLists{Row, Col+1}(:,3))/sum(LoadedOfferLists{Row, Col+1}(:,3)); % [€/MW] average price. multiply power and price for each supplier. sum all products up and divide by the overall power demand in order to get an average
+                        LoadedResPoPrices(Row, Col+4)=max(LoadedOfferLists{Row, Col+1}(:,1)); % [€/MW] find the marginal price
+                        LoadedResPoPrices(Row, Col+6)=min(LoadedOfferLists{Row, Col+1}(:,1)); % [€/MW] find the minimum price 
                     end
                 end
 
@@ -368,9 +368,9 @@ for Date=DateVec % iterate through the days between Time.Start and Time.End
         load(strcat(Path.Regel, RegelTypeLoad, Dl, 'Offers', Dl, Year, Dl, Month, Dl, 'OfferLists_', Year, '-', Month, '-', datestr(Date, 'dd'), '.mat')); % same mechanism as above
         OfferLists(DateCounter*6+1:(DateCounter+1)*6,:)=LoadedOfferLists; % [Time, Neg. OfferLists, Pos. OfferLists]
         load(strcat(Path.Regel, RegelTypeLoad, Dl, 'Prices', Dl, Year, Dl, Month, Dl, 'ResEnPricesData', Year, '-', Month, '-', datestr(Date,'dd')));
-        ResEnPricesRealQH(DateCounter*96+1:(DateCounter+1)*96,:)=LoadedResEnPrices; % [Total Amount Payed for Energy Neg [ï¿½],  Total Amount Payed for Energy Pos [ï¿½], Mean Price Energy Neg [ï¿½/MWh], Mean Price Energy Pos [ï¿½/MWh], Marginal Price Energy Neg [ï¿½/MWh], Marginal Price Energy Pos [ï¿½/MWh], Min Price Energy Neg [ï¿½/MWh], Min Price Energy Pos [ï¿½/MWh]]
+        ResEnPricesRealQH(DateCounter*96+1:(DateCounter+1)*96,:)=LoadedResEnPrices; % [Total Amount Payed for Energy Neg [€],  Total Amount Payed for Energy Pos [€], Mean Price Energy Neg [€/MWh], Mean Price Energy Pos [€/MWh], Marginal Price Energy Neg [€/MWh], Marginal Price Energy Pos [€/MWh], Min Price Energy Neg [€/MWh], Min Price Energy Pos [€/MWh]]
         load(strcat(Path.Regel, RegelTypeLoad, Dl, 'Prices', Dl, Year, Dl, Month, Dl, 'ResPoPricesData', Year, '-', Month, '-', datestr(Date,'dd')));
-        ResPoPricesReal4H(DateCounter*6+1:(DateCounter+1)*6,:)=LoadedResPoPrices; % [Total Amount Payed for Neg Power [ï¿½],  Total Amount Payed for Pos Power [ï¿½], Neg. average price [ï¿½/MW], Pos. average price [ï¿½/MW], Neg. marginal price [ï¿½/MW], Pos. marginal price [ï¿½/MW], Neg. minimum prices [ï¿½/MW], Pos. minimum price [ï¿½/MW]]
+        ResPoPricesReal4H(DateCounter*6+1:(DateCounter+1)*6,:)=LoadedResPoPrices; % [Total Amount Payed for Neg Power [€],  Total Amount Payed for Pos Power [€], Neg. average price [€/MW], Pos. average price [€/MW], Neg. marginal price [€/MW], Pos. marginal price [€/MW], Neg. minimum prices [€/MW], Pos. minimum price [€/MW]]
     end
 
     DateCounter=DateCounter+1;

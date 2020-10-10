@@ -9,7 +9,7 @@ Time.StepMin=minutes(Time.Step);
 ProcessDataNew.Smard=0;
 ProcessDataNew.EC=0;
 ProcessDataNew.SMAPlant=0;
-ProcessDataNew.Regel=1;
+ProcessDataNew.Regel=0;
 
 Range.ShareTrain=0.8;             	% Share of the Training Data Set
 %ShareVal=0.0;                  % Share of the Validation Data Set

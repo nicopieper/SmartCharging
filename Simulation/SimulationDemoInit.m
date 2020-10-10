@@ -1,6 +1,3 @@
-
-
-
 PlotColors= [0.0000, 0.4470, 0.7410; 0.8500, 0.3250, 0.0980;... 
              0.9290, 0.6940, 0.1250; 0.4940, 0.1840, 0.5560;... 
              0.4660, 0.6740, 0.1880; 0.3010, 0.7450, 0.9330;...
@@ -122,66 +119,3 @@ if ShowPVPred
     ylim([-round(PVPlants{Users{DemoUser}.PVPlant}.PeakPower)*10   ceil(PVPlants{Users{DemoUser}.PVPlant}.PeakPower)*1000])
     legend(["PV Generation" "PV Prediction"],'Interpreter','none', 'Location', 'northwest')
 end
-
-
-
-
-% 
-% figSpotmarketReal=plot(Time.Vec(TimeInd-24*Time.Demo.StepInd+1:TimeInd), SpotmarketReal(TimeInd-24*Time.Demo.StepInd+1:TimeInd,1), 'Color', [0.0000, 0.4470, 0.7410]);
-% for p=1:NumPredMethod % Create one Figure Property for each model
-%     figSpotmarketPred{p}=plot(Time.Vec(max(TimeInd-ForecastIntervalInd+ForecastDuration, DemoStart):TimeInd+ForecastDuration), SpotmarketPred(max(TimeInd-ForecastIntervalInd+ForecastDuration, DemoStart):TimeInd+ForecastDuration,p), 'Color', PlotColors(p,:));
-% end
-% 
-% legend(["Real" "Prediction"],'Interpreter','none')
-% 
-% 
-% subplot(2,2,2)
-% cla
-% title(strcat(ResPoDemLabel, " ", datestr(Time.Demo.Vec(TimeInd),'dd.mm.yyyy HH:MM')),'Interpreter','none')
-% xlabel('Time')
-% ylabel('Demand [MW]')
-% grid on
-% hold on
-% 
-% figResPoDemReal=plot(Time.Vec(TimeInd-24*Time.Demo.StepInd+1:TimeInd), ResPoDemRealQH(TimeInd-24*Time.Demo.StepInd+1:TimeInd,:));
-% set(figResPoDemReal, {'color'}, {[0.0000, 0.4470, 0.7410]; PlotColors(1,:)});
-% %     for p=1:NumPredMethod % Create one Figure Property for each model
-% %         figPred{p}=plot(Time.Vec(max(TimeInd-ForecastIntervalInd+ForecastDuration, DemoStart):TimeInd+ForecastDuration), SpotmarketPred(max(TimeInd-ForecastIntervalInd+ForecastDuration, DemoStart):TimeInd+ForecastDuration,p), 'Color', PlotColors(p,:));
-% %     end
-% legend(["Negative" "Positive"],'Interpreter','none')
-% 
-% 
-% subplot(2,2,3)
-% cla
-% title(strcat(SoCPlotLabel, " ", datestr(Time.Demo.Vec(TimeInd),'dd.mm.yyyy HH:MM')),'Interpreter','none')
-% xlabel('Time')
-% ylabel('SoC')
-% grid on
-% hold on
-% 
-% figSoCPlot=plot(Time.Vec(TimeInd-24*Time.Demo.StepInd+1:TimeInd), single(Users{DemoUser}.LogbookBase(TimeInd-24*Time.Demo.StepInd+1:TimeInd,9))/single(Users{DemoUser}.BatterySize));
-% set(figSoCPlot, {'color'}, {[0.0000, 0.4470, 0.7410]});
-% %     for p=1:NumPredMethod % Create one Figure Property for each model
-% %         figPred{p}=plot(Time.Vec(max(TimeInd-ForecastIntervalInd+ForecastDuration, DemoStart):TimeInd+ForecastDuration), SpotmarketPred(max(TimeInd-ForecastIntervalInd+ForecastDuration, DemoStart):TimeInd+ForecastDuration,p), 'Color', PlotColors(p,:));
-% %     end
-% ylim([-0.1 1.1])
-% legend(["SoC"],'Interpreter','none')
-% 
-% 
-% subplot(2,2,4)
-% cla
-% title(strcat(PVPlotLabel, " ", datestr(Time.Demo.Vec(TimeInd),'dd.mm.yyyy HH:MM')),'Interpreter','none')
-% xlabel('Time')
-% ylabel('PV Generation Power [W]')
-% grid on
-% hold on
-% 
-% figPVPlot=plot(Time.Vec(TimeInd-24*Time.Demo.StepInd+1:TimeInd), PVPlants{Users{DemoUser}.PVPlant}.Profile(TimeInd-24*Time.Demo.StepInd+1:TimeInd));
-% set(figPVPlot, {'color'}, {[0.0000, 0.4470, 0.7410]});
-% for p=1:NumPredMethod % Create one Figure Property for each model
-%     figPVPred{p}=plot(Time.Vec(max(TimeInd-ForecastIntervalInd+ForecastDuration, DemoStart):TimeInd+ForecastDuration), PVPredQH(max(TimeInd-ForecastIntervalInd+ForecastDuration, DemoStart):TimeInd+ForecastDuration,p), 'Color', PlotColors(p,:));
-% end
-% ylim([-round(PVPlants{Users{DemoUser}.PVPlant}.PeakPower)*10   ceil(PVPlants{Users{DemoUser}.PVPlant}.PeakPower)*1000])
-% legend(["PV Generation" "PV Prediction"],'Interpreter','none')
-
-pause(0.01)
