@@ -3,7 +3,7 @@ tic
 ActivateWaitbar=true;
 PublicChargingThreshold=uint32(15); % in %
 PThreshold=1.2;
-NumUsers=100; % size(Users,1)-1;
+NumUsers=50; % size(Users,1)-1;
 ControlPeriods=96*2;
 SmartCharging=true;
 UsePV=true;
@@ -297,11 +297,11 @@ for n=2:NumUsers+1
 end
 
 SimulatedUsers=@(User) (isfield(User, 'Time') || User.Logbook(2,9)>0);
-% Users=Users(cellfun(SimulatedUsers, Users));
+Users=Users(cellfun(SimulatedUsers, Users));
 Users{1}.Time.Stamp=datetime('now');
 Users{1}.FileName=strcat(Path.Simulation, "Users_", datestr(Users{1}.Time.Stamp, "yyyymmdd-HHMM"), "_", Time.IntervalFile, "_", num2str(PThreshold), "_", num2str(NumUsers), "_", num2str(SmartCharging), ".mat");
 
-%save(Users{1}.FileName, "Users", "-v7.3");
+save(Users{1}.FileName, "Users", "-v7.3");
 disp(strcat("Successfully simulated within ", num2str(toc), " seconds"))
 
 %% Clean up workspace
