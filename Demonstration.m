@@ -45,9 +45,9 @@ if length(DemoPlots)<n || isempty(DemoPlots{n}) || ~isfield(DemoPlots{n}, "Data"
 end
 
 DemoUser=2;
-while sum(Users{DemoUser}.LogbookBase(:,4)>0)/length(Users{DemoUser}.LogbookBase(:,4))<0.03 || sum(Users{DemoUser}.LogbookBase(:,4)>0)/length(Users{DemoUser}.LogbookBase(:,4))<0.13 || sum(Users{DemoUser}.LogbookSmart(:,8)>0)/length(Users{DemoUser}.LogbookBase(:,4))>0.03  || ~Users{DemoUser}.PVPlantExists
-    DemoUser=DemoUser+1;
-end
+% while sum(Users{DemoUser}.LogbookBase(:,4)>0)/length(Users{DemoUser}.LogbookBase(:,4))<0.03 || sum(Users{DemoUser}.LogbookBase(:,4)>0)/length(Users{DemoUser}.LogbookBase(:,4))<0.13 || sum(Users{DemoUser}.LogbookSmart(:,8)>0)/length(Users{DemoUser}.LogbookBase(:,4))>0.03  || ~Users{DemoUser}.PVPlantExists
+%     DemoUser=DemoUser+1;
+% end
 
 DemoPlots{n}.Title=strcat("PV Power of User ", num2str(DemoUser));
 
