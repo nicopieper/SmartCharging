@@ -3,7 +3,7 @@ tic
 ActivateWaitbar=true;
 PublicChargingThreshold=uint32(15); % in %
 PThreshold=1.2;
-NumUsers=30; % size(Users,1)-1;
+NumUsers=100; % size(Users,1)-1;
 ControlPeriods=96*2;
 SmartCharging=true;
 UsePV=true;
@@ -41,7 +41,7 @@ TD.User=find(ismember(Users{1}.Time.Vec,Time.Sim.Start),1)-1;
 
 
 for n=2:size(Users,1)
-    Users{n}.Logbook=Users{n}.LogbookSource;
+    Users{n}.Logbook=double(Users{n}.LogbookSource);
 end
 
 if SmartCharging
@@ -83,7 +83,7 @@ for TimeInd=Time.Sim.VecInd(2:end)
     for n=2:NumUsers+1
         
         % Public charging: Only charge at public charging point if it is requiered due to low SoC
-        if (Users{n}.Logbook(TimeInd+TD.User,1)==1 && Users{n}.Logbook(TimeInd+TD.User-1,9)*100/Users{n}.BatterySize<PublicChargingThreshold) || (TimeInd+TD.User+1<=size(Users{n}.Logbook,1) && Users{n}.Logbook(TimeInd+TD.User,4)>=Users{n}.Logbook(TimeInd+TD.User-1,9))
+        if (Users{n}.Logbook(TimeInd+TD.User,1)==1 && Users{n}.Logbook(TimeInd+TD.User-1,9)*100/double(Users{n}.BatterySize)<PublicChargingThreshold) || (TimeInd+TD.User+1<=size(Users{n}.Logbook,1) && Users{n}.Logbook(TimeInd+TD.User,4)>=Users{n}.Logbook(TimeInd+TD.User-1,9))
             
             k=TimeInd+TD.User;
             while k < length(Users{n}.Logbook) && ~ismember(Users{n}.Logbook(k,1), 3:5)
@@ -98,7 +98,7 @@ for TimeInd=Time.Sim.VecInd(2:end)
             ChargingPower(n)=min([max([Users{n}.ACChargingPowerVehicle, Users{n}.DCChargingPowerVehicle]), PublicChargerPower]); % Actual ChargingPower at public charger in [kW]
 %             ChargingEfficiency(n)=PublicChargerDistribution(end,find(ChargingPower(n)<=PublicChargerDistribution(1,2:end),1)+1)*((1.01-0.91)*randn(1)+0.99);
             
-            EnergyDemandLeft(n)=double(min((double(PublicChargingThreshold)+2+TruncatedGaussian(4,[1 20]-5,1))/100*Users{n}.BatterySize+ConsumptionTilNextHomeStop-Users{n}.Logbook(TimeInd+TD.User-1,9), Users{n}.BatterySize-Users{n}.Logbook(TimeInd+TD.User-1,9)));
+            EnergyDemandLeft(n)=double(min((double(PublicChargingThreshold)+2+TruncatedGaussian(4,[1 20]-5,1))/100*double(Users{n}.BatterySize)+double(ConsumptionTilNextHomeStop)-Users{n}.Logbook(TimeInd+TD.User-1,9), double(Users{n}.BatterySize)-Users{n}.Logbook(TimeInd+TD.User-1,9)));
             TimeStepIndsNeededForCharging=ceil(EnergyDemandLeft(n)/ChargingPower(n)*60/Time.StepMin); % [Wh/W]
             
             if TimeStepIndsNeededForCharging>0
@@ -161,9 +161,9 @@ for TimeInd=Time.Sim.VecInd(2:end)
     end
     
     for n=2:NumUsers+1
-        if Users{n}.Logbook(TimeInd+TD.User,1)==4 && Users{n}.Logbook(TimeInd+TD.User,9)<Users{n}.BatterySize && (~ApplyGridConvenientCharging || Users{n}.GridConvenientChargingAvailability(mod(TimeInd+TD.User-1, 24*Time.StepInd)+1)) % Charging starts always when the car is plugged in, until the Battery is fully charged
+        if Users{n}.Logbook(TimeInd+TD.User,1)==4 && Users{n}.Logbook(TimeInd+TD.User,9)<double(Users{n}.BatterySize) && (~ApplyGridConvenientCharging || Users{n}.GridConvenientChargingAvailability(mod(TimeInd+TD.User-1, 24*Time.StepInd)+1)) % Charging starts always when the car is plugged in, until the Battery is fully charged
             Users{n}.Logbook(TimeInd+TD.User,1)=5;
-            ChargingEnergy=min((Time.StepMin-Users{n}.Logbook(TimeInd+TD.User,2))*Users{n}.ACChargingPowerHomeCharging/60, Users{n}.BatterySize-Users{n}.Logbook(TimeInd+TD.User-1,9)); %[Wh]
+            ChargingEnergy=min((Time.StepMin-Users{n}.Logbook(TimeInd+TD.User,2))*Users{n}.ACChargingPowerHomeCharging/60, double(Users{n}.BatterySize)-Users{n}.Logbook(TimeInd+TD.User-1,9)); %[Wh]
             if UsePV && Users{n}.PVPlantExists
                 Users{n}.Logbook(TimeInd+TD.User,6)=min(uint32(PVPlants{Users{n}.PVPlant}.(PVPlants_Profile_Prediction)(TimeInd+TD.Main)), ChargingEnergy);
             end
@@ -172,7 +172,7 @@ for TimeInd=Time.Sim.VecInd(2:end)
     end
 
 	for n=2:NumUsers+1
-        if  Users{n}.Logbook(TimeInd+TD.User,9)<Users{n}.BatterySize && Users{n}.Logbook(TimeInd+TD.User,1)>=5
+        if  Users{n}.Logbook(TimeInd+TD.User,9)<double(Users{n}.BatterySize) && Users{n}.Logbook(TimeInd+TD.User,1)>=5
             Users{n}.Logbook(TimeInd+TD.User,9)=Users{n}.Logbook(TimeInd+TD.User,9)+sum(Users{n}.Logbook(TimeInd+TD.User,5:8));
         end
     end
@@ -188,8 +188,12 @@ for TimeInd=Time.Sim.VecInd(2:end)
             Users{n}.Logbook(TimeInd+TD.User:TimeInd+TD.User+24*Time.StepInd-1, 5:7)=OptimalChargingEnergies(1:24*Time.StepInd,:,n-1);
             
             for k=0:ControlPeriods
-                Users{n}.Logbook(TimeInd+TD.User+k, 9)=Users{n}.Logbook(TimeInd+TD.User+k-1, 9)-Users{n}.Logbook(TimeInd+TD.User+k, 4) + uint32(sum(Users{n}.Logbook(TimeInd+TD.User+k, 5:8)));
+                Users{n}.Logbook(TimeInd+TD.User+k, 9)=Users{n}.Logbook(TimeInd+TD.User+k-1, 9)-Users{n}.Logbook(TimeInd+TD.User+k, 4) + sum(Users{n}.Logbook(TimeInd+TD.User+k, 5:8));
             end
+            if Users{n}.Logbook(TimeInd+TD.User:ControlPeriods-1, 9)>double(Users{n}.BatterySize)*1.05
+                2
+            end
+            Users{n}.Logbook(TimeInd+TD.User:TimeInd+TD.User+ControlPeriods-1, 9)=min([ones(ControlPeriods,1)*double(Users{n}.BatterySize), Users{n}.Logbook(TimeInd+TD.User:TimeInd+TD.User+ControlPeriods-1, 9)], [],2);
         end
         
         TimeInd=TimeInd+ControlPeriods;
@@ -246,7 +250,7 @@ end
 %% Evaluate Smart Charging
 
 if SmartCharging
-    ChargingVehicle=reshape(permute(squeeze(sum(Users{1}.ChargingMat(1:96,:,:,:),2)), [1,3,2]), [], length(Users)-1)/1000*4;
+    ChargingVehicle=reshape(permute(squeeze(sum(Users{1}.ChargingMat(1:96,:,:,:),2)), [1,3,2]), [], NumUsers)/1000*4;
     ChargingType=reshape(permute(squeeze(sum(Users{1}.ChargingMat(1:96,:,:,:),3)), [1,3,2]), [], NumCostCats)/1000*4;
     ChargingSum=sum(ChargingType, 2);
     
@@ -283,11 +287,6 @@ end
 
 %% Save Data
 
-SimulatedUsers=@(User) (isfield(User, 'Time') || User.Logbook(2,9)>0);
-Users=Users(cellfun(SimulatedUsers, Users));
-Users{1}.Time.Stamp=datetime('now');
-Users{1}.FileName=strcat(Path.Simulation, "Users_", datestr(Users{1}.Time.Stamp, "yyyymmdd-HHMM"), "_", Time.IntervalFile, "_", num2str(PThreshold), "_", num2str(NumUsers), "_", num2str(SmartCharging), ".mat");
-
 for n=2:NumUsers+1
     if ~SmartCharging
         Users{n}.LogbookBase=Users{n}.Logbook;
@@ -297,7 +296,12 @@ for n=2:NumUsers+1
     Users{n}=rmfield(Users{n}, 'Logbook');
 end
 
-save(Users{1}.FileName, "Users", "-v7.3");
+SimulatedUsers=@(User) (isfield(User, 'Time') || User.Logbook(2,9)>0);
+% Users=Users(cellfun(SimulatedUsers, Users));
+Users{1}.Time.Stamp=datetime('now');
+Users{1}.FileName=strcat(Path.Simulation, "Users_", datestr(Users{1}.Time.Stamp, "yyyymmdd-HHMM"), "_", Time.IntervalFile, "_", num2str(PThreshold), "_", num2str(NumUsers), "_", num2str(SmartCharging), ".mat");
+
+%save(Users{1}.FileName, "Users", "-v7.3");
 disp(strcat("Successfully simulated within ", num2str(toc), " seconds"))
 
 %% Clean up workspace
