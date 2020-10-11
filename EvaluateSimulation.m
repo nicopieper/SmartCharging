@@ -6,7 +6,7 @@ if ~exist("Users", "var")
     load(strcat(Path.Simulation, Dl, StorageFiles(StorageInd).name))
 end
 
-Logbook="LogbookSmart";
+Logbook="LogbookBase";
 
 Targets=["small"; "medium"; "large"; "transporter"];
 % Targets=["one user"; "only one user"; "several users"; "undefined"];
@@ -48,11 +48,12 @@ ChargeProcessesPerWeek=cell(length(Targets),2);
 for k=ExistingTargets
     for n=TargetGroups{k}
         Users{n}.ChargeProcessesHomeBase=sum(ismember(Users{n}.(Logbook)(2:end,1),4:5) & ~ismember(Users{n}.(Logbook)(1:end-1,1), 4:5));
+        Users{n}.ChargeProcessesHomeBase1=sum(sum(Users{n}.(Logbook)(2:end,5:7),2)>0 & sum(Users{n}.(Logbook)(1:end-1,5:7),2)==0);
         Users{n}.ChargeProcessesOtherBase=sum(ismember(Users{n}.(Logbook)(2:end,1),6:7) & ~ismember(Users{n}.(Logbook)(1:end-1,1),6:7));
         a=find(ismember(Users{n}.(Logbook)(2:end,1),6:7) & ~ismember(Users{n}.(Logbook)(1:end-1,1),6:7));
         Users{n}.ChargeProcessesOtherBase1=sum(Users{n}.(Logbook)(2:end,8)>0 & Users{n}.(Logbook)(1:end-1,8)==0);
         b=find(Users{n}.(Logbook)(2:end,8)>0 & Users{n}.(Logbook)(1:end-1,8)==0);
-        ChargeProcesses{k,1}(n)=Users{n}.ChargeProcessesHomeBase;
+        ChargeProcesses{k,1}(n)=Users{n}.ChargeProcessesHomeBase1;
         ChargeProcesses{k,2}(n)=Users{n}.ChargeProcessesOtherBase;
     end
     ChargeProcessesPerWeek{k,1}=sum(ChargeProcesses{k,1})/days(Users{1}.Time.Vec(end)-Users{1}.Time.Vec(1))*7/length(TargetGroups{k});

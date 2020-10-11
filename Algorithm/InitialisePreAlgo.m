@@ -1,6 +1,5 @@
 %% Control Variables
 
-ControlPeriods=96*2;
 CostCats=logical([1, 1, 1]);
 NumCostCats=sum(CostCats);
 ConstantRLPowerPeriods=4*Time.StepInd;
@@ -32,6 +31,10 @@ ChargingMat=[];
 ChargingVehicle=[];
 ChargingType=[];
 AvailabilityMat=[];
+EnergyDemandControlPeriod=[];
+MaxEnergyCharged=[];
+EnergyDemandEssentialOneDay=[];
+
 DemandInds=tril(ones(ControlPeriods,ControlPeriods)).*(1:ControlPeriods);
 DemandInds(:,1)=0;
 DemandInds(DemandInds==0)=ControlPeriods+1;

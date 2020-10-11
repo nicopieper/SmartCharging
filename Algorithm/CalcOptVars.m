@@ -14,9 +14,9 @@ for k=2:NumUsers+1
     
     EnergyDemandControlPeriod(1,1,k-1)=double(Users{k}.BatterySize - (Users{k}.Logbook(TimeInd+TD.User,9) - sum(Users{k}.Logbook(TimeInd+TD.User:TimeInd+TD.User-1+ControlPeriods,4))));
     Temp=[Users{k}.Logbook(TimeInd+TD.User:TimeInd+TD.User+ControlPeriods-1,4);0]';
-    EnergyDemandEssentialOneDay(:,1,k-1)=double(-min(0, (Users{k}.Logbook(TimeInd+TD.User,9)-uint32(sum(Temp(DemandInds),2)))-Users{k}.BatterySize*PublicChargingThreshold/100)); % Prevent empty battery within the next 24h. Gives the required energy to be charged in order to keep the SoC above the PublicChargingThreshold
+    EnergyDemandEssentialOneDay(:,1,k-1)=-min(0, double(Users{k}.Logbook(TimeInd+TD.User,9))-sum(Temp(DemandInds),2)-double(Users{k}.BatterySize*PublicChargingThreshold/100)); % Prevent empty battery within the next 24h. Gives the required energy to be charged in order to keep the SoC above the PublicChargingThreshold
     MaxEnergyCharged(:,1,k-1)=double(Users{k}.BatterySize-(Users{k}.Logbook(TimeInd+TD.User,9)-uint32(sum(Temp(DemandInds),2))));
-    EnergyDemandControlPeriod(1,1,k-1)=Users{k}.BatterySize - (Users{k}.Logbook(TimeInd+TD.User,9)-uint32(sum(Temp(end),2)));
+    EnergyDemandControlPeriod(1,1,k-1)=double(Users{k}.BatterySize) - double(Users{k}.Logbook(TimeInd+TD.User,9))-sum(Temp(end),2);
     
     CostsSpotmarket(1:ControlPeriods, 1, k-1)=(Users{k}.PrivateElectricityPrice + Users{k}.NNEEnergyPrice + Smard.DayaheadRealQH(TimeInd+TD.Main:TimeInd+TD.Main-1+ControlPeriods)/10)/100*1.19;
     
