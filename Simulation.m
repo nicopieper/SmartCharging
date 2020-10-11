@@ -43,8 +43,8 @@ for n=2:size(Users,1)
     if ~SmartCharging
         Users{n}.Logbook=Users{n}.LogbookSource;
     else
-        Users{n}.Logbook=Users{n}.LogbookBase;
-        Users{n}.Logbook(2:end, 5:9)=0;
+        Users{n}.Logbook=Users{n}.LogbookSource;
+        Users{n}.Logbook(:,1)=
     end
 end
 
@@ -187,7 +187,7 @@ for TimeInd=Time.Sim.VecInd(2:end)
             Users{n}.Logbook(TimeInd+TD.User:TimeInd+TD.User+24*Time.StepInd-1, 5:7)=OptimalChargingEnergies(1:24*Time.StepInd,:,n-1);
         end
     end
-        
+
 	for n=2:NumUsers+1
         if  Users{n}.Logbook(TimeInd+TD.User,9)<Users{n}.BatterySize && Users{n}.Logbook(TimeInd+TD.User,1)>=5
             Users{n}.Logbook(TimeInd+TD.User,9)=Users{n}.Logbook(TimeInd+TD.User,9)+sum(Users{n}.Logbook(TimeInd+TD.User,5:8));
@@ -235,17 +235,27 @@ if ~SmartCharging
     end
 end
 
+if SmartCharging
+    Users{1}.ChargingMat=ChargingMat;
+    Users{1}.AvailabilityMat=AvailabilityMat;
+    Users{1}.ShiftInds=ShiftInds;
+    Users{1}.NumCostCats=NumCostCats;
+end
+
 %% Evaluate Smart Charging
 
 if SmartCharging
-    ChargingSum=sum(ChargingVehicle, 3);
+    ChargingVehicle=reshape(permute(squeeze(sum(Users{1}.ChargingMat(1:96,:,:,:),2)), [1,3,2]), [], length(Users)-1)/1000*4;
+    ChargingType=reshape(permute(squeeze(sum(Users{1}.ChargingMat(1:96,:,:,:),3)), [1,3,2]), [], NumCostCats)/1000*4;
+    ChargingSum=sum(ChargingType, 2);
+    
     [sum(ChargingType(:,1,:),'all'), sum(ChargingType(:,2,:),'all'), sum(ChargingType(:,3,:),'all')]/sum(ChargingType(:,:,:),'all')
 
     figure
     Load=mean(reshape(ChargingType',3,96,[]),3)';
     Load=circshift(Load, [ShiftInds, 0]);
     x = 1:96;
-    y = circshift(mean(reshape(ChargingSum/1000*4, 96, []), 2)', [0,ShiftInds]);
+    y = circshift(mean(reshape(ChargingSum, 96, []), 2)', [0,ShiftInds]);
     z = zeros(size(x));
     col = (Load./repmat(max(Load, [], 2),1,3))';
     surface([x;x],[y;y],[z;z],[permute(repmat(col,1,1,2),[3,2,1])], 'facecol','no', 'edgecol','interp', 'linew',2);
@@ -256,9 +266,9 @@ if SmartCharging
     grid on
 
     hold on
-    plot(circshift(squeeze(mean(reshape(ChargingType(:,1)/1000*4,96,[],1),2)), ShiftInds), "LineWidth", 1.2, "Color", [1, 0, 0])
-    plot(circshift(squeeze(mean(reshape(ChargingType(:,2)/1000*4,96,[],1),2)), ShiftInds), "LineWidth", 1.2, "Color", [0, 1, 0])
-    plot(circshift(squeeze(mean(reshape(ChargingType(:,3)/1000*4,96,[],1),2)), ShiftInds), "LineWidth", 1.2, "Color", [0, 0, 1])
+    plot(circshift(squeeze(mean(reshape(ChargingType(:,1),96,[],1),2)), ShiftInds), "LineWidth", 1.2, "Color", [1, 0, 0])
+    plot(circshift(squeeze(mean(reshape(ChargingType(:,2),96,[],1),2)), ShiftInds), "LineWidth", 1.2, "Color", [0, 1, 0])
+    plot(circshift(squeeze(mean(reshape(ChargingType(:,3),96,[],1),2)), ShiftInds), "LineWidth", 1.2, "Color", [0, 0, 1])
     xticks(1:16:96)
     xticklabels({datestr(Time.Vec(1:16:96),'HH:MM')})
     legend(["All", "Spotmarket", "PV", "Secondary Reserve Energy"])
@@ -267,6 +277,7 @@ if SmartCharging
     plot(datetime(1,1,1,0,0,0, 'TimeZone', 'Africa/Tunis'):minutes(Time.StepMin):datetime(1,1,1,23,45,0, 'TimeZone', 'Africa/Tunis'), circshift(mean(sum(AvailabilityMat,3),2), ShiftInds))
     xticks(datetime(1,1,1,0,0,0, 'TimeZone', 'Africa/Tunis'):hours(4):datetime(1,1,2,0,0,0, 'TimeZone', 'Africa/Tunis'))
     xticklabels(datestr(datetime(1,1,1,0,0,0, 'TimeZone', 'Africa/Tunis'):hours(4):datetime(1,1,2,0,0,0, 'TimeZone', 'Africa/Tunis'), "HH:MM"))
+    
 end
 
 %% Save Data

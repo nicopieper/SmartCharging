@@ -82,7 +82,7 @@
 
 %% Initialisation
 
-NumUsers=1000; % number of users
+NumUsers=100; % number of users
 LikelihoodPV=0.45; % 44 % der privaten und 46 % der gewerblichen Nutzer �ber eine eigene Photovoltaikanlage, https://elib.dlr.de/96491/1/Ergebnisbericht_E-Nutzer_2015.pdf S. 10
 AddPV=true; % determines wheter PV plants shall be assigned to the users. In general true, only false for test purposes
 MeanPrivateElectricityPrice=30.43/1.19 - 3.7513 - 7.06; % [ct/kWh] average German electricity price in 2019 according to Strom-Report without VAT (19%), electricity production price (avg. Dayahead price was 3.7513 ct/kWh in 2019) and NNE energy price (avg. was 7.06 ct/kWh in 2019)
@@ -100,6 +100,8 @@ VehiclePointer=zeros(length(VehicleSizes),1); % the pointers that indicate which
 if ~exist('Vehicles', 'var')
     GetVehicleData; % load the driving profiles
 end
+
+tic
 
 VehicleDatabase=cell(length(VehicleSizes),1); % covers all vehicle numbers for each vehicle size class
 for n=2:length(Vehicles)
@@ -218,6 +220,8 @@ for n=2:NumUsers+1
     Users{n}.AverageMileageDay_m=uint32(sum(Users{n}.LogbookSource(:,3))/days(Time.End-Time.Start)); %[m]
     Users{n}.AverageMileageYear_km=uint32(sum(Users{n}.LogbookSource(:,3))/days(Time.End-Time.Start)*365.25/1000); %[km]
 end
+
+disp(strcat("Users successfully initialised ", num2str(toc)))
 
 %% Clean up Workspace
 

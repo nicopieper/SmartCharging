@@ -40,7 +40,11 @@ for n=1:length(DemoPlots)
     l=legend('Interpreter','none', 'Location', 'northwest');
     Yaxes=[];
     
-    DemoGetYLimits;
+    for k=1:length(DemoPlots{n}.Data)
+        DemoGetYLimits;
+        Yaxes=[Yaxes; DemoPlots{n}.YAxis{k}];
+    end
+
     
     DemoPlots{n}.Yaxes=unique(Yaxes)';
     
@@ -56,10 +60,11 @@ for n=1:length(DemoPlots)
         
         DemoPlots{n}.Fig{k}=animatedline(Time.Demo.VecDateNum(TimeInd-24*Time.StepInd+1:TimeInd), DemoPlots{n}.Data{k}(TimeInd+DemoPlots{n}.Time.TD{k}-24*Time.StepInd+1:TimeInd+DemoPlots{n}.Time.TD{k},1), 'MaximumNumPoints',400,  'Color', PlotColors(k,:));
         legappend(l, DemoPlots{n}.Label{k});
+        ylabel(DemoPlots{n}.YLabel{k})
         
-    end       
+    end
     
-    
+    DemoUpdateYLimits;
     
     xticks(Time.Demo.VecDateNum(TimeInd-24*Time.StepInd+1:48:end));
     xticklabels({datestr(Time.Demo.VecDateNum(TimeInd-24*Time.StepInd+1:48:end),'dd.mm HH:MM')});

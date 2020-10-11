@@ -6,14 +6,7 @@ if ~exist("Users", "var")
     load(strcat(Path.Simulation, Dl, StorageFiles(StorageInd).name))
 end
 
-for n=2:length(Users)
-    if ismissing(Users{n}.VehicleUtilisation)
-        Users{n}.VehicleUtilisation="undefined";
-    end
-    if ismissing(Users{n}.NumUsers)
-        Users{n}.NumUsers="undefined";
-    end
-end
+Logbook="LogbookSmart";
 
 Targets=["small"; "medium"; "large"; "transporter"];
 % Targets=["one user"; "only one user"; "several users"; "undefined"];
@@ -48,14 +41,17 @@ end
 DayVecHourly=datetime(1,1,1,0,0,0, 'TimeZone', 'Africa/Tunis'):hours(1):datetime(1,1,2,0,0,0, 'TimeZone', 'Africa/Tunis');
 DayVecQuaterly=datetime(1,1,1,0,0,0, 'TimeZone', 'Africa/Tunis'):minutes(15):datetime(1,1,2,0,0,0, 'TimeZone', 'Africa/Tunis')-minutes(15);
 
-%% Energy charged per week
+%% Charging frequency
 
 ChargeProcesses=cell(length(Targets),2);
 ChargeProcessesPerWeek=cell(length(Targets),2);
 for k=ExistingTargets
     for n=TargetGroups{k}
-        Users{n}.ChargeProcessesHomeBase=sum(sum(Users{n}.LogbookBase(2:end,5:7),2)>0 & sum(Users{n}.LogbookBase(1:end-1,5:7),2)==0);
-        Users{n}.ChargeProcessesOtherBase=sum(Users{n}.LogbookBase(2:end,8)>0 & Users{n}.LogbookBase(1:end-1,8)==0);
+        Users{n}.ChargeProcessesHomeBase=sum(ismember(Users{n}.(Logbook)(2:end,1),4:5) & ~ismember(Users{n}.(Logbook)(1:end-1,1), 4:5));
+        Users{n}.ChargeProcessesOtherBase=sum(ismember(Users{n}.(Logbook)(2:end,1),6:7) & ~ismember(Users{n}.(Logbook)(1:end-1,1),6:7));
+        a=find(ismember(Users{n}.(Logbook)(2:end,1),6:7) & ~ismember(Users{n}.(Logbook)(1:end-1,1),6:7));
+        Users{n}.ChargeProcessesOtherBase1=sum(Users{n}.(Logbook)(2:end,8)>0 & Users{n}.(Logbook)(1:end-1,8)==0);
+        b=find(Users{n}.(Logbook)(2:end,8)>0 & Users{n}.(Logbook)(1:end-1,8)==0);
         ChargeProcesses{k,1}(n)=Users{n}.ChargeProcessesHomeBase;
         ChargeProcesses{k,2}(n)=Users{n}.ChargeProcessesOtherBase;
     end
@@ -77,11 +73,11 @@ for k=ExistingTargets
         col=col(col~=0);
         counter=1;
         for n=TargetGroups{k}
-            ChargingBlocks=[find(sum(Users{n}.LogbookBase(1:end,col),2)>0 & [0; sum(Users{n}.LogbookBase(1:end-1,col),2)]==0), find(sum(Users{n}.LogbookBase(1:end,col),2)>0 & [sum(Users{n}.LogbookBase(2:end,col),2);0]==0)];
+            ChargingBlocks=[find(sum(Users{n}.(Logbook)(1:end,col),2)>0 & [0; sum(Users{n}.(Logbook)(1:end-1,col),2)]==0), find(sum(Users{n}.(Logbook)(1:end,col),2)>0 & [sum(Users{n}.(Logbook)(2:end,col),2);0]==0)];
             for h=1:size(ChargingBlocks,1)
                 % Target 2, other last two rows have way too high energy
                 % charged. needs to be fixed!
-                EnergyPerChargingProcess{k,find(sum(col==cols,1))}(counter,1)=sum(Users{n}.LogbookBase(ChargingBlocks(h,1):ChargingBlocks(h,2),col), 'all');
+                EnergyPerChargingProcess{k,find(sum(col==cols,1))}(counter,1)=sum(Users{n}.(Logbook)(ChargingBlocks(h,1):ChargingBlocks(h,2),col), 'all');
                 counter=counter+1;
             end
         end
@@ -127,8 +123,8 @@ DataTable.EnergyPerChargingProcess=round(cellfun(@mean,EnergyPerChargingProcess)
 EnergyCharged=cell(length(Targets),2);
 for k=ExistingTargets
     for n=TargetGroups{k}
-        EnergyCharged{k,1}(end+1)=sum(Users{n}.LogbookBase(1:end,5:7),'all');
-        EnergyCharged{k,2}(end+1)=sum(Users{n}.LogbookBase(1:end,8));
+        EnergyCharged{k,1}(end+1)=sum(Users{n}.(Logbook)(1:end,5:7),'all');
+        EnergyCharged{k,2}(end+1)=sum(Users{n}.(Logbook)(1:end,8));
     end
 end
 EnergyCharged=EnergyCharged(ExistingTargets,:);
@@ -148,8 +144,8 @@ for k=ExistingTargets
     ArrivalTimes{k,1}=NaT(0,0, 'TimeZone', 'Africa/Tunis');
     ArrivalTimes{k,2}=NaT(0,0, 'TimeZone', 'Africa/Tunis');
     for n=TargetGroups{k}
-        ConnectionBlocksHome=[find(ismember(Users{n}.LogbookBase(1:end,1),4:5) & ~ismember([0;Users{n}.LogbookBase(1:end-1,1)],4:5)), find(ismember(Users{n}.LogbookBase(1:end,1),4:5) & ~ismember([Users{n}.LogbookBase(2:end,1);0],4:5))];
-        ConnectionBlocksOther=[find(ismember(Users{n}.LogbookBase(1:end,1),6:7) & ~ismember([0;Users{n}.LogbookBase(1:end-1,1)],6:7)), find(ismember(Users{n}.LogbookBase(1:end,1),6:7) & ~ismember([Users{n}.LogbookBase(2:end,1);0],6:7))];
+        ConnectionBlocksHome=[find(ismember(Users{n}.(Logbook)(1:end,1),4:5) & ~ismember([0;Users{n}.(Logbook)(1:end-1,1)],4:5)), find(ismember(Users{n}.(Logbook)(1:end,1),4:5) & ~ismember([Users{n}.(Logbook)(2:end,1);0],4:5))];
+        ConnectionBlocksOther=[find(ismember(Users{n}.(Logbook)(1:end,1),6:7) & ~ismember([0;Users{n}.(Logbook)(1:end-1,1)],6:7)), find(ismember(Users{n}.(Logbook)(1:end,1),6:7) & ~ismember([Users{n}.(Logbook)(2:end,1);0],6:7))];
         ConnectionTime{k,1}=[ConnectionTime{k,1}; (ConnectionBlocksHome(:,2)-ConnectionBlocksHome(:,1)+1)*Time.StepMin];
         ConnectionTime{k,2}=[ConnectionTime{k,2}; (ConnectionBlocksOther(:,2)-ConnectionBlocksOther(:,1)+1)*Time.StepMin];
         ArrivalTimes{k,1}=[ArrivalTimes{k,1}; datetime(ones(length(ConnectionBlocksHome),1),ones(length(ConnectionBlocksHome),1),ones(length(ConnectionBlocksHome),1), hour(Users{1}.Time.Vec(ConnectionBlocksHome(:,1))), minute((Users{1}.Time.Vec(ConnectionBlocksHome(:,1)))),zeros(length(ConnectionBlocksHome),1), 'TimeZone', 'Africa/Tunis')];
@@ -226,8 +222,8 @@ for k=ExistingTargets
     Load{k,1}=zeros(96,1);
     Load{k,2}=zeros(96,1);
     for n=TargetGroups{k}
-        Load{k,1}=Load{k,1}+sum(reshape(sum(Users{n}.LogbookBase(:,5:7), 2), 96, []),2)*4/1e3/days(Users{1}.Time.Vec(end)-Users{1}.Time.Vec(1));
-        Load{k,2}=Load{k,2}+sum(reshape(Users{n}.LogbookBase(:,8), 96, []),2)*4/1e3/days(Users{1}.Time.Vec(end)-Users{1}.Time.Vec(1));
+        Load{k,1}=Load{k,1}+sum(reshape(sum(Users{n}.(Logbook)(:,5:7), 2), 96, []),2)*4/1e3/days(Users{1}.Time.Vec(end)-Users{1}.Time.Vec(1));
+        Load{k,2}=Load{k,2}+sum(reshape(Users{n}.(Logbook)(:,8), 96, []),2)*4/1e3/days(Users{1}.Time.Vec(end)-Users{1}.Time.Vec(1));
     end
     Load{k,1}=Load{k,1};
     Load{k,2}=Load{k,2};
@@ -263,7 +259,7 @@ MileageYearKm=0;
 AvgConsumption=[];
 for n=2:length(Users)
     MileageYearKm=MileageYearKm+Users{n}.AverageMileageYear_km;
-    AvgConsumption=[AvgConsumption; Users{n}.LogbookBase(Users{n}.LogbookBase(:,4)>0, 4), Users{n}.LogbookBase(Users{n}.LogbookBase(:,4)>0, 3)];
+    AvgConsumption=[AvgConsumption; Users{n}.(Logbook)(Users{n}.(Logbook)(:,4)>0, 4), Users{n}.(Logbook)(Users{n}.(Logbook)(:,4)>0, 3)];
 end
 MileageYearKm=MileageYearKm/length(Users)-1;
 disp(strcat("The users drove in average ", num2str(MileageYearKm), " km per year"))
@@ -287,7 +283,7 @@ disp(strcat(num2str(length(unique(VehicleNums))), " unique Vehicles are covered 
 
 EmptyBattery=0;
 for n=2:length(Users)
-    EmptyBattery(n)=sum(Users{n}.LogbookBase(2:end,9)<=0 & Users{n}.LogbookBase(1:end-1,9)>0);
+    EmptyBattery(n)=sum(Users{n}.(Logbook)(2:end,9)<=0 & Users{n}.(Logbook)(1:end-1,9)>0);
 end
 disp(strcat(num2str(sum(EmptyBattery>0)), " users experienced empty batteries"))
 if sum(EmptyBattery>0)==0

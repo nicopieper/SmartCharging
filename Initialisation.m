@@ -1,7 +1,11 @@
+% Integrate Algo in Demo
+% Check why SmartCharging leads to exceeded Batteries
+
+
 %% Initialisation
 clear
 Time.Start=datetime(2019,09,1,0,0,0, 'TimeZone', 'Africa/Tunis');
-Time.End=datetime(2020,08,31,23,45,0, 'TimeZone', 'Africa/Tunis');
+Time.End=datetime(2020,05,31,23,45,0, 'TimeZone', 'Africa/Tunis');
 Time.EndTrain=datetime(2020,01,31,23,45,0, 'TimeZone', 'Africa/Tunis');
 Time.Step=minutes(15);
 Time.StepMin=minutes(Time.Step);
@@ -9,7 +13,7 @@ Time.StepMin=minutes(Time.Step);
 ProcessDataNew.Smard=0;
 ProcessDataNew.EC=0;
 ProcessDataNew.SMAPlant=0;
-ProcessDataNew.Regel=1;
+ProcessDataNew.Regel=0;
 
 Range.ShareTrain=0.8;             	% Share of the Training Data Set
 %ShareVal=0.0;                  % Share of the Validation Data Set

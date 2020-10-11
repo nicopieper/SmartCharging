@@ -28,10 +28,10 @@ OptimalChargingEnergies=reshape(x,ControlPeriods, NumCostCats, NumUsers);
 PostPreAlgo;
 OptimalChargingEnergies(:,1,:)=OptimalChargingEnergiesSpotmarket;
 
-ChargingMat(:,:,:,end+1)=OptimalChargingEnergies;
-ChargingVehicle=[ChargingVehicle; sum(ChargingMat(1:96,:,:,end),2)];
-ChargingType=[ChargingType; sum(ChargingMat(1:96,:,:,end),3)];
+PreAlgoCounter=PreAlgoCounter+1;
+ChargingMat(:,:,:,PreAlgoCounter)=OptimalChargingEnergies;
 AvailabilityMat=[AvailabilityMat, Availability(1:96,1,:)];
+
 ConsMatchLastReservePowerOffersbeq=sum(squeeze(OptimalChargingEnergies(24*Time.StepInd:4*Time.StepInd:24*Time.StepInd+ConsPeriods*4*Time.StepInd-1,3,:)), 2);
 
 if sum(x)<ConsEnergybeq

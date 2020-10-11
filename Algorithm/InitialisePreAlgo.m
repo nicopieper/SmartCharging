@@ -25,6 +25,7 @@ for n=2:NumUsers+1
     MaxPower(1,1,n-1)=double(Users{n}.ACChargingPowerHomeCharging);
 end
 
+PreAlgoCounter=0;
 Availability=[];
 EnergyDemand=[];
 ChargingMat=[];
@@ -32,6 +33,7 @@ ChargingVehicle=[];
 ChargingType=[];
 AvailabilityMat=[];
 DemandInds=tril(ones(ControlPeriods,ControlPeriods)).*(1:ControlPeriods);
+DemandInds(:,1)=0;
 DemandInds(DemandInds==0)=ControlPeriods+1;
 
 %% Initialise Constraints
