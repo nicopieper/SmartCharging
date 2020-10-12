@@ -24,9 +24,25 @@ DemoPlots{n}.YAxis{k}=1;
 DemoPlots{n}.PlotColor{k}=k;
 
 k=2;
-DemoPlots{n}.Label{k}="Prediction";
+DemoPlots{n}.Label{k}="Prediction LSQ";
 DemoPlots{n}.YLabel{k}="Price in €/MWh";
 if length(DemoPlots{n}.Data)<=1
+    StorageFile=uigetfile(Path.Prediction, strcat("Select ", DemoPlots{n}.Title, " ", DemoPlots{n}.Label{k}));
+    load(strcat(Path.Prediction, StorageFile))
+    DemoPlots{n}.Data{k}=repelem(Pred.Data, Time.StepInd/Pred.Time.StepPredInd);
+end
+
+DemoPlots{n}.DataMat{k}=repelem(Pred.DataMat, Time.StepInd/Pred.Time.StepPredInd,Time.StepInd/Pred.Time.StepPredInd);
+DemoPlots{n}.Time.Vec{k}=repelem(Pred.Time.Pred, Time.StepInd/Pred.Time.StepPredInd,Time.StepInd/Pred.Time.StepPredInd);
+DemoPlots{n}.YMin{k}='dynamic';
+DemoPlots{n}.YMax{k}='dynamic';
+DemoPlots{n}.YAxis{k}=1;
+DemoPlots{n}.PlotColor{k}=k;
+
+k=3;
+DemoPlots{n}.Label{k}="Prediction NARXNET";
+DemoPlots{n}.YLabel{k}="Price in €/MWh";
+if length(DemoPlots{n}.Data)<=2
     StorageFile=uigetfile(Path.Prediction, strcat("Select ", DemoPlots{n}.Title, " ", DemoPlots{n}.Label{k}));
     load(strcat(Path.Prediction, StorageFile))
     DemoPlots{n}.Data{k}=repelem(Pred.Data, Time.StepInd/Pred.Time.StepPredInd);
