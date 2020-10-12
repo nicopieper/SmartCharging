@@ -25,6 +25,16 @@ ConsMaxEnergyChargableTSb=MaxEnergyChargableSoCTS(:);
 
 %%
 
+% A=[ ConsEnergyDemandTSA; -ConsEnergyDemandTSA];
+% Aeq=[];
+% lb=zeros(ControlPeriods, NumCostCats, NumUsers);
+% 
+% b=[ ConsMaxEnergyChargableTSb; -ConsMinEnergyRequiredToChargeTSb];
+% beq=[];
+% ub=ConsPowerTSb(:);
+
+
+
 A=[ConsSumPowerTSA; ConsEnergyDemandTSA; -ConsEnergyDemandTSA];
 Aeq=[ConsEnergyCPAeq; ConsRLOfferAeq;ConsMatchLastReservePowerOffers4HAeq];
 lb=zeros(ControlPeriods, NumCostCats, NumUsers);
@@ -32,16 +42,6 @@ lb=zeros(ControlPeriods, NumCostCats, NumUsers);
 b=[ConsSumPowerTSb(:); ConsMaxEnergyChargableTSb; -ConsMinEnergyRequiredToChargeTSb];
 beq=[ConsMinEnergyToChargeCPbeq; ConsRLOfferbeq; ConsMatchLastReservePowerOffers4Hbeq];
 ub=ConsPowerTSb(:);
-
-
-
-% A=[ConsSumPowerTSA; ConsEnergyDemandTSA; -ConsEnergyDemandTSA];
-% Aeq=[ConsEnergyCPAeq; ConsRLOfferAeq;ConsMatchLastReservePowerOffers4HAeq];
-% lb=zeros(ControlPeriods, NumCostCats, NumUsers);
-% 
-% b=[ConsSumPowerTSb(:); ConsMaxEnergyChargableTSb; -ConsMinEnergyRequiredToChargeTSb];
-% beq=[ConsMinEnergyToChargeCPbeq; ConsRLOfferbeq; ConsMatchLastReservePowerOffers4Hbeq];
-% ub=ConsPowerTSb(:);
 
 
 

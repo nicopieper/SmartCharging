@@ -54,16 +54,16 @@ Time.StepPredInd=1/(minutes(Time.Pred(2)-Time.Pred(1))/60); % H:1, HH: 2, QH: 4
 MaxDelayInd=MaxDelayHours*Time.StepPredInd;
 
 % TimeVecTrainPred=Range.TrainDate(1):
-if exist('Range.TrainDate', 'var') && exist('Range.TestDate', 'var')
-    TimeVecPred=Time.Start:Time.StepPred:Time.End;
-    Range.TrainPredInd=[max([find(Range.TrainDate(1)==TimeVecPred,1), find(~isnan(Target),1)])  find(dateshift(Range.TrainDate(2),'end','day')-Time.StepPred==TimeVecPred,1)];
-    %RangeVal=[RangeTrain(2)+1 RangeTrain(2)+floor(length(Target)*ShareVal/24)*24-MaxDelayInd];
-    Range.TestPredInd=[find(Range.TestDate(1)==TimeVecPred,1) find(dateshift(Range.TestDate(2),'end','day')-Time.StepPred==TimeVecPred,1)];
-else
-    Range.TrainPredInd=[1 floor(length(Target)*Range.ShareTrain/(24*Time.StepInd))*(24*Time.StepInd)];
-    %RangeVal=[RangeTrain(2)+1 RangeTrain(2)+floor(length(Target)*ShareVal/24)*24-MaxDelayInd];
-    Range.TestPredInd=[Range.TrainPredInd(2)+1 length(Target)];
-end
+% if exist('Range.TrainDate', 'var') && exist('Range.TestDate', 'var')
+TimeVecPred=Time.Start:Time.StepPred:Time.End;
+Range.TrainPredInd=[max([find(Range.TrainDate(1)==TimeVecPred,1), find(~isnan(Target),1)])  find(dateshift(Range.TrainDate(2),'end','day')-Time.StepPred==TimeVecPred,1)];
+%RangeVal=[RangeTrain(2)+1 RangeTrain(2)+floor(length(Target)*ShareVal/24)*24-MaxDelayInd];
+Range.TestPredInd=[find(Range.TestDate(1)==TimeVecPred,1) find(dateshift(Range.TestDate(2),'end','day')-Time.StepPred==TimeVecPred,1)];
+% else
+%     Range.TrainPredInd=[1 floor(length(Target)*Range.ShareTrain/(24*Time.StepInd))*(24*Time.StepInd)];
+%     %RangeVal=[RangeTrain(2)+1 RangeTrain(2)+floor(length(Target)*ShareVal/24)*24-MaxDelayInd];
+%     Range.TestPredInd=[Range.TrainPredInd(2)+1 length(Target)];
+% end
 
 %% Calc Daily and Weekly Mean Values
 

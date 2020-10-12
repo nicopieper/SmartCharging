@@ -3,7 +3,7 @@ tic
 ActivateWaitbar=true;
 PublicChargingThreshold=uint32(15); % in %
 PThreshold=1.2;
-NumUsers=1000; % size(Users,1)-1;
+NumUsers=500; % size(Users,1)-1;
 ControlPeriods=96*2;
 SmartCharging=true;
 UsePV=true;
@@ -39,6 +39,8 @@ Time.Sim.Vec=Time.Sim.Start:Time.Step:Time.Sim.End;
 TD.Main=find(ismember(Time.Vec,Time.Sim.Start),1)-1;
 TD.User=find(ismember(Users{1}.Time.Vec,Time.Sim.Start),1)-1;
 
+UserNum=2:NumUsers+1;
+
 
 for n=2:size(Users,1)
     Users{n}.Logbook=double(Users{n}.LogbookSource);
@@ -48,7 +50,7 @@ if SmartCharging
     TimeOfForecast=datetime(1,1,1,8,0,0,'TimeZone','Africa/Tunis');
     TimeOfReserveMarketOffer=datetime(1,1,1,8,0,0,'TimeZone','Africa/Tunis');
 	ShiftInds=(hour(TimeOfForecast)*Time.StepInd + minute(TimeOfForecast)/minutes(Time.Step));
-    TimesOfPreAlgo=(hour(TimeOfForecast)*Time.StepInd + minute(TimeOfForecast)/60*Time.StepInd)+1+ControlPeriods:24*Time.StepInd:length(Time.Sim.VecInd);
+    TimesOfPreAlgo=(hour(TimeOfForecast)*Time.StepInd + minute(TimeOfForecast)/60*Time.StepInd)+1+ControlPeriods+24*Time.StepInd:24*Time.StepInd:length(Time.Sim.VecInd);
     InitialisePreAlgo;
     
     if UsePredictions
@@ -174,11 +176,14 @@ for TimeInd=Time.Sim.VecInd(2:end)
 	for n=2:NumUsers+1
         if  Users{n}.Logbook(TimeInd+TD.User,9)<double(Users{n}.BatterySize) && Users{n}.Logbook(TimeInd+TD.User,1)>=5
             Users{n}.Logbook(TimeInd+TD.User,9)=Users{n}.Logbook(TimeInd+TD.User,9)+sum(Users{n}.Logbook(TimeInd+TD.User,5:8));
+            if Users{n}.Logbook(TimeInd+TD.User, 9)>double(Users{n}.BatterySize)*1.01
+                error("Battery over charged")
+            end
         end
     end
     
     if SmartCharging && ismember(TimeInd, TimesOfPreAlgo)
-        TimeInd=TimeInd-ControlPeriods;
+        TimeInd=TimeInd-ControlPeriods-24*Time.StepInd;
         PreAlgo;
     
                 %Users{n}.Logbook(TimeInd+TD.User+find((TimeInd+TD.User:TimeInd+TD.User+24*Time.StepInd-1)' .* sum(OptimalChargingEnergies(1:24*Time.StepInd,:,n-1), 2)>0))=5;
@@ -196,7 +201,7 @@ for TimeInd=Time.Sim.VecInd(2:end)
             Users{n}.Logbook(TimeInd+TD.User:TimeInd+TD.User+ControlPeriods-1, 9)=min([ones(ControlPeriods,1)*double(Users{n}.BatterySize), Users{n}.Logbook(TimeInd+TD.User:TimeInd+TD.User+ControlPeriods-1, 9)], [],2);
         end
         
-        TimeInd=TimeInd+ControlPeriods;
+        TimeInd=TimeInd+ControlPeriods+24*Time.StepInd;
     end
     
     if ActivateWaitbar && mod(TimeInd+TD.User,1000)==0

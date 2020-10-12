@@ -12,7 +12,7 @@ options.Display = 'off';
 
 %% Prepare Users
 
-for n=2:NumUsers+1
+for n=UserNum
     Users{n}.GridConvenientChargingAvailabilityControlPeriod=repmat(Users{n}.GridConvenientChargingAvailability,2,1);
 	Users{n}.GridConvenientChargingAvailabilityControlPeriod=circshift(Users{n}.GridConvenientChargingAvailabilityControlPeriod, -ShiftInds);
     Users{n}.GridConvenientChargingAvailabilityControlPeriod=Users{n}.GridConvenientChargingAvailabilityControlPeriod(1:ControlPeriods);
@@ -21,8 +21,10 @@ end
 %% Initialise Optimisation Variables
 
 MaxPower=[];
-for n=2:NumUsers+1
-    MaxPower(1,1,n-1)=double(Users{n}.ACChargingPowerHomeCharging);
+VarCounter=1;
+for n=UserNum
+    MaxPower(1,1,VarCounter)=double(Users{n}.ACChargingPowerHomeCharging);
+    VarCounter=VarCounter+1;
 end
 
 PreAlgoCounter=0;

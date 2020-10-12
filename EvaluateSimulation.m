@@ -53,8 +53,8 @@ for k=ExistingTargets
         a=find(ismember(Users{n}.(Logbook)(2:end,1),6:7) & ~ismember(Users{n}.(Logbook)(1:end-1,1),6:7));
         Users{n}.ChargeProcessesOtherBase1=sum(Users{n}.(Logbook)(2:end,8)>0 & Users{n}.(Logbook)(1:end-1,8)==0);
         b=find(Users{n}.(Logbook)(2:end,8)>0 & Users{n}.(Logbook)(1:end-1,8)==0);
-        ChargeProcesses{k,1}(n)=Users{n}.ChargeProcessesHomeBase1;
-        ChargeProcesses{k,2}(n)=Users{n}.ChargeProcessesOtherBase;
+        ChargeProcesses{k,1}(n)=Users{n}.ChargeProcessesHomeBase;
+        ChargeProcesses{k,2}(n)=Users{n}.ChargeProcessesOtherBase1;
     end
     ChargeProcessesPerWeek{k,1}=sum(ChargeProcesses{k,1})/days(Users{1}.Time.Vec(end)-Users{1}.Time.Vec(1))*7/length(TargetGroups{k});
     ChargeProcessesPerWeek{k,2}=sum(ChargeProcesses{k,2})/days(Users{1}.Time.Vec(end)-Users{1}.Time.Vec(1))*7/length(TargetGroups{k});

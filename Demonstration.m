@@ -11,6 +11,7 @@ clearvars DemoPlots
 
 n=1;
 DemoPlots{n}.Title=strcat("Dayahead auction price");
+DemoPlots{n}.LegendLocation="northeast";
 
 k=1;
 DemoPlots{n}.Data{k}=repelem(Smard.DayaheadRealH, 4);
@@ -20,6 +21,7 @@ DemoPlots{n}.YLabel{k}="Price in €/MWh";
 DemoPlots{n}.YMin{k}='dynamic';
 DemoPlots{n}.YMax{k}='dynamic';
 DemoPlots{n}.YAxis{k}=1;
+DemoPlots{n}.PlotColor{k}=k;
 
 k=2;
 DemoPlots{n}.Label{k}="Prediction";
@@ -35,6 +37,7 @@ DemoPlots{n}.Time.Vec{k}=repelem(Pred.Time.Pred, Time.StepInd/Pred.Time.StepPred
 DemoPlots{n}.YMin{k}='dynamic';
 DemoPlots{n}.YMax{k}='dynamic';
 DemoPlots{n}.YAxis{k}=1;
+DemoPlots{n}.PlotColor{k}=k;
 
 %% Plot #2
 
@@ -44,12 +47,13 @@ if length(DemoPlots)<n || isempty(DemoPlots{n}) || ~isfield(DemoPlots{n}, "Data"
     load(strcat(Path.Simulation, StorageFile))
 end
 
-DemoUser=2;
+DemoUser=5;
 % while sum(Users{DemoUser}.LogbookBase(:,4)>0)/length(Users{DemoUser}.LogbookBase(:,4))<0.03 || sum(Users{DemoUser}.LogbookBase(:,4)>0)/length(Users{DemoUser}.LogbookBase(:,4))<0.13 || sum(Users{DemoUser}.LogbookSmart(:,8)>0)/length(Users{DemoUser}.LogbookBase(:,4))>0.03  || ~Users{DemoUser}.PVPlantExists
 %     DemoUser=DemoUser+1;
 % end
 
 DemoPlots{n}.Title=strcat("PV Power of User ", num2str(DemoUser));
+DemoPlots{n}.LegendLocation="northeast";
 
 k=1;
 DemoPlots{n}.Data{k}=double(PVPlants{Users{DemoUser}.PVPlant}.ProfileQH)/1000;
@@ -59,6 +63,7 @@ DemoPlots{n}.YLabel{k}="Power in kW";
 DemoPlots{n}.YMin{k}=-0.1;
 DemoPlots{n}.YMax{k}=max(DemoPlots{n}.Data{k});
 DemoPlots{n}.YAxis{k}=1;
+DemoPlots{n}.PlotColor{k}=k;
 
 k=2;
 DemoPlots{n}.Data{k}=double(PVPlants{Users{DemoUser}.PVPlant}.PredictionQH)/1000;
@@ -68,42 +73,48 @@ DemoPlots{n}.YLabel{k}="Power in kW";
 DemoPlots{n}.YMin{k}=-0.1;
 DemoPlots{n}.YMax{k}=max(DemoPlots{n}.Data{k});
 DemoPlots{n}.YAxis{k}=1;
+DemoPlots{n}.PlotColor{k}=k;
 
 
 %% Plot #3
 
 n=3;
 DemoPlots{n}.Title=strcat("Vehicle properties of user ", num2str(DemoUser));
+DemoPlots{n}.LegendLocation="northeast";
 
 k=1;
-DemoPlots{n}.Data{k}=double(Users{DemoUser}.LogbookSmart(:,9))/1000;
+% DemoPlots{n}.Data{k}=double(Users{DemoUser}.LogbookSmart(:,9))/1000;
+DemoPlots{n}.Data{k}=double(Users{DemoUser}.LogbookSmart(:,9))/double(Users{DemoUser}.BatterySize)*100;
 DemoPlots{n}.Time.Vec{k}=Users{1}.Time.Vec;
-DemoPlots{n}.Label{k}="Battery level";
-DemoPlots{n}.YLabel{k}="Energy in kWh";
+DemoPlots{n}.Label{k}="SoC";
+DemoPlots{n}.YLabel{k}="SoC in %";
 DemoPlots{n}.YMin{k}=-1;
-DemoPlots{n}.YMax{k}=ceil(double(Users{DemoUser}.BatterySize)/1000/10*1.1)*10;
+% DemoPlots{n}.YMax{k}=ceil(double(Users{DemoUser}.BatterySize)/1000/10*1.1)*10;
+DemoPlots{n}.YMax{k}=115;
 DemoPlots{n}.YAxis{k}=1;
+DemoPlots{n}.PlotColor{k}=k;
 
 k=2;
-DemandForecastMat=zeros(ForecastIntervalInd,length(Users{DemoUser}.LogbookBase)-3*24*Time.StepInd);
-for l=1:length(Users{DemoUser}.LogbookBase)-3*24*Time.StepInd
-    DemandForecastMat(:,l)=double(Users{DemoUser}.LogbookBase(l:l+ForecastIntervalInd-1,4));
+DemandForecastMat=zeros(ForecastIntervalInd,length(Users{DemoUser}.LogbookSmart));
+for l=1:length(Users{DemoUser}.LogbookSmart)-ForecastIntervalInd
+    DemandForecastMat(:,l)=double(Users{DemoUser}.LogbookSmart(l:l+ForecastIntervalInd-1,4));
 end
 Demand=double(Users{DemoUser}.LogbookSmart(:,4));
 DemoPlots{n}.Data{k}=Demand/1000;
 DemoPlots{n}.DataSource{k}=Users{DemoUser}.LogbookSmart(:,4)/1000;
 DemoPlots{n}.DataMat{k}=DemandForecastMat/1000;
-DemoPlots{n}.Time.Vec{k}=Users{1}.Time.Vec;
+DemoPlots{n}.Time.Vec{k}=Users{1}.Time.Vec(1:length(Users{DemoUser}.LogbookSmart)-ForecastIntervalInd);
 DemoPlots{n}.Label{k}="Demand prediction";
 DemoPlots{n}.YLabel{k}="Energy in kWh";
 DemoPlots{n}.YMin{k}=0;
 DemoPlots{n}.YMax{k}='dynamic';
 DemoPlots{n}.YAxis{k}=2;
+DemoPlots{n}.PlotColor{k}=k;
 
 k=3;
 ChargingDemoUser=squeeze(sum(Users{1}.ChargingMat(:,:,DemoUser-1,:),2));
-ChargingDemoUserMat=[zeros(ForecastIntervalInd, ShiftInds),  repelem(ChargingDemoUser, 1, 24*Time.StepInd)];
-ChargingDemoUser=[zeros(ShiftInds,1); reshape(ChargingDemoUser(1:96,:), [], 1)];
+ChargingDemoUserMat=[zeros(ForecastIntervalInd, Users{1}.ShiftInds),  repelem(ChargingDemoUser, 1, 24*Time.StepInd)];
+ChargingDemoUser=[zeros(Users{1}.ShiftInds,1); reshape(ChargingDemoUser(1:96,:), [], 1)];
 
 % ChargingDemoUserMat=reshape(ChargingDemoUser(:), [], size(Users{1}.ChargingMat,2))/1000;
 
@@ -115,6 +126,7 @@ DemoPlots{n}.YLabel{k}="Energy in kWh";
 DemoPlots{n}.YMin{k}=0;
 DemoPlots{n}.YMax{k}='dynamic';
 DemoPlots{n}.YAxis{k}=2;
+DemoPlots{n}.PlotColor{k}=k;
 
 % DemoPlots{n}.Data{k}=ChargingTypeDemoUser(:,1);
 % DemoPlots{n}.Time.Vec{k}=Users{1}.Time.Vec;
@@ -174,8 +186,10 @@ DemoPlots{n}.YAxis{k}=2;
 
 n=4;
 DemoPlots{n}.Title=strcat("Load curve of the fleet");
-ChargingType=[zeros(ShiftInds, size(ChargingMat,2)); reshape(permute(squeeze(sum(Users{1}.ChargingMat(1:96,:,:,:),3)), [1,3,2]), [], NumCostCats)]/1000*4;
-ChargingTypeMat=repelem(permute(squeeze(sum(ChargingMat,3)),[1,3,2]), 1,24*Time.StepInd,1)/1000*4; 
+DemoPlots{n}.LegendLocation="northeast";
+
+ChargingType=[zeros(Users{1}.ShiftInds, size(Users{1}.ChargingMat,2)); reshape(permute(squeeze(sum(Users{1}.ChargingMat(1:96,:,:,:),3)), [1,3,2]), [], Users{1}.NumCostCats)]/1000*4;
+ChargingTypeMat=repelem(permute(squeeze(sum(Users{1}.ChargingMat,3)),[1,3,2]), 1,24*Time.StepInd,1)/1000*4; 
 
 k=1;
 DemoPlots{n}.Data{k}=ChargingType(:,k);
@@ -186,6 +200,7 @@ DemoPlots{n}.YLabel{k}="Charging Power in kW";
 DemoPlots{n}.YMin{k}=-1;
 DemoPlots{n}.YMax{k}='dynamic';
 DemoPlots{n}.YAxis{k}=1;
+DemoPlots{n}.PlotColor{k}=8;
 
 k=2;
 DemoPlots{n}.Data{k}=ChargingType(:,k);
@@ -196,6 +211,7 @@ DemoPlots{n}.YLabel{k}="Charging Power in kW";
 DemoPlots{n}.YMin{k}=-1;
 DemoPlots{n}.YMax{k}='dynamic';
 DemoPlots{n}.YAxis{k}=1;
+DemoPlots{n}.PlotColor{k}=9;
 
 k=3;
 DemoPlots{n}.Data{k}=ChargingType(:,k);
@@ -206,6 +222,7 @@ DemoPlots{n}.YLabel{k}="Charging Power in kW";
 DemoPlots{n}.YMin{k}=-1;
 DemoPlots{n}.YMax{k}='dynamic';
 DemoPlots{n}.YAxis{k}=1;
+DemoPlots{n}.PlotColor{k}=10;
 
 
 % n=2;

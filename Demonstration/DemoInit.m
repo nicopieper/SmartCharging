@@ -1,7 +1,8 @@
 PlotColors= [0.0000, 0.4470, 0.7410; 0.8500, 0.3250, 0.0980;... 
              0.9290, 0.6940, 0.1250; 0.4940, 0.1840, 0.5560;... 
              0.4660, 0.6740, 0.1880; 0.3010, 0.7450, 0.9330;...
-             0.6350, 0.0780, 0.1840];     
+             0.6350, 0.0780, 0.1840; 1,      0,      0;...
+             0, 1, 0               ; 0,      0,      1];     
 
 ForecastDuration=0;
 EndCounter=TimeInd;
@@ -37,7 +38,7 @@ for n=1:length(DemoPlots)
     xlabel('Time')
     grid on
     hold on
-    l=legend('Interpreter','none', 'Location', 'northwest');
+    l=legend('Interpreter','none', 'Location', DemoPlots{n}.LegendLocation);
     Yaxes=[];
     
     for k=1:length(DemoPlots{n}.Data)
@@ -58,7 +59,7 @@ for n=1:length(DemoPlots)
             end
         end
         
-        DemoPlots{n}.Fig{k}=animatedline(Time.Demo.VecDateNum(TimeInd-24*Time.StepInd+1:TimeInd), DemoPlots{n}.Data{k}(TimeInd+DemoPlots{n}.Time.TD{k}-24*Time.StepInd+1:TimeInd+DemoPlots{n}.Time.TD{k},1), 'MaximumNumPoints',400,  'Color', PlotColors(k,:));
+        DemoPlots{n}.Fig{k}=animatedline(Time.Demo.VecDateNum(TimeInd-24*Time.StepInd+1:TimeInd), DemoPlots{n}.Data{k}(TimeInd+DemoPlots{n}.Time.TD{k}-24*Time.StepInd+1:TimeInd+DemoPlots{n}.Time.TD{k},1), 'MaximumNumPoints',400,  'Color', PlotColors(DemoPlots{n}.PlotColor{k},:), 'LineWidth',1.3);
         legappend(l, DemoPlots{n}.Label{k});
         ylabel(DemoPlots{n}.YLabel{k})
         
