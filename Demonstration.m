@@ -52,7 +52,7 @@ DemoUser=5;
 %     DemoUser=DemoUser+1;
 % end
 
-DemoPlots{n}.Title=strcat("PV Power of User ", num2str(DemoUser));
+DemoPlots{n}.Title=strcat("PV Power of user ", num2str(DemoUser));
 DemoPlots{n}.LegendLocation="northeast";
 
 k=1;
