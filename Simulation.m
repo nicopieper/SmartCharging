@@ -3,14 +3,14 @@ tic
 ActivateWaitbar=true;
 PublicChargingThreshold=uint32(15); % in %
 PThreshold=1.2;
-NumUsers=100; % size(Users,1)-1;
+NumUsers=450; % size(Users,1)-1;
 ControlPeriods=96*2;
 SmartCharging=true;
 UsePV=true;
 ApplyGridConvenientCharging=true;
 UsePredictions=true;
 rng('default');
-rng(1);
+rng(2);
 
 
 if ~exist('PublicChargerDistribution', 'var')
@@ -26,7 +26,7 @@ delete(findall(0,'type','figure','tag','TMWWaitbar'));
 
 Time.Sim.Start=max([Range.TrainDate(1), Users{1}.Time.Vec(1)]);
 if ~SmartCharging
-    Time.Sim.End=min([Range.TestDate(2), Users{1}.Time.Vec(end)]);
+    Time.Sim.End=min([Range.TestDate(2), Users{1}.Time.Vec(end)-days(240)]);
 else
     Time.Sim.End=min([Range.TestDate(2), Users{1}.Time.Vec(end)-days(2)]);
 end
