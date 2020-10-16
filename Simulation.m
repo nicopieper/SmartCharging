@@ -4,7 +4,7 @@ ActivateWaitbar=true;
 SmartChargingBuffer=0.14;
 NumUsers=450; % size(Users,1)-1;
 ControlPeriods=96*2;
-SmartCharging=false;
+SmartCharging=true;
 UsePV=true;
 ApplyGridConvenientCharging=true;
 UsePredictions=true;
@@ -53,7 +53,7 @@ if SmartCharging
     TimeOfForecast=datetime(1,1,1,8,0,0,'TimeZone','Africa/Tunis');
     TimeOfReserveMarketOffer=datetime(1,1,1,8,0,0,'TimeZone','Africa/Tunis');
 	ShiftInds=(hour(TimeOfForecast)*Time.StepInd + minute(TimeOfForecast)/minutes(Time.Step));
-    TimesOfPreAlgo=(hour(TimeOfForecast)*Time.StepInd + minute(TimeOfForecast)/60*Time.StepInd)+1-1:24*Time.StepInd:length(Time.Sim.VecInd);
+    TimesOfPreAlgo=(hour(TimeOfForecast)*Time.StepInd + minute(TimeOfForecast)/60*Time.StepInd)+1-1+ControlPeriods:24*Time.StepInd:length(Time.Sim.VecInd);
     InitialisePreAlgo;
     
     if UsePredictions
