@@ -6,7 +6,7 @@ if ~exist("Users", "var")
     load(strcat(Path.Simulation, Dl, StorageFiles(StorageInd).name))
 end
 
-Logbook="LogbookBase";
+Logbook="LogbookSmart";
 
 Targets=["small"; "medium"; "large"; "transporter"];
 % Targets=["one user"; "only one user"; "several users"; "undefined"];
@@ -74,7 +74,7 @@ for k=ExistingTargets
         col=col(col~=0);
         counter=1;
         for n=TargetGroups{k}
-            ChargingBlocks=[find(sum(Users{n}.(Logbook)(1:end,col),2)>0 & [0; sum(Users{n}.(Logbook)(1:end-1,col),2)]==0), find(sum(Users{n}.(Logbook)(1:end,col),2)>0 & [sum(Users{n}.(Logbook)(2:end,col),2);0]==0)];
+            ChargingBlocks=[find(sum(Users{n}.(Logbook)(1:end,col),2)>0 & [0; sum(Users{n}.(Logbook)(1:end-1,col),2)]<=0), find(sum(Users{n}.(Logbook)(1:end,col),2)>0 & [sum(Users{n}.(Logbook)(2:end,col),2);0]<=0)];
             for h=1:size(ChargingBlocks,1)
                 % Target 2, other last two rows have way too high energy
                 % charged. needs to be fixed!

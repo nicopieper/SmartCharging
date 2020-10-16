@@ -7,41 +7,53 @@ CalcOptVars;
 
 Costf=Costs(:);
 
-ConsSumPowerTSb=repelem(MaxPower(:)/4, ControlPeriods);
-ConsPowerTSb=ones(ControlPeriods, 3, NumUsers).*MaxPower/4.*Availability;
-ConsPowerTSb(:,2,:)=min([ConsPowerTSb(:,2,:), PVPower/4], [], 2);
-ConsPowerTSb=ConsPowerTSb(:,CostCats,:);
 
-ConsMinEnergyToChargeCPbeq=MinEnergyChargableDeadlockCP(:);
-SummedMaxEnergyChargeable=[];
-for k=1:NumUsers
-    Temp=[Availability(:,:,k); 0]';
-    SummedMaxEnergyChargeable(:,1,k)=sum(Temp(DemandInds),2);
-end
+SumPower=MaxPower/4.*Availability;
+ConsbSumPowerTS=SumPower(:);
 
-% ConsMinEnergyRequiredToChargeTSb=min([MinEnergyRequiredToChargeTS(:), SummedMaxEnergyChargeable(:)], [], 2); %% !!
-ConsMinEnergyRequiredToChargeTSb=min([MinEnergyRequiredToChargeTS(:), MinEnergyChargableDeadlockTS(:)], [], 2);
-ConsMaxEnergyChargableTSb=MaxEnergyChargableSoCTS(:);
+PowerTS=repelem(MaxPower/4,ControlPeriods,NumCostCats,1);
+PowerTS(:,2,:)=min([PowerTS(:,2,:), PVPower/4], [], 2);
+ConsbPowerTS=PowerTS(:);
+
+ConsbMaxEnergyChargableSoCTS=MaxEnergyChargableSoCTS(:);
+
+ConsbMinEnergyRequiredTS=MinEnergyRequiredTS(:);
+
+ConsbeqMaxEnergyChargableDeadlockCP=MaxEnergyChargableDeadlockCP(:);
+
+
+
+
+
+% ConsSumPowerTSb=repelem(MaxPower(:)/4, ControlPeriods);
+% ConsPowerTSb=ones(ControlPeriods, 3, NumUsers).*MaxPower/4.*Availability;
+% ConsPowerTSb(:,2,:)=min([ConsPowerTSb(:,2,:), PVPower/4], [], 2);
+% ConsPowerTSb=ConsPowerTSb(:,CostCats,:);
+% 
+% ConsMinEnergyToChargeCPbeq=MinEnergyChargableDeadlockCP(:);
+% 
+% % ConsMinEnergyRequiredToChargeTSb=min([MinEnergyRequiredToChargeTS(:), SummedMaxEnergyChargeable(:)], [], 2); %% !!
+% ConsMinEnergyRequiredToChargeTSb=min([MinEnergyRequiredToChargeTS(:), MinEnergyChargableDeadlockTS(:)], [], 2);
+% ConsMaxEnergyChargableTSb=MaxEnergyChargableSoCTS(:);
 
 %%
 
-% A=[ ConsEnergyDemandTSA; -ConsEnergyDemandTSA];
-% Aeq=[];
-% lb=zeros(ControlPeriods, NumCostCats, NumUsers);
-% 
-% b=[ ConsMaxEnergyChargableTSb; -ConsMinEnergyRequiredToChargeTSb];
-% beq=[];
-% ub=ConsPowerTSb(:);
-
-
-
 A=[ConsSumPowerTSA; ConsEnergyDemandTSA; -ConsEnergyDemandTSA];
-Aeq=[ConsEnergyCPAeq; ConsRLOfferAeq;ConsMatchLastReservePowerOffers4HAeq];
-lb=zeros(ControlPeriods, NumCostCats, NumUsers);
+b=[ConsbSumPowerTS; ConsbMaxEnergyChargableSoCTS; -ConsbMinEnergyRequiredTS];
 
-b=[ConsSumPowerTSb(:); ConsMaxEnergyChargableTSb; -ConsMinEnergyRequiredToChargeTSb];
-beq=[ConsMinEnergyToChargeCPbeq; ConsRLOfferbeq; ConsMatchLastReservePowerOffers4Hbeq];
-ub=ConsPowerTSb(:);
+beq=[ConsbeqMaxEnergyChargableDeadlockCP; ConsRLOfferbeq; ConsMatchLastReservePowerOffers4Hbeq];
+Aeq=[ConsEnergyCPAeq; ConsRLOfferAeq; ConsMatchLastReservePowerOffers4HAeq];
+
+lb=zeros(ControlPeriods, NumCostCats, NumUsers);
+ub=ConsbPowerTS(:);
+%ub=[];
+
+
+% A=[ConsSumPowerTSA; ConsEnergyDemandTSA; -ConsEnergyDemandTSA];
+% b=[ConsbSumPowerTS; ConsbMaxEnergyChargableSoCTS; -ConsbMinEnergyRequiredTS];
+% 
+% beq=[ConsbeqMaxEnergyChargableDeadlockCP; ConsRLOfferbeq; ConsMatchLastReservePowerOffers4Hbeq];
+% Aeq=[ConsEnergyCPAeq; ConsRLOfferAeq; ConsMatchLastReservePowerOffers4HAeq];
 
 
 
@@ -56,6 +68,7 @@ ub=ConsPowerTSb(:);
 %% Calc optimal charging powers
 
 [x,fval]=linprog(Costf,A,b,Aeq,beq,lb,ub, options);
+%x(x<0)=0; % Due to the accuracy of the algorithm, sometimes values lower than zero appear. But they are so close to zero (e. g. 1e-12) that it does not influence the result
 
 %% Evaluate result
 
@@ -71,9 +84,9 @@ ConsMatchLastReservePowerOffers4Hbeq=sum(squeeze(OptimalChargingEnergies(24*Time
 temp1=ConsMatchLastReservePowerOffers4Hbeq;
 
 
-if round(sum(x))<round(ConsMinEnergyToChargeCPbeq)
-    1
-end
+% if round(sum(x))<round(ConsMinEnergyToChargeCPbeq)
+%     1
+% end
 
 if sum(reshape(x,ControlPeriods, NumCostCats, NumUsers)>0 & Availability==0)>1
     error("Availability was not considered")

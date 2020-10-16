@@ -1,7 +1,7 @@
 %% Intitialisation 
 TimeOfForecast=datetime(1,1,1,08,0,0,'TimeZone','Africa/Tunis');
 Time.Demo.Step=minutes(60);
-Time.Demo.StepInd=4;
+Time.Demo.StepInd=1;
 ForecastIntervalInd=48*Time.StepInd;
 
 clearvars DemoPlots
@@ -27,7 +27,8 @@ k=2;
 DemoPlots{n}.Label{k}="Prediction LSQ";
 DemoPlots{n}.YLabel{k}="Price in €/MWh";
 if length(DemoPlots{n}.Data)<=1
-    StorageFile=uigetfile(Path.Prediction, strcat("Select ", DemoPlots{n}.Title, " ", DemoPlots{n}.Label{k}));
+    %StorageFile=uigetfile(Path.Prediction, strcat("Select ", DemoPlots{n}.Title, " ", DemoPlots{n}.Label{k}));
+    StorageFile="20201012-123820180101-20200531_DayaheadRealH_LSQ_52__176_.mat";
     load(strcat(Path.Prediction, StorageFile))
     DemoPlots{n}.Data{k}=repelem(Pred.Data, Time.StepInd/Pred.Time.StepPredInd);
 end
@@ -43,7 +44,8 @@ k=3;
 DemoPlots{n}.Label{k}="Prediction NARXNET";
 DemoPlots{n}.YLabel{k}="Price in €/MWh";
 if length(DemoPlots{n}.Data)<=2
-    StorageFile=uigetfile(Path.Prediction, strcat("Select ", DemoPlots{n}.Title, " ", DemoPlots{n}.Label{k}));
+    %StorageFile=uigetfile(Path.Prediction, strcat("Select ", DemoPlots{n}.Title, " ", DemoPlots{n}.Label{k}));
+    StorageFile="20201012-125220180101-20200531_DayaheadRealH_NARXNET_52__1_.mat";
     load(strcat(Path.Prediction, StorageFile))
     DemoPlots{n}.Data{k}=repelem(Pred.Data, Time.StepInd/Pred.Time.StepPredInd);
 end
@@ -59,7 +61,8 @@ DemoPlots{n}.PlotColor{k}=k;
 
 n=2;
 if length(DemoPlots)<n || isempty(DemoPlots{n}) || ~isfield(DemoPlots{n}, "Data") || isempty(DemoPlots{n}.Data{k})
-    StorageFile=uigetfile(Path.Simulation, "Select the user data"');
+    %StorageFile=uigetfile(Path.Simulation, "Select the user data"');
+    StorageFile="Users_20201012-1108_20190901-20200531_1.2_100_1.mat";
     load(strcat(Path.Simulation, StorageFile))
 end
 
@@ -83,6 +86,9 @@ DemoPlots{n}.PlotColor{k}=k;
 
 k=2;
 DemoPlots{n}.Data{k}=double(PVPlants{Users{DemoUser}.PVPlant}.PredictionQH)/1000;
+temp=reshape(PVPlants{Users{DemoUser}.PVPlant}.PredictionQH(Users{1}.ShiftInds+1:end-96+Users{1}.ShiftInds), 96,[]);
+temp1=[temp(:,2:end), zeros(96,1)];
+DemoPlots{n}.DataMat{k}=repelem(double([temp;temp1]),1,Time.StepInd*24)/1000;
 DemoPlots{n}.Time.Vec{k}=Time.Vec;
 DemoPlots{n}.Label{k}=strcat("Prediction");
 DemoPlots{n}.YLabel{k}="Power in kW";
@@ -122,7 +128,7 @@ DemoPlots{n}.DataMat{k}=DemandForecastMat/1000;
 DemoPlots{n}.Time.Vec{k}=Users{1}.Time.Vec(1:length(Users{DemoUser}.LogbookSmart)-ForecastIntervalInd);
 DemoPlots{n}.Label{k}="Demand prediction";
 DemoPlots{n}.YLabel{k}="Energy in kWh";
-DemoPlots{n}.YMin{k}=0;
+DemoPlots{n}.YMin{k}=0.01;
 DemoPlots{n}.YMax{k}='dynamic';
 DemoPlots{n}.YAxis{k}=2;
 DemoPlots{n}.PlotColor{k}=k;
@@ -139,7 +145,7 @@ DemoPlots{n}.DataMat{k}=ChargingDemoUserMat/1000;
 DemoPlots{n}.Time.Vec{k}=Users{1}.Time.Vec;
 DemoPlots{n}.Label{k}="Assigned charging";
 DemoPlots{n}.YLabel{k}="Energy in kWh";
-DemoPlots{n}.YMin{k}=0;
+DemoPlots{n}.YMin{k}=0.01;
 DemoPlots{n}.YMax{k}='dynamic';
 DemoPlots{n}.YAxis{k}=2;
 DemoPlots{n}.PlotColor{k}=k;

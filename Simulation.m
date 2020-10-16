@@ -3,12 +3,14 @@ tic
 ActivateWaitbar=true;
 PublicChargingThreshold=uint32(15); % in %
 PThreshold=1.2;
-NumUsers=500; % size(Users,1)-1;
+NumUsers=100; % size(Users,1)-1;
 ControlPeriods=96*2;
 SmartCharging=true;
 UsePV=true;
 ApplyGridConvenientCharging=true;
 UsePredictions=true;
+rng('default');
+rng(1);
 
 
 if ~exist('PublicChargerDistribution', 'var')
@@ -26,7 +28,7 @@ Time.Sim.Start=max([Range.TrainDate(1), Users{1}.Time.Vec(1)]);
 if ~SmartCharging
     Time.Sim.End=min([Range.TestDate(2), Users{1}.Time.Vec(end)]);
 else
-    Time.Sim.End=min([Range.TestDate(2), Users{1}.Time.Vec(end)-days(3)]);
+    Time.Sim.End=min([Range.TestDate(2), Users{1}.Time.Vec(end)-days(2)]);
 end
 Time.Sim.Vec=Time.Sim.Start:Time.Step:Time.Sim.End;
 
@@ -40,9 +42,11 @@ TD.Main=find(ismember(Time.Vec,Time.Sim.Start),1)-1;
 TD.User=find(ismember(Users{1}.Time.Vec,Time.Sim.Start),1)-1;
 
 UserNum=2:NumUsers+1;
+% NumUsers=2;
+% UserNum=84:85;
 
 
-for n=2:size(Users,1)
+for n=UserNum
     Users{n}.Logbook=double(Users{n}.LogbookSource);
 end
 
@@ -50,7 +54,7 @@ if SmartCharging
     TimeOfForecast=datetime(1,1,1,8,0,0,'TimeZone','Africa/Tunis');
     TimeOfReserveMarketOffer=datetime(1,1,1,8,0,0,'TimeZone','Africa/Tunis');
 	ShiftInds=(hour(TimeOfForecast)*Time.StepInd + minute(TimeOfForecast)/minutes(Time.Step));
-    TimesOfPreAlgo=(hour(TimeOfForecast)*Time.StepInd + minute(TimeOfForecast)/60*Time.StepInd)+1+ControlPeriods+24*Time.StepInd:24*Time.StepInd:length(Time.Sim.VecInd);
+    TimesOfPreAlgo=(hour(TimeOfForecast)*Time.StepInd + minute(TimeOfForecast)/60*Time.StepInd)+1+ControlPeriods+2*24*Time.StepInd-1:24*Time.StepInd:length(Time.Sim.VecInd);
     InitialisePreAlgo;
     
     if UsePredictions
@@ -82,7 +86,7 @@ Users{1}.PThreshold=PThreshold;
 
 for TimeInd=Time.Sim.VecInd(2:end)
           
-    for n=2:NumUsers+1
+    for n=UserNum
         
         % Public charging: Only charge at public charging point if it is requiered due to low SoC
         if (Users{n}.Logbook(TimeInd+TD.User,1)==1 && Users{n}.Logbook(TimeInd+TD.User-1,9)*100/double(Users{n}.BatterySize)<PublicChargingThreshold) || (TimeInd+TD.User+1<=size(Users{n}.Logbook,1) && Users{n}.Logbook(TimeInd+TD.User,4)>=Users{n}.Logbook(TimeInd+TD.User-1,9))
@@ -120,7 +124,7 @@ for TimeInd=Time.Sim.VecInd(2:end)
         end
         
         if EnergyDemandLeft(n)>0
-            Users{n}.Logbook(TimeInd+TD.User,8)=min([EnergyDemandLeft(n), ChargingPower(n)*Time.StepMin/60]); % Publicly charged energy during one Time.Step in [Wh]
+            Users{n}.Logbook(TimeInd+TD.User,8)=min([EnergyDemandLeft(n), ChargingPower(n)*Time.StepMin/60, double(Users{n}.BatterySize)-Users{n}.Logbook(TimeInd+TD.User-1,9)]); % Publicly charged energy during one Time.Step in [Wh]
             EnergyDemandLeft(n)=EnergyDemandLeft(n)-Users{n}.Logbook(TimeInd+TD.User,8); 
         end
         
@@ -158,11 +162,13 @@ for TimeInd=Time.Sim.VecInd(2:end)
             end
         end
         
-        Users{n}.Logbook(TimeInd+TD.User,9)=Users{n}.Logbook(TimeInd+TD.User-1,9)-Users{n}.Logbook(TimeInd+TD.User,4);
-        
+        Users{n}.Logbook(TimeInd+TD.User,9)=min(double(Users{n}.BatterySize), Users{n}.Logbook(TimeInd+TD.User-1,9) - Users{n}.Logbook(TimeInd+TD.User,4) + Users{n}.Logbook(TimeInd+TD.User,8));
+        if ~(Users{n}.Logbook(TimeInd+TD.User,9)<(Users{n}.Logbook(TimeInd+TD.User-1,9)+sum(Users{n}.Logbook(TimeInd+TD.User,5:8)) - Users{n}.Logbook(TimeInd+TD.User,4))+3 && Users{n}.Logbook(TimeInd+TD.User,9)>(Users{n}.Logbook(TimeInd+TD.User-1,9)+sum(Users{n}.Logbook(TimeInd+TD.User,5:8)) - Users{n}.Logbook(TimeInd+TD.User,4))-3)
+            error("Wrong addition")
+        end
     end
     
-    for n=2:NumUsers+1
+    for n=UserNum
         if Users{n}.Logbook(TimeInd+TD.User,1)==4 && Users{n}.Logbook(TimeInd+TD.User,9)<double(Users{n}.BatterySize) && (~ApplyGridConvenientCharging || Users{n}.GridConvenientChargingAvailability(mod(TimeInd+TD.User-1, 24*Time.StepInd)+1)) % Charging starts always when the car is plugged in, until the Battery is fully charged
             Users{n}.Logbook(TimeInd+TD.User,1)=5;
             ChargingEnergy=min((Time.StepMin-Users{n}.Logbook(TimeInd+TD.User,2))*Users{n}.ACChargingPowerHomeCharging/60, double(Users{n}.BatterySize)-Users{n}.Logbook(TimeInd+TD.User-1,9)); %[Wh]
@@ -173,35 +179,44 @@ for TimeInd=Time.Sim.VecInd(2:end)
         end
     end
 
-	for n=2:NumUsers+1
+	for n=UserNum
         if  Users{n}.Logbook(TimeInd+TD.User,9)<double(Users{n}.BatterySize) && Users{n}.Logbook(TimeInd+TD.User,1)>=5
-            Users{n}.Logbook(TimeInd+TD.User,9)=Users{n}.Logbook(TimeInd+TD.User,9)+sum(Users{n}.Logbook(TimeInd+TD.User,5:8));
+            Users{n}.Logbook(TimeInd+TD.User,9)=Users{n}.Logbook(TimeInd+TD.User,9)+sum(Users{n}.Logbook(TimeInd+TD.User,5:7));
             if Users{n}.Logbook(TimeInd+TD.User, 9)>double(Users{n}.BatterySize)*1.01
                 error("Battery over charged")
+            end
+            if ~(Users{n}.Logbook(TimeInd+TD.User,9)<(Users{n}.Logbook(TimeInd+TD.User-1,9)+sum(Users{n}.Logbook(TimeInd+TD.User,5:8)) - Users{n}.Logbook(TimeInd+TD.User,4))+3 && Users{n}.Logbook(TimeInd+TD.User,9)>(Users{n}.Logbook(TimeInd+TD.User-1,9)+sum(Users{n}.Logbook(TimeInd+TD.User,5:8)) - Users{n}.Logbook(TimeInd+TD.User,4))-3)
+                error("Wrong addition")
             end
         end
     end
     
     if SmartCharging && ismember(TimeInd, TimesOfPreAlgo)
-        TimeInd=TimeInd-ControlPeriods-24*Time.StepInd;
+        TimeInd=TimeInd-ControlPeriods+1;         
         PreAlgo;
     
                 %Users{n}.Logbook(TimeInd+TD.User+find((TimeInd+TD.User:TimeInd+TD.User+24*Time.StepInd-1)' .* sum(OptimalChargingEnergies(1:24*Time.StepInd,:,n-1), 2)>0))=5;
-        for n=2:NumUsers+1
-            Users{n}.Logbook(TimeInd+TD.User+find(ismember(Users{n}.Logbook(TimeInd+TD.User:TimeInd+TD.User+24*Time.StepInd-1,1), 4:5))-1,1)=4;
-            Users{n}.Logbook(TimeInd+TD.User+find(sum(OptimalChargingEnergies(1:24*Time.StepInd,:,n-1), 2)>0)-1, 1) = 5;
-            Users{n}.Logbook(TimeInd+TD.User:TimeInd+TD.User+24*Time.StepInd-1, 5:7)=OptimalChargingEnergies(1:24*Time.StepInd,:,n-1);
+        for n=UserNum
+            Users{n}.Logbook(TimeInd+TD.User+find(ismember(Users{n}.Logbook(TimeInd+TD.User:TimeInd+TD.User+2*24*Time.StepInd-1,1), 4:5))-1,1)=4;
+            Users{n}.Logbook(TimeInd+TD.User+find(sum(OptimalChargingEnergies(1:2*24*Time.StepInd,:,n==UserNum), 2)>0)-1, 1) = 5;
+            Users{n}.Logbook(TimeInd+TD.User:TimeInd+TD.User+2*24*Time.StepInd-1, 5:7)=OptimalChargingEnergies(1:2*24*Time.StepInd,:,n==UserNum);
             
-            for k=0:ControlPeriods
+            for k=0:ControlPeriods-1
                 Users{n}.Logbook(TimeInd+TD.User+k, 9)=Users{n}.Logbook(TimeInd+TD.User+k-1, 9)-Users{n}.Logbook(TimeInd+TD.User+k, 4) + sum(Users{n}.Logbook(TimeInd+TD.User+k, 5:8));
+                if ~(Users{n}.Logbook(TimeInd+TD.User+k,9)<(Users{n}.Logbook(TimeInd+TD.User-1+k,9)+sum(Users{n}.Logbook(TimeInd+TD.User+k,5:8)) - Users{n}.Logbook(TimeInd+TD.User+k,4))+3 && Users{n}.Logbook(TimeInd+TD.User+k,9)>(Users{n}.Logbook(TimeInd+TD.User-1+k,9)+sum(Users{n}.Logbook(TimeInd+TD.User+k,5:8)) - Users{n}.Logbook(TimeInd+TD.User+k,4))-3)
+                    error("Wrong addition")
+                end
             end
-            if Users{n}.Logbook(TimeInd+TD.User:ControlPeriods-1, 9)>double(Users{n}.BatterySize)*1.05
+            if Users{n}.Logbook(TimeInd+TD.User:ControlPeriods-1, 9)>double(Users{n}.BatterySize)
                 2
             end
             Users{n}.Logbook(TimeInd+TD.User:TimeInd+TD.User+ControlPeriods-1, 9)=min([ones(ControlPeriods,1)*double(Users{n}.BatterySize), Users{n}.Logbook(TimeInd+TD.User:TimeInd+TD.User+ControlPeriods-1, 9)], [],2);
+            if ~(Users{n}.Logbook(TimeInd+TD.User,9)<(Users{n}.Logbook(TimeInd+TD.User-1,9)+sum(Users{n}.Logbook(TimeInd+TD.User,5:8)) - Users{n}.Logbook(TimeInd+TD.User,4))+3 && Users{n}.Logbook(TimeInd+TD.User,9)>(Users{n}.Logbook(TimeInd+TD.User-1,9)+sum(Users{n}.Logbook(TimeInd+TD.User,5:8)) - Users{n}.Logbook(TimeInd+TD.User,4))-3)
+                error("Wrong addition")
+            end
         end
         
-        TimeInd=TimeInd+ControlPeriods+24*Time.StepInd;
+        TimeInd=TimeInd+ControlPeriods-1;
     end
     
     if ActivateWaitbar && mod(TimeInd+TD.User,1000)==0
@@ -212,7 +227,7 @@ if ActivateWaitbar
     close(h);
 end
 toc
-for n=2:NumUsers+1
+for n=UserNum
     Users{n}.Logbook=Users{n}.Logbook(1:TimeInd,:);
 end
 
@@ -227,7 +242,7 @@ if ~SmartCharging
         IMSYSPrices=readmatrix(strcat(Path.Simulation, "IMSYS_Prices.csv"), 'NumHeaderLines', 1);
     end        
     
-    for n=2:NumUsers+1
+    for n=UserNum
         if isfield(Users{n}, 'NNEEnergyPrice')
             Users{n}.FinListBase=uint32(double(Users{n}.Logbook(Time.Sim.VecInd+TD.User,5))/1000 .* (Users{n}.PrivateElectricityPrice + SpotmarketPrices(Time.Sim.VecInd+TD.Main)/10 + Users{n}.NNEEnergyPrice)*1.19); % [ct] total electricity costs equal base price of user + realtime current production costs + NNE energy price. VAT applies to the end price
         else
@@ -255,17 +270,17 @@ end
 %% Evaluate Smart Charging
 
 if SmartCharging
-    ChargingVehicle=reshape(permute(squeeze(sum(Users{1}.ChargingMat(1:96,:,:,:),2)), [1,3,2]), [], NumUsers)/1000*4;
-    ChargingType=reshape(permute(squeeze(sum(Users{1}.ChargingMat(1:96,:,:,:),3)), [1,3,2]), [], NumCostCats)/1000*4;
+    %ChargingVehicle=reshape(permute(squeeze(sum(Users{1}.ChargingMat(1:96,:,:,:),2)), [1,3,2]), [], NumUsers)/1000*4;
+    ChargingType=reshape(permute(squeeze(sum(Users{1}.ChargingMat(1:96,:,:,:),3)), [1,3,2]), [], Users{1}.NumCostCats)/1000*4;
     ChargingSum=sum(ChargingType, 2);
     
     [sum(ChargingType(:,1,:),'all'), sum(ChargingType(:,2,:),'all'), sum(ChargingType(:,3,:),'all')]/sum(ChargingType(:,:,:),'all')
 
     figure
     Load=mean(reshape(ChargingType',3,96,[]),3)';
-    Load=circshift(Load, [ShiftInds, 0]);
+    Load=circshift(Load, [Users{1}.ShiftInds, 0]);
     x = 1:96;
-    y = circshift(mean(reshape(ChargingSum, 96, []), 2)', [0,ShiftInds]);
+    y = circshift(mean(reshape(ChargingSum, 96, []), 2)', [0,Users{1}.ShiftInds]);
     z = zeros(size(x));
     col = (Load./repmat(max(Load, [], 2),1,3))';
     surface([x;x],[y;y],[z;z],[permute(repmat(col,1,1,2),[3,2,1])], 'facecol','no', 'edgecol','interp', 'linew',2);
@@ -276,9 +291,9 @@ if SmartCharging
     grid on
 
     hold on
-    plot(circshift(squeeze(mean(reshape(ChargingType(:,1),96,[],1),2)), ShiftInds), "LineWidth", 1.2, "Color", [1, 0, 0])
-    plot(circshift(squeeze(mean(reshape(ChargingType(:,2),96,[],1),2)), ShiftInds), "LineWidth", 1.2, "Color", [0, 1, 0])
-    plot(circshift(squeeze(mean(reshape(ChargingType(:,3),96,[],1),2)), ShiftInds), "LineWidth", 1.2, "Color", [0, 0, 1])
+    plot(circshift(squeeze(mean(reshape(ChargingType(:,1),96,[],1),2)), Users{1}.ShiftInds), "LineWidth", 1.2, "Color", [1, 0, 0])
+    plot(circshift(squeeze(mean(reshape(ChargingType(:,2),96,[],1),2)), Users{1}.ShiftInds), "LineWidth", 1.2, "Color", [0, 1, 0])
+    plot(circshift(squeeze(mean(reshape(ChargingType(:,3),96,[],1),2)), Users{1}.ShiftInds), "LineWidth", 1.2, "Color", [0, 0, 1])
     xticks(1:16:96)
     xticklabels({datestr(Time.Vec(1:16:96),'HH:MM')})
     legend(["All", "Spotmarket", "PV", "Secondary Reserve Energy"])
@@ -295,9 +310,10 @@ end
 SimulatedUsers=@(User) (isfield(User, 'Time') || User.Logbook(2,9)>0);
 Users=Users(cellfun(SimulatedUsers, Users));
 Users{1}.Time.Stamp=datetime('now');
+
 Users{1}.FileName=strcat(Path.Simulation, "Users_", datestr(Users{1}.Time.Stamp, "yyyymmdd-HHMM"), "_", Time.IntervalFile, "_", num2str(PThreshold), "_", num2str(NumUsers), "_", num2str(SmartCharging), ".mat");
 
-for n=2:NumUsers+1
+for n=UserNum
     if ~SmartCharging
         Users{n}.LogbookBase=Users{n}.Logbook;
     else 

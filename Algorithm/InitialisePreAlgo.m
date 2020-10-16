@@ -8,6 +8,7 @@ RLFactor=[0.8];
 AEFactor=-0.1;
 options = optimoptions('linprog','Algorithm','dual-simplex');
 options.Display = 'off';
+options1 = optimoptions('intlinprog','Display','off');
     
 
 %% Prepare Users
@@ -34,10 +35,11 @@ ChargingMat=[];
 ChargingVehicle=[];
 ChargingType=[];
 AvailabilityMat=[];
-MinEnergyRequiredToChargeTS=[];
 MaxEnergyChargableSoCTS=[];
-MinEnergyChargableDeadlockTS=[];
-MinEnergyChargableDeadlockCP=[];
+MinEnergyRequiredTS=[];
+MaxEnergyChargableDeadlockCP=[];
+a1=0;
+a2=0;
 
 DemandInds=tril(ones(ControlPeriods,ControlPeriods)).*(1:ControlPeriods);
 DemandInds(:,1)=0;
@@ -46,7 +48,7 @@ DemandInds(DemandInds==0)=ControlPeriods+1;
 %% Initialise Constraints
 
 ConsSumPowerTSA=sparse(kron(sparse(eye(NumUsers, NumUsers)), repmat(sparse(diag(ones(ControlPeriods,1))),1,NumCostCats))); 
-ConsEnergyCPAeq=sparse(kron(sparse(eye(NumUsers, NumUsers)),ones(1,ControlPeriods*NumCostCats)));  % the ones of a single row represent the decission variable of one vehicle. the sum of all powers of one vehicle must no exceed the energy demand
+ConsEnergyCPAeq=sparse(kron(sparse(eye(NumUsers, NumUsers)), ones(1,ControlPeriods*NumCostCats)));  % the ones of a single row represent the decission variable of one vehicle. the sum of all powers of one vehicle must no exceed the energy demand
 
 ConsEnergyDemandTSA=sparse(kron(sparse(eye(NumUsers, NumUsers)), sparse(repmat(sparse(tril(ones(ControlPeriods))), 1, NumCostCats))));
 
@@ -74,3 +76,4 @@ ConsMatchLastReservePowerOffers4Hbeq=zeros(ConsPeriods,1);
 A=[ConsSumPowerTSA; ConsEnergyDemandTSA; -ConsEnergyDemandTSA];
 Aeq=[ConsEnergyCPAeq; ConsRLOfferAeq;ConsMatchLastReservePowerOffers4HAeq];
 lb=zeros(ControlPeriods, NumCostCats, NumUsers);
+lb=lb(:);
