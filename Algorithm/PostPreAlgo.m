@@ -1,5 +1,11 @@
+ConsumptionMat=[];
+for k=UserNum
+    ConsumptionMat(:,k-1)=Users{k}.Logbook(TimeInd+TD.User:TimeInd+TD.User+ControlPeriods-1,4);
+end
+ConsumptionMat=cumsum(reshape(ConsumptionMat,4,[],NumUsers),1);
+
 HourlySpotmarketPowers=sum(reshape(squeeze(OptimalChargingEnergies(:,1,:)), Time.StepInd, [], NumUsers),1);
-HourlyPowerAvailability=reshape(MaxPower/4.*Availability-sum(OptimalChargingEnergies(:,2:3,:),2), 4, [], NumUsers);
+HourlyPowerAvailability=reshape(MaxPower/4.*Availability-sum(OptimalChargingEnergies(:,2:3,:),2), 4, [], NumUsers) .* ConsumptionMat==0;
 OptimalChargingEnergiesSpotmarket=reshape(HourlyPowerAvailability./sum(HourlyPowerAvailability,1).*HourlySpotmarketPowers, ControlPeriods, 1, NumUsers);
 OptimalChargingEnergiesSpotmarket(isnan(OptimalChargingEnergiesSpotmarket))=0;
 
