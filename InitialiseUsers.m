@@ -91,8 +91,8 @@ PublicDCChargingPrices=[39, 49];
 LikelihoodGridConvenientCharging=0.5;
 PrivateChargingThresholdMean=1.4;
 PublicChargingThresholdMean=0.33;
-VCity=9; % [m/s] lower velocities indicate driving within the city, hence low consumption
-VHighway=22; % [m/s] higher velocities indicate driving on a highway, hence high consumption
+VCity=11; % [m/s] lower velocities indicate driving within the city, hence low consumption
+VHighway=26; % [m/s] higher velocities indicate driving on a highway, hence high consumption
 
 Users=cell(NumUsers+1,1); % the main cell variable all user data is stored in
 PVPlantPointer=1; % 
@@ -123,7 +123,7 @@ if ~exist('GridConvenienChargingDistribution', 'var')
     GridConvenienChargingDistribution=str2double(GridConvenienChargingDistribution(:,2:end));
 end
 
-TemperatureMonths=[1, 1; 2, 1; 3, 1.1; 4, 1.25; 5, 1.5; 6, 1.8; 7, 2; 8, 2; 9, 1.5; 10, 1.3; 11, 1.1; 12, 1.05]; 
+TemperatureMonths=[1, 1; 2, 1; 3, 1.2; 4, 1.3; 5, 1.7; 6, 1.9; 7, 2; 8, 2; 9, 1.7; 10, 1.4; 11, 1.2; 12, 1.1]; 
 TemperatureTimeVec=TemperatureMonths(month(Time.Vec), 2);
 
 %% Store processing information
