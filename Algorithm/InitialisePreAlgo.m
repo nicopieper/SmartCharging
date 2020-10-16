@@ -6,9 +6,8 @@ NumCostCats=sum(CostCats);
 ConstantRLPowerPeriods=4*Time.StepInd;
 RLFactor=[0.8];
 AEFactor=-0.1;
-options = optimoptions('linprog','Algorithm','dual-simplex');
+options = optimoptions('linprog','Algorithm','dual-simplex', 'OptimalityTolerance', 1e-1);
 options.Display = 'off';
-options1 = optimoptions('intlinprog','Display','off');
     
 
 %% Prepare Users
