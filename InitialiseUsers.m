@@ -82,13 +82,17 @@
 
 %% Initialisation
 
-NumUsers=100; % number of users
+NumUsers=450; % number of users
 LikelihoodPV=0.45; % 44 % der privaten und 46 % der gewerblichen Nutzer �ber eine eigene Photovoltaikanlage, https://elib.dlr.de/96491/1/Ergebnisbericht_E-Nutzer_2015.pdf S. 10
 AddPV=true; % determines wheter PV plants shall be assigned to the users. In general true, only false for test purposes
 MeanPrivateElectricityPrice=30.43/1.19 - 3.7513 - 7.06; % [ct/kWh] average German electricity price in 2019 according to Strom-Report without VAT (19%), electricity production price (avg. Dayahead price was 3.7513 ct/kWh in 2019) and NNE energy price (avg. was 7.06 ct/kWh in 2019)
 PublicACChargingPrices=[29, 39];
 PublicDCChargingPrices=[39, 49];
 LikelihoodGridConvenientCharging=0.5;
+PrivateChargingThresholdMean=1.4;
+PublicChargingThresholdMean=0.33;
+VCity=9; % [m/s] lower velocities indicate driving within the city, hence low consumption
+VHighway=22; % [m/s] higher velocities indicate driving on a highway, hence high consumption
 
 Users=cell(NumUsers+1,1); % the main cell variable all user data is stored in
 PVPlantPointer=1; % 
@@ -119,7 +123,7 @@ if ~exist('GridConvenienChargingDistribution', 'var')
     GridConvenienChargingDistribution=str2double(GridConvenienChargingDistribution(:,2:end));
 end
 
-TemperatureMonths=[1, 1; 2, 1; 3, 1.2; 4, 1.3; 5, 1.7; 6, 1.9; 7, 2; 8, 2; 9, 1.7; 10, 1.4; 11, 1.2; 12, 1.1]; 
+TemperatureMonths=[1, 1; 2, 1; 3, 1.1; 4, 1.25; 5, 1.5; 6, 1.8; 7, 2; 8, 2; 9, 1.5; 10, 1.3; 11, 1.1; 12, 1.05]; 
 TemperatureTimeVec=TemperatureMonths(month(Time.Vec), 2);
 
 %% Store processing information
@@ -144,11 +148,11 @@ for n=2:NumUsers+1
     Users{n}.Consumption=reshape(str2double(VehicleProperties(Model, 5:8)), 2, 2); % [Wh/m == kWh/km] Cold City, Mild City; Cold Highway, Mild Highway
     
     % Determine charging properties
-    Users{n}.DCChargingPowerVehicle=str2double(VehicleProperties(Model, 9))*1000; % [Wh/m] max DC charging power of car
-    Users{n}.ACChargingPowerVehicle=str2double(VehicleProperties(Model, 10))*1000; % [W] max ac power chrging power of car
-    Users{n}.AChargingPowerHomeCharger=max((RandomNumbers(2)>=str2double(VehicleProperties(Model,11:16))).*[2.3 3.7 3.7 7.3 11 22]*1000); % [W] with respect to the guessed distribution of chargers for this car, pick one ac charging power for the private charging point. selection mechanism equals the on described for the Model
-    Users{n}.ACChargingPowerHomeCharging=uint32(min(Users{n}.AChargingPowerHomeCharger, Users{n}.ACChargingPowerVehicle)); % [W] the charging power at the private charging point is determined by the minimum of the cars and the charging points power
-    Users{n}.ACChargingPowerHomeChargingLossFactor=RandomNumbers(3)*(0.95-0.85)+0.85; % consider a charging loss factor for the charging point
+    Users{n}.ChargingEfficiency=str2double(VehicleProperties(Model, 9)); % consider a charging loss factor
+    Users{n}.DCChargingPowerVehicle=str2double(VehicleProperties(Model, 10))*1000; % [Wh/m] max DC charging power of car
+    Users{n}.ACChargingPowerVehicle=str2double(VehicleProperties(Model, 11))*1000; % [W] max ac power chrging power of car
+    Users{n}.AChargingPowerHomeCharger=max((RandomNumbers(2)>=str2double(VehicleProperties(Model,12:17))).*[2.3 3.7 3.7 7.3 11 22]*1000); % [W] with respect to the guessed distribution of chargers for this car, pick one ac charging power for the private charging point. selection mechanism equals the on described for the Model
+    Users{n}.ACChargingPowerHomeCharging=uint32(min(Users{n}.AChargingPowerHomeCharger, Users{n}.ACChargingPowerVehicle)*Users{n}.ChargingEfficiency); % [W] the charging power at the private charging point is determined by the minimum of the cars and the charging points power
     Users{n}.PrivateElectricityPrice=MeanPrivateElectricityPrice+randn(1);
     Users{n}.PublicACChargingPrices=max((RandomNumbers(4)>=[0, 0.5]).*PublicACChargingPrices);
     Users{n}.PublicDCChargingPrices=max((RandomNumbers(5)>=[0, 0.5]).*PublicDCChargingPrices);
@@ -167,8 +171,9 @@ for n=2:NumUsers+1
     if Users{n}.ChargingStrategy==1 % this one is primitive
         Users{n}.MinimumPluginTime=minutes(randi([30 90], 1,1));
     elseif Users{n}.ChargingStrategy==2 % only use this strategy which will be explained in Simulation
-        Users{n}.ChargingPThreshold=1.4+TruncatedGaussian(0.2,[0.7 2]-1.4,1); % Mean=1.4, stdw=0.2, range(0.7, 2)
+        Users{n}.PrivateChargingThreshold=PrivateChargingThresholdMean+TruncatedGaussian(0.2,[PrivateChargingThresholdMean*0.6 PrivateChargingThresholdMean*1.3]-PrivateChargingThresholdMean,1); % Mean=1.4, stdw=0.2, range(0.7, 2)
     end
+    Users{n}.PublicChargingThreshold=PublicChargingThresholdMean+TruncatedGaussian(0.03,[PublicChargingThresholdMean*0.75 PublicChargingThresholdMean*1.4]-PublicChargingThresholdMean,1); % Mean=1.4, stdw=0.2, range(0.7, 2)
     
     % Selection of a grid convenient charging profile
     GridConvenientChargingProfile=max(double(RandomNumbers(8)>=(0:1/size(GridConvenienChargingDistribution,2):1-1/size(GridConvenienChargingDistribution,2))).*(1:size(GridConvenienChargingDistribution,2)));
@@ -189,7 +194,7 @@ for n=2:NumUsers+1
     % Choose a driving profile from VehicleData
     SizeNum=find(cellfun(@length, strfind(VehicleSizes, Users{n}.ModelSize)),1); % find a vehicle that fits the size of the assigned car model
     VehiclePointer(SizeNum)=mod(VehiclePointer(SizeNum), length(VehicleDatabase{SizeNum}))+1;
-    while ~strcmp(Vehicles{VehicleDatabase{SizeNum}(VehiclePointer(SizeNum))}.VehicleSizeMerged, Users{n}.ModelSize) || Users{n}.BatterySize < Vehicles{VehicleDatabase{SizeNum}(VehiclePointer(SizeNum))}.AverageMileageYear_km % first condition: search for next vehicle with the same vehicle size. second condition: ensure that battery of model (in Wh) is larger than mileage per year of vehicle (in km) so that large ranges aren't driven by a car with a too small battery
+    while (~strcmp(Vehicles{VehicleDatabase{SizeNum}(VehiclePointer(SizeNum))}.VehicleSizeMerged, Users{n}.ModelSize) || Users{n}.BatterySize < Vehicles{VehicleDatabase{SizeNum}(VehiclePointer(SizeNum))}.AverageMileageYear_km) %|| strcmp(Vehicles{VehicleDatabase{SizeNum}(VehiclePointer(SizeNum))}.VehicleUtilisation, 'fleet vehicle') % first condition: search for next vehicle with the same vehicle size. second condition: ensure that battery of model (in Wh) is larger than mileage per year of vehicle (in km) so that large ranges aren't driven by a car with a too small battery
         VehiclePointer(SizeNum)=mod(VehiclePointer(SizeNum), length(VehicleDatabase{SizeNum}))+1; % increase the pointer of the vehicle size class
     end
     
@@ -206,9 +211,9 @@ for n=2:NumUsers+1
         
     % Calc energy consumption in Logbook by using consumption data from model
     Velocities=double(Users{n}.LogbookSource(:,3))./double(Users{n}.LogbookSource(:,2))/60; % [m/s] depending on the velocity of each trip and the temperature indicator of its month, determine the energy consumption of the trip
-    Velocities(Velocities<11)=1; % all trips with velocities smaller 11 m/s have the city consumption value
-    Velocities(Velocities>=11 & Velocities<=28)=(Velocities(Velocities>=11 & Velocities<=28)-14)/(28-11)+1; % in between the consumption value is interpolated
-    Velocities(Velocities>28)=2; % all above 28 m/s the highway consumption value
+    Velocities(Velocities<VCity)=1; % all trips with velocities smaller VCity m/s have the city consumption value
+    Velocities(Velocities>=VCity & Velocities<=VHighway)=(Velocities(Velocities>=VCity & Velocities<=VHighway)-VCity)/(VHighway-VCity)+1; % in between the consumption value is interpolated
+    Velocities(Velocities>VHighway)=2; % all above VHighway m/s the highway consumption value
     
     Consumption=Users{n}.Consumption(1,1).*(2-Velocities).*(2-TemperatureTimeVec)+Users{n}.Consumption(2,1)*(Velocities-1).*(2-TemperatureTimeVec)+Users{n}.Consumption(1,2)*(2-Velocities).*(TemperatureTimeVec-1)+Users{n}.Consumption(2,2)*(Velocities-1).*(TemperatureTimeVec-1); % calculate the consumption of all trips depending of velocity and temperature
     

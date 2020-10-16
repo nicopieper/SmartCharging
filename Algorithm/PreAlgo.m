@@ -73,8 +73,8 @@ x(x<0)=0; % Due to the accuracy of the algorithm, sometimes values lower than ze
 %% Evaluate result
 
 OptimalChargingEnergies=reshape(x,ControlPeriods, NumCostCats, NumUsers);
-%PostPreAlgo;
-%OptimalChargingEnergies(:,1,:)=OptimalChargingEnergiesSpotmarket;
+PostPreAlgo;
+OptimalChargingEnergies(:,1,:)=OptimalChargingEnergiesSpotmarket;
 
 PreAlgoCounter=PreAlgoCounter+1;
 ChargingMat(:,:,:,PreAlgoCounter)=OptimalChargingEnergies;

@@ -6,18 +6,18 @@ if ~exist("Users", "var")
     load(strcat(Path.Simulation, Dl, StorageFiles(StorageInd).name))
 end
 
-Logbook="LogbookSmart";
+Logbook="LogbookBase";
 
 Targets=["small"; "medium"; "large"; "transporter"];
 % Targets=["one user"; "only one user"; "several users"; "undefined"];
-% Targets=["company car"; "fleet vehicle"; "undefined"];
+Targets=["company car"; "fleet vehicle"; "undefined"];
 % Targets=[0.5; 1; 3; 1000];
 % Targets=[hours(10); hours(12); hours(14); hours(24)];
 
 TargetGroups=cell(length(Targets),1);
 for n=2:length(Users)
-    TargetNum=find(strcmp(Users{n}.VehicleSize,Targets),1);
-%     TargetNum=find(strcmp(Users{n}.VehicleUtilisation,Targets),1);
+%     TargetNum=find(strcmp(Users{n}.VehicleSize,Targets),1);
+    TargetNum=find(strcmp(Users{n}.VehicleUtilisation,Targets),1);
 %     TargetNum=find(Users{n}.DistanceCompanyToHome<Targets,1);
 %     TargetNum=find(Users{n}.AvgHomeParkingTime<Targets,1);
 
@@ -48,20 +48,18 @@ ChargeProcessesPerWeek=cell(length(Targets),2);
 for k=ExistingTargets
     for n=TargetGroups{k}
         Users{n}.ChargeProcessesHomeBase=sum(ismember(Users{n}.(Logbook)(2:end,1),4:5) & ~ismember(Users{n}.(Logbook)(1:end-1,1), 4:5));
-        Users{n}.ChargeProcessesHomeBase1=sum(sum(Users{n}.(Logbook)(2:end,5:7),2)>0 & sum(Users{n}.(Logbook)(1:end-1,5:7),2)==0);
         Users{n}.ChargeProcessesOtherBase=sum(ismember(Users{n}.(Logbook)(2:end,1),6:7) & ~ismember(Users{n}.(Logbook)(1:end-1,1),6:7));
-        a=find(ismember(Users{n}.(Logbook)(2:end,1),6:7) & ~ismember(Users{n}.(Logbook)(1:end-1,1),6:7));
         Users{n}.ChargeProcessesOtherBase1=sum(Users{n}.(Logbook)(2:end,8)>0 & Users{n}.(Logbook)(1:end-1,8)==0);
-        b=find(Users{n}.(Logbook)(2:end,8)>0 & Users{n}.(Logbook)(1:end-1,8)==0);
         ChargeProcesses{k,1}(n)=Users{n}.ChargeProcessesHomeBase;
-        ChargeProcesses{k,2}(n)=Users{n}.ChargeProcessesOtherBase1;
+        ChargeProcesses{k,2}(n)=Users{n}.ChargeProcessesOtherBase;
     end
-    ChargeProcessesPerWeek{k,1}=sum(ChargeProcesses{k,1})/days(Users{1}.Time.Vec(end)-Users{1}.Time.Vec(1))*7/length(TargetGroups{k});
-    ChargeProcessesPerWeek{k,2}=sum(ChargeProcesses{k,2})/days(Users{1}.Time.Vec(end)-Users{1}.Time.Vec(1))*7/length(TargetGroups{k});
+    ChargeProcessesPerWeek{k,1}=sum(ChargeProcesses{k,1})/days(Users{1}.Time.Sim.Vec(end)-Users{1}.Time.Sim.Vec(1))*7/length(TargetGroups{k});
+    ChargeProcessesPerWeek{k,2}=sum(ChargeProcesses{k,2})/days(Users{1}.Time.Sim.Vec(end)-Users{1}.Time.Sim.Vec(1))*7/length(TargetGroups{k});
 end
 ChargeProcessesPerWeek=ChargeProcessesPerWeek(ExistingTargets,:);
 DataTable.ChargingPorcessesPerWeek=round(cell2mat(ChargeProcessesPerWeek)*100)/100;
 disp(strcat("The users charge in average ", num2str(mean(cell2mat(ChargeProcessesPerWeek(:,1)))), " times per week at home and ", num2str(mean(cell2mat(ChargeProcessesPerWeek(:,2))))," times per week at ohter locations"))
+disp(strcat(num2str(sum(cellfun(@sum, ChargeProcesses(:,1)))/(sum(cellfun(@sum, ChargeProcesses(:,1))) + sum(cellfun(@sum, ChargeProcesses(:,2))))*100), " % of all charging processes took place at home"))
 
 %% Energy charged per charging process
 
@@ -115,7 +113,7 @@ for col=1:2
     ylabel("Probability")
 end
 
-disp(strcat("In average per charging event, ", num2str(mean(cell2mat(EnergyPerChargingProcess(:,1))/1000)), " kWh were charged at home and ", num2str(mean(cell2mat(EnergyPerChargingProcess(:,2))/1000)), " kWh at other places"))
+disp(strcat("In average per charging event, ", num2str(mean(cell2mat(EnergyPerChargingProcess(:,1))/1000/Users{n}.ChargingEfficiency)), " kWh were charged at home and ", num2str(mean(cell2mat(EnergyPerChargingProcess(:,2))/1000/Users{n}.ChargingEfficiency)), " kWh at other places"))
 
 DataTable.EnergyPerChargingProcess=round(cellfun(@mean,EnergyPerChargingProcess)/1000*100)/100;
 
@@ -129,10 +127,10 @@ for k=ExistingTargets
     end
 end
 EnergyCharged=EnergyCharged(ExistingTargets,:);
-EnergyChargedPerDayPerVehicle=cellfun(@sum,EnergyCharged)/days(Users{1}.Time.Vec(end)-Users{1}.Time.Vec(1))/1000./cellfun(@length, TargetGroups(ExistingTargets));
+EnergyChargedPerDayPerVehicle=cellfun(@sum,EnergyCharged)/days(Users{1}.Time.Sim.Vec(end)-Users{1}.Time.Sim.Vec(1))/1000./cellfun(@length, TargetGroups(ExistingTargets));
 HomeChargingQuote=sum(EnergyChargedPerDayPerVehicle(:,1))/sum(EnergyChargedPerDayPerVehicle,'all');
-disp(strcat("The users charged in average ", num2str(sum(cellfun(@sum, EnergyCharged), 'all')/days(Users{1}.Time.Vec(end)-Users{1}.Time.Vec(1))/1000/length(Users)-1), " kWh per day"))
-disp(strcat(num2str(HomeChargingQuote*100), " % of all charging events took place at home"))
+disp(strcat("The users charged in average ", num2str(sum(cellfun(@sum, EnergyCharged), 'all')/days(Users{1}.Time.Sim.Vec(end)-Users{1}.Time.Sim.Vec(1))/1000/length(Users)-1), " kWh per day"))
+disp(strcat(num2str(HomeChargingQuote*100), " % of all energy was charged at home"))
 % DataTable.EnergyChargedPerDay=
 
 %% Arrival and Connection time at charging point
@@ -149,8 +147,8 @@ for k=ExistingTargets
         ConnectionBlocksOther=[find(ismember(Users{n}.(Logbook)(1:end,1),6:7) & ~ismember([0;Users{n}.(Logbook)(1:end-1,1)],6:7)), find(ismember(Users{n}.(Logbook)(1:end,1),6:7) & ~ismember([Users{n}.(Logbook)(2:end,1);0],6:7))];
         ConnectionTime{k,1}=[ConnectionTime{k,1}; (ConnectionBlocksHome(:,2)-ConnectionBlocksHome(:,1)+1)*Time.StepMin];
         ConnectionTime{k,2}=[ConnectionTime{k,2}; (ConnectionBlocksOther(:,2)-ConnectionBlocksOther(:,1)+1)*Time.StepMin];
-        ArrivalTimes{k,1}=[ArrivalTimes{k,1}; datetime(ones(length(ConnectionBlocksHome),1),ones(length(ConnectionBlocksHome),1),ones(length(ConnectionBlocksHome),1), hour(Users{1}.Time.Vec(ConnectionBlocksHome(:,1))), minute((Users{1}.Time.Vec(ConnectionBlocksHome(:,1)))),zeros(length(ConnectionBlocksHome),1), 'TimeZone', 'Africa/Tunis')];
-        ArrivalTimes{k,2}=[ArrivalTimes{k,2}; datetime(ones(length(ConnectionBlocksOther),1),ones(length(ConnectionBlocksOther),1),ones(length(ConnectionBlocksOther),1), hour(Users{1}.Time.Vec(ConnectionBlocksOther(:,1))), minute((Users{1}.Time.Vec(ConnectionBlocksOther(:,1)))),zeros(length(ConnectionBlocksOther),1), 'TimeZone', 'Africa/Tunis')];
+        ArrivalTimes{k,1}=[ArrivalTimes{k,1}; datetime(ones(length(ConnectionBlocksHome),1),ones(length(ConnectionBlocksHome),1),ones(length(ConnectionBlocksHome),1), hour(Users{1}.Time.Sim.Vec(ConnectionBlocksHome(:,1)))', minute((Users{1}.Time.Sim.Vec(ConnectionBlocksHome(:,1))))',zeros(length(ConnectionBlocksHome),1), 'TimeZone', 'Africa/Tunis')];
+        ArrivalTimes{k,2}=[ArrivalTimes{k,2}; datetime(ones(length(ConnectionBlocksOther),1),ones(length(ConnectionBlocksOther),1),ones(length(ConnectionBlocksOther),1), hour(Users{1}.Time.Sim.Vec(ConnectionBlocksOther(:,1)))', minute((Users{1}.Time.Sim.Vec(ConnectionBlocksOther(:,1))))',zeros(length(ConnectionBlocksOther),1), 'TimeZone', 'Africa/Tunis')];
     end
 end
 ConnectionTime=ConnectionTime(ExistingTargets,:);
@@ -223,8 +221,8 @@ for k=ExistingTargets
     Load{k,1}=zeros(96,1);
     Load{k,2}=zeros(96,1);
     for n=TargetGroups{k}
-        Load{k,1}=Load{k,1}+sum(reshape(sum(Users{n}.(Logbook)(:,5:7), 2), 96, []),2)*4/1e3/days(Users{1}.Time.Vec(end)-Users{1}.Time.Vec(1));
-        Load{k,2}=Load{k,2}+sum(reshape(Users{n}.(Logbook)(:,8), 96, []),2)*4/1e3/days(Users{1}.Time.Vec(end)-Users{1}.Time.Vec(1));
+        Load{k,1}=Load{k,1}+sum(reshape(sum(Users{n}.(Logbook)(:,5:7), 2), 96, []),2)*4/1e3/days(Users{1}.Time.Sim.Vec(end)-Users{1}.Time.Sim.Vec(1));
+        Load{k,2}=Load{k,2}+sum(reshape(Users{n}.(Logbook)(:,8), 96, []),2)*4/1e3/days(Users{1}.Time.Sim.Vec(end)-Users{1}.Time.Sim.Vec(1));
     end
     Load{k,1}=Load{k,1};
     Load{k,2}=Load{k,2};
@@ -258,13 +256,17 @@ end
 
 MileageYearKm=0;
 AvgConsumption=[];
+l=0;
 for n=2:length(Users)
-    MileageYearKm=MileageYearKm+Users{n}.AverageMileageYear_km;
-    AvgConsumption=[AvgConsumption; Users{n}.(Logbook)(Users{n}.(Logbook)(:,4)>0, 4), Users{n}.(Logbook)(Users{n}.(Logbook)(:,4)>0, 3)];
+    %if strcmp(Users{n}.ModelName, "VW e-Golf") || strcmp(Users{n}.ModelName, "VW e-Golf")
+        MileageYearKm=MileageYearKm+Users{n}.AverageMileageYear_km;
+        AvgConsumption=[AvgConsumption; Users{n}.(Logbook)(Users{n}.(Logbook)(:,4)>0, 4)/Users{n}.ChargingEfficiency, Users{n}.(Logbook)(Users{n}.(Logbook)(:,4)>0, 3)];
+        %l=l+1;
+    %end
 end
 MileageYearKm=MileageYearKm/length(Users)-1;
 disp(strcat("The users drove in average ", num2str(MileageYearKm), " km per year"))
-disp(strcat("The average consumption was ", num2str(sum(AvgConsumption(:,1))/sum(AvgConsumption(:,2))*100), " kWh/100km"))
+disp(strcat("The average consumption was ", num2str(sum(AvgConsumption(:,1))/sum(AvgConsumption(:,2))*100), " kWh/100km (only here charging losses included)"))
 
 %% Coverage of VehicleNumbers
 

@@ -32,7 +32,7 @@ for k=UserNum
     % addieren, sodass die Energie ladbar ist? Ladbar im Sinne von genügend
     % Möglichkeiten die Energie zu laden und ohne dass das SoC überläuft.
     
-    MinEnergyRequiredTS(:,1,VarCounter)=sum(Consumed(DemandInds),2) + round(double(Users{k}.BatterySize)*(PublicChargingThreshold*0.9)) - sum(PublicCharged(DemandInds),2) - (Users{k}.Logbook(TimeInd+TD.User,9) - sum(Users{k}.Logbook(TimeInd+TD.User,5:7),2));
+    MinEnergyRequiredTS(:,1,VarCounter)=sum(Consumed(DemandInds),2) + round(double(Users{k}.BatterySize)*SmartChargingBuffer - sum(PublicCharged(DemandInds),2) - (Users{k}.Logbook(TimeInd+TD.User,9) - sum(Users{k}.Logbook(TimeInd+TD.User,5:7),2));
 %     MinEnergyRequiredTS(:,1,VarCounter)=sum(Consumed(DemandInds),2) - sum(PublicCharged(DemandInds),2) - (Users{k}.Logbook(TimeInd+TD.User,9) - sum(Users{k}.Logbook(TimeInd+TD.User,5:7),2));
     
     

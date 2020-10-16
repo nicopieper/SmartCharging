@@ -1,11 +1,10 @@
 %% Initialisation
 tic
 ActivateWaitbar=true;
-PublicChargingThreshold=0.15; % in %
-PThreshold=1.2;
-NumUsers=100; % size(Users,1)-1;
+SmartChargingBuffer=0.14;
+NumUsers=450; % size(Users,1)-1;
 ControlPeriods=96*2;
-SmartCharging=true;
+SmartCharging=false;
 UsePV=true;
 ApplyGridConvenientCharging=true;
 UsePredictions=true;
@@ -26,7 +25,7 @@ delete(findall(0,'type','figure','tag','TMWWaitbar'));
 
 Time.Sim.Start=max([Range.TrainDate(1), Users{1}.Time.Vec(1)]);
 if ~SmartCharging
-    Time.Sim.End=min([Range.TestDate(2), Users{1}.Time.Vec(end)]);
+    Time.Sim.End=min([Range.TestDate(2), Users{1}.Time.Vec(end)-days(200)]);
 else
     Time.Sim.End=min([Range.TestDate(2), Users{1}.Time.Vec(end)-days(2)]);
 end
@@ -54,7 +53,7 @@ if SmartCharging
     TimeOfForecast=datetime(1,1,1,8,0,0,'TimeZone','Africa/Tunis');
     TimeOfReserveMarketOffer=datetime(1,1,1,8,0,0,'TimeZone','Africa/Tunis');
 	ShiftInds=(hour(TimeOfForecast)*Time.StepInd + minute(TimeOfForecast)/minutes(Time.Step));
-    TimesOfPreAlgo=(hour(TimeOfForecast)*Time.StepInd + minute(TimeOfForecast)/60*Time.StepInd)+1+ControlPeriods+2*24*Time.StepInd-1:24*Time.StepInd:length(Time.Sim.VecInd);
+    TimesOfPreAlgo=(hour(TimeOfForecast)*Time.StepInd + minute(TimeOfForecast)/60*Time.StepInd)+1-1:24*Time.StepInd:length(Time.Sim.VecInd);
     InitialisePreAlgo;
     
     if UsePredictions
@@ -80,8 +79,7 @@ if ActivateWaitbar
     h=waitbar(0, "Simulate charging processes");
 end
 
-Users{1}.PThreshold=PThreshold;
-Users{1}.PublicChargingThreshold=PublicChargingThreshold;
+Users{1}.Time.Sim=Time.Sim;
 
 %% Start Simulation
 
@@ -91,7 +89,7 @@ for TimeInd=Time.Sim.VecInd(2:end)
         
         % Public charging: Only charge at public charging point if it is requiered due to low SoC
 %         if (Users{n}.Logbook(TimeInd+TD.User,1)==1 && Users{n}.Logbook(TimeInd+TD.User-1,9)*100/double(Users{n}.BatterySize)<PublicChargingThreshold) || (TimeInd+TD.User+1<=size(Users{n}.Logbook,1) && Users{n}.Logbook(TimeInd+TD.User,4)>=Users{n}.Logbook(TimeInd+TD.User-1,9))
-        if Users{n}.Logbook(TimeInd+TD.User-1,9)-Users{n}.Logbook(TimeInd+TD.User,4) < double(Users{n}.BatterySize)*PublicChargingThreshold
+        if Users{n}.Logbook(TimeInd+TD.User-1,9)-Users{n}.Logbook(TimeInd+TD.User,4) < double(Users{n}.BatterySize)*Users{n}.PublicChargingThreshold
             
             k=TimeInd+TD.User;
             while k < length(Users{n}.Logbook) && ~ismember(Users{n}.Logbook(k,1), 3:5)
@@ -103,10 +101,10 @@ for TimeInd=Time.Sim.VecInd(2:end)
             TripDistance=sum(Users{n}.Logbook(TimeInd+TD.User:NextHomeStop,3)); % [Wh]
 
             PublicChargerPower=max((rand(1)>=PublicChargerDistribution(find(PublicChargerDistribution>TripDistance/1000,1),:)).*PublicChargerDistribution(1,:)); % [kW]
-            ChargingPower(n)=min([max([Users{n}.ACChargingPowerVehicle, Users{n}.DCChargingPowerVehicle]), PublicChargerPower]); % Actual ChargingPower at public charger in [kW]
+            ChargingPower(n)=min([max([Users{n}.ACChargingPowerVehicle, Users{n}.DCChargingPowerVehicle]), PublicChargerPower])*Users{n}.ChargingEfficiency; % Actual ChargingPower at public charger in [kW]
 %             ChargingEfficiency(n)=PublicChargerDistribution(end,find(ChargingPower(n)<=PublicChargerDistribution(1,2:end),1)+1)*((1.01-0.91)*randn(1)+0.99);
             
-            EnergyDemandLeft(n)=double(min((double(PublicChargingThreshold*100)+5+TruncatedGaussian(4,[1 20]-5,1))/100*double(Users{n}.BatterySize)+double(ConsumptionTilNextHomeStop)-Users{n}.Logbook(TimeInd+TD.User-1,9), double(Users{n}.BatterySize)-Users{n}.Logbook(TimeInd+TD.User-1,9)));
+            EnergyDemandLeft(n)=double(min((double(Users{n}.PublicChargingThreshold*100)+5+TruncatedGaussian(2,[1 10]-5,1))/100*double(Users{n}.BatterySize)+double(ConsumptionTilNextHomeStop)-Users{n}.Logbook(TimeInd+TD.User-1,9), double(Users{n}.BatterySize)-Users{n}.Logbook(TimeInd+TD.User-1,9)));
 %             EnergyDemandLeft(n)=double(min((double(PublicChargingThreshold)+5+TruncatedGaussian(4,[1 20]-5,1))/100*double(Users{n}.BatterySize)+double(ConsumptionTilNextHomeStop)-Users{n}.Logbook(TimeInd+TD.User-1,9), double(Users{n}.BatterySize)-Users{n}.Logbook(TimeInd+TD.User-1,9)));
             TimeStepIndsNeededForCharging=ceil(EnergyDemandLeft(n)/ChargingPower(n)*60/Time.StepMin); % [Wh/W]
             
@@ -146,13 +144,14 @@ for TimeInd=Time.Sim.VecInd(2:end)
                     end
 
                 elseif Users{n}.ChargingStrategy==2 % The probability of connection is a function of Plug-in time, SoC and the consumption within the next 24h
-                    Consumption24h=uint32(sum(Users{n}.Logbook(TimeInd+TD.User:min(TimeInd+TD.User+hours(24)/Time.Step-1, size(Users{n}.Logbook,1)), 4))); % [Wh]
-                    if Consumption24h>Users{n}.Logbook(TimeInd+TD.User-1,9)
+                    Consumption24h=uint32(sum(Users{n}.Logbook(TimeInd+TD.User:min(TimeInd+TD.User+24*Time.StepInd-1, size(Users{n}.Logbook,1)), 4))); % [Wh]
+                    ConnectionDurations24h=find(ismember(Users{n}.Logbook(TimeInd+TD.User:min(TimeInd+TD.User+24*Time.StepInd-1, size(Users{n}.Logbook,1)), 1), 3:5) & ~ismember([Users{n}.Logbook(TimeInd+TD.User+1:min(TimeInd+TD.User+24*Time.StepInd-1, size(Users{n}.Logbook,1)), 1);0], 3:5)) - find(ismember(Users{n}.Logbook(TimeInd+TD.User:min(TimeInd+TD.User+24*Time.StepInd-1, size(Users{n}.Logbook,1)), 1), 3:5) & ~ismember([0;Users{n}.Logbook(TimeInd+TD.User:min(TimeInd+TD.User+24*Time.StepInd-1-1, size(Users{n}.Logbook,1)-1), 1)], 3:5))+1;
+                    if Consumption24h>Users{n}.Logbook(TimeInd+TD.User-1,9) && ~max(ConnectionDurations24h)*Time.StepInd*Users{n}.ACChargingPowerHomeCharging < Consumption24h
                         Users{n}.Logbook(TimeInd+TD.User,1)=4; % Plugged-in
                     else
-                        PlugInTime=(find([Users{n}.Logbook(TimeInd+TD.User+1:end,1);0]<3,1)-1)*Time.Step;
-                        P=min(1,PlugInTime/hours(2)) + min(1, (single(Users{n}.BatterySize-Users{n}.Logbook(TimeInd+TD.User-1,9)))/single(Users{n}.BatterySize)) + min(1, single(Consumption24h)/single(Users{n}.Logbook(TimeInd+TD.User-1,9)));
-                        if P>PThreshold
+                        PlugInTime=(find([Users{n}.Logbook(TimeInd+TD.User+1:end,1);0]<3,1)-1)/Time.StepInd;
+                        P=min(1,PlugInTime/3) + 0.9*min(1, (single(Users{n}.BatterySize-Users{n}.Logbook(TimeInd+TD.User-1,9)))/single(Users{n}.BatterySize)) + min(1, single(Consumption24h)/single(Users{n}.Logbook(TimeInd+TD.User-1,9))) + 0.3*ConnectionDurations24h(1)/max(ConnectionDurations24h);
+                        if P>Users{n}.PrivateChargingThreshold
                             Users{n}.Logbook(TimeInd+TD.User,1)=4; % Plugged-in
                         else
                             Users{n}.Logbook(TimeInd+TD.User,1)=3; % Not plugged-in
@@ -246,15 +245,14 @@ if ~SmartCharging
     end        
     
     for n=UserNum
-        if isfield(Users{n}, 'NNEEnergyPrice')
-            Users{n}.FinListBase=uint32(double(Users{n}.Logbook(Time.Sim.VecInd+TD.User,5))/1000 .* (Users{n}.PrivateElectricityPrice + SpotmarketPrices(Time.Sim.VecInd+TD.Main)/10 + Users{n}.NNEEnergyPrice)*1.19); % [ct] total electricity costs equal base price of user + realtime current production costs + NNE energy price. VAT applies to the end price
-        else
-            Users{n}.FinListBase=uint32(double(Users{n}.Logbook(Time.Sim.VecInd+TD.User,5))/1000 .* (Users{n}.PrivateElectricityPrice + SpotmarketPrices(Time.Sim.VecInd+TD.Main)/10 + 7.06)*1.19); % [ct] total electricity costs equal base price of user + realtime current production costs + NNE energy price. VAT applies to the end price
-        end
-        Users{n}.FinListBase(:,2)=uint32(double(Users{n}.Logbook(Time.Sim.VecInd+TD.User,8))/1000.*Users{n}.PublicACChargingPrices.*double(Users{n}.Logbook(Time.Sim.VecInd+TD.User,1)==6)); % [ct] fixed price for public AC charging
-        Users{n}.FinListBase(:,2)=Users{n}.FinListBase(:,2) + uint32(double(Users{n}.Logbook(Time.Sim.VecInd+TD.User,8))/1000.*Users{n}.PublicDCChargingPrices.*double(Users{n}.Logbook(Time.Sim.VecInd+TD.User,1)==7)); % [ct] fixed price for public DC charging
+%         if isfield(Users{n}, 'NNEEnergyPrice')
+        Users{n}.FinListBase=uint32(double(Users{n}.Logbook(Time.Sim.VecInd+TD.User,5))/1000/Users{n}.ChargingEfficiency .* (Users{n}.PrivateElectricityPrice + SpotmarketPrices(Time.Sim.VecInd+TD.Main)/10 + Users{n}.NNEEnergyPrice)*1.19); % [ct] total electricity costs equal base price of user + realtime current production costs + NNE energy price. VAT applies to the end price
+%         else
+%             Users{n}.FinListBase=uint32(double(Users{n}.Logbook(Time.Sim.VecInd+TD.User,5))/1000/Users{n}.ChargingEfficiency .* (Users{n}.PrivateElectricityPrice + SpotmarketPrices(Time.Sim.VecInd+TD.Main)/10 + 7.06)*1.19); % [ct] total electricity costs equal base price of user + realtime current production costs + NNE energy price. VAT applies to the end price
+%         end
+        Users{n}.FinListBase(:,2)=uint32(double(Users{n}.Logbook(Time.Sim.VecInd+TD.User,8))/1000/Users{n}.ChargingEfficiency .* Users{n}.PublicACChargingPrices.*double(Users{n}.Logbook(Time.Sim.VecInd+TD.User,1)==6) + double(Users{n}.Logbook(Time.Sim.VecInd+TD.User,8))/1000/Users{n}.ChargingEfficiency .* Users{n}.PublicDCChargingPrices.*double(Users{n}.Logbook(Time.Sim.VecInd+TD.User,1)==7)); % [ct] fixed price for public AC and DC charging
 
-        Users{n}.AverageConsumptionBaseYear_kWh=sum(Users{n}.Logbook(:,5:8), 'all')/1000/days(Time.End-Time.Start)*365.25;
+        Users{n}.AverageConsumptionBaseYear_kWh=sum(Users{n}.Logbook(:,5:8)/Users{n}.ChargingEfficiency, 'all')/1000/days(Time.End-Time.Start)*365.25;
         
         if Users{n}.NNEExtraBasePrice==-100
             Users{n}.NNEExtraBasePrice=IMSYSPrices(Users{n}.AverageConsumptionBaseYear_kWh>=IMSYSPrices(:,1) & Users{n}.AverageConsumptionBaseYear_kWh<IMSYSPrices(:,2),3)*100;
@@ -314,7 +312,7 @@ SimulatedUsers=@(User) (isfield(User, 'Time') || User.Logbook(2,9)>0);
 Users=Users(cellfun(SimulatedUsers, Users));
 Users{1}.Time.Stamp=datetime('now');
 
-Users{1}.FileName=strcat(Path.Simulation, "Users_", datestr(Users{1}.Time.Stamp, "yyyymmdd-HHMM"), "_", Time.IntervalFile, "_", num2str(PThreshold), "_", num2str(NumUsers), "_", num2str(SmartCharging), ".mat");
+Users{1}.FileName=strcat(Path.Simulation, "Users_", datestr(Users{1}.Time.Stamp, "yyyymmdd-HHMM"), "_", Time.IntervalFile, "_", num2str(NumUsers), "_", num2str(SmartCharging), ".mat");
 
 for n=UserNum
     if ~SmartCharging
