@@ -9,7 +9,7 @@ UsePV=true;
 ApplyGridConvenientCharging=true;
 UsePredictions=true;
 rng('default');
-rng(1);
+rng(2);
 
 
 if ~exist('PublicChargerDistribution', 'var')
@@ -25,7 +25,7 @@ delete(findall(0,'type','figure','tag','TMWWaitbar'));
 
 Time.Sim.Start=max([Range.TrainDate(1), Users{1}.Time.Vec(1)]);
 if ~SmartCharging
-    Time.Sim.End=min([Range.TestDate(2), Users{1}.Time.Vec(end)-days(200)]);
+    Time.Sim.End=min([Range.TestDate(2), Users{1}.Time.Vec(end)-days(250)]);
 else
     Time.Sim.End=min([Range.TestDate(2), Users{1}.Time.Vec(end)-days(2)]);
 end
