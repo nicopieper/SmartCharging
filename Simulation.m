@@ -25,7 +25,7 @@ delete(findall(0,'type','figure','tag','TMWWaitbar'));
 
 Time.Sim.Start=max([Range.TrainDate(1), Users{1}.Time.Vec(1)]);
 if ~SmartCharging
-    Time.Sim.End=min([Range.TestDate(2), Users{1}.Time.Vec(end)-days(200)]);
+    Time.Sim.End=min([Range.TestDate(2), Users{1}.Time.Vec(end)-days(250)]);
 else
     Time.Sim.End=min([Range.TestDate(2), Users{1}.Time.Vec(end)-days(2)]);
 end
@@ -323,7 +323,7 @@ for n=UserNum
     Users{n}=rmfield(Users{n}, 'Logbook');
 end
 
-save(Users{1}.FileName, "Users", "-v7.3");
+%save(Users{1}.FileName, "Users", "-v7.3");
 disp(strcat("Successfully simulated within ", num2str(toc), " seconds"))
 
 %% Clean up workspace
