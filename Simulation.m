@@ -1,7 +1,7 @@
 %% Initialisation
 tic
 ActivateWaitbar=true;
-PublicChargingThreshold=uint32(15); % in %
+PublicChargingThreshold=0.15; % in %
 PThreshold=1.2;
 NumUsers=100; % size(Users,1)-1;
 ControlPeriods=96*2;
@@ -43,7 +43,7 @@ TD.User=find(ismember(Users{1}.Time.Vec,Time.Sim.Start),1)-1;
 
 UserNum=2:NumUsers+1;
 % NumUsers=2;
-% UserNum=84:85;
+% UserNum=66:67;
 
 
 for n=UserNum
@@ -81,6 +81,7 @@ if ActivateWaitbar
 end
 
 Users{1}.PThreshold=PThreshold;
+Users{1}.PublicChargingThreshold=PublicChargingThreshold;
 
 %% Start Simulation
 
@@ -89,7 +90,8 @@ for TimeInd=Time.Sim.VecInd(2:end)
     for n=UserNum
         
         % Public charging: Only charge at public charging point if it is requiered due to low SoC
-        if (Users{n}.Logbook(TimeInd+TD.User,1)==1 && Users{n}.Logbook(TimeInd+TD.User-1,9)*100/double(Users{n}.BatterySize)<PublicChargingThreshold) || (TimeInd+TD.User+1<=size(Users{n}.Logbook,1) && Users{n}.Logbook(TimeInd+TD.User,4)>=Users{n}.Logbook(TimeInd+TD.User-1,9))
+%         if (Users{n}.Logbook(TimeInd+TD.User,1)==1 && Users{n}.Logbook(TimeInd+TD.User-1,9)*100/double(Users{n}.BatterySize)<PublicChargingThreshold) || (TimeInd+TD.User+1<=size(Users{n}.Logbook,1) && Users{n}.Logbook(TimeInd+TD.User,4)>=Users{n}.Logbook(TimeInd+TD.User-1,9))
+        if Users{n}.Logbook(TimeInd+TD.User-1,9)-Users{n}.Logbook(TimeInd+TD.User,4) < double(Users{n}.BatterySize)*PublicChargingThreshold
             
             k=TimeInd+TD.User;
             while k < length(Users{n}.Logbook) && ~ismember(Users{n}.Logbook(k,1), 3:5)
@@ -104,7 +106,8 @@ for TimeInd=Time.Sim.VecInd(2:end)
             ChargingPower(n)=min([max([Users{n}.ACChargingPowerVehicle, Users{n}.DCChargingPowerVehicle]), PublicChargerPower]); % Actual ChargingPower at public charger in [kW]
 %             ChargingEfficiency(n)=PublicChargerDistribution(end,find(ChargingPower(n)<=PublicChargerDistribution(1,2:end),1)+1)*((1.01-0.91)*randn(1)+0.99);
             
-            EnergyDemandLeft(n)=double(min((double(PublicChargingThreshold)+2+TruncatedGaussian(4,[1 20]-5,1))/100*double(Users{n}.BatterySize)+double(ConsumptionTilNextHomeStop)-Users{n}.Logbook(TimeInd+TD.User-1,9), double(Users{n}.BatterySize)-Users{n}.Logbook(TimeInd+TD.User-1,9)));
+            EnergyDemandLeft(n)=double(min((double(PublicChargingThreshold*100)+5+TruncatedGaussian(4,[1 20]-5,1))/100*double(Users{n}.BatterySize)+double(ConsumptionTilNextHomeStop)-Users{n}.Logbook(TimeInd+TD.User-1,9), double(Users{n}.BatterySize)-Users{n}.Logbook(TimeInd+TD.User-1,9)));
+%             EnergyDemandLeft(n)=double(min((double(PublicChargingThreshold)+5+TruncatedGaussian(4,[1 20]-5,1))/100*double(Users{n}.BatterySize)+double(ConsumptionTilNextHomeStop)-Users{n}.Logbook(TimeInd+TD.User-1,9), double(Users{n}.BatterySize)-Users{n}.Logbook(TimeInd+TD.User-1,9)));
             TimeStepIndsNeededForCharging=ceil(EnergyDemandLeft(n)/ChargingPower(n)*60/Time.StepMin); % [Wh/W]
             
             if TimeStepIndsNeededForCharging>0
@@ -299,7 +302,7 @@ if SmartCharging
     legend(["All", "Spotmarket", "PV", "Secondary Reserve Energy"])
 
     figure
-    plot(datetime(1,1,1,0,0,0, 'TimeZone', 'Africa/Tunis'):minutes(Time.StepMin):datetime(1,1,1,23,45,0, 'TimeZone', 'Africa/Tunis'), circshift(mean(sum(AvailabilityMat,3),2), ShiftInds))
+    plot(datetime(1,1,1,0,0,0, 'TimeZone', 'Africa/Tunis'):minutes(Time.StepMin):datetime(1,1,1,23,45,0, 'TimeZone', 'Africa/Tunis'), circshift(mean(sum(Users{1}.AvailabilityMat,3),2), ShiftInds))
     xticks(datetime(1,1,1,0,0,0, 'TimeZone', 'Africa/Tunis'):hours(4):datetime(1,1,2,0,0,0, 'TimeZone', 'Africa/Tunis'))
     xticklabels(datestr(datetime(1,1,1,0,0,0, 'TimeZone', 'Africa/Tunis'):hours(4):datetime(1,1,2,0,0,0, 'TimeZone', 'Africa/Tunis'), "HH:MM"))
     

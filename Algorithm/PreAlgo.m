@@ -68,13 +68,13 @@ ub=ConsbPowerTS(:);
 %% Calc optimal charging powers
 
 [x,fval]=linprog(Costf,A,b,Aeq,beq,lb,ub, options);
-%x(x<0)=0; % Due to the accuracy of the algorithm, sometimes values lower than zero appear. But they are so close to zero (e. g. 1e-12) that it does not influence the result
+x(x<0)=0; % Due to the accuracy of the algorithm, sometimes values lower than zero appear. But they are so close to zero (e. g. 1e-12) that it does not influence the result
 
 %% Evaluate result
 
 OptimalChargingEnergies=reshape(x,ControlPeriods, NumCostCats, NumUsers);
-PostPreAlgo;
-OptimalChargingEnergies(:,1,:)=OptimalChargingEnergiesSpotmarket;
+%PostPreAlgo;
+%OptimalChargingEnergies(:,1,:)=OptimalChargingEnergiesSpotmarket;
 
 PreAlgoCounter=PreAlgoCounter+1;
 ChargingMat(:,:,:,PreAlgoCounter)=OptimalChargingEnergies;
