@@ -323,7 +323,7 @@ for n=UserNum
     Users{n}=rmfield(Users{n}, 'Logbook');
 end
 
-save(Users{1}.FileName, "Users", "-v7.3");
+%save(Users{1}.FileName, "Users", "-v7.3");
 disp(strcat("Successfully simulated within ", num2str(toc), " seconds"))
 
 %% Clean up workspace
