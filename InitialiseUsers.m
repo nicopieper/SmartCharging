@@ -144,7 +144,7 @@ for n=2:NumUsers+1
     Model=max((RandomNumbers(1)>=str2double(VehicleProperties(:,2))).*(1:size(VehicleProperties,1))'); % with respect to market share of the cars, pick one of them. a(1) is uniformly distributed between 0 and 1. find the first vehicle whichs cumulated market share value (in decimal) is large than a(1). the cumulated market share value of the first car is 0, the one of the next car represents the market share of the first vehicle. the number of the second car represents the cumulated share of the first two vehicles and so on
     Users{n}.ModelName=VehicleProperties(Model, 1); % the car name, e. g. "BMW i3s"
     Users{n}.ModelSize=VehicleProperties(Model, 3); % small, medium, large
-    Users{n}.BatterySize=uint32(str2double(VehicleProperties(Model, 4))*1000); % [Wh] Wh is used to keep accuracy while using only integers
+    Users{n}.BatterySize=str2double(VehicleProperties(Model, 4))*1000; % [Wh] Wh is used to keep accuracy while using only integers
     Users{n}.Consumption=reshape(str2double(VehicleProperties(Model, 5:8)), 2, 2); % [Wh/m == kWh/km] Cold City, Mild City; Cold Highway, Mild Highway
     
     % Determine charging properties
@@ -174,6 +174,7 @@ for n=2:NumUsers+1
         Users{n}.PrivateChargingThreshold=PrivateChargingThresholdMean+TruncatedGaussian(0.2,[PrivateChargingThresholdMean*0.6 PrivateChargingThresholdMean*1.3]-PrivateChargingThresholdMean,1); % Mean=1.4, stdw=0.2, range(0.7, 2)
     end
     Users{n}.PublicChargingThreshold=PublicChargingThresholdMean+TruncatedGaussian(0.03,[PublicChargingThresholdMean*0.75 PublicChargingThresholdMean*1.4]-PublicChargingThresholdMean,1); % Mean=1.4, stdw=0.2, range(0.7, 2)
+    Users{n}.PublicChargingThreshold_Wh=Users{n}.BatterySize*Users{n}.PublicChargingThreshold;
     
     % Selection of a grid convenient charging profile
     GridConvenientChargingProfile=max(double(RandomNumbers(8)>=(0:1/size(GridConvenienChargingDistribution,2):1-1/size(GridConvenienChargingDistribution,2))).*(1:size(GridConvenienChargingDistribution,2)));

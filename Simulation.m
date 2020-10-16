@@ -88,8 +88,8 @@ for TimeInd=Time.Sim.VecInd(2:end)
     for n=UserNum
         
         % Public charging: Only charge at public charging point if it is requiered due to low SoC
-%         if (Users{n}.Logbook(TimeInd+TD.User,1)==1 && Users{n}.Logbook(TimeInd+TD.User-1,9)*100/double(Users{n}.BatterySize)<PublicChargingThreshold) || (TimeInd+TD.User+1<=size(Users{n}.Logbook,1) && Users{n}.Logbook(TimeInd+TD.User,4)>=Users{n}.Logbook(TimeInd+TD.User-1,9))
-        if Users{n}.Logbook(TimeInd+TD.User-1,9)-Users{n}.Logbook(TimeInd+TD.User,4) < double(Users{n}.BatterySize)*Users{n}.PublicChargingThreshold
+%         if (Users{n}.Logbook(TimeInd+TD.User,1)==1 && Users{n}.Logbook(TimeInd+TD.User-1,9)*100/Users{n}.BatterySize<PublicChargingThreshold) || (TimeInd+TD.User+1<=size(Users{n}.Logbook,1) && Users{n}.Logbook(TimeInd+TD.User,4)>=Users{n}.Logbook(TimeInd+TD.User-1,9))
+        if Users{n}.Logbook(TimeInd+TD.User-1,9)-Users{n}.Logbook(TimeInd+TD.User,4) < Users{n}.PublicChargingThreshold_Wh
             
             k=TimeInd+TD.User;
             while k < length(Users{n}.Logbook) && ~ismember(Users{n}.Logbook(k,1), 3:5)
@@ -104,8 +104,8 @@ for TimeInd=Time.Sim.VecInd(2:end)
             ChargingPower(n)=min([max([Users{n}.ACChargingPowerVehicle, Users{n}.DCChargingPowerVehicle]), PublicChargerPower])*Users{n}.ChargingEfficiency; % Actual ChargingPower at public charger in [kW]
 %             ChargingEfficiency(n)=PublicChargerDistribution(end,find(ChargingPower(n)<=PublicChargerDistribution(1,2:end),1)+1)*((1.01-0.91)*randn(1)+0.99);
             
-            EnergyDemandLeft(n)=double(min((double(Users{n}.PublicChargingThreshold*100)+5+TruncatedGaussian(2,[1 10]-5,1))/100*double(Users{n}.BatterySize)+double(ConsumptionTilNextHomeStop)-Users{n}.Logbook(TimeInd+TD.User-1,9), double(Users{n}.BatterySize)-Users{n}.Logbook(TimeInd+TD.User-1,9)));
-%             EnergyDemandLeft(n)=double(min((double(PublicChargingThreshold)+5+TruncatedGaussian(4,[1 20]-5,1))/100*double(Users{n}.BatterySize)+double(ConsumptionTilNextHomeStop)-Users{n}.Logbook(TimeInd+TD.User-1,9), double(Users{n}.BatterySize)-Users{n}.Logbook(TimeInd+TD.User-1,9)));
+            EnergyDemandLeft(n)=double(min((Users{n}.PublicChargingThreshold*100 + 5+TruncatedGaussian(2,[1 10]-5,1))/100*Users{n}.BatterySize + double(ConsumptionTilNextHomeStop) - Users{n}.Logbook(TimeInd+TD.User-1,9), Users{n}.BatterySize - Users{n}.Logbook(TimeInd+TD.User-1,9)));
+%             EnergyDemandLeft(n)=double(min((double(PublicChargingThreshold)+5+TruncatedGaussian(4,[1 20]-5,1))/100*Users{n}.BatterySize+double(ConsumptionTilNextHomeStop)-Users{n}.Logbook(TimeInd+TD.User-1,9), Users{n}.BatterySize-Users{n}.Logbook(TimeInd+TD.User-1,9)));
             TimeStepIndsNeededForCharging=ceil(EnergyDemandLeft(n)/ChargingPower(n)*60/Time.StepMin); % [Wh/W]
             
             if TimeStepIndsNeededForCharging>0
@@ -125,7 +125,7 @@ for TimeInd=Time.Sim.VecInd(2:end)
         end
         
         if EnergyDemandLeft(n)>0
-            Users{n}.Logbook(TimeInd+TD.User,8)=min([EnergyDemandLeft(n), ChargingPower(n)*Time.StepMin/60, double(Users{n}.BatterySize)-Users{n}.Logbook(TimeInd+TD.User-1,9)]); % Publicly charged energy during one Time.Step in [Wh]
+            Users{n}.Logbook(TimeInd+TD.User,8)=min([EnergyDemandLeft(n), ChargingPower(n)*Time.StepMin/60, Users{n}.BatterySize-Users{n}.Logbook(TimeInd+TD.User-1,9)]); % Publicly charged energy during one Time.Step in [Wh]
             EnergyDemandLeft(n)=EnergyDemandLeft(n)-Users{n}.Logbook(TimeInd+TD.User,8); 
         end
         
@@ -150,7 +150,7 @@ for TimeInd=Time.Sim.VecInd(2:end)
                         Users{n}.Logbook(TimeInd+TD.User,1)=4; % Plugged-in
                     else
                         PlugInTime=(find([Users{n}.Logbook(TimeInd+TD.User+1:end,1);0]<3,1)-1)/Time.StepInd;
-                        P=min(1,PlugInTime/3) + 0.9*min(1, (single(Users{n}.BatterySize-Users{n}.Logbook(TimeInd+TD.User-1,9)))/single(Users{n}.BatterySize)) + min(1, single(Consumption24h)/single(Users{n}.Logbook(TimeInd+TD.User-1,9))) + 0.3*ConnectionDurations24h(1)/max(ConnectionDurations24h);
+                        P=min(1,PlugInTime/3) + 0.9*min(1, (Users{n}.BatterySize-Users{n}.Logbook(TimeInd+TD.User-1,9))/Users{n}.BatterySize) + min(1, Consumption24h/Users{n}.Logbook(TimeInd+TD.User-1,9)) + 0.3*ConnectionDurations24h(1)/max(ConnectionDurations24h);
                         if P>Users{n}.PrivateChargingThreshold
                             Users{n}.Logbook(TimeInd+TD.User,1)=4; % Plugged-in
                         else
@@ -164,16 +164,16 @@ for TimeInd=Time.Sim.VecInd(2:end)
             end
         end
         
-        Users{n}.Logbook(TimeInd+TD.User,9)=min(double(Users{n}.BatterySize), Users{n}.Logbook(TimeInd+TD.User-1,9) - Users{n}.Logbook(TimeInd+TD.User,4) + Users{n}.Logbook(TimeInd+TD.User,8));
-        if ~(Users{n}.Logbook(TimeInd+TD.User,9)<(Users{n}.Logbook(TimeInd+TD.User-1,9)+sum(Users{n}.Logbook(TimeInd+TD.User,5:8)) - Users{n}.Logbook(TimeInd+TD.User,4))+3 && Users{n}.Logbook(TimeInd+TD.User,9)>(Users{n}.Logbook(TimeInd+TD.User-1,9)+sum(Users{n}.Logbook(TimeInd+TD.User,5:8)) - Users{n}.Logbook(TimeInd+TD.User,4))-3)
-            error("Wrong addition")
-        end
+        Users{n}.Logbook(TimeInd+TD.User,9)=min(Users{n}.BatterySize, Users{n}.Logbook(TimeInd+TD.User-1,9) - Users{n}.Logbook(TimeInd+TD.User,4) + Users{n}.Logbook(TimeInd+TD.User,8));
+%         if ~(Users{n}.Logbook(TimeInd+TD.User,9)<(Users{n}.Logbook(TimeInd+TD.User-1,9)+sum(Users{n}.Logbook(TimeInd+TD.User,5:8)) - Users{n}.Logbook(TimeInd+TD.User,4))+3 && Users{n}.Logbook(TimeInd+TD.User,9)>(Users{n}.Logbook(TimeInd+TD.User-1,9)+sum(Users{n}.Logbook(TimeInd+TD.User,5:8)) - Users{n}.Logbook(TimeInd+TD.User,4))-3)
+%             error("Wrong addition")
+%         end
     end
     
     for n=UserNum
-        if Users{n}.Logbook(TimeInd+TD.User,1)==4 && Users{n}.Logbook(TimeInd+TD.User,9)<double(Users{n}.BatterySize) && (~ApplyGridConvenientCharging || Users{n}.GridConvenientChargingAvailability(mod(TimeInd+TD.User-1, 24*Time.StepInd)+1)) % Charging starts always when the car is plugged in, until the Battery is fully charged
+        if Users{n}.Logbook(TimeInd+TD.User,1)==4 && Users{n}.Logbook(TimeInd+TD.User,9)<Users{n}.BatterySize && (~ApplyGridConvenientCharging || Users{n}.GridConvenientChargingAvailability(mod(TimeInd+TD.User-1, 24*Time.StepInd)+1)) % Charging starts always when the car is plugged in, until the Battery is fully charged
             Users{n}.Logbook(TimeInd+TD.User,1)=5;
-            ChargingEnergy=min((Time.StepMin-Users{n}.Logbook(TimeInd+TD.User,2))*Users{n}.ACChargingPowerHomeCharging/60, double(Users{n}.BatterySize)-Users{n}.Logbook(TimeInd+TD.User-1,9)); %[Wh]
+            ChargingEnergy=min((Time.StepMin-Users{n}.Logbook(TimeInd+TD.User,2))*Users{n}.ACChargingPowerHomeCharging/60, Users{n}.BatterySize-Users{n}.Logbook(TimeInd+TD.User-1,9)); %[Wh]
             if UsePV && Users{n}.PVPlantExists
                 Users{n}.Logbook(TimeInd+TD.User,6)=min(uint32(PVPlants{Users{n}.PVPlant}.(PVPlants_Profile_Prediction)(TimeInd+TD.Main)), ChargingEnergy);
             end
@@ -182,9 +182,9 @@ for TimeInd=Time.Sim.VecInd(2:end)
     end
 
 	for n=UserNum
-        if  Users{n}.Logbook(TimeInd+TD.User,9)<double(Users{n}.BatterySize) && Users{n}.Logbook(TimeInd+TD.User,1)>=5
+        if  Users{n}.Logbook(TimeInd+TD.User,9)<Users{n}.BatterySize && Users{n}.Logbook(TimeInd+TD.User,1)>=5
             Users{n}.Logbook(TimeInd+TD.User,9)=Users{n}.Logbook(TimeInd+TD.User,9)+sum(Users{n}.Logbook(TimeInd+TD.User,5:7));
-            if Users{n}.Logbook(TimeInd+TD.User, 9)>double(Users{n}.BatterySize)*1.01
+            if Users{n}.Logbook(TimeInd+TD.User, 9)>Users{n}.BatterySize*1.01
                 error("Battery over charged")
             end
             if ~(Users{n}.Logbook(TimeInd+TD.User,9)<(Users{n}.Logbook(TimeInd+TD.User-1,9)+sum(Users{n}.Logbook(TimeInd+TD.User,5:8)) - Users{n}.Logbook(TimeInd+TD.User,4))+3 && Users{n}.Logbook(TimeInd+TD.User,9)>(Users{n}.Logbook(TimeInd+TD.User-1,9)+sum(Users{n}.Logbook(TimeInd+TD.User,5:8)) - Users{n}.Logbook(TimeInd+TD.User,4))-3)
@@ -209,10 +209,10 @@ for TimeInd=Time.Sim.VecInd(2:end)
                     error("Wrong addition")
                 end
             end
-            if Users{n}.Logbook(TimeInd+TD.User:ControlPeriods-1, 9)>double(Users{n}.BatterySize)
+            if Users{n}.Logbook(TimeInd+TD.User:ControlPeriods-1, 9)>Users{n}.BatterySize
                 2
             end
-            Users{n}.Logbook(TimeInd+TD.User:TimeInd+TD.User+ControlPeriods-1, 9)=min([ones(ControlPeriods,1)*double(Users{n}.BatterySize), Users{n}.Logbook(TimeInd+TD.User:TimeInd+TD.User+ControlPeriods-1, 9)], [],2);
+            Users{n}.Logbook(TimeInd+TD.User:TimeInd+TD.User+ControlPeriods-1, 9)=min([ones(ControlPeriods,1)*Users{n}.BatterySize, Users{n}.Logbook(TimeInd+TD.User:TimeInd+TD.User+ControlPeriods-1, 9)], [],2);
             if ~(Users{n}.Logbook(TimeInd+TD.User,9)<(Users{n}.Logbook(TimeInd+TD.User-1,9)+sum(Users{n}.Logbook(TimeInd+TD.User,5:8)) - Users{n}.Logbook(TimeInd+TD.User,4))+3 && Users{n}.Logbook(TimeInd+TD.User,9)>(Users{n}.Logbook(TimeInd+TD.User-1,9)+sum(Users{n}.Logbook(TimeInd+TD.User,5:8)) - Users{n}.Logbook(TimeInd+TD.User,4))-3)
                 error("Wrong addition")
             end
@@ -330,5 +330,5 @@ disp(strcat("Successfully simulated within ", num2str(toc), " seconds"))
  
 clearvars TimeInd+TD.User n ActivateWaitbar Consumption24h ParkingDuration ConsumptionTilNextHomeStop TripDistance
 clearvars NextHomeStop PublicChargerPower ChargingPower EnergyDemandLeft TimeStepIndsNeededForCharging EndOfShift
-clearvars NumPredMethod TotalIterations PublicChargingThreshold NumUsers TimeOfForecast P PlugInTime PThreshold
+clearvars NumPredMethod TotalIterations NumUsers TimeOfForecast P PlugInTime PThreshold
 clearvars SimulatedUsers PublicChargerDistribution h k
