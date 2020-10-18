@@ -27,7 +27,7 @@ Time.Sim.Start=max([Range.TrainDate(1), Users{1}.Time.Vec(1)]);
 if ~SmartCharging
     Time.Sim.End=min([Range.TestDate(2), Users{1}.Time.Vec(end)-days(250)]);
 else
-    Time.Sim.End=min([Range.TestDate(2), Users{1}.Time.Vec(end)-days(2)]);
+    Time.Sim.End=min([Range.TestDate(2), Users{1}.Time.Vec(end)]);
 end
 Time.Sim.Vec=Time.Sim.Start:Time.Step:Time.Sim.End;
 
@@ -42,7 +42,7 @@ TD.User=find(ismember(Users{1}.Time.Vec,Time.Sim.Start),1)-1;
 
 UserNum=2:NumUsers+1;
 % NumUsers=2;
-% UserNum=66:67;
+% UserNum=54:55;
 
 
 for n=UserNum

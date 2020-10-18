@@ -81,8 +81,9 @@
 %                       Vehicles are deleted from the logbooks.
 
 %% Initialisation
-
-NumUsers=450; % number of users
+rng('default');
+rng(1);
+NumUsers=100; % number of users
 LikelihoodPV=0.45; % 44 % der privaten und 46 % der gewerblichen Nutzer �ber eine eigene Photovoltaikanlage, https://elib.dlr.de/96491/1/Ergebnisbericht_E-Nutzer_2015.pdf S. 10
 AddPV=true; % determines wheter PV plants shall be assigned to the users. In general true, only false for test purposes
 MeanPrivateElectricityPrice=30.43/1.19 - 3.7513 - 7.06; % [ct/kWh] average German electricity price in 2019 according to Strom-Report without VAT (19%), electricity production price (avg. Dayahead price was 3.7513 ct/kWh in 2019) and NNE energy price (avg. was 7.06 ct/kWh in 2019)

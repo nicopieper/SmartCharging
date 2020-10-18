@@ -1,8 +1,10 @@
+x1=[];
 NumUsers=1;
 for y=2:451
     UserNum=y:y+NumUsers-1;
     InitialisePreAlgo;
     PreAlgo;
+    x1=[x1;x];
 end
     
 

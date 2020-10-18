@@ -9,8 +9,10 @@ CostsPV=ones(ControlPeriods, 1, NumUsers)*0.097;
 CostsReserveMarket=zeros(ControlPeriods, 1, NumUsers);
 
 PVPower=zeros(ControlPeriods, 1,NumUsers);
-VarCounter=1;
+VarCounter=0;
 for k=UserNum
+    VarCounter=VarCounter+1;
+    
     Availability(:,1,VarCounter)=(max(0, double(ismember(Users{k}.Logbook(TimeInd+TD.User:TimeInd+TD.User-1+ControlPeriods,1), 4:5)) - double(Users{k}.Logbook(TimeInd+TD.User:TimeInd+TD.User-1+ControlPeriods,2))/Time.StepMin)) .* Users{k}.GridConvenientChargingAvailabilityControlPeriod;
     
     %EnergyDemandCP(1,1,VarCounter)=Users{k}.BatterySize - double(Users{k}.Logbook(TimeInd+TD.User-1,9)) + sum(Users{k}.Logbook(TimeInd+TD.User:TimeInd+TD.User-1+ControlPeriods,4));
@@ -21,7 +23,8 @@ for k=UserNum
     % The maximal energy that is charagble without exceeding the battery
     % limit in every time step
     
-    MaxEnergyChargableSoCTS(:,1,VarCounter)=Users{k}.BatterySize - (Users{k}.Logbook(TimeInd+TD.User,9) - sum(Users{k}.Logbook(TimeInd+TD.User,5:7),2)) + sum(Consumed(DemandInds),2) - sum(PublicCharged(DemandInds),2) ;
+    SoC=Users{k}.Logbook(TimeInd+TD.User,9) - sum(Users{k}.Logbook(TimeInd+TD.User,5:7),2) - sum(Consumed(DemandInds),2) + sum(PublicCharged(DemandInds),2); % in Wh
+    MaxEnergyChargableSoCTS(:,1,VarCounter)=Users{k}.BatterySize - SoC ;
     
     
     % The energy required to charge in every time step to avoid empty
@@ -32,7 +35,9 @@ for k=UserNum
     % addieren, sodass die Energie ladbar ist? Ladbar im Sinne von genügend
     % Möglichkeiten die Energie zu laden und ohne dass das SoC überläuft.
     
-    MinEnergyRequiredTS(:,1,VarCounter)=sum(Consumed(DemandInds),2) + round(Users{k}.BatterySize*SmartChargingBuffer) - sum(PublicCharged(DemandInds),2) - (Users{k}.Logbook(TimeInd+TD.User,9) - sum(Users{k}.Logbook(TimeInd+TD.User,5:7),2));
+    %
+    
+    MinEnergyRequiredTS(:,1,VarCounter)=round(Users{k}.PublicChargingThreshold_Wh*0.3) - SoC;
 %     MinEnergyRequiredTS(:,1,VarCounter)=sum(Consumed(DemandInds),2) - sum(PublicCharged(DemandInds),2) - (Users{k}.Logbook(TimeInd+TD.User,9) - sum(Users{k}.Logbook(TimeInd+TD.User,5:7),2));
     
     
@@ -40,7 +45,6 @@ for k=UserNum
     % such that the battery is as full as possible at the end of the
     % ControlPeriod
     
-    SoC=(double(Users{k}.Logbook(TimeInd+TD.User,9) - sum(Users{k}.Logbook(TimeInd+TD.User,5:7),2)) - sum(Consumed(DemandInds),2) + sum(PublicCharged(DemandInds),2)); % in Wh
     MaxEnergyChargableDeadlockTS=zeros(1,ControlPeriods+1);
     ChargingInds=find(Availability(:,1,VarCounter)>0);
     
@@ -86,7 +90,6 @@ for k=UserNum
     
     CostsReserveMarket(1:ControlPeriods, 1, VarCounter)=((Users{k}.PrivateElectricityPrice + Users{k}.NNEEnergyPrice)/100 - AEOfferPrices)*1.19 - RLOfferPrices/16;
     
-    VarCounter=VarCounter+1;
 end
 
 if any(MaxEnergyChargableSoCTS(:)<-3)
