@@ -46,7 +46,7 @@ Aeq=[ConsEnergyCPAeq; ConsRLOfferAeq; ConsMatchLastReservePowerOffers4HAeq];
 
 lb=zeros(ControlPeriods, NumCostCats, NumUsers);
 ub=ConsbPowerTS(:);
-%ub=[];
+% ub=[];
 
 
 % A=[ConsSumPowerTSA; ConsEnergyDemandTSA; -ConsEnergyDemandTSA];

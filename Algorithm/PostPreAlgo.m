@@ -1,13 +1,16 @@
 ConsumptionMat=[];
+VarCounter=1;
 for k=UserNum
-    ConsumptionMat(:,k-1)=Users{k}.Logbook(TimeInd+TD.User:TimeInd+TD.User+ControlPeriods-1,4);
+    ConsumptionMat(:,VarCounter)=Users{k}.Logbook(TimeInd+TD.User:TimeInd+TD.User+ControlPeriods-1,4);
+    VarCounter=VarCounter+1;
 end
-ConsumptionMat=cumsum(reshape(ConsumptionMat,4,[],NumUsers),1);
+ConsumptionMat=sum(cumsum(reshape(ConsumptionMat,4,[],NumUsers),1),1);
 
-HourlySpotmarketPowers=sum(reshape(squeeze(OptimalChargingEnergies(:,1,:)), Time.StepInd, [], NumUsers),1);
-HourlyPowerAvailability=reshape(MaxPower/4.*Availability-sum(OptimalChargingEnergies(:,2:3,:),2), 4, [], NumUsers) .* ConsumptionMat==0;
-OptimalChargingEnergiesSpotmarket=reshape(HourlyPowerAvailability./sum(HourlyPowerAvailability,1).*HourlySpotmarketPowers, ControlPeriods, 1, NumUsers);
+HourlySpotmarketPowers=reshape(squeeze(OptimalChargingEnergies(:,1,:)), Time.StepInd, [], NumUsers);
+HourlyPowerAvailability=reshape(MaxPower/4.*Availability-sum(OptimalChargingEnergies(:,2:3,:),2), 4, [], NumUsers) .* (ConsumptionMat==0);
+OptimalChargingEnergiesSpotmarket=HourlyPowerAvailability./sum(HourlyPowerAvailability,1).*sum(HourlySpotmarketPowers,1); 
 OptimalChargingEnergiesSpotmarket(isnan(OptimalChargingEnergiesSpotmarket))=0;
+OptimalChargingEnergiesSpotmarket=reshape(OptimalChargingEnergiesSpotmarket + HourlySpotmarketPowers.*(ConsumptionMat>0), ControlPeriods, 1, NumUsers);
 
 %% Easy expample at first PreAlgo loop
 % a=reshape(squeeze(OptimalChargingEnergies(:,1,166)), 4, []);
