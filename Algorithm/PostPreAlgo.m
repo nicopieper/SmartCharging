@@ -1,6 +1,8 @@
 ConsumptionMat=[];
+VarCounter=1;
 for k=UserNum
-    ConsumptionMat(:,k-1)=Users{k}.Logbook(TimeInd+TD.User:TimeInd+TD.User+ControlPeriods-1,4);
+    ConsumptionMat(:,VarCounter)=Users{k}.Logbook(TimeInd+TD.User:TimeInd+TD.User+ControlPeriods-1,4);
+    VarCounter=VarCounter+1;
 end
 ConsumptionMat=cumsum(reshape(ConsumptionMat,4,[],NumUsers),1);
 
