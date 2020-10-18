@@ -9,7 +9,7 @@ UsePV=true;
 ApplyGridConvenientCharging=true;
 UsePredictions=true;
 rng('default');
-rng(2);
+rng(1);
 
 
 if ~exist('PublicChargerDistribution', 'var')
@@ -27,7 +27,7 @@ Time.Sim.Start=max([Range.TrainDate(1), Users{1}.Time.Vec(1)]);
 if ~SmartCharging
     Time.Sim.End=min([Range.TestDate(2), Users{1}.Time.Vec(end)-days(250)]);
 else
-    Time.Sim.End=min([Range.TestDate(2), Users{1}.Time.Vec(end)]);
+    Time.Sim.End=min([Range.TestDate(2), Users{1}.Time.Vec(end)-days(150)]);
 end
 Time.Sim.Vec=Time.Sim.Start:Time.Step:Time.Sim.End;
 
