@@ -22,27 +22,13 @@ ConsbMinEnergyRequiredTS=MinEnergyRequiredTS(:);
 ConsbeqMaxEnergyChargableDeadlockCP=MaxEnergyChargableDeadlockCP(:);
 
 
-
-
-
-% ConsSumPowerTSb=repelem(MaxPower(:)/4, ControlPeriods);
-% ConsPowerTSb=ones(ControlPeriods, 3, NumUsers).*MaxPower/4.*Availability;
-% ConsPowerTSb(:,2,:)=min([ConsPowerTSb(:,2,:), PVPower/4], [], 2);
-% ConsPowerTSb=ConsPowerTSb(:,CostCats,:);
-% 
-% ConsMinEnergyToChargeCPbeq=MinEnergyChargableDeadlockCP(:);
-% 
-% % ConsMinEnergyRequiredToChargeTSb=min([MinEnergyRequiredToChargeTS(:), SummedMaxEnergyChargeable(:)], [], 2); %% !!
-% ConsMinEnergyRequiredToChargeTSb=min([MinEnergyRequiredToChargeTS(:), MinEnergyChargableDeadlockTS(:)], [], 2);
-% ConsMaxEnergyChargableTSb=MaxEnergyChargableSoCTS(:);
-
 %%
 
-A=[ConsSumPowerTSA; ConsEnergyDemandTSA; -ConsEnergyDemandTSA];
 b=[ConsbSumPowerTS; ConsbMaxEnergyChargableSoCTS; -ConsbMinEnergyRequiredTS];
+% A=[ConsSumPowerTSA; ConsEnergyDemandTSA; -ConsEnergyDemandTSA];
 
 beq=[ConsbeqMaxEnergyChargableDeadlockCP; ConsRLOfferbeq; ConsMatchLastReservePowerOffers4Hbeq];
-Aeq=[ConsEnergyCPAeq; ConsRLOfferAeq; ConsMatchLastReservePowerOffers4HAeq];
+% Aeq=[ConsEnergyCPAeq; ConsRLOfferAeq; ConsMatchLastReservePowerOffers4HAeq];
 
 lb=zeros(ControlPeriods, NumCostCats, NumUsers);
 ub=ConsbPowerTS(:);
@@ -56,14 +42,6 @@ ub=ConsbPowerTS(:);
 % Aeq=[ConsEnergyCPAeq; ConsRLOfferAeq; ConsMatchLastReservePowerOffers4HAeq];
 
 
-
-% A=[ConsSumPowerA; ConsEnergyDemandA; -ConsEnergyDemandA];
-% Aeq=[ConsEnergyAeq; ConsRLOfferAeq;ConsMatchLastReservePowerOffersAeq];
-% lb=zeros(ControlPeriods, NumCostCats, NumUsers);
-% 
-% b=[ConsSumPowerb(:); ConsMaxEnergyChargedb; -ConsMinEnergyRequiredToChargeOneDayb];
-% beq=[ConsEnergybeq; ConsRLOfferbeq; ConsMatchLastReservePowerOffers4Hbeq];
-% ub=ConsPowerb(:);
 
 %% Calc optimal charging powers
 
@@ -88,6 +66,6 @@ temp1=ConsMatchLastReservePowerOffers4Hbeq;
 %     1
 % end
 
-if sum(reshape(x,ControlPeriods, NumCostCats, NumUsers)>0 & Availability==0)>1
-    error("Availability was not considered")
-end
+% if sum(reshape(x,ControlPeriods, NumCostCats, NumUsers)>0 & Availability==0)>1
+%     error("Availability was not considered")
+% end

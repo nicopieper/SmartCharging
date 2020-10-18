@@ -17,13 +17,19 @@ for k=UserNum
     
     %EnergyDemandCP(1,1,VarCounter)=Users{k}.BatterySize - double(Users{k}.Logbook(TimeInd+TD.User-1,9)) + sum(Users{k}.Logbook(TimeInd+TD.User:TimeInd+TD.User-1+ControlPeriods,4));
     
-    Consumed=[Users{k}.Logbook(TimeInd+TD.User:TimeInd+TD.User+ControlPeriods-1,4);0]';
-    PublicCharged=[Users{k}.Logbook(TimeInd+TD.User:TimeInd+TD.User+ControlPeriods-1,8);0]';
+    Consumed=Users{k}.Logbook(TimeInd+TD.User+1:TimeInd+TD.User+ControlPeriods-1,4);
+    PublicCharged=Users{k}.Logbook(TimeInd+TD.User+1:TimeInd+TD.User+ControlPeriods-1,8);
+%     Consumed1=[Users{k}.Logbook(TimeInd+TD.User:TimeInd+TD.User+ControlPeriods-1,4);0]';
+%     PublicCharged1=[Users{k}.Logbook(TimeInd+TD.User:TimeInd+TD.User+ControlPeriods-1,8);0]';
 
     % The maximal energy that is charagble without exceeding the battery
     % limit in every time step
     
-    SoC=Users{k}.Logbook(TimeInd+TD.User,9) - sum(Users{k}.Logbook(TimeInd+TD.User,5:7),2) - sum(Consumed(DemandInds),2) + sum(PublicCharged(DemandInds),2); % in Wh
+    SoC=Users{k}.Logbook(TimeInd+TD.User,9) - sum(Users{k}.Logbook(TimeInd+TD.User,5:7),2) - [0;cumsum(Consumed)] + [0;cumsum(PublicCharged)]; % in Wh
+%     SoC1=Users{k}.Logbook(TimeInd+TD.User,9) - sum(Users{k}.Logbook(TimeInd+TD.User,5:7),2) - sum(Consumed1(DemandInds),2) + sum(PublicCharged1(DemandInds),2); % in Wh
+%     if any(SoC1~=SoC)
+%         error("error")
+%     end
     MaxEnergyChargableSoCTS(:,1,VarCounter)=Users{k}.BatterySize - SoC ;
     
     
@@ -45,15 +51,22 @@ for k=UserNum
     % such that the battery is as full as possible at the end of the
     % ControlPeriod
     
-    MaxEnergyChargableDeadlockTS=zeros(1,ControlPeriods+1);
+    MaxEnergyChargableDeadlockTS=zeros(ControlPeriods,1);
+%     MaxEnergyChargableDeadlockTS1=zeros(1,ControlPeriods+1);
     ChargingInds=find(Availability(:,1,VarCounter)>0);
     
     if ~isempty(ChargingInds)
         SoCNew=SoC;
+%         SoCNew1=SoC;
         l=0;
         while l<length(ChargingInds) && max(SoCNew(ChargingInds(end-l):end))<Users{k}.BatterySize 
-            MaxEnergyChargableDeadlockTS(1,ChargingInds(end-l))=min(Availability(ChargingInds(end-l),1,VarCounter)*MaxPower(1,1,VarCounter)/4, Users{k}.BatterySize-max(SoCNew(ChargingInds(end-l):end)));
-            SoCNew=SoC+sum(MaxEnergyChargableDeadlockTS(DemandInds), 2);
+            MaxEnergyChargableDeadlockTS(ChargingInds(end-l),1)=min(Availability(ChargingInds(end-l),1,VarCounter)*MaxPower(1,1,VarCounter)/4, Users{k}.BatterySize-max(SoCNew(ChargingInds(end-l):end)));
+            MaxEnergyChargableDeadlockTS1(1,ChargingInds(end-l))=min(Availability(ChargingInds(end-l),1,VarCounter)*MaxPower(1,1,VarCounter)/4, Users{k}.BatterySize-max(SoCNew1(ChargingInds(end-l):end)));
+            SoCNew=SoC+[0;cumsum(MaxEnergyChargableDeadlockTS(2:192,1))];
+%             SoCNew1=SoC+sum(MaxEnergyChargableDeadlockTS1(DemandInds), 2);
+%             if any(SoCNew~=SoCNew1)
+%                 error("error")
+%             end
             l=l+1;
         end
         
@@ -92,11 +105,11 @@ for k=UserNum
     
 end
 
-if any(MaxEnergyChargableSoCTS(:)<-3)
-    error("Error calculating MaxEnergyChargableSoCTS. Negative values found")
-else
-    MaxEnergyChargableSoCTS=max(0,MaxEnergyChargableSoCTS);
-end
+% if any(MaxEnergyChargableSoCTS(:)<-3)
+%     error("Error calculating MaxEnergyChargableSoCTS. Negative values found")
+% else
+%     MaxEnergyChargableSoCTS=max(0,MaxEnergyChargableSoCTS);
+% end
 
 
 %% Aggregate Costs
