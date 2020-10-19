@@ -8,7 +8,7 @@ SmartCharging=true;
 UsePV=true;
 ApplyGridConvenientCharging=true;
 UsePredictions=true;
-UseParallel=true;
+UseParallel=false;
 rng('default');
 rng(1);
 tc=0;
