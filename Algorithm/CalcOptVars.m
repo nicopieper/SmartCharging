@@ -61,7 +61,7 @@ for k=UserNum
         l=0;
         while l<length(ChargingInds) && max(SoCNew(ChargingInds(end-l):end))<Users{k}.BatterySize 
             MaxEnergyChargableDeadlockTS(ChargingInds(end-l),1)=min(Availability(ChargingInds(end-l),1,VarCounter)*MaxPower(1,1,VarCounter)/4, Users{k}.BatterySize-max(SoCNew(ChargingInds(end-l):end)));
-            MaxEnergyChargableDeadlockTS1(1,ChargingInds(end-l))=min(Availability(ChargingInds(end-l),1,VarCounter)*MaxPower(1,1,VarCounter)/4, Users{k}.BatterySize-max(SoCNew1(ChargingInds(end-l):end)));
+%             MaxEnergyChargableDeadlockTS1(1,ChargingInds(end-l))=min(Availability(ChargingInds(end-l),1,VarCounter)*MaxPower(1,1,VarCounter)/4, Users{k}.BatterySize-max(SoCNew1(ChargingInds(end-l):end)));
             SoCNew=SoC+[0;cumsum(MaxEnergyChargableDeadlockTS(2:192,1))];
 %             SoCNew1=SoC+sum(MaxEnergyChargableDeadlockTS1(DemandInds), 2);
 %             if any(SoCNew~=SoCNew1)
