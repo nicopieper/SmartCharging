@@ -2,7 +2,7 @@
 tic
 ActivateWaitbar=true;
 SmartChargingBuffer=0.14;
-NumUsers=12*20; % size(Users,1)-1
+NumUsers=30; % size(Users,1)-1
 ControlPeriods=96*2;
 SmartCharging=true;
 UsePV=true;
