@@ -1,5 +1,5 @@
 function [Prediction, PredictionMat, TargetMat, MAEConst, mMAPEConst, RMSEConst] = TestPred(PredMethod, PredictorMat, TargetDelayed, Target, Time,...
-    Range, MaxDelayInd, ForecastIntervalPredInd, Demo, TargetTitle, ActivateWaitbar, Path)
+    Range, MaxDelayInd, ForecastIntervalPredInd, Demo, TargetTitle, ActivateWaitbar, Path, Save)
 %% Description
 % This function generates predictions basing on trained LSQ and NARXNET
 % models. The predictions can be visualised in a live demonstration.
@@ -158,26 +158,28 @@ if ActivateWaitbar
     close(h)
 end
 
-PredcitionTemp=Prediction;
-PredictionMatTemp=PredictionMat;
-PredMethodTemp=PredMethod;
-for p=1:NumPredMethod
-    Prediction=PredcitionTemp(:,p);
-    PredictionMat=PredictionMatTemp(:,:,p);
-    PredMethod=PredMethodTemp(p,:);
-    Pred.Data=Prediction;
-    Pred.DataMat=PredictionMat;
-    Pred.Method=PredMethod;
-    Pred.Target=Target;
-    Pred.Time=Time;
-    Pred.Range=Range;
-    Pred.ForecastIntervalInd=ForecastIntervalPredInd;
-    Pred.Time.Stamp=datetime('now');
-    Pred.FileName=strcat(Path.Prediction, datestr(Pred.Time.Stamp, 'yyyymmdd-HHMM'), Time.IntervalFile, "_", TargetTitle, "_", LegendVec(p), "_", num2str(ForecastIntervalPredInd), "_", "_", num2str(size(PredictorMatInput,2)), "_", ".mat");
-    save(Pred.FileName, "Pred", "-v7.3");
-end
+if Save
+    PredcitionTemp=Prediction;
+    PredictionMatTemp=PredictionMat;
+    PredMethodTemp=PredMethod;
+    for p=1:NumPredMethod
+        Prediction=PredcitionTemp(:,p);
+        PredictionMat=PredictionMatTemp(:,:,p);
+        PredMethod=PredMethodTemp(p,:);
+        Pred.Data=Prediction;
+        Pred.DataMat=PredictionMat;
+        Pred.Method=PredMethod;
+        Pred.Target=Target;
+        Pred.Time=Time;
+        Pred.Range=Range;
+        Pred.ForecastIntervalInd=ForecastIntervalPredInd;
+        Pred.Time.Stamp=datetime('now');
+        Pred.FileName=strcat(Path.Prediction, datestr(Pred.Time.Stamp, 'yyyymmdd-HHMM'), Time.IntervalFile, "_", TargetTitle, "_", LegendVec(p), "_", num2str(ForecastIntervalPredInd), "_", "_", num2str(size(PredictorMatInput,2)), "_", ".mat");
+        save(Pred.FileName, "Pred", "-v7.3");
+    end
 Prediction=PredcitionTemp;
 PredictionMat=PredictionMatTemp;
+end
 
 %% Evaluation
 for p=1:NumPredMethod

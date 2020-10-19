@@ -51,10 +51,11 @@ function [PredictorMat, TargetDelayed, MaxDelayInd, Time, Range]=PredVars(MaxDel
 
 Time.StepPred=Time.Pred(2)-Time.Pred(1);
 Time.StepPredInd=1/(minutes(Time.Pred(2)-Time.Pred(1))/60); % H:1, HH: 2, QH: 4
-MaxDelayInd=MaxDelayHours*Time.StepPredInd;
+% MaxDelayInd=MaxDelayHours*Time.StepPredInd;
 DelayInds=1:1:MaxDelayHours*Time.StepPredInd;
+DelayInds=[1:47, 48:24:49+24*5];
 NumDelayInds=numel(DelayInds);
-% MaxDelayInd=max(DelayInds);
+MaxDelayInd=max(DelayInds);
 
 % TimeVecTrainPred=Range.TrainDate(1):
 % if exist('Range.TrainDate', 'var') && exist('Range.TestDate', 'var')
@@ -98,26 +99,11 @@ MeanTargetWCirc=repmat(MeanTargetWCirc,ceil(Range.TestPredInd(2)/(24*Time.StepPr
 %using last 7 time of day values and last two values but performance was
 %worse.
 
-% TargetDelayed=zeros(length(1:Range.TestPredInd(2)),NumDelayInds);
-% Counter=1;
-% for n=DelayInds
-%     TargetDelayed(MaxDelayInd+1:end,Counter)=Target(1+MaxDelayInd-n:Range.TestPredInd(2)-n);
-%     Counter=Counter+1;
-% end
-% 
-% if ~isempty(Predictors)
-%     PredictorMat = [Predictors(1:Range.TestPredInd(2),:), ...         
-%                     MeanTargetDCirc(1:Range.TestPredInd(2),:), ...
-%                     MeanTargetWCirc(1:Range.TestPredInd(2),:), ...         
-%                    ]; 
-% else
-%     PredictorMat = [MeanTargetDCirc(1:Range.TestPredInd(2),:), ...
-%                     MeanTargetWCirc(1:Range.TestPredInd(2),:)];
-                
-                
-TargetDelayed=zeros(length(1:Range.TestPredInd(2)),MaxDelayInd);
-for n=1:MaxDelayInd
-    TargetDelayed(MaxDelayInd+1:end,n)=Target(1+MaxDelayInd-n:Range.TestPredInd(2)-n);
+TargetDelayed=zeros(length(1:Range.TestPredInd(2)),NumDelayInds);
+Counter=1;
+for n=DelayInds
+    TargetDelayed(MaxDelayInd+1:end,Counter)=Target(1+MaxDelayInd-n:Range.TestPredInd(2)-n);
+    Counter=Counter+1;
 end
 
 if ~isempty(Predictors)
@@ -128,6 +114,21 @@ if ~isempty(Predictors)
 else
     PredictorMat = [MeanTargetDCirc(1:Range.TestPredInd(2),:), ...
                     MeanTargetWCirc(1:Range.TestPredInd(2),:)];
-end
+                
+                
+% TargetDelayed=zeros(length(1:Range.TestPredInd(2)),MaxDelayInd);
+% for n=1:MaxDelayInd
+%     TargetDelayed(MaxDelayInd+1:end,n)=Target(1+MaxDelayInd-n:Range.TestPredInd(2)-n);
+% end
+% 
+% if ~isempty(Predictors)
+%     PredictorMat = [Predictors(1:Range.TestPredInd(2),:), ...         
+%                     MeanTargetDCirc(1:Range.TestPredInd(2),:), ...
+%                     MeanTargetWCirc(1:Range.TestPredInd(2),:), ...         
+%                    ]; 
+% else
+%     PredictorMat = [MeanTargetDCirc(1:Range.TestPredInd(2),:), ...
+%                     MeanTargetWCirc(1:Range.TestPredInd(2),:)];
+% end
 
 end

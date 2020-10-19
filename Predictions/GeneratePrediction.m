@@ -75,10 +75,11 @@ Target=Smard.DayaheadRealH; % double(PVPlants{1}.Profile); %DayaheadRealH; Avail
 TargetTitle="DayaheadRealH";  % "DayaheadRealH"; "PVPlants_1"
 Time.Pred=Time.H;
 Predictors=[Smard.LoadPredH, Smard.GenPredH];% [Smard.GenPredQH(:,4)]; [Smard.LoadPredH, Smard.GenPredH]; [SoC1, Weekday]
-PredMethod={1};
-TrainModelNew=0;
+PredMethod={2};
+TrainModelNew=1;
+Save=false;
 
-MaxDelayHours=7*24/7*1;
+MaxDelayHours=7*24/7*3;
 ForecastIntervalHours=52; % 52h  % The model must be able %to predict the value of Wednesday 12:00 at Monday 8:00 --> 52 forecast interval
 Demo=0;
 ActivateWaitbar=1;
@@ -99,7 +100,9 @@ StorageFileNarxnet=strcat(Path.TrainedModel, 'Narxnet_', TargetTitle, '_', num2s
 if sum(ismember(cell2mat(PredMethod(:,1)),1)) && (TrainModelNew || ~isfile(StorageFileLSQ))
     disp('Start LSQ Training')
     [LSQCoeffs, TrainFun] = TrainLSQ(Target, TargetDelayed, PredictorMat, ForecastIntervalPredInd, Range.TrainPredInd, MaxDelayInd);
-    save(StorageFileLSQ, 'LSQCoeffs', 'TrainFun', '-v7.3')
+    if Save
+        save(StorageFileLSQ, 'LSQCoeffs', 'TrainFun', '-v7.3')
+    end
     disp('LSQ Training successfully finished')
 elseif any(ismember(cell2mat(PredMethod(:,1)),1))
     load(StorageFileLSQ)
@@ -108,7 +111,9 @@ end
 if sum(ismember(cell2mat(PredMethod(:,1)),2)) && (TrainModelNew || ~isfile(StorageFileNarxnet))
     disp('Start Narxnet Training')
     [Narxnets, Ai] = TrainNarxnets(Target, PredictorMat, ForecastIntervalPredInd, MaxDelayInd, Range.TrainPredInd);
-    save(StorageFileNarxnet, 'Narxnets', 'Ai', '-v7.3')
+    if Save
+        save(StorageFileNarxnet, 'Narxnets', 'Ai', '-v7.3')
+    end
     disp('Narxnet Training successfully finished')
 elseif any(ismember(cell2mat(PredMethod(:,1)),2))
     load(StorageFileNarxnet)    
@@ -126,7 +131,7 @@ for n=1:size(PredMethod,1)  % Fill the Matrix with the Model
     end
 end   
 [Prediction, PredictionMat, TargetMat, MAE, mMAPE, RMSE] = TestPred(PredMethod, PredictorMat, TargetDelayed, Target, Time,...
-    Range, MaxDelayInd, ForecastIntervalPredInd, Demo, TargetTitle, ActivateWaitbar, Path); % The actual Prediction
+    Range, MaxDelayInd, ForecastIntervalPredInd, Demo, TargetTitle, ActivateWaitbar, Path, Save); % The actual Prediction
 
 clearvars StorageFileNarxnet MaxDelayInd ForecastIntervalPredInd Demo TargetTitle ActivateWaitbar PredMethod TrainFun LSQCoeffs Narxnets Ai StorageFileLSQ
 
