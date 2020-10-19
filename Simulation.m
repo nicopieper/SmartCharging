@@ -2,16 +2,26 @@
 tic
 ActivateWaitbar=true;
 SmartChargingBuffer=0.14;
-NumUsers=1500; % size(Users,1)-1;
+NumUsers=32; % size(Users,1)-1
 ControlPeriods=96*2;
 SmartCharging=true;
 UsePV=true;
 ApplyGridConvenientCharging=true;
 UsePredictions=true;
+UseParallel=false;
 rng('default');
 rng(1);
 tc=0;
 tc1=0;
+
+if UseParallel %strcmp(Dl,'/')
+    NumDecissionGroups=4;
+    UseParallel=true;
+    gcp
+else
+    NumDecissionGroups=1;
+    UseParallel=false;
+end
 
 
 if ~exist('PublicChargerDistribution', 'var')
@@ -32,12 +42,7 @@ else
     Time.Sim.End=min([Range.TestDate(2), Users{1}.Time.Vec(end)-days(250)]);
 end
 Time.Sim.Vec=Time.Sim.Start:Time.Step:Time.Sim.End;
-
-% if ~SmartCharging
-    Time.Sim.VecInd=1:length(Time.Sim.Vec);
-% else
-%     Time.Sim.VecInd=1:96*20;%length(Time.Sim.Vec);
-% end
+Time.Sim.VecInd=1:length(Time.Sim.Vec);
 
 TD.Main=find(ismember(Time.Vec,Time.Sim.Start),1)-1;
 TD.User=find(ismember(Users{1}.Time.Vec,Time.Sim.Start),1)-1;
@@ -183,6 +188,7 @@ for TimeInd=Time.Sim.VecInd(2:end)
         end
     end
 
+    
 	for n=UserNum
         if  Users{n}.Logbook(TimeInd+TD.User,9)<Users{n}.BatterySize && Users{n}.Logbook(TimeInd+TD.User,1)>=5
             Users{n}.Logbook(TimeInd+TD.User,9)=Users{n}.Logbook(TimeInd+TD.User,9)+sum(Users{n}.Logbook(TimeInd+TD.User,5:7));
@@ -230,7 +236,8 @@ end
 if ActivateWaitbar
     close(h);
 end
-toc
+tc
+
 for n=UserNum
     Users{n}.Logbook=Users{n}.Logbook(1:TimeInd,:);
 end

@@ -1,12 +1,12 @@
 %% Calc Optimisation Variables
 
 CalcOptVars;
+SplitDecissionGroups;
 %ConsMatchLastReservePowerOffers4Hbeq=temp1;
 
 %% Calc Cost function and Constraints
 
-Costf=Costs(:);
-
+Costs=Costs(:);
 
 SumPower=MaxPower/4.*Availability;
 ConsbSumPowerTS=SumPower(:);
@@ -24,15 +24,19 @@ ConsbeqMaxEnergyChargableDeadlockCP=MaxEnergyChargableDeadlockCP(:);
 
 %%
 
-b=[ConsbSumPowerTS; ConsbMaxEnergyChargableSoCTS; -ConsbMinEnergyRequiredTS];
+% b=[ConsbSumPowerTS; ConsbMaxEnergyChargableSoCTS; -ConsbMinEnergyRequiredTS];
 % A=[ConsSumPowerTSA; ConsEnergyDemandTSA; -ConsEnergyDemandTSA];
-
-beq=[ConsbeqMaxEnergyChargableDeadlockCP; ConsRLOfferbeq; ConsMatchLastReservePowerOffers4Hbeq];
+% 
+% beq=[ConsbeqMaxEnergyChargableDeadlockCP; ConsRLOfferbeq; ConsMatchLastReservePowerOffers4Hbeq];
 % Aeq=[ConsEnergyCPAeq; ConsRLOfferAeq; ConsMatchLastReservePowerOffers4HAeq];
+% 
+% lb=zeros(ControlPeriods, NumCostCats, NumUsers);
+% ub=ConsbPowerTS(:);
+% % ub=[];
+% 
+% Costf=Costs;
 
-lb=zeros(ControlPeriods, NumCostCats, NumUsers);
-ub=ConsbPowerTS(:);
-% ub=[];
+
 
 
 % A=[ConsSumPowerTSA; ConsEnergyDemandTSA; -ConsEnergyDemandTSA];
@@ -46,20 +50,75 @@ ub=ConsbPowerTS(:);
 %% Calc optimal charging powers
 
 tic
-for k=1:4
+if UseParallel
+    
+    ConsbSumPowerTS=ConsbSumPowerTS';
+    ConsbMaxEnergyChargableSoCTS=ConsbMaxEnergyChargableSoCTS';
+    ConsbMinEnergyRequiredTS=ConsbMinEnergyRequiredTS';
+    ConsbeqMaxEnergyChargableDeadlockCP=ConsbeqMaxEnergyChargableDeadlockCP';
+    ConsbPowerTS=ConsbPowerTS';
+    Costs=Costs';
+
+    x1=cell(NumDecissionGroups,1);
+    lb=zeros(ControlPeriods, NumCostCats, NumUsers/NumDecissionGroups);
+
+    parfor k=1:NumDecissionGroups
+        b=[ConsbSumPowerTS(DecissionGroups{k,2}); ConsbMaxEnergyChargableSoCTS(DecissionGroups{k,2}); -ConsbMinEnergyRequiredTS(DecissionGroups{k,2})]';
+        beq=[ConsbeqMaxEnergyChargableDeadlockCP(DecissionGroups{k,1})'; ConsRLOfferbeq; DecissionGroups{k,4}]'; %% this is wrong as ConsMatchLastReservePowerOffers4Hbeq must be constant in sum
+        ub=ConsbPowerTS(DecissionGroups{k,3})';
+        Costf=Costs(DecissionGroups{k,3})';
+        [x11,fval]=linprog(Costf,A,b,Aeq,beq,lb,ub, options);
+        x11(x11<0)=0;
+        x1{k}=x11;
+    end
+    
+    x=[];
+    BackwardsOrder=[];
+    for k=1:NumDecissionGroups
+        x=[x; x1{k}];
+        BackwardsOrder=[BackwardsOrder; DecissionGroups{k,1}];
+    end
+    [~, BackwardsOrder]=sort(BackwardsOrder, 'ascend');
+    x=reshape(x,ControlPeriods,NumCostCats,NumUsers);
+    x=x(:,:,BackwardsOrder);
+    x=x(:);
+else
+	b=[ConsbSumPowerTS; ConsbMaxEnergyChargableSoCTS; -ConsbMinEnergyRequiredTS];
+    A=[ConsSumPowerTSA; ConsEnergyDemandTSA; -ConsEnergyDemandTSA];
+
+    beq=[ConsbeqMaxEnergyChargableDeadlockCP; ConsRLOfferbeq; ConsMatchLastReservePowerOffers4Hbeq];
+    Aeq=[ConsEnergyCPAeq; ConsRLOfferAeq; ConsMatchLastReservePowerOffers4HAeq];
+
+    lb=zeros(ControlPeriods, NumCostCats, NumUsers);
+    ub=ConsbPowerTS(:);
+
+    Costf=Costs;
+    
     [x,fval]=linprog(Costf,A,b,Aeq,beq,lb,ub, options);
-    x(x<0)=0; % Due to the accuracy of the algorithm, sometimes values lower than zero appear. But they are so close to zero (e. g. 1e-12) that it does not influence the result
-end
-tc=tc+toc;
-tic
-parfor k=1:4
-    [x1,fval]=linprog(Costf,A,b,Aeq,beq,lb,ub, options);
-    x1(x1<0)=0; % Due to the accuracy of the algorithm, sometimes values lower than zero appear. But they are so close to zero (e. g. 1e-12) that it does not influence the result
+    x(x<0)=0;   
 end
 tc1=tc1+toc;
 
-%% Evaluate result
 
+% b=[ConsbSumPowerTS; ConsbMaxEnergyChargableSoCTS; -ConsbMinEnergyRequiredTS];
+% A=[ConsSumPowerTSA; ConsEnergyDemandTSA; -ConsEnergyDemandTSA];
+% 
+% beq=[ConsbeqMaxEnergyChargableDeadlockCP; ConsRLOfferbeq; ConsMatchLastReservePowerOffers4Hbeq];
+% Aeq=[ConsEnergyCPAeq; ConsRLOfferAeq; ConsMatchLastReservePowerOffers4HAeq];
+% 
+% lb=zeros(ControlPeriods, NumCostCats, NumUsers);
+% ub=ConsbPowerTS(:);
+% ub=[];
+
+% tic
+% for n=1:4
+%     [x,fval]=linprog(Costf,A,b,Aeq,beq,lb,ub, options);
+%     x(x<0)=0; % Due to the accuracy of the algorithm, sometimes values lower than zero appear. But they are so close to zero (e. g. 1e-12) that it does not influence the result
+% end
+% tc=tc+toc;
+
+
+%% Evaluate result
 OptimalChargingEnergies=reshape(x,ControlPeriods, NumCostCats, NumUsers);
 PostPreAlgo;
 OptimalChargingEnergies(:,1,:)=OptimalChargingEnergiesSpotmarket;
