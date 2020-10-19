@@ -69,7 +69,7 @@ tic
 
 AddNoise=true;
 ActivateWaitbar=true;
-ProcessNewVehicles=false;
+ProcessNewVehicles=true;
 Evaluation=false;
 
 MinShareHomeParking=10/24;
@@ -411,7 +411,7 @@ else
     Vehicles=Vehicles(cellfun(CheckField, Vehicles));
 
     Vehicles{1}.TimeStamp=datetime('now');
-    Vehicles{1}.FileName=strcat(StorageFile, "_", datestr(Vehicles{1}.TimeStamp, "yyyymmdd-HHMM"), ".mat");
+    Vehicles{1}.FileName=strcat(Path.Vehicle, datestr(Vehicles{1}.TimeStamp, "yyyymmdd-HHMM"), "_", Time.IntervalFile,  "VehicleData, "_", , ".mat");
     save(Vehicles{1}.FileName, "Vehicles", "-v7.3") % save the data in a file
 
     clearvars TimeVar DrivingProfilePointer DrivingProfileMatrix VehicleID DateMat DrivingProfileTime DrivingProfileTimeExt Distance DrivingTime LogbookPointer DistanceCompanyToHome    
