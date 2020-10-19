@@ -2,20 +2,20 @@
 tic
 ActivateWaitbar=true;
 SmartChargingBuffer=0.14;
-NumUsers=32; % size(Users,1)-1
+NumUsers=12*20; % size(Users,1)-1
 ControlPeriods=96*2;
 SmartCharging=true;
 UsePV=true;
 ApplyGridConvenientCharging=true;
 UsePredictions=true;
-UseParallel=false;
+UseParallel=true;
 rng('default');
 rng(1);
 tc=0;
 tc1=0;
 
 if UseParallel %strcmp(Dl,'/')
-    NumDecissionGroups=4;
+    NumDecissionGroups=12;
     UseParallel=true;
     gcp
 else
