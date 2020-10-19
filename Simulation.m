@@ -13,6 +13,7 @@ rng('default');
 rng(1);
 tc=0;
 tc1=0;
+TSim=tic;
 
 if UseParallel %strcmp(Dl,'/')
     NumDecissionGroups=12;
@@ -314,6 +315,8 @@ if SmartCharging
     xticklabels(datestr(datetime(1,1,1,0,0,0, 'TimeZone', 'Africa/Tunis'):hours(4):datetime(1,1,2,0,0,0, 'TimeZone', 'Africa/Tunis'), "HH:MM"))
     
 end
+
+disp(strcat("Successfully simulated within ", num2str(toc(TSim)), " seconds"))
 
 %% Save Data
 
