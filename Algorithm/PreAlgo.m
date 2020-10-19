@@ -45,8 +45,18 @@ ub=ConsbPowerTS(:);
 
 %% Calc optimal charging powers
 
-[x,fval]=linprog(Costf,A,b,Aeq,beq,lb,ub, options);
-x(x<0)=0; % Due to the accuracy of the algorithm, sometimes values lower than zero appear. But they are so close to zero (e. g. 1e-12) that it does not influence the result
+tic
+for k=1:4
+    [x,fval]=linprog(Costf,A,b,Aeq,beq,lb,ub, options);
+    x(x<0)=0; % Due to the accuracy of the algorithm, sometimes values lower than zero appear. But they are so close to zero (e. g. 1e-12) that it does not influence the result
+end
+tc=tc+toc;
+tic
+parfor k=1:4
+    [x1,fval]=linprog(Costf,A,b,Aeq,beq,lb,ub, options);
+    x1(x1<0)=0; % Due to the accuracy of the algorithm, sometimes values lower than zero appear. But they are so close to zero (e. g. 1e-12) that it does not influence the result
+end
+tc1=tc1+toc;
 
 %% Evaluate result
 

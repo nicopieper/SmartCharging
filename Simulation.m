@@ -2,7 +2,7 @@
 tic
 ActivateWaitbar=true;
 SmartChargingBuffer=0.14;
-NumUsers=100; % size(Users,1)-1;
+NumUsers=1500; % size(Users,1)-1;
 ControlPeriods=96*2;
 SmartCharging=true;
 UsePV=true;
@@ -10,6 +10,8 @@ ApplyGridConvenientCharging=true;
 UsePredictions=true;
 rng('default');
 rng(1);
+tc=0;
+tc1=0;
 
 
 if ~exist('PublicChargerDistribution', 'var')
@@ -25,9 +27,9 @@ delete(findall(0,'type','figure','tag','TMWWaitbar'));
 
 Time.Sim.Start=max([Range.TrainDate(1), Users{1}.Time.Vec(1)]);
 if ~SmartCharging
-    Time.Sim.End=min([Range.TestDate(2), Users{1}.Time.Vec(end)-days(250)]);
+    Time.Sim.End=min([Range.TestDate(2), Users{1}.Time.Vec(end)]);
 else
-    Time.Sim.End=min([Range.TestDate(2), Users{1}.Time.Vec(end)-days(150)]);
+    Time.Sim.End=min([Range.TestDate(2), Users{1}.Time.Vec(end)-days(250)]);
 end
 Time.Sim.Vec=Time.Sim.Start:Time.Step:Time.Sim.End;
 
@@ -323,7 +325,7 @@ for n=UserNum
     Users{n}=rmfield(Users{n}, 'Logbook');
 end
 
-%save(Users{1}.FileName, "Users", "-v7.3");
+save(Users{1}.FileName, "Users", "-v7.3");
 disp(strcat("Successfully simulated within ", num2str(toc), " seconds"))
 
 %% Clean up workspace

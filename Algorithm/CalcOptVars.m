@@ -1,8 +1,8 @@
 %% Availability, EnergyDemand and Prices
 
-RLOfferPrices=repelem(ResPoPricesReal4H(floor((TimeInd+TD.Main-1)/(4*Time.StepInd))+1:floor((TimeInd+TD.Main-1)/(4*Time.StepInd))+1+ControlPeriods/(4*Time.StepInd),3)/1000,4*Time.StepInd); % [€/kW]
+RLOfferPrices=repelem(ResPoPricesReal4H(floor((TimeInd+TD.Main-1)/(4*Time.StepInd))+1:floor((TimeInd+TD.Main-1)/(4*Time.StepInd))+1+ControlPeriods/(4*Time.StepInd),3)/1000,4*Time.StepInd); % [ï¿½/kW]
 RLOfferPrices=RLOfferPrices(1:ControlPeriods);
-AEOfferPrices=(ResEnPricesRealQH(TimeInd+TD.Main:TimeInd+TD.Main-1+ControlPeriods,7)-AEFactor*abs(ResEnPricesRealQH(TimeInd+TD.Main:TimeInd+TD.Main-1+ControlPeriods,7)))/1000; % [€/kWh]
+AEOfferPrices=(ResEnPricesRealQH(TimeInd+TD.Main:TimeInd+TD.Main-1+ControlPeriods,7)-AEFactor*abs(ResEnPricesRealQH(TimeInd+TD.Main:TimeInd+TD.Main-1+ControlPeriods,7)))/1000; % [ï¿½/kWh]
 
 CostsSpotmarket=zeros(ControlPeriods, 1, NumUsers);
 CostsPV=ones(ControlPeriods, 1, NumUsers)*0.097;
@@ -38,8 +38,8 @@ for k=UserNum
     
     
     % Wie viel Energie kann ich auf MinEnergyRequiredTS maximal drauf
-    % addieren, sodass die Energie ladbar ist? Ladbar im Sinne von genügend
-    % Möglichkeiten die Energie zu laden und ohne dass das SoC überläuft.
+    % addieren, sodass die Energie ladbar ist? Ladbar im Sinne von genï¿½gend
+    % Mï¿½glichkeiten die Energie zu laden und ohne dass das SoC ï¿½berlï¿½uft.
     
     %
     
@@ -61,7 +61,7 @@ for k=UserNum
         l=0;
         while l<length(ChargingInds) && max(SoCNew(ChargingInds(end-l):end))<Users{k}.BatterySize 
             MaxEnergyChargableDeadlockTS(ChargingInds(end-l),1)=min(Availability(ChargingInds(end-l),1,VarCounter)*MaxPower(1,1,VarCounter)/4, Users{k}.BatterySize-max(SoCNew(ChargingInds(end-l):end)));
-            MaxEnergyChargableDeadlockTS1(1,ChargingInds(end-l))=min(Availability(ChargingInds(end-l),1,VarCounter)*MaxPower(1,1,VarCounter)/4, Users{k}.BatterySize-max(SoCNew1(ChargingInds(end-l):end)));
+%             MaxEnergyChargableDeadlockTS1(1,ChargingInds(end-l))=min(Availability(ChargingInds(end-l),1,VarCounter)*MaxPower(1,1,VarCounter)/4, Users{k}.BatterySize-max(SoCNew1(ChargingInds(end-l):end)));
             SoCNew=SoC+[0;cumsum(MaxEnergyChargableDeadlockTS(2:192,1))];
 %             SoCNew1=SoC+sum(MaxEnergyChargableDeadlockTS1(DemandInds), 2);
 %             if any(SoCNew~=SoCNew1)
