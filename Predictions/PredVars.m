@@ -52,6 +52,9 @@ function [PredictorMat, TargetDelayed, MaxDelayInd, Time, Range]=PredVars(MaxDel
 Time.StepPred=Time.Pred(2)-Time.Pred(1);
 Time.StepPredInd=1/(minutes(Time.Pred(2)-Time.Pred(1))/60); % H:1, HH: 2, QH: 4
 MaxDelayInd=MaxDelayHours*Time.StepPredInd;
+DelayInds=1:1:MaxDelayHours*Time.StepPredInd;
+NumDelayInds=numel(DelayInds);
+% MaxDelayInd=max(DelayInds);
 
 % TimeVecTrainPred=Range.TrainDate(1):
 % if exist('Range.TrainDate', 'var') && exist('Range.TestDate', 'var')
@@ -69,6 +72,7 @@ Range.TestPredInd=[find(Range.TestDate(1)==TimeVecPred,1) find(dateshift(Range.T
 
 MeanTargetD=mean(reshape(Target(Range.TrainPredInd(1):Range.TrainPredInd(2)),Time.StepPredInd*24,[]),2); % Get hourly mean Price for every time of day. 00:00 in first row, 23:00 in last row        
 
+tic
 for k=1:7                       % Get mean Target value for every Weekday
     temp=[];
     for n=Range.TrainPredInd(1):Range.TrainPredInd(2)
@@ -78,20 +82,39 @@ for k=1:7                       % Get mean Target value for every Weekday
     end
     MeanTargetW(mod(k+5,7)+1,1)=mean(temp);     % Monday in first row
 end
+toc
 
-MeanTargetDCirc=repmat(MeanTargetD,ceil((Range.TestPredInd(2)+MaxDelayInd)/(24*Time.StepPredInd)),1); % Repeat hourly mean time, thus it is aligned with other Time Series 
-MeanTargetDCirc=MeanTargetDCirc(1:Range.TestPredInd(2)+MaxDelayInd);
+MeanTargetDCirc=repmat(MeanTargetD,ceil(Range.TestPredInd(2)/(24*Time.StepPredInd)),1); % Repeat hourly mean time, thus it is aligned with other Time Series 
+% MeanTargetDCirc=MeanTargetDCirc(1:Range.TestPredInd(2)+MaxDelayInd);
 
 MeanTargetWCirc=circshift(MeanTargetW, 7-mod(weekday(Time.Pred(Range.TrainPredInd(1))+6),7)+1); % Shift, thus Weekday at Range.TrainInd(1) is in first row.
 temp=repmat(MeanTargetWCirc(1:1:end),1,24*Time.StepPredInd)'; %  Now, repeat daily values, thus every 24h of a Day has the same value.
 MeanTargetWCirc=temp(1:end)';
-MeanTargetWCirc=repmat(MeanTargetWCirc,ceil((Range.TestPredInd(2)+MaxDelayInd)/(24*Time.StepPredInd)/7),1); % Repeat daily mean values, thus it is aligned with other Time Series
-MeanTargetWCirc=MeanTargetWCirc(1:Range.TestPredInd(2)+MaxDelayInd);
+MeanTargetWCirc=repmat(MeanTargetWCirc,ceil(Range.TestPredInd(2)/(24*Time.StepPredInd)/7),1); % Repeat daily mean values, thus it is aligned with other Time Series
+% MeanTargetWCirc=MeanTargetWCirc(1:Range.TestPredInd(2)+MaxDelayInd);
 
 %% Creating Delayed Target Matrix and other Output Variables
 %Tried to use less past values but performance decreased. Investigated
 %using last 7 time of day values and last two values but performance was
 %worse.
+
+% TargetDelayed=zeros(length(1:Range.TestPredInd(2)),NumDelayInds);
+% Counter=1;
+% for n=DelayInds
+%     TargetDelayed(MaxDelayInd+1:end,Counter)=Target(1+MaxDelayInd-n:Range.TestPredInd(2)-n);
+%     Counter=Counter+1;
+% end
+% 
+% if ~isempty(Predictors)
+%     PredictorMat = [Predictors(1:Range.TestPredInd(2),:), ...         
+%                     MeanTargetDCirc(1:Range.TestPredInd(2),:), ...
+%                     MeanTargetWCirc(1:Range.TestPredInd(2),:), ...         
+%                    ]; 
+% else
+%     PredictorMat = [MeanTargetDCirc(1:Range.TestPredInd(2),:), ...
+%                     MeanTargetWCirc(1:Range.TestPredInd(2),:)];
+                
+                
 TargetDelayed=zeros(length(1:Range.TestPredInd(2)),MaxDelayInd);
 for n=1:MaxDelayInd
     TargetDelayed(MaxDelayInd+1:end,n)=Target(1+MaxDelayInd-n:Range.TestPredInd(2)-n);
@@ -106,4 +129,5 @@ else
     PredictorMat = [MeanTargetDCirc(1:Range.TestPredInd(2),:), ...
                     MeanTargetWCirc(1:Range.TestPredInd(2),:)];
 end
+
 end

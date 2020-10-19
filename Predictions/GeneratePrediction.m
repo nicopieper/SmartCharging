@@ -83,7 +83,7 @@ ForecastIntervalHours=52; % 52h  % The model must be able %to predict the value 
 Demo=0;
 ActivateWaitbar=1;
 
-if ~exist('PredVarsInput', 'var') || ~isequaln(PredVarsInput,{MaxDelayHours, Target, Time.Pred, Predictors})
+if ~exist('PredVarsInput', 'var') || ~isequaln(PredVarsInput,{MaxDelayHours, Target, Time.Pred, Predictors}) || 1
     disp('Calculate Predictor Variables')
     %%
     [PredictorMat, TargetDelayed, MaxDelayInd, Time, Range]=PredVars(MaxDelayHours, Target, Predictors, Time, Range);
