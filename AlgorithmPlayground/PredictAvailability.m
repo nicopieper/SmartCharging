@@ -54,7 +54,7 @@ for n=3:3%length(Users)
     
     l=[0,0];
     for k=0.4:0.01:0.6
-    b=movAvg(a);
+    b=movavg(a,'exponential',10);
     T=k;
     b(b<=T)=0;
     b(b>T)=1;
