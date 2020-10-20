@@ -79,8 +79,8 @@ PredMethod={2};
 TrainModelNew=1;
 Save=false;
 
-% DelayIndsLSQ=[1:47, 48:24:49+24*5];
-DelayIndsNARXNET={[1:3], [96,96*2]};
+DelayIndsLSQ=[1:47, 48:24:49+24*5];
+% DelayIndsNARXNET={[1:3], [96,96*2]};
 % MaxDelayHours=7*24/7*3;
 ForecastIntervalHours=52; % 52h  % The model must be able %to predict the value of Wednesday 12:00 at Monday 8:00 --> 52 forecast interval
 Demo=0;
@@ -89,7 +89,7 @@ ActivateWaitbar=1;
 if ~exist('PredVarsInput', 'var') || ~isequaln(PredVarsInput,{Target, Time.Pred, Predictors, DelayIndsLSQ, DelayIndsNARXNET})
     disp('Calculate Predictor Variables')
     %%
-    [PredictorMat, TargetDelayed, MaxDelayInd, NumDelayIndsLSQ, NumDelayIndsNARXNET, Time, Range]=PredVars(DelayIndsLSQ, Target, Predictors, Time, Range);
+    [PredictorMat, TargetDelayed, MaxDelayInd, NumDelayIndsLSQ, NumDelayIndsNARXNET, Time, Range]=PredVars(DelayIndsLSQ, DelayIndsNARXNET, Target, Predictors, Time, Range);
     PredVarsInput={Target, Time.Pred, Predictors, DelayInds};
     disp('Successfully calculated Predictor Variables')
 end
@@ -112,7 +112,7 @@ end
 
 if sum(ismember(cell2mat(PredMethod(:,1)),2)) && (TrainModelNew || ~isfile(StorageFileNarxnet))
     disp('Start Narxnet Training')
-    [Narxnets, Ai] = TrainNarxnets(Target, PredictorMat, ForecastIntervalPredInd, DelayIndsNARXNET, Range.TrainPredInd);
+    [Narxnets, Ai] = TrainNarxnets(Target, PredictorMat, ForecastIntervalPredInd, DelayIndsNARXNET, Range.TrainPredInd, Time);
     if Save
         save(StorageFileNarxnet, 'Narxnets', 'Ai', '-v7.3')
     end

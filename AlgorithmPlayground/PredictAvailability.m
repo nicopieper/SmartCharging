@@ -42,7 +42,7 @@ for n=3:3%length(Users)
     
     [TopACFCs, order]=sort(ACFs(:,n-1), 'descend');
     
-    DelayInds=[1:3, 96, 96*2];
+    DelayIndsNARXNET={1:2, [96, 96*2]};
     
     GeneratePrediction;
     a=Prediction;
@@ -52,8 +52,23 @@ for n=3:3%length(Users)
     plot(Time.Vec, Availability)
     ylim([-0.1 1.1])
     
-    l
-    
+    l=[0,0];
+    for k=0.4:0.01:0.6
+    b=movavg(a,'exponential',10);
+    T=k;
+    b(b<=T)=0;
+    b(b>T)=1;
+    %a2=b + [b(2:end); 0] + [0; b(1:end-1)];
+    TP=sum(b==1 & Availability==1);
+    FP=sum(b==1 & Availability==0);
+    FN=sum(b==0 & Availability==1);
+
+    accuracy=sqrt(TP/(TP+FP)*TP/(TP+FN));
+    l(1)=max([accuracy, l]);
+    if l(1)==accuracy
+        l(2)=k;
+    end
+    end
 end
 
 

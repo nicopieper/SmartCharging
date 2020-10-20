@@ -1,4 +1,4 @@
-function [Narxnets, Ai] = TrainNarxnets(Target, PredictorMat, ForecastIntervalPredInd, DelayInds, RangeTrain)
+function [Narxnets, Ai] = TrainNarxnets(Target, PredictorMat, ForecastIntervalPredInd, DelayIndsNARXNET, RangeTrain, Time)
 %% Description
 % tbd
 

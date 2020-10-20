@@ -1,4 +1,4 @@
-function [PredictorMat, TargetDelayed, MaxDelayInd, NumDelayInds, Time, Range]=PredVars(DelayIndsLSQ, DelayIndsNARXNET, Target, Predictors, Time, Range)
+function [PredictorMat, TargetDelayed, MaxDelayInd, NumDelayInds, NumDelayIndsNARXNET, Time, Range]=PredVars(DelayIndsLSQ, DelayIndsNARXNET, Target, Predictors, Time, Range)
 %% Description
 % This function generates the input variables for the DayAhead Price
 % predictions.
