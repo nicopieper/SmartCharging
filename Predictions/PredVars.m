@@ -1,4 +1,4 @@
-function [PredictorMat, TargetDelayed, MaxDelayInd, Time, Range]=PredVars(MaxDelayHours, Target, Predictors, Time, Range)
+function [PredictorMat, TargetDelayed, MaxDelayInd, NumDelayInds, Time, Range]=PredVars(DelayInds, Target, Predictors, Time, Range)
 %% Description
 % This function generates the input variables for the DayAhead Price
 % predictions.
@@ -52,8 +52,6 @@ function [PredictorMat, TargetDelayed, MaxDelayInd, Time, Range]=PredVars(MaxDel
 Time.StepPred=Time.Pred(2)-Time.Pred(1);
 Time.StepPredInd=1/(minutes(Time.Pred(2)-Time.Pred(1))/60); % H:1, HH: 2, QH: 4
 % MaxDelayInd=MaxDelayHours*Time.StepPredInd;
-DelayInds=1:1:MaxDelayHours*Time.StepPredInd;
-DelayInds=[1:47, 48:24:49+24*5];
 NumDelayInds=numel(DelayInds);
 MaxDelayInd=max(DelayInds);
 

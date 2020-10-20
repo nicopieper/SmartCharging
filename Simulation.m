@@ -1,27 +1,30 @@
 %% Initialisation
 tic
-ActivateWaitbar=true;
-SmartChargingBuffer=0.14;
-NumUsers=30; % size(Users,1)-1
+NumUsers=100; % size(Users,1)-1
+SmartCharging=false;
+UseParallel=false;
+UsePredictions=true;
+
 ControlPeriods=96*2;
-SmartCharging=true;
 UsePV=true;
 ApplyGridConvenientCharging=true;
-UsePredictions=true;
-UseParallel=false;
+ActivateWaitbar=true;
+
 rng('default');
 rng(1);
 tc=0;
 tc1=0;
 TSim=tic;
 
-if UseParallel %strcmp(Dl,'/')
-    NumDecissionGroups=12;
-    UseParallel=true;
-    gcp
-else
-    NumDecissionGroups=1;
-    UseParallel=false;
+if SmartCharging
+    if UseParallel
+        NumDecissionGroups=12;
+        UseParallel=true;
+        gcp
+    else
+        NumDecissionGroups=1;
+        UseParallel=false;
+    end
 end
 
 
@@ -316,11 +319,9 @@ if SmartCharging
     
 end
 
-disp(strcat("Successfully simulated within ", num2str(toc(TSim)), " seconds"))
-
 %% Save Data
 
-SimulatedUsers=@(User) (isfield(User, 'Time') || User.Logbook(2,9)>0);
+SimulatedUsers=@(User) (isfield(User, 'Time') || (isfield(User,"Logbook") && User.Logbook(2,9)>0));
 Users=Users(cellfun(SimulatedUsers, Users));
 Users{1}.Time.Stamp=datetime('now');
 
@@ -336,11 +337,13 @@ for n=UserNum
 end
 
 save(Users{1}.FileName, "Users", "-v7.3");
-disp(strcat("Successfully simulated within ", num2str(toc), " seconds"))
+disp(strcat("Successfully simulated within ", num2str(toc(TSim)), " seconds"))
 
 %% Clean up workspace
  
 clearvars TimeInd+TD.User n ActivateWaitbar Consumption24h ParkingDuration ConsumptionTilNextHomeStop TripDistance
 clearvars NextHomeStop PublicChargerPower ChargingPower EnergyDemandLeft TimeStepIndsNeededForCharging EndOfShift
 clearvars NumPredMethod TotalIterations NumUsers TimeOfForecast P PlugInTime PThreshold
-clearvars SimulatedUsers PublicChargerDistribution h k
+clearvars SimulatedUsers PublicChargerDistribution h k UserNum UsePV UsePredictions UseParallel TSim TimeInd temp TD tc tc1
+clearvars SpotmarketPrices PVPlants_Profile_Prediction ApplyGridConvenientCharging ChargingEnergy ConnectionDurations24h ControlPeriods IMSYSPrices n
+clearvars SmartCharging
