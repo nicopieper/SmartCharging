@@ -73,8 +73,8 @@ end
 
 Target=double(Availability); % double(PVPlants{1}.Profile); %DayaheadRealH; Availability1 ResEnPricesRealQH(:,7)
 TargetTitle="Availability";  % "DayaheadRealH"; "PVPlants_1"
-Time.Pred=Time.Sim.Vec;
-Predictors=[];% [Smard.GenPredQH(:,4)]; [Smard.LoadPredH, Smard.GenPredH]; [SoC1, Weekday]
+Time.Pred=Users{1}.Time.Sim.Vec;
+Predictors=[SoC1];% [Smard.GenPredQH(:,4)]; [Smard.LoadPredH, Smard.GenPredH]; [SoC1, Weekday]
 PredMethod={2};
 TrainModelNew=1;
 Save=false;
@@ -111,7 +111,7 @@ end
 
 if sum(ismember(cell2mat(PredMethod(:,1)),2)) && (TrainModelNew || ~isfile(StorageFileNarxnet))
     disp('Start Narxnet Training')
-    [Narxnets, Ai] = TrainNarxnets(Target, PredictorMat, ForecastIntervalPredInd, MaxDelayInd, Range.TrainPredInd);
+    [Narxnets, Ai] = TrainNarxnets(Target, PredictorMat, ForecastIntervalPredInd, DelayInds, Range.TrainPredInd);
     if Save
         save(StorageFileNarxnet, 'Narxnets', 'Ai', '-v7.3')
     end

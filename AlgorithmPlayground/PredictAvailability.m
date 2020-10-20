@@ -1,3 +1,6 @@
+%% Init
+ movAvg = dsp.MovingAverage('Method','Exponential weighting');
+
 %% Availability Period Forecast
 
 ACFs=[];
@@ -22,16 +25,24 @@ ACFsNoCorr=ACFsNoCorr(:,temp);
 
 %% Chose 10 best ACF coefficients
 
-for n=2:2%length(Users)
+for n=3:3%length(Users)
     Availability=ismember(Users{n}.LogbookBase(:,1), 4:5);
     Availability1=[0;double(Availability(2:end)==1 & Availability(1:end-1)==0)];
     Availability2=Availability1 + [Availability1(2:end); 0] + [0; Availability1(1:end-1)];
 
     ACFs(:,n-1)=autocorr(Availability,96*3);
     
+    SoC=double(Users{n}.LogbookBase(:,9))/double(Users{n}.BatterySize);
+    SoC1=repelem(SoC(1:24*Time.StepInd:end), 24*Time.StepInd);
+
+    Weekday=mod(weekday(Time.Vec)+5, 7)+1<=5;
+
+    figure
+    plot(ACFs(:,n-1))
+    
     [TopACFCs, order]=sort(ACFs(:,n-1), 'descend');
     
-    DelayInds=order(1:10);
+    DelayInds=[1:3, 96, 96*2];
     
     GeneratePrediction;
     a=Prediction;
@@ -40,7 +51,24 @@ for n=2:2%length(Users)
     hold on
     plot(Time.Vec, Availability)
     ylim([-0.1 1.1])
+    
+    l=[0,0];
+    for k=0.4:0.01:0.6
+    b=movAvg(a);
+    T=k;
+    b(b<=T)=0;
+    b(b>T)=1;
+    %a2=b + [b(2:end); 0] + [0; b(1:end-1)];
+    TP=sum(b==1 & Availability==1);
+    FP=sum(b==1 & Availability==0);
+    FN=sum(b==0 & Availability==1);
 
+    accuracy=sqrt(TP/(TP+FP)*TP/(TP+FN));
+    l(1)=max([accuracy, l]);
+    if l(1)==accuracy
+        l(2)=k;
+    end
+    end
 end
 
 
