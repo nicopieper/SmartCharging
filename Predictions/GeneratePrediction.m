@@ -79,23 +79,24 @@ PredMethod={2};
 TrainModelNew=1;
 Save=false;
 
-% DelayInds=[1:47, 48:24:49+24*5];
+% DelayIndsLSQ=[1:47, 48:24:49+24*5];
+DelayIndsNARXNET={[1:3], [96,96*2]};
 % MaxDelayHours=7*24/7*3;
 ForecastIntervalHours=52; % 52h  % The model must be able %to predict the value of Wednesday 12:00 at Monday 8:00 --> 52 forecast interval
 Demo=0;
 ActivateWaitbar=1;
 
-if ~exist('PredVarsInput', 'var') || ~isequaln(PredVarsInput,{Target, Time.Pred, Predictors, DelayInds})
+if ~exist('PredVarsInput', 'var') || ~isequaln(PredVarsInput,{Target, Time.Pred, Predictors, DelayIndsLSQ, DelayIndsNARXNET})
     disp('Calculate Predictor Variables')
     %%
-    [PredictorMat, TargetDelayed, MaxDelayInd, NumDelayInds, Time, Range]=PredVars(DelayInds, Target, Predictors, Time, Range);
+    [PredictorMat, TargetDelayed, MaxDelayInd, NumDelayIndsLSQ, NumDelayIndsNARXNET, Time, Range]=PredVars(DelayIndsLSQ, Target, Predictors, Time, Range);
     PredVarsInput={Target, Time.Pred, Predictors, DelayInds};
     disp('Successfully calculated Predictor Variables')
 end
 ForecastIntervalPredInd=ForecastIntervalHours*Time.StepPredInd;
 
-StorageFileLSQ=strcat(Path.TrainedModel, 'LSQ_', TargetTitle, '_', num2str(ForecastIntervalPredInd), '_', num2str(NumDelayInds+size(PredictorMat,2)), '_', Time.IntervalFile, '.mat'); % Path where the LSQ model shall be stored
-StorageFileNarxnet=strcat(Path.TrainedModel, 'Narxnet_', TargetTitle, '_', num2str(ForecastIntervalPredInd), '_', num2str(NumDelayInds+size(PredictorMat,2)), '_', Time.IntervalFile, '.mat'); % Path where the LSQ model shall be stored
+StorageFileLSQ=strcat(Path.TrainedModel, 'LSQ_', TargetTitle, '_', num2str(ForecastIntervalPredInd), '_', num2str(NumDelayIndsLSQ+size(PredictorMat,2)), '_', Time.IntervalFile, '.mat'); % Path where the LSQ model shall be stored
+StorageFileNarxnet=strcat(Path.TrainedModel, 'Narxnet_', TargetTitle, '_', num2str(ForecastIntervalPredInd), '_', num2str(NumDelayIndsNARXNET+size(PredictorMat,2)), '_', Time.IntervalFile, '.mat'); % Path where the LSQ model shall be stored
 
 %% Load trained Models or if they do not exist train them
 if sum(ismember(cell2mat(PredMethod(:,1)),1)) && (TrainModelNew || ~isfile(StorageFileLSQ))
@@ -111,7 +112,7 @@ end
 
 if sum(ismember(cell2mat(PredMethod(:,1)),2)) && (TrainModelNew || ~isfile(StorageFileNarxnet))
     disp('Start Narxnet Training')
-    [Narxnets, Ai] = TrainNarxnets(Target, PredictorMat, ForecastIntervalPredInd, DelayInds, Range.TrainPredInd);
+    [Narxnets, Ai] = TrainNarxnets(Target, PredictorMat, ForecastIntervalPredInd, DelayIndsNARXNET, Range.TrainPredInd);
     if Save
         save(StorageFileNarxnet, 'Narxnets', 'Ai', '-v7.3')
     end

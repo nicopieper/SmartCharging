@@ -1,4 +1,4 @@
-function [PredictorMat, TargetDelayed, MaxDelayInd, NumDelayInds, Time, Range]=PredVars(DelayInds, Target, Predictors, Time, Range)
+function [PredictorMat, TargetDelayed, MaxDelayInd, NumDelayInds, Time, Range]=PredVars(DelayIndsLSQ, DelayIndsNARXNET, Target, Predictors, Time, Range)
 %% Description
 % This function generates the input variables for the DayAhead Price
 % predictions.
@@ -52,8 +52,9 @@ function [PredictorMat, TargetDelayed, MaxDelayInd, NumDelayInds, Time, Range]=P
 Time.StepPred=Time.Pred(2)-Time.Pred(1);
 Time.StepPredInd=1/(minutes(Time.Pred(2)-Time.Pred(1))/60); % H:1, HH: 2, QH: 4
 % MaxDelayInd=MaxDelayHours*Time.StepPredInd;
-NumDelayInds=numel(DelayInds);
-MaxDelayInd=max(DelayInds);
+NumDelayInds=numel(DelayIndsLSQ);
+MaxDelayInd=max(DelayIndsLSQ);
+NumDelayIndsNARXNET=size(DelayIndsNARXNET{1},2)+size(DelayIndsNARXNET{2},2);
 
 % TimeVecTrainPred=Range.TrainDate(1):
 % if exist('Range.TrainDate', 'var') && exist('Range.TestDate', 'var')
@@ -104,7 +105,7 @@ MeanTargetWCirc=repmat(MeanTargetWCirc,ceil(Range.TestPredInd(2)/(24*Time.StepPr
 
 TargetDelayed=zeros(length(1:Range.TestPredInd(2)),NumDelayInds);
 Counter=1;
-for n=DelayInds
+for n=DelayIndsLSQ
     TargetDelayed(MaxDelayInd+1:end,Counter)=Target(1+MaxDelayInd-n:Range.TestPredInd(2)-n);
     Counter=Counter+1;
 end
