@@ -53,7 +53,7 @@ Time.StepPred=Time.Pred(2)-Time.Pred(1);
 Time.StepPredInd=1/(minutes(Time.Pred(2)-Time.Pred(1))/60); % H:1, HH: 2, QH: 4
 % MaxDelayInd=MaxDelayHours*Time.StepPredInd;
 DelayInds=1:1:MaxDelayHours*Time.StepPredInd;
-DelayInds=[1:47, 48:24:49+24*5];
+DelayInds=[1:47, 48:24:48+24*5];
 NumDelayInds=numel(DelayInds);
 MaxDelayInd=max(DelayInds);
 

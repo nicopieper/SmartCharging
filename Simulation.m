@@ -2,13 +2,13 @@
 tic
 ActivateWaitbar=true;
 SmartChargingBuffer=0.14;
-NumUsers=30; % size(Users,1)-1
+NumUsers=12*100; % size(Users,1)-1
 ControlPeriods=96*2;
 SmartCharging=true;
 UsePV=true;
 ApplyGridConvenientCharging=true;
 UsePredictions=true;
-UseParallel=false;
+UseParallel=true;
 rng('default');
 rng(1);
 tc=0;
@@ -40,7 +40,7 @@ Time.Sim.Start=max([Range.TrainDate(1), Users{1}.Time.Vec(1)]);
 if ~SmartCharging
     Time.Sim.End=min([Range.TestDate(2), Users{1}.Time.Vec(end)]);
 else
-    Time.Sim.End=min([Range.TestDate(2), Users{1}.Time.Vec(end)-days(250)]);
+    Time.Sim.End=min([Range.TestDate(2), Users{1}.Time.Vec(end)]);
 end
 Time.Sim.Vec=Time.Sim.Start:Time.Step:Time.Sim.End;
 Time.Sim.VecInd=1:length(Time.Sim.Vec);
