@@ -1,5 +1,5 @@
 function [Prediction, PredictionMat, TargetMat, MAEConst, mMAPEConst, RMSEConst] = TestPred(PredMethod, PredictorMat, TargetDelayed, Target, Time,...
-    Range, MaxDelayInd, ForecastIntervalPredInd, Demo, TargetTitle, ActivateWaitbar, Path, Save)
+    Range, MaxDelayIndLSQ, DelayIndsNARXNET, DelayIndsNARXNETMat, ForecastIntervalPredInd, Demo, TargetTitle, ActivateWaitbar, Path, Save)
 %% Description
 % This function generates predictions basing on trained LSQ and NARXNET
 % models. The predictions can be visualised in a live demonstration.
@@ -97,7 +97,9 @@ if Demo
         
     legend([strcat("Target ", TargetTitle), LegendVec],'Interpreter','none')
 end
-
+a1=0;
+a2=0;
+a3=0;
 %% Start Prediction
 if ActivateWaitbar
     h=waitbar(0, 'Berechne Prognose');
@@ -119,9 +121,17 @@ while TimeInd<=Range.TestPredInd(2)
                     TimeInd
                 end
             elseif PredMethod{p,1}==2
-                PredictorMatInput=[num2cell(PredictorMat(TimeInd+ForecastDuration,:)',1);{0}]; % Regarding current Values, the ANN uses only the Predictors, hence the target row can be zero
-                PredictorMatDelayedInput=[num2cell(zeros(size(PredictorMat,2),MaxDelayInd+ForecastDuration),1); num2cell(TargetDelayed(TimeInd-MaxDelayInd+1:TimeInd+ForecastDuration,1))']; % Regarding delayed Values, the ANN uses only the delayed Targets, hence the first rows are not used an can by any value
+                tic;
+                PredictorMatInput=[num2cell(PredictorMat(TimeInd+ForecastDuration,:)',1);{0}]; % Regarding current Values, the ANN uses only the Predictors, hence the target row can be zero. The delayed targets are fed in through the initial state as only one prediction per time is conducted
+                a1=a1+toc;
+%                 TargetDelayedNARXNET=[Target(TimeInd-ForecastDuration-DelayIndsNARXNET{1}); Target(TimeInd - DelayIndsNARXNETMat(ForecastDuration+1, end-length(DelayIndsNARXNET{2})+1:end))];
+                tic
+                PredictorMatDelayedInput=[num2cell(zeros(size(PredictorMat,2),DelayIndsNARXNETMat(ForecastDuration+1,end)),1); num2cell(Target(TimeInd-DelayIndsNARXNETMat(ForecastDuration+1,end):TimeInd-1))'];
+                a2=a2+toc;
+                tic
+%                 PredictorMatDelayedInput=[num2cell(zeros(size(PredictorMat,2),MaxDelayIndLSQ+ForecastDuration),1); num2cell(TargetDelayed(TimeInd-MaxDelayIndLSQ+1:TimeInd+ForecastDuration,1))']; % Regarding delayed Values, the ANN uses only the delayed Targets, hence the first rows are not used an can by any value
                 Prediction(TimeInd+ForecastDuration,p)=cell2mat(PredMethod{p,2}{ForecastDuration+1}(PredictorMatInput, PredictorMatDelayedInput, PredMethod{p,3}))';
+                a3=a3+toc;
                 PredictionMat(ForecastDuration+1,TimeInd,p)=Prediction(TimeInd+ForecastDuration,p);
             end
             if Demo  

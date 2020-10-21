@@ -80,16 +80,17 @@ TrainModelNew=1;
 Save=false;
 
 DelayIndsLSQ=[1:47, 48:24:49+24*5];
-% DelayIndsNARXNET={[1:3], [96,96*2]};
+DelayIndsNARXNET={[1:3], [96,96*2]};
 % MaxDelayHours=7*24/7*3;
 ForecastIntervalHours=52; % 52h  % The model must be able %to predict the value of Wednesday 12:00 at Monday 8:00 --> 52 forecast interval
 Demo=0;
 ActivateWaitbar=1;
+DelayIndsNARXNETMat=GetDelayInds(DelayIndsNARXNET, ForecastIntervalPredInd, Time);
 
 if ~exist('PredVarsInput', 'var') || ~isequaln(PredVarsInput,{Target, Time.Pred, Predictors, DelayIndsLSQ, DelayIndsNARXNET})
     disp('Calculate Predictor Variables')
     %%
-    [PredictorMat, TargetDelayed, MaxDelayInd, NumDelayIndsLSQ, NumDelayIndsNARXNET, Time, Range]=PredVars(DelayIndsLSQ, DelayIndsNARXNET, Target, Predictors, Time, Range);
+    [PredictorMat, TargetDelayed, MaxDelayIndLSQ, NumDelayIndsLSQ, NumDelayIndsNARXNET, Time, Range]=PredVars(DelayIndsLSQ, DelayIndsNARXNET, DelayIndsNARXNETMat, Target, Predictors, Time, Range);
     PredVarsInput={Target, Time.Pred, Predictors, DelayInds};
     disp('Successfully calculated Predictor Variables')
 end
@@ -101,7 +102,7 @@ StorageFileNarxnet=strcat(Path.TrainedModel, 'Narxnet_', TargetTitle, '_', num2s
 %% Load trained Models or if they do not exist train them
 if sum(ismember(cell2mat(PredMethod(:,1)),1)) && (TrainModelNew || ~isfile(StorageFileLSQ))
     disp('Start LSQ Training')
-    [LSQCoeffs, TrainFun] = TrainLSQ(Target, TargetDelayed, PredictorMat, ForecastIntervalPredInd, Range.TrainPredInd, MaxDelayInd);
+    [LSQCoeffs, TrainFun] = TrainLSQ(Target, TargetDelayed, PredictorMat, ForecastIntervalPredInd, Range.TrainPredInd, MaxDelayIndLSQ);
     if Save
         save(StorageFileLSQ, 'LSQCoeffs', 'TrainFun', '-v7.3')
     end
@@ -112,7 +113,7 @@ end
 
 if sum(ismember(cell2mat(PredMethod(:,1)),2)) && (TrainModelNew || ~isfile(StorageFileNarxnet))
     disp('Start Narxnet Training')
-    [Narxnets, Ai] = TrainNarxnets(Target, PredictorMat, ForecastIntervalPredInd, DelayIndsNARXNET, Range.TrainPredInd, Time);
+    [Narxnets, Ai] = TrainNarxnets(Target, PredictorMat, ForecastIntervalPredInd, DelayIndsNARXNETMat, Range.TrainPredInd, Time);
     if Save
         save(StorageFileNarxnet, 'Narxnets', 'Ai', '-v7.3')
     end
@@ -133,7 +134,7 @@ for n=1:size(PredMethod,1)  % Fill the Matrix with the Model
     end
 end   
 [Prediction, PredictionMat, TargetMat, MAE, mMAPE, RMSE] = TestPred(PredMethod, PredictorMat, TargetDelayed, Target, Time,...
-    Range, MaxDelayInd, ForecastIntervalPredInd, Demo, TargetTitle, ActivateWaitbar, Path, Save); % The actual Prediction
+    Range, MaxDelayIndLSQ, DelayIndsNARXNET, DelayIndsNARXNETMat, ForecastIntervalPredInd, Demo, TargetTitle, ActivateWaitbar, Path, Save); % The actual Prediction
 
 clearvars StorageFileNarxnet ForecastIntervalPredInd Demo TargetTitle ActivateWaitbar PredMethod TrainFun LSQCoeffs Narxnets Ai StorageFileLSQ
 

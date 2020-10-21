@@ -1,4 +1,4 @@
-function [PredictorMat, TargetDelayed, MaxDelayInd, NumDelayInds, NumDelayIndsNARXNET, Time, Range]=PredVars(DelayIndsLSQ, DelayIndsNARXNET, Target, Predictors, Time, Range)
+function [PredictorMat, TargetDelayedLSQ, MaxDelayIndLSQ, NumDelayIndsLSQ, NumDelayIndsNARXNET, Time, Range]=PredVars(DelayIndsLSQ, DelayIndsNARXNET, DelayIndsNARXNETMat, Target, Predictors, Time, Range)
 %% Description
 % This function generates the input variables for the DayAhead Price
 % predictions.
@@ -52,9 +52,11 @@ function [PredictorMat, TargetDelayed, MaxDelayInd, NumDelayInds, NumDelayIndsNA
 Time.StepPred=Time.Pred(2)-Time.Pred(1);
 Time.StepPredInd=1/(minutes(Time.Pred(2)-Time.Pred(1))/60); % H:1, HH: 2, QH: 4
 % MaxDelayInd=MaxDelayHours*Time.StepPredInd;
-NumDelayInds=numel(DelayIndsLSQ);
-MaxDelayInd=max(DelayIndsLSQ);
+
+NumDelayIndsLSQ=numel(DelayIndsLSQ);
+MaxDelayIndLSQ=max(DelayIndsLSQ);
 NumDelayIndsNARXNET=size(DelayIndsNARXNET{1},2)+size(DelayIndsNARXNET{2},2);
+MaxDelayIndNARXNET=max([DelayIndsNARXNET{1}, DelayIndsNARXNET{2}]);
 
 % TimeVecTrainPred=Range.TrainDate(1):
 % if exist('Range.TrainDate', 'var') && exist('Range.TestDate', 'var')
@@ -103,12 +105,23 @@ MeanTargetWCirc=repmat(MeanTargetWCirc,ceil(Range.TestPredInd(2)/(24*Time.StepPr
 %using last 7 time of day values and last two values but performance was
 %worse.
 
-TargetDelayed=zeros(length(1:Range.TestPredInd(2)),NumDelayInds);
+TargetDelayedLSQ=zeros(length(1:Range.TestPredInd(2)),NumDelayIndsLSQ);
 Counter=1;
 for n=DelayIndsLSQ
-    TargetDelayed(MaxDelayInd+1:end,Counter)=Target(1+MaxDelayInd-n:Range.TestPredInd(2)-n);
+    TargetDelayedLSQ(MaxDelayIndLSQ+1:end,Counter)=Target(1+MaxDelayIndLSQ-n:Range.TestPredInd(2)-n);
     Counter=Counter+1;
 end
+
+% TargetDelayedNARXNET=zeros(length(1:Range.TestPredInd(2)),NumDelayIndsNARXNET);
+% for k=1:size(DelayIndsNARXNET{1},2)
+%     TargetDelayedNARXNET(MaxDelayIndNARXNET+1:end,k)=Target(1+MaxDelayIndNARXNET-DelayIndsNARXNET{1}(k):Range.TestPredInd(2)-n);
+% end
+% for k=1:size(DelayIndsNARXNET{2},2)
+%     DelayVec=ones(DelayIndsNARXNET{1}(:,k)
+%         TargetDelayedNARXNET(MaxDelayIndNARXNET+1:end,k)=Target(1+MaxDelayIndNARXNET-n:Range.TestPredInd(2)-n);
+%     end
+% end
+
 
 if ~isempty(Predictors)
     PredictorMat = [Predictors(1:Range.TestPredInd(2),:), ...         
