@@ -1,4 +1,4 @@
-function [PredictorMat, TargetDelayedLSQ, MaxDelayIndLSQ, NumDelayIndsLSQ, NumDelayIndsNARXNET, Time, Range]=PredVars(DelayIndsLSQ, DelayIndsNARXNET, DelayIndsNARXNETMat, Target, Predictors, Time, Range)
+function [PredictorMat, TargetDelayedLSQ, ForecastIntervalPredInd, MaxDelayIndLSQ, NumDelayIndsLSQ, NumDelayIndsNARXNET, DelayIndsNARXNETMat, Time, Range]=PredVars(ForecastIntervalHours, DelayIndsLSQ, DelayIndsNARXNET, Target, Predictors, Time, Range)
 %% Description
 % This function generates the input variables for the DayAhead Price
 % predictions.
@@ -51,12 +51,14 @@ function [PredictorMat, TargetDelayedLSQ, MaxDelayIndLSQ, NumDelayIndsLSQ, NumDe
 
 Time.StepPred=Time.Pred(2)-Time.Pred(1);
 Time.StepPredInd=1/(minutes(Time.Pred(2)-Time.Pred(1))/60); % H:1, HH: 2, QH: 4
+ForecastIntervalPredInd=ForecastIntervalHours*Time.StepPredInd;
 % MaxDelayInd=MaxDelayHours*Time.StepPredInd;
 
 NumDelayIndsLSQ=numel(DelayIndsLSQ);
 MaxDelayIndLSQ=max(DelayIndsLSQ);
 NumDelayIndsNARXNET=size(DelayIndsNARXNET{1},2)+size(DelayIndsNARXNET{2},2);
 MaxDelayIndNARXNET=max([DelayIndsNARXNET{1}, DelayIndsNARXNET{2}]);
+DelayIndsNARXNETMat=GetDelayInds(DelayIndsNARXNET, ForecastIntervalPredInd, Time);
 
 % TimeVecTrainPred=Range.TrainDate(1):
 % if exist('Range.TrainDate', 'var') && exist('Range.TestDate', 'var')

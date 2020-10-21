@@ -85,16 +85,14 @@ DelayIndsNARXNET={[1:3], [96,96*2]};
 ForecastIntervalHours=52; % 52h  % The model must be able %to predict the value of Wednesday 12:00 at Monday 8:00 --> 52 forecast interval
 Demo=0;
 ActivateWaitbar=1;
-DelayIndsNARXNETMat=GetDelayInds(DelayIndsNARXNET, ForecastIntervalPredInd, Time);
 
 if ~exist('PredVarsInput', 'var') || ~isequaln(PredVarsInput,{Target, Time.Pred, Predictors, DelayIndsLSQ, DelayIndsNARXNET})
     disp('Calculate Predictor Variables')
     %%
-    [PredictorMat, TargetDelayed, MaxDelayIndLSQ, NumDelayIndsLSQ, NumDelayIndsNARXNET, Time, Range]=PredVars(DelayIndsLSQ, DelayIndsNARXNET, DelayIndsNARXNETMat, Target, Predictors, Time, Range);
-    PredVarsInput={Target, Time.Pred, Predictors, DelayInds};
+    [PredictorMat, TargetDelayed, ForecastIntervalPredInd, MaxDelayIndLSQ,  NumDelayIndsLSQ, NumDelayIndsNARXNET, DelayIndsNARXNETMat, Time, Range]=PredVars(ForecastIntervalHours, DelayIndsLSQ, DelayIndsNARXNET, Target, Predictors, Time, Range);
+    PredVarsInput={Target, Time.Pred, Predictors, DelayIndsLSQ, DelayIndsNARXNET};
     disp('Successfully calculated Predictor Variables')
 end
-ForecastIntervalPredInd=ForecastIntervalHours*Time.StepPredInd;
 
 StorageFileLSQ=strcat(Path.TrainedModel, 'LSQ_', TargetTitle, '_', num2str(ForecastIntervalPredInd), '_', num2str(NumDelayIndsLSQ+size(PredictorMat,2)), '_', Time.IntervalFile, '.mat'); % Path where the LSQ model shall be stored
 StorageFileNarxnet=strcat(Path.TrainedModel, 'Narxnet_', TargetTitle, '_', num2str(ForecastIntervalPredInd), '_', num2str(NumDelayIndsNARXNET+size(PredictorMat,2)), '_', Time.IntervalFile, '.mat'); % Path where the LSQ model shall be stored

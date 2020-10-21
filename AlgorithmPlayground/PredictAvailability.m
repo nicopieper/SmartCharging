@@ -46,10 +46,12 @@ for n=3:3%length(Users)
     
     GeneratePrediction;
     a=Prediction;
+    
+    %%
     figure
     plot(Time.Vec, a)
     hold on
-    plot(Time.Vec, Availability)
+    plot(Time.Vec, Availability(1:length(a)))
     ylim([-0.1 1.1])
     
     l=[0,0];
@@ -59,9 +61,9 @@ for n=3:3%length(Users)
     b(b<=T)=0;
     b(b>T)=1;
     %a2=b + [b(2:end); 0] + [0; b(1:end-1)];
-    TP=sum(b==1 & Availability==1);
-    FP=sum(b==1 & Availability==0);
-    FN=sum(b==0 & Availability==1);
+    TP=sum(b==1 & Availability(1:length(a))==1);
+    FP=sum(b==1 & Availability(1:length(a))==0);
+    FN=sum(b==0 & Availability(1:length(a))==1);
 
     accuracy=sqrt(TP/(TP+FP)*TP/(TP+FN));
     l(1)=max([accuracy, l]);
