@@ -1,14 +1,24 @@
-n=3;
+TGLM=tic;
+h=waitbar(0, 'Berechne GLM Prognosemodelle');
+AccL=[];
+for n=2:3
+    TargetTitle=strcat("Availability_User", num2str(n)); 
+    Availability=ismember(Users{n}.LogbookBase(:,1), 4:5);
 
-Availability=ismember(Users{n}.LogbookBase(:,1), 4:5);
-Availability1=[0;double(Availability(2:end)==1 & Availability(1:end-1)==0)];
-Availability2=Availability1 + [Availability1(2:end); 0] + [0; Availability1(1:end-1)];
+    SoC=double(Users{n}.LogbookBase(:,9))/double(Users{n}.BatterySize);
+    SoC1=repelem(SoC(1:24*Time.StepInd:end), 24*Time.StepInd);
+    
+    GeneratePrediction;
+    ACF=autocorr(Availability, 110);
+    [MaxACFLate, MaxACFLateInd]=max(ACF(71:110));
+    AccL=[AccL; [Accuracy(1), ACF(96:98)', double(ACF(97)>ACF(86)), MaxACFLate, MaxACFLateInd+69]];
+    
+    waitbar((n-1)/100)
+end
+AccL
+disp(strcat("Calculated GLM Models within ", num2str(toc(TGLM)), "seconds"))
 
-ACFs(:,n-1)=autocorr(Availability,96*3);
-
-SoC=double(Users{n}.LogbookBase(:,9))/double(Users{n}.BatterySize);
-SoC1=repelem(SoC(1:24*Time.StepInd:end), 24*Time.StepInd);
-
+%% 
 Weekday=mod(weekday(Time.Vec)+5, 7)+1<=5;
 
 figure
@@ -20,7 +30,10 @@ DelayIndsNARXNET={1:90, [95:97, 96*2-1:96*2+1, 96*3-1:96*3+1]};
 
 %%
 
+%     Availability1=[0;double(Availability(2:end)==1 & Availability(1:end-1)==0)];
+%     Availability2=Availability1 + [Availability1(2:end); 0] + [0; Availability1(1:end-1)];
 
+%     ACFs(:,n-1)=autocorr(Availability,96*3);
 tic
 for k=1:1
     b = glmfit([TargetDelayedLSQ(MaxDelayIndLSQ-k:Range.TrainPredInd(2)-k,:), SoC1(MaxDelayIndLSQ-k:Range.TrainPredInd(2)-k)],Target(MaxDelayIndLSQ:Range.TrainPredInd(2)),'normal');

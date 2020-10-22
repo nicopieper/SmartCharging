@@ -71,17 +71,17 @@ if ~exist('Smard', 'var') || ~exist('ResPoPricesReal4H', 'var')
     disp('Successfully initialised')
 end
 
-Target=double(Availability); % double(PVPlants{1}.Profile); %DayaheadRealH; Availability1 ResEnPricesRealQH(:,7)
-TargetTitle="Availability";  % "DayaheadRealH"; "PVPlants_1"
+Target=Availability; % double(PVPlants{1}.Profile); %DayaheadRealH; Availability1 ResEnPricesRealQH(:,7)
+%TargetTitle="Availability";  % "DayaheadRealH"; "PVPlants_1"
 Time.Pred=Users{1}.Time.Vec;%Users{1}.Time.Vec;
-Predictors=[SoC1, Weekday];% [Smard.GenPredQH(:,4)]; [Smard.LoadPredH, Smard.GenPredH]; [SoC1, Weekday]
+Predictors=[SoC1];% [Smard.GenPredQH(:,4)]; [Smard.LoadPredH, Smard.GenPredH]; [SoC1, Weekday]
 PredMethod={3};
 TrainModelNew=1;
-Save=false;
+Save=true;
 
 DelayIndsLSQ=[1:48];
 DelayIndsNARXNET=[1:96];
-DelayIndsGLM=[1:48, 96, 96*2];
+DelayIndsGLM=[1:8, 9:2:18, 48, 95:97, 2*96-1:2*96+1, 3*96-1:3*96+1];
 GLMDistribution='binomial';
 GLMLinkFunction='logit';
 
@@ -160,7 +160,7 @@ for n=1:size(PredMethod,1)  % Fill the Matrix with the Model
         PredMethod(n,2:3)=[{GLMCoeffs}, {GLMLinkFunction}];
     end
 end   
-[Prediction, PredictionMat, TargetMat, MAE, mMAPE, RMSE] = TestPred(PredMethod, PredictorMat, TargetDelayedLSQ, TargetDelayedGLM, Target, Time,...
+[Prediction, PredictionMat, TargetMat, MAE, mMAPE, RMSE, Accuracy] = TestPred(PredMethod, PredictorMat, TargetDelayedLSQ, TargetDelayedGLM, Target, Time,...
     Range, MaxDelayIndLSQ, MaxDelayIndNARXNET, ForecastIntervalPredInd, Demo, TargetTitle, ActivateWaitbar, Path, Save); % The actual Prediction
 
 clearvars StorageFileNarxnet Demo TargetTitle ActivateWaitbar PredMethod TrainFun LSQCoeffs Ai StorageFileLSQ ForecastIntervalPredInd

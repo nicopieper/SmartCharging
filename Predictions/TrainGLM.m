@@ -5,7 +5,7 @@ function [GLMCoeffs] = TrainGLM(Target, TargetDelayed, PredictorMat, ForecastInt
 %% Training
 tic
 opts = statset('glmfit');
-opts.MaxIter = 300; % default value for glmfit is 100.
+opts.MaxIter = 100; % default value for glmfit is 100.
 
 GLMCoeffs=ones(1,(size(PredictorMat,2) + size(TargetDelayed,2))+1);
 

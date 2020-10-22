@@ -1,4 +1,4 @@
-function [Prediction, PredictionMat, TargetMat, MAE, mMAPE, RMSE] = TestPred(PredMethod, PredictorMat, TargetDelayedLSQ, TargetDelayedGLM, Target, Time,...
+function [Prediction, PredictionMat, TargetMat, MAE, mMAPE, RMSE, Accuracy] = TestPred(PredMethod, PredictorMat, TargetDelayedLSQ, TargetDelayedGLM, Target, Time,...
     Range, MaxDelayIndLSQ, MaxDelayIndNARXNET, ForecastIntervalPredInd, Demo, TargetTitle, ActivateWaitbar, Path, Save); % The actual Prediction
 %% Description
 % This function generates predictions basing on trained LSQ and NARXNET
@@ -197,15 +197,18 @@ end
 %% Evaluation
 for p=1:NumPredMethod
     
+    Accuracy(:,p)=0;
     if PredMethod{p,1}==3
         [Accuracy, Prediction(:,p), PredictionMat(:,:,p)] = GetAccuracy(Prediction, PredictionMat, Target, Range);
         disp(strcat("The prediction accuracy was ", num2str(Accuracy(1))))
         
-        figure
+        figure(12)
+        clf
         plot(Time.Pred, Target)
         hold on
-        plot(Time.Vec, Prediction(:,p))
+        plot(Time.Vec, Prediction(:,p)*0.8+0.1)
         ylim([-0.1 1.1])
+        legend([TargetTitle, "GLM"])
     end
     
     PredCoulmns=zeros(ForecastIntervalPredInd,1)==PredictionMat(:,:,p);
