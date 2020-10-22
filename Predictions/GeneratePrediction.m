@@ -73,14 +73,19 @@ end
 
 Target=double(Availability); % double(PVPlants{1}.Profile); %DayaheadRealH; Availability1 ResEnPricesRealQH(:,7)
 TargetTitle="Availability";  % "DayaheadRealH"; "PVPlants_1"
-Time.Pred=Users{1}.Time.Sim.Vec;
-Predictors=[SoC1];% [Smard.GenPredQH(:,4)]; [Smard.LoadPredH, Smard.GenPredH]; [SoC1, Weekday]
-PredMethod={2};
+Time.Pred=Users{1}.Time.Vec;%Users{1}.Time.Vec;
+Predictors=[SoC1, Weekday];% [Smard.GenPredQH(:,4)]; [Smard.LoadPredH, Smard.GenPredH]; [SoC1, Weekday]
+PredMethod={3};
 TrainModelNew=1;
 Save=false;
 
-DelayIndsLSQ=[1:47, 48:24:49+24*5];
-DelayIndsNARXNET={[1:3], [96,96*2]};
+DelayIndsLSQ=[1:48];
+DelayIndsNARXNET=[1:96];
+DelayIndsGLM=[1:48, 96, 96*2];
+GLMDistribution='binomial';
+GLMLinkFunction='logit';
+
+% DelayIndsNARXNET={[1:10], [95,96,97,96*2-1:96*2+1]};
 % MaxDelayHours=7*24/7*3;
 ForecastIntervalHours=52; % 52h  % The model must be able %to predict the value of Wednesday 12:00 at Monday 8:00 --> 52 forecast interval
 Demo=0;
@@ -89,35 +94,57 @@ ActivateWaitbar=1;
 if ~exist('PredVarsInput', 'var') || ~isequaln(PredVarsInput,{Target, Time.Pred, Predictors, DelayIndsLSQ, DelayIndsNARXNET})
     disp('Calculate Predictor Variables')
     %%
-    [PredictorMat, TargetDelayed, ForecastIntervalPredInd, MaxDelayIndLSQ,  NumDelayIndsLSQ, NumDelayIndsNARXNET, DelayIndsNARXNETMat, Time, Range]=PredVars(ForecastIntervalHours, DelayIndsLSQ, DelayIndsNARXNET, Target, Predictors, Time, Range);
+    [PredictorMat, TargetDelayedLSQ, TargetDelayedNARXNET, TargetDelayedGLM, MaxDelayIndLSQ, NumDelayIndsLSQ, MaxDelayIndNARXNET, NumDelayIndsNARXNET, MaxDelayIndGLM, NumDelayIndsGLM, Time, Range]=PredVars(ForecastIntervalHours, DelayIndsLSQ, DelayIndsNARXNET, DelayIndsGLM, Target, Predictors, Time, Range);
     PredVarsInput={Target, Time.Pred, Predictors, DelayIndsLSQ, DelayIndsNARXNET};
     disp('Successfully calculated Predictor Variables')
 end
+ForecastIntervalPredInd=ForecastIntervalHours*Time.StepPredInd;
 
-StorageFileLSQ=strcat(Path.TrainedModel, 'LSQ_', TargetTitle, '_', num2str(ForecastIntervalPredInd), '_', num2str(NumDelayIndsLSQ+size(PredictorMat,2)), '_', Time.IntervalFile, '.mat'); % Path where the LSQ model shall be stored
-StorageFileNarxnet=strcat(Path.TrainedModel, 'Narxnet_', TargetTitle, '_', num2str(ForecastIntervalPredInd), '_', num2str(NumDelayIndsNARXNET+size(PredictorMat,2)), '_', Time.IntervalFile, '.mat'); % Path where the LSQ model shall be stored
+StorageFileLSQ=strcat(Path.TrainedModel, 'LSQ', Dl, 'LSQ_*_', datestr(Range.TrainDate(1), 'yyyymmdd'), "-", datestr(Range.TrainDate(2), 'yyyymmdd'), '_', TargetTitle, '_', num2str(ForecastIntervalPredInd), '_', num2str(NumDelayIndsLSQ+size(PredictorMat,2)), '.mat'); % Path where the LSQ model shall be stored
+StorageFileNarxnet=strcat(Path.TrainedModel, 'Narxnet', Dl, 'Narxnet_*_', datestr(Range.TrainDate(1), 'yyyymmdd'), "-", datestr(Range.TrainDate(2), 'yyyymmdd'), '_', TargetTitle, '_', num2str(ForecastIntervalPredInd), '_', num2str(NumDelayIndsNARXNET+size(PredictorMat,2)), '.mat'); % Path where the LSQ model shall be stored
+StorageFileGLM=strcat(Path.TrainedModel, 'GLM', Dl, 'GLM_*_', datestr(Range.TrainDate(1), 'yyyymmdd'), "-", datestr(Range.TrainDate(2), 'yyyymmdd'), '_', TargetTitle, '_', num2str(ForecastIntervalPredInd), '_', num2str(NumDelayIndsGLM+size(PredictorMat,2)), '.mat'); % Path where the LSQ model shall be stored
 
 %% Load trained Models or if they do not exist train them
-if sum(ismember(cell2mat(PredMethod(:,1)),1)) && (TrainModelNew || ~isfile(StorageFileLSQ))
+LSQFiles=dir(StorageFileLSQ);
+if sum(ismember(cell2mat(PredMethod(:,1)),1)) && (TrainModelNew || isempty(LSQFiles))
     disp('Start LSQ Training')
-    [LSQCoeffs, TrainFun] = TrainLSQ(Target, TargetDelayed, PredictorMat, ForecastIntervalPredInd, Range.TrainPredInd, MaxDelayIndLSQ);
+    [LSQCoeffs, TrainFun] = TrainLSQ(Target, TargetDelayedLSQ, PredictorMat, ForecastIntervalPredInd, Range.TrainPredInd, MaxDelayIndLSQ);
     if Save
+        StorageFileLSQ=strrep(StorageFileGLM, '*', datestr(datetime('now'), 'yyyymmdd'));
         save(StorageFileLSQ, 'LSQCoeffs', 'TrainFun', '-v7.3')
     end
     disp('LSQ Training successfully finished')
 elseif any(ismember(cell2mat(PredMethod(:,1)),1))
-    load(StorageFileLSQ)
+    [~,newest]=sort([LSQFiles.datenum], 'descend');
+    load(strcat(LSQFiles(newest(1)).folder, Dl, LSQFiles(newest(1)).name))
 end
 
+NarxnetFiles=dir(StorageFileNarxnet);
 if sum(ismember(cell2mat(PredMethod(:,1)),2)) && (TrainModelNew || ~isfile(StorageFileNarxnet))
     disp('Start Narxnet Training')
-    [Narxnets, Ai] = TrainNarxnets(Target, PredictorMat, ForecastIntervalPredInd, DelayIndsNARXNETMat, Range.TrainPredInd, Time);
+    [Narxnets, Ai] = TrainNarxnets(Target, PredictorMat, ForecastIntervalPredInd, DelayIndsNARXNET, Range, Time);
     if Save
+        StorageFileNarxnet=strrep(StorageFileGLM, '*', datestr(datetime('now'), 'yyyymmdd'));
         save(StorageFileNarxnet, 'Narxnets', 'Ai', '-v7.3')
     end
     disp('Narxnet Training successfully finished')
 elseif any(ismember(cell2mat(PredMethod(:,1)),2))
-    load(StorageFileNarxnet)    
+    [~,newest]=sort([NarxnetFiles.datenum], 'descend');
+    load(strcat(NarxnetFiles(newest(1)).folder, Dl, NarxnetFiles(newest(1)).name));
+end
+
+GLMFiles=dir(StorageFileGLM);
+if sum(ismember(cell2mat(PredMethod(:,1)),3)) && (TrainModelNew || ~isfile(StorageFileGLM))
+    disp('Start GLM Training')
+    [GLMCoeffs] = TrainGLM(Target, TargetDelayedGLM, PredictorMat, ForecastIntervalPredInd, Range.TrainPredInd, MaxDelayIndGLM, GLMDistribution);
+    if Save
+        StorageFileGLM=strrep(StorageFileGLM, '*', datestr(datetime('now'), 'yyyymmdd'));
+        save(StorageFileGLM, 'GLMCoeffs', '-v7.3')
+    end
+    disp('GLM Training successfully finished')
+elseif any(ismember(cell2mat(PredMethod(:,1)),3))
+    [~,newest]=sort([GLMFiles.datenum], 'descend');
+    load(strcat(GLMFiles(newest(1)).folder, Dl, GLMFiles(newest(1)).name));
 end
     
 
@@ -129,12 +156,14 @@ for n=1:size(PredMethod,1)  % Fill the Matrix with the Model
         PredMethod(n,2:3)=[{LSQCoeffs}, {TrainFun}];
     elseif PredMethod{n,1}==2
         PredMethod(n,2:3)=[{Narxnets}, {Ai}];
+    elseif PredMethod{n,1}==3
+        PredMethod(n,2:3)=[{GLMCoeffs}, {GLMLinkFunction}];
     end
 end   
-[Prediction, PredictionMat, TargetMat, MAE, mMAPE, RMSE] = TestPred(PredMethod, PredictorMat, TargetDelayed, Target, Time,...
-    Range, MaxDelayIndLSQ, DelayIndsNARXNET, DelayIndsNARXNETMat, ForecastIntervalPredInd, Demo, TargetTitle, ActivateWaitbar, Path, Save); % The actual Prediction
+[Prediction, PredictionMat, TargetMat, MAE, mMAPE, RMSE] = TestPred(PredMethod, PredictorMat, TargetDelayedLSQ, TargetDelayedGLM, Target, Time,...
+    Range, MaxDelayIndLSQ, MaxDelayIndNARXNET, ForecastIntervalPredInd, Demo, TargetTitle, ActivateWaitbar, Path, Save); % The actual Prediction
 
-clearvars StorageFileNarxnet ForecastIntervalPredInd Demo TargetTitle ActivateWaitbar PredMethod TrainFun LSQCoeffs Narxnets Ai StorageFileLSQ
+clearvars StorageFileNarxnet Demo TargetTitle ActivateWaitbar PredMethod TrainFun LSQCoeffs Ai StorageFileLSQ ForecastIntervalPredInd
 
 
 toc

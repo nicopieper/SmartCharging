@@ -1,5 +1,5 @@
-function [Prediction, PredictionMat, TargetMat, MAEConst, mMAPEConst, RMSEConst] = TestPred(PredMethod, PredictorMat, TargetDelayed, Target, Time,...
-    Range, MaxDelayIndLSQ, DelayIndsNARXNET, DelayIndsNARXNETMat, ForecastIntervalPredInd, Demo, TargetTitle, ActivateWaitbar, Path, Save)
+function [Prediction, PredictionMat, TargetMat, MAE, mMAPE, RMSE] = TestPred(PredMethod, PredictorMat, TargetDelayedLSQ, TargetDelayedGLM, Target, Time,...
+    Range, MaxDelayIndLSQ, MaxDelayIndNARXNET, ForecastIntervalPredInd, Demo, TargetTitle, ActivateWaitbar, Path, Save); % The actual Prediction
 %% Description
 % This function generates predictions basing on trained LSQ and NARXNET
 % models. The predictions can be visualised in a live demonstration.
@@ -97,9 +97,7 @@ if Demo
         
     legend([strcat("Target ", TargetTitle), LegendVec],'Interpreter','none')
 end
-a1=0;
-a2=0;
-a3=0;
+
 %% Start Prediction
 if ActivateWaitbar
     h=waitbar(0, 'Berechne Prognose');
@@ -108,32 +106,37 @@ while TimeInd<=Range.TestPredInd(2)
     for ForecastDuration=0:min(ForecastIntervalPredInd-1, Range.TestPredInd(2)-TimeInd)        
         for p=1:NumPredMethod
             if PredMethod{p,1}==1 % if it is a LSQ Model
-                try
-                    if ~isempty(PredictorMat)
-                        PredictorMatInput=[PredictorMat(TimeInd+ForecastDuration,:), TargetDelayed(TimeInd,:)]; % The Predictors 
-                    else
-                        PredictorMatInput=[TargetDelayed(TimeInd,:)]; % The Predictors 
-                    end
-                    
-                    Prediction(TimeInd+ForecastDuration,p)=PredMethod{p,3}(PredMethod{p,2}(ForecastDuration+1,:), PredictorMatInput); % The LSQ Prediction, PredMethod{p,2} covers the Model Function, PredMethod{p,1} covers the LSQ Coefficients
-                    PredictionMat(ForecastDuration+1,TimeInd,p)=Prediction(TimeInd+ForecastDuration,p); % A vector storing all predicted Values
-                catch
-                    TimeInd
+                
+                if ~isempty(PredictorMat)
+                    PredictorMatInput=[PredictorMat(TimeInd+ForecastDuration,:), TargetDelayedLSQ(TimeInd,:)]; % The Predictors 
+                else
+                    PredictorMatInput=[TargetDelayedLSQ(TimeInd,:)]; % The Predictors 
                 end
+
+                Prediction(TimeInd+ForecastDuration,p)=PredMethod{p,3}(PredMethod{p,2}(ForecastDuration+1,:), PredictorMatInput); % The LSQ Prediction, PredMethod{p,2} covers the Model Function, PredMethod{p,1} covers the LSQ Coefficients
+                PredictionMat(ForecastDuration+1,TimeInd,p)=Prediction(TimeInd+ForecastDuration,p); % A vector storing all predicted Values
+
             elseif PredMethod{p,1}==2
-                tic;
+
                 PredictorMatInput=[num2cell(PredictorMat(TimeInd+ForecastDuration,:)',1);{0}]; % Regarding current Values, the ANN uses only the Predictors, hence the target row can be zero. The delayed targets are fed in through the initial state as only one prediction per time is conducted
-                a1=a1+toc;
-%                 TargetDelayedNARXNET=[Target(TimeInd-ForecastDuration-DelayIndsNARXNET{1}); Target(TimeInd - DelayIndsNARXNETMat(ForecastDuration+1, end-length(DelayIndsNARXNET{2})+1:end))];
-                tic
-                PredictorMatDelayedInput=[num2cell(zeros(size(PredictorMat,2),DelayIndsNARXNETMat(ForecastDuration+1,end)),1); num2cell(Target(TimeInd-DelayIndsNARXNETMat(ForecastDuration+1,end):TimeInd-1))'];
-                a2=a2+toc;
-                tic
-%                 PredictorMatDelayedInput=[num2cell(zeros(size(PredictorMat,2),MaxDelayIndLSQ+ForecastDuration),1); num2cell(TargetDelayed(TimeInd-MaxDelayIndLSQ+1:TimeInd+ForecastDuration,1))']; % Regarding delayed Values, the ANN uses only the delayed Targets, hence the first rows are not used an can by any value
+                PredictorMatDelayedInput=[num2cell(zeros(size(PredictorMat,2), MaxDelayIndNARXNET+ForecastDuration),1); num2cell(Target(TimeInd-MaxDelayIndNARXNET:TimeInd+ForecastDuration-1))']; % Regarding delayed Values, the ANN uses only the delayed Targets, hence the first rows are not used an can by any value
                 Prediction(TimeInd+ForecastDuration,p)=cell2mat(PredMethod{p,2}{ForecastDuration+1}(PredictorMatInput, PredictorMatDelayedInput, PredMethod{p,3}))';
-                a3=a3+toc;
                 PredictionMat(ForecastDuration+1,TimeInd,p)=Prediction(TimeInd+ForecastDuration,p);
+               
+            
+            elseif PredMethod{p,1}==3
+                
+                if ~isempty(PredictorMat)
+                    PredictorMatInput=[PredictorMat(TimeInd+ForecastDuration,:), TargetDelayedGLM(TimeInd,:)]; % The Predictors 
+                else
+                    PredictorMatInput=[TargetDelayedGLM(TimeInd,:)]; % The Predictors 
+                end
+
+                Prediction(TimeInd+ForecastDuration,p)=glmval(PredMethod{p,2}(ForecastDuration+1,:)', PredictorMatInput, PredMethod{p,3}); % The LSQ Prediction, PredMethod{p,2} covers the Model Function, PredMethod{p,1} covers the LSQ Coefficients
+                PredictionMat(ForecastDuration+1,TimeInd,p)=Prediction(TimeInd+ForecastDuration,p); % A vector storing all predicted Values
+                
             end
+            
             if Demo  
                 EndCounter=max(EndCounter,TimeInd+ForecastDuration);                    
                 figPred{p}.YDataSource='Prediction(Range.TestPredInd(1):EndCounter,p)';
@@ -144,7 +147,7 @@ while TimeInd<=Range.TestPredInd(2)
                 refreshdata(figPred{p}, 'caller')                
                 pause(0.01/NumPredMethod)
             end
-        end        
+        end
         TargetMat(ForecastDuration+1,TimeInd)=Target(TimeInd+ForecastDuration);
     end    
     if Demo
@@ -193,6 +196,18 @@ end
 
 %% Evaluation
 for p=1:NumPredMethod
+    
+    if PredMethod{p,1}==3
+        [Accuracy, Prediction(:,p), PredictionMat(:,:,p)] = GetAccuracy(Prediction, PredictionMat, Target, Range);
+        disp(strcat("The prediction accuracy was ", num2str(Accuracy(1))))
+        
+        figure
+        plot(Time.Pred, Target)
+        hold on
+        plot(Time.Vec, Prediction(:,p))
+        ylim([-0.1 1.1])
+    end
+    
     PredCoulmns=zeros(ForecastIntervalPredInd,1)==PredictionMat(:,:,p);
     PredictionMatEval=PredictionMat(:,~all(PredCoulmns,1),p);
     TargetMatEval=TargetMat(:,~all(PredCoulmns,1),p);
@@ -205,6 +220,7 @@ for p=1:NumPredMethod
     RMSEConst(1,p)=round(sqrt(mean((PredictionMatEval-TargetMatEval).^2,'all')),3);
     MEANConst(1,p)=round(mean(abs(TargetMatEval),'all'),3);
     STDConst(1,p)=round(std(TargetMat, 0, 'all'),3);
+    
 end
 MAESTDConst=round(MAEConst./STDConst,3);
 Results=splitvars(table({'MAE'; 'mMAPE'; 'MAE/STD'; 'RMSE'; 'MEAN_ABS'; 'STD'},...
@@ -235,6 +251,7 @@ title(strcat("Mean Absolute Error predicting 1 to ", num2str(round(ForecastInter
 grid on
 legend(LegendVec,'Interpreter','none')
 
+
 end
 
 function LegendVec = GetLegendNames(PredMethod, NumPredMethod)
@@ -244,6 +261,8 @@ for p=1:NumPredMethod
         LegendVec(p)="LSQ";        
     elseif PredMethod{p,1}==2
         LegendVec(p)="NARXNET";
+    elseif PredMethod{p,1}==3
+        LegendVec(p)="GLM";
     end
 end
 
@@ -253,4 +272,31 @@ for p=NumPredMethod:-1:1
         LegendVec(p)=strcat(LegendVec(p),num2str(a));
     end
 end
+end
+
+
+function [Accuracy, Prediction, PredictionMat] = GetAccuracy(Prediction, PredictionMat, Target, Range)
+    Accuracy=[0,0];
+    for n=0.2:0.01:0.95
+        %d=movavg(c,'exponential',1);
+        d=Prediction;
+        Threshold=n;
+        d(d<=Threshold)=0;
+        d(d>Threshold)=1;
+        %a2=b + [b(2:end); 0] + [0; b(1:end-1)];
+        TP=sum(d(Range.TestInd(1):Range.TestInd(2))==1 & Target(Range.TestInd(1):Range.TestInd(2))==1);
+        FP=sum(d(Range.TestInd(1):Range.TestInd(2))==1 & Target(Range.TestInd(1):Range.TestInd(2))==0);
+        FN=sum(d(Range.TestInd(1):Range.TestInd(2))==0 & Target(Range.TestInd(1):Range.TestInd(2))==1);
+
+        acc=sqrt(TP/(TP+FP)*TP/(TP+FN));
+        Accuracy(1)=max([acc, Accuracy]);
+        if Accuracy(1)==acc
+            Accuracy(2)=n;
+        end
+    end
+    Threshold=Accuracy(2);
+    Prediction(Prediction<=Threshold)=0;
+    Prediction(Prediction>Threshold)=1;
+    PredictionMat(PredictionMat<=Threshold)=0;
+    PredictionMat(PredictionMat>Threshold)=1;
 end

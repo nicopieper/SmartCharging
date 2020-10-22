@@ -1,4 +1,4 @@
-function [PredictorMat, TargetDelayedLSQ, ForecastIntervalPredInd, MaxDelayIndLSQ, NumDelayIndsLSQ, NumDelayIndsNARXNET, DelayIndsNARXNETMat, Time, Range]=PredVars(ForecastIntervalHours, DelayIndsLSQ, DelayIndsNARXNET, Target, Predictors, Time, Range)
+function  [PredictorMat, TargetDelayedLSQ, TargetDelayedNARXNET, TargetDelayedGLM, MaxDelayIndLSQ, NumDelayIndsLSQ, MaxDelayIndNARXNET, NumDelayIndsNARXNET, MaxDelayIndGLM, NumDelayIndsGLM, Time, Range]=PredVars(ForecastIntervalHours, DelayIndsLSQ, DelayIndsNARXNET, DelayIndsGLM, Target, Predictors, Time, Range)
 %% Description
 % This function generates the input variables for the DayAhead Price
 % predictions.
@@ -51,14 +51,17 @@ function [PredictorMat, TargetDelayedLSQ, ForecastIntervalPredInd, MaxDelayIndLS
 
 Time.StepPred=Time.Pred(2)-Time.Pred(1);
 Time.StepPredInd=1/(minutes(Time.Pred(2)-Time.Pred(1))/60); % H:1, HH: 2, QH: 4
-ForecastIntervalPredInd=ForecastIntervalHours*Time.StepPredInd;
 % MaxDelayInd=MaxDelayHours*Time.StepPredInd;
 
 NumDelayIndsLSQ=numel(DelayIndsLSQ);
 MaxDelayIndLSQ=max(DelayIndsLSQ);
-NumDelayIndsNARXNET=size(DelayIndsNARXNET{1},2)+size(DelayIndsNARXNET{2},2);
-MaxDelayIndNARXNET=max([DelayIndsNARXNET{1}, DelayIndsNARXNET{2}]);
-DelayIndsNARXNETMat=GetDelayInds(DelayIndsNARXNET, ForecastIntervalPredInd, Time);
+% NumDelayIndsNARXNET=size(DelayIndsNARXNET{1},2)+size(DelayIndsNARXNET{2},2);
+% MaxDelayIndNARXNET=max([DelayIndsNARXNET{1}, DelayIndsNARXNET{2}]);
+% DelayIndsNARXNETMat=GetDelayInds(DelayIndsNARXNET, ForecastIntervalPredInd, Time);
+NumDelayIndsNARXNET=numel(DelayIndsNARXNET);
+MaxDelayIndNARXNET=max(DelayIndsNARXNET);
+NumDelayIndsGLM=numel(DelayIndsGLM);
+MaxDelayIndGLM=max(DelayIndsGLM);
 
 % TimeVecTrainPred=Range.TrainDate(1):
 % if exist('Range.TrainDate', 'var') && exist('Range.TestDate', 'var')
@@ -108,21 +111,26 @@ MeanTargetWCirc=repmat(MeanTargetWCirc,ceil(Range.TestPredInd(2)/(24*Time.StepPr
 %worse.
 
 TargetDelayedLSQ=zeros(length(1:Range.TestPredInd(2)),NumDelayIndsLSQ);
-Counter=1;
+Counter=0;
 for n=DelayIndsLSQ
-    TargetDelayedLSQ(MaxDelayIndLSQ+1:end,Counter)=Target(1+MaxDelayIndLSQ-n:Range.TestPredInd(2)-n);
     Counter=Counter+1;
+    TargetDelayedLSQ(MaxDelayIndLSQ+1:end,Counter)=Target(1+MaxDelayIndLSQ-n:Range.TestPredInd(2)-n);
 end
 
-% TargetDelayedNARXNET=zeros(length(1:Range.TestPredInd(2)),NumDelayIndsNARXNET);
-% for k=1:size(DelayIndsNARXNET{1},2)
-%     TargetDelayedNARXNET(MaxDelayIndNARXNET+1:end,k)=Target(1+MaxDelayIndNARXNET-DelayIndsNARXNET{1}(k):Range.TestPredInd(2)-n);
-% end
-% for k=1:size(DelayIndsNARXNET{2},2)
-%     DelayVec=ones(DelayIndsNARXNET{1}(:,k)
-%         TargetDelayedNARXNET(MaxDelayIndNARXNET+1:end,k)=Target(1+MaxDelayIndNARXNET-n:Range.TestPredInd(2)-n);
-%     end
-% end
+TargetDelayedNARXNET=zeros(length(1:Range.TestPredInd(2)), NumDelayIndsNARXNET);
+Counter=0;
+for n=DelayIndsNARXNET
+    Counter=Counter+1;
+    TargetDelayedNARXNET(MaxDelayIndNARXNET+1:end,Counter)=Target(1+MaxDelayIndNARXNET-n:Range.TestPredInd(2)-n);
+end
+
+TargetDelayedGLM=zeros(length(1:Range.TestPredInd(2)), NumDelayIndsGLM);
+Counter=0;
+for n=DelayIndsGLM
+    Counter=Counter+1;
+    TargetDelayedGLM(MaxDelayIndGLM+1:end,Counter)=Target(1+MaxDelayIndGLM-n:Range.TestPredInd(2)-n);
+end
+
 
 
 if ~isempty(Predictors)

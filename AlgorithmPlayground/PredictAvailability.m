@@ -42,7 +42,7 @@ for n=3:3%length(Users)
     
     [TopACFCs, order]=sort(ACFs(:,n-1), 'descend');
     
-    DelayIndsNARXNET={1:2, [96, 96*2]};
+    DelayIndsNARXNET={1:90, [95:97, 96*2-1:96*2+1, 96*3-1:96*3+1]};
     
     GeneratePrediction;
     a=Prediction;
@@ -55,8 +55,8 @@ for n=3:3%length(Users)
     ylim([-0.1 1.1])
     
     l=[0,0];
-    for k=0.4:0.01:0.6
-    b=movavg(a,'exponential',10);
+    for k=0.4:0.01:0.8
+    b=movavg(a','exponential',10);
     T=k;
     b(b<=T)=0;
     b(b>T)=1;
