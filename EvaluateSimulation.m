@@ -8,16 +8,17 @@ end
 
 Logbook="LogbookSmart";
 
-Targets=["small"; "medium"; "large"; "transporter"];
-% Targets=["one user"; "only one user"; "several users"; "undefined"];
-Targets=["company car"; "fleet vehicle"; "undefined"];
+% Targets=["small"; "medium"; "large"; "transporter"];
+Targets=["one user"; "only one user"; "several users"; "undefined"];
+% Targets=["company car"; "fleet vehicle"; "undefined"];
 % Targets=[0.5; 1; 3; 1000];
 % Targets=[hours(10); hours(12); hours(14); hours(24)];
 
 TargetGroups=cell(length(Targets),1);
 for n=2:length(Users)
 %     TargetNum=find(strcmp(Users{n}.VehicleSize,Targets),1);
-    TargetNum=find(strcmp(Users{n}.VehicleUtilisation,Targets),1);
+    TargetNum=find(strcmp(Users{n}.NumUsers,Targets),1);
+%     TargetNum=find(strcmp(Users{n}.VehicleUtilisation,Targets),1);
 %     TargetNum=find(Users{n}.DistanceCompanyToHome<Targets,1);
 %     TargetNum=find(Users{n}.AvgHomeParkingTime<Targets,1);
 
@@ -26,7 +27,7 @@ end
 ExistingTargets=find(cellfun('length', TargetGroups)>0)';
 % ExistingTargets=[1,2, 3,4];
 NumExistingTargets=numel(ExistingTargets);
-ShowTargets=false;
+ShowTargets=true;
 ShowAll=true;
 ShowELaad=true;
 ClearWorkspace=true;
@@ -137,6 +138,7 @@ disp(strcat(num2str(HomeChargingQuote*100), " % of all energy was charged at hom
 
 ConnectionTime=cell(length(Targets),2);
 ArrivalTimes=cell(length(Targets),2);
+AvailabilityTimes=zeros(length(Users{2}.(Logbook)),2,length(Targets));
 for k=ExistingTargets
     ConnectionTime{k,1}=[];
     ConnectionTime{k,2}=[];
@@ -149,10 +151,18 @@ for k=ExistingTargets
         ConnectionTime{k,2}=[ConnectionTime{k,2}; (ConnectionBlocksOther(:,2)-ConnectionBlocksOther(:,1)+1)*Time.StepMin];
         ArrivalTimes{k,1}=[ArrivalTimes{k,1}; datetime(ones(length(ConnectionBlocksHome),1),ones(length(ConnectionBlocksHome),1),ones(length(ConnectionBlocksHome),1), hour(Users{1}.Time.Sim.Vec(ConnectionBlocksHome(:,1)))', minute((Users{1}.Time.Sim.Vec(ConnectionBlocksHome(:,1))))',zeros(length(ConnectionBlocksHome),1), 'TimeZone', 'Africa/Tunis')];
         ArrivalTimes{k,2}=[ArrivalTimes{k,2}; datetime(ones(length(ConnectionBlocksOther),1),ones(length(ConnectionBlocksOther),1),ones(length(ConnectionBlocksOther),1), hour(Users{1}.Time.Sim.Vec(ConnectionBlocksOther(:,1)))', minute((Users{1}.Time.Sim.Vec(ConnectionBlocksOther(:,1))))',zeros(length(ConnectionBlocksOther),1), 'TimeZone', 'Africa/Tunis')];
+        AvailabilityTimes(:,1,k)=AvailabilityTimes(:,1,k)+ismember(Users{n}.(Logbook)(1:end,1),4:5);
+        AvailabilityTimes(:,2,k)=AvailabilityTimes(:,2,k)+ismember(Users{n}.(Logbook)(1:end,1),6:7);
     end
 end
 ConnectionTime=ConnectionTime(ExistingTargets,:);
 ArrivalTimes=ArrivalTimes(ExistingTargets,:);
+AvailabilityTimes=AvailabilityTimes(:,:,ExistingTargets)./permute((ones(1,1,1).*cellfun(@numel, TargetGroups(ExistingTargets))), [2,3,1]);
+if isfield(Users{1}.Time.Sim, 'StepInd')
+    AvailabilityTimes=squeeze(mean(reshape(AvailabilityTimes(1:floor(size(AvailabilityTimes,1)/(24*Users{1}.Time.Sim.StepInd))*24*Users{1}.Time.Sim.StepInd, :, :), 24*Users{1}.Time.Sim.StepInd, [], 2, NumExistingTargets), 2));
+else
+    AvailabilityTimes=squeeze(mean(reshape(AvailabilityTimes(1:floor(size(AvailabilityTimes,1)/(24*4))*24*4, :, :), 24*4, [], 2, NumExistingTargets), 2));
+end
 
 figure(11)
 clf
@@ -214,6 +224,30 @@ for col=1:2
     title(strcat("Arrival time at charging point at ", Location(col)))
 end
 
+
+figure(13)
+clf
+for col=1:2
+    subplot(2,1,col)
+    hold on
+    l=legend;
+    if ShowAll
+        plot(DayVecQuaterly, squeeze(mean(AvailabilityTimes(:,col,:),3)))
+        legappend(l, "Simulation");
+    end
+    if ShowTargets
+        for k=1:size(AvailabilityTimes, 3)
+            plot(DayVecQuaterly, AvailabilityTimes(:,col,k))
+            legappend(l, Targets(ExistingTargets(k)));
+        end
+    end
+    xticks(datetime(1,1,1,0,0,0, 'TimeZone', 'Africa/Tunis'):hours(4):datetime(1,1,2,0,0,0, 'TimeZone', 'Africa/Tunis'))
+    xticklabels(datestr(datetime(1,1,1,0,0,0, 'TimeZone', 'Africa/Tunis'):hours(4):datetime(1,1,2,0,0,0, 'TimeZone', 'Africa/Tunis'), "HH:MM"))
+    xlabel("Time of date")
+    ylabel("Probability")
+    title(strcat("Availability time at charging point at ", Location(col)))
+end
+
 %% Load Profile
 
 Load=cell(length(Targets),2);
@@ -229,7 +263,7 @@ for k=ExistingTargets
 end
 Load=Load(ExistingTargets,:);
 
-figure(13)
+figure(14)
 clf
 for col=1:2
     subplot(2,1,col)
@@ -277,7 +311,7 @@ for k=ExistingTargets
     end
 end
 
-figure(14)
+figure(15)
 clf
 histogram(VehicleNums, 1:1:max(VehicleNums))
 disp(strcat(num2str(length(unique(VehicleNums))), " unique Vehicles are covered by this targets"))

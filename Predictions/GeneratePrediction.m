@@ -150,7 +150,7 @@ end
 
 %% Prediction
 disp('Start Prediction')
-close hidden
+
 for n=1:size(PredMethod,1)  % Fill the Matrix with the Model
     if PredMethod{n,1}==1
         PredMethod(n,2:3)=[{LSQCoeffs}, {TrainFun}];

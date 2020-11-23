@@ -21,8 +21,6 @@
 %
 % Depended scripts / folders
 %   Initialisation          Needed for the execution of this script
-%   GeneratePrediction.m    Makes us of this data to generate predictors,
-%                           prediction models and predictions
 %
 % Abbreviations:
 %   - Pred  = Prediction
@@ -59,6 +57,9 @@
 %                       hourly values, the second one for houly values and
 %                       the third one gives a desricption of this category
 %                       as a string. cell array (20,3)
+%
+% Author:       Nico Pieper
+% Last Update:  16.11.2020
 
 
 %% Initialisation

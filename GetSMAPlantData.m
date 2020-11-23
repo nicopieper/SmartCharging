@@ -52,6 +52,9 @@
 %   DaysAfterExistingDataSet: Same as above but it counts the days between
 %                       the end of DataComplete and the last date data 
 %                       exists for this plant. double (1,1)
+%
+% Author:       Nico Pieper
+% Last Update:  16.11.2020
 
 %% Initialisation
 

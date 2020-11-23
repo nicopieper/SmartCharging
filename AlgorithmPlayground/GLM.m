@@ -1,7 +1,7 @@
 TGLM=tic;
-h=waitbar(0, 'Berechne GLM Prognosemodelle');
+h1=waitbar(0, 'Berechne GLM Prognosemodelle');
 AccL=[];
-for n=2:101
+for n=2:5
     TargetTitle=strcat("Availability_User", num2str(n)); 
     Availability=ismember(Users{n}.LogbookBase(:,1), 4:5);
 
@@ -13,10 +13,11 @@ for n=2:101
     [MaxACFLate, MaxACFLateInd]=max(ACF(71:110));
     AccL=[AccL; [Accuracy(1), ACF(96:98)', double(ACF(97)>ACF(86)), MaxACFLate, MaxACFLateInd+69, mean(Availability)]];
     
-    waitbar((n-1)/100)
+    waitbar((n-1)/100, h1);
 end
 AccL
 disp(strcat("Calculated GLM Models within ", num2str(toc(TGLM)), "seconds"))
+close(h1);
 
 %% 
 % Weekday=mod(weekday(Time.Vec)+5, 7)+1<=5;
