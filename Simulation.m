@@ -212,37 +212,36 @@ for TimeInd=Time.Sim.VecInd(2:end)
         end
     end
     
-    if SmartCharging && ismember(TimeInd, TimesOfPreAlgo)
+    if SmartCharging 
         
-        if hour(TimeOfPreAlgo1)==hour(Time.Sim.Vec(TimeInd))
-            p=1;
-        else
-            p=2;
-        end
+        if ismember(TimeInd, TimesOfPreAlgo)
+
+            TimeInd=TimeInd-ControlPeriods+1;
+            PreAlgo;
         
-        TimeInd=TimeInd-ControlPeriods+1;
-        PreAlgo;
-    
-                %Users{n}.Logbook(TimeInd+TD.User+find((TimeInd+TD.User:TimeInd+TD.User+24*Time.StepInd-1)' .* sum(OptimalChargingEnergies(1:24*Time.StepInd,:,n-1), 2)>0))=5;
-        for n=UserNum
-            Users{n}.Logbook(TimeInd+TD.User+find(ismember(Users{n}.Logbook(TimeInd+TD.User:TimeInd+TD.User+ControlPeriods-1,1), 4:5))-1,1)=4;
-            Users{n}.Logbook(TimeInd+TD.User+find(sum(OptimalChargingEnergies(1:ControlPeriods,:,n==UserNum), 2)>0)-1, 1) = 5;
-            Users{n}.Logbook(TimeInd+TD.User:TimeInd+TD.User+ControlPeriods-1, 5:7)=OptimalChargingEnergies(1:ControlPeriods,:,n==UserNum);
+            for n=UserNum
+                Users{n}.Logbook(TimeInd+TD.User+find(ismember(Users{n}.Logbook(TimeInd+TD.User:TimeInd+TD.User+ControlPeriods-1,1), 4:5))-1,1)=4;
+                Users{n}.Logbook(TimeInd+TD.User+find(sum(OptimalChargingEnergies(1:ControlPeriods,:,n==UserNum), 2)>0)-1, 1) = 5;
+                Users{n}.Logbook(TimeInd+TD.User:TimeInd+TD.User+ControlPeriods-1, 5:7)=OptimalChargingEnergies(1:ControlPeriods,:,n==UserNum);
+
+                for k=0:ControlPeriods-1
+                    Users{n}.Logbook(TimeInd+TD.User+k, 9)=Users{n}.Logbook(TimeInd+TD.User+k-1, 9)-Users{n}.Logbook(TimeInd+TD.User+k, 4) + sum(Users{n}.Logbook(TimeInd+TD.User+k, 5:8));
+    %                 if ~(Users{n}.Logbook(TimeInd+TD.User+k,9)<(Users{n}.Logbook(TimeInd+TD.User-1+k,9)+sum(Users{n}.Logbook(TimeInd+TD.User+k,5:8)) - Users{n}.Logbook(TimeInd+TD.User+k,4))+3 && Users{n}.Logbook(TimeInd+TD.User+k,9)>(Users{n}.Logbook(TimeInd+TD.User-1+k,9)+sum(Users{n}.Logbook(TimeInd+TD.User+k,5:8)) - Users{n}.Logbook(TimeInd+TD.User+k,4))-3)
+    %                     error("Wrong addition")
+    %                 end
+                end
+                if Users{n}.Logbook(TimeInd+TD.User:ControlPeriods-1, 9)>Users{n}.BatterySize
+                    2
+                end
+                Users{n}.Logbook(TimeInd+TD.User:TimeInd+TD.User+ControlPeriods-1, 9)=min([ones(ControlPeriods,1)*Users{n}.BatterySize, Users{n}.Logbook(TimeInd+TD.User:TimeInd+TD.User+ControlPeriods-1, 9)], [],2);
+    %             if ~(Users{n}.Logbook(TimeInd+TD.User,9)<(Users{n}.Logbook(TimeInd+TD.User-1,9)+sum(Users{n}.Logbook(TimeInd+TD.User,5:8)) - Users{n}.Logbook(TimeInd+TD.User,4))+3 && Users{n}.Logbook(TimeInd+TD.User,9)>(Users{n}.Logbook(TimeInd+TD.User-1,9)+sum(Users{n}.Logbook(TimeInd+TD.User,5:8)) - Users{n}.Logbook(TimeInd+TD.User,4))-3)
+    %                 error("Wrong addition")
+    %             end
+            end
             
-            for k=0:ControlPeriods-1
-                Users{n}.Logbook(TimeInd+TD.User+k, 9)=Users{n}.Logbook(TimeInd+TD.User+k-1, 9)-Users{n}.Logbook(TimeInd+TD.User+k, 4) + sum(Users{n}.Logbook(TimeInd+TD.User+k, 5:8));
-%                 if ~(Users{n}.Logbook(TimeInd+TD.User+k,9)<(Users{n}.Logbook(TimeInd+TD.User-1+k,9)+sum(Users{n}.Logbook(TimeInd+TD.User+k,5:8)) - Users{n}.Logbook(TimeInd+TD.User+k,4))+3 && Users{n}.Logbook(TimeInd+TD.User+k,9)>(Users{n}.Logbook(TimeInd+TD.User-1+k,9)+sum(Users{n}.Logbook(TimeInd+TD.User+k,5:8)) - Users{n}.Logbook(TimeInd+TD.User+k,4))-3)
-%                     error("Wrong addition")
-%                 end
-            end
-            if Users{n}.Logbook(TimeInd+TD.User:ControlPeriods-1, 9)>Users{n}.BatterySize
-                2
-            end
-            Users{n}.Logbook(TimeInd+TD.User:TimeInd+TD.User+ControlPeriods-1, 9)=min([ones(ControlPeriods,1)*Users{n}.BatterySize, Users{n}.Logbook(TimeInd+TD.User:TimeInd+TD.User+ControlPeriods-1, 9)], [],2);
-%             if ~(Users{n}.Logbook(TimeInd+TD.User,9)<(Users{n}.Logbook(TimeInd+TD.User-1,9)+sum(Users{n}.Logbook(TimeInd+TD.User,5:8)) - Users{n}.Logbook(TimeInd+TD.User,4))+3 && Users{n}.Logbook(TimeInd+TD.User,9)>(Users{n}.Logbook(TimeInd+TD.User-1,9)+sum(Users{n}.Logbook(TimeInd+TD.User,5:8)) - Users{n}.Logbook(TimeInd+TD.User,4))-3)
-%                 error("Wrong addition")
-%             end
         end
+        
+        LiveAlgo;
         
         TimeInd=TimeInd+ControlPeriods-1;
     end

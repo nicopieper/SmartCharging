@@ -26,7 +26,10 @@ for k=UserNum
     % limit in every time step
     
     SoC=Users{k}.Logbook(TimeInd+TD.User,9) - sum(Users{k}.Logbook(TimeInd+TD.User,5:7),2) - [0;cumsum(Consumed)] + [0;cumsum(PublicCharged)]; % in Wh
-%     SoC1=Users{k}.Logbook(TimeInd+TD.User,9) - sum(Users{k}.Logbook(TimeInd+TD.User,5:7),2) - sum(Consumed1(DemandInds),2) + sum(PublicCharged1(DemandInds),2); % in Wh
+
+    
+    
+    %     SoC1=Users{k}.Logbook(TimeInd+TD.User,9) - sum(Users{k}.Logbook(TimeInd+TD.User,5:7),2) - sum(Consumed1(DemandInds),2) + sum(PublicCharged1(DemandInds),2); % in Wh
 %     if any(SoC1~=SoC)
 %         error("error")
 %     end
