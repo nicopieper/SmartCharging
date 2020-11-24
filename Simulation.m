@@ -1,9 +1,9 @@
 %% Initialisation
 tic
-NumUsers=450; % size(Users,1)-1
-SmartCharging=false;
+NumUsers=20; % size(Users,1)-1
+SmartCharging=true;
 UseParallel=false;
-UsePredictions=true;
+UsePredictions=false;
 
 ControlPeriods=96*2;
 UsePV=true;
@@ -38,17 +38,7 @@ EnergyDemandLeft=zeros(NumUsers+1,1);
 % ChargingEfficiency=zeros(NumUsers+1,1);
 delete(findall(0,'type','figure','tag','TMWWaitbar'));
 
-
-Time.Sim.Start=max([Range.TrainDate(1), Users{1}.Time.Vec(1)]);
-if ~SmartCharging
-    Time.Sim.End=min([Range.TestDate(2), Users{1}.Time.Vec(end)]);
-else
-    Time.Sim.End=min([Range.TestDate(2), Users{1}.Time.Vec(end)]);
-end
-Time.Sim.Vec=Time.Sim.Start:Time.Step:Time.Sim.End;
-Time.Sim.VecInd=1:length(Time.Sim.Vec);
-Time.Sim.StepInd=Time.StepInd;
-
+Time.Sim=Users{1}.Time;
 TD.Main=find(ismember(Time.Vec,Time.Sim.Start),1)-1;
 TD.User=find(ismember(Users{1}.Time.Vec,Time.Sim.Start),1)-1;
 
@@ -62,36 +52,51 @@ for n=UserNum
 end
 
 if SmartCharging
-    TimeOfForecast=datetime(1,1,1,8,0,0,'TimeZone','Africa/Tunis');
+    TimeOfPreAlgo1=datetime(1,1,1,8,0,0,'TimeZone','Africa/Tunis');
+    TimeOfPreAlgo2=datetime(1,1,1,12,0,0,'TimeZone','Africa/Tunis');
     TimeOfReserveMarketOffer=datetime(1,1,1,8,0,0,'TimeZone','Africa/Tunis');
-	ShiftInds=(hour(TimeOfForecast)*Time.StepInd + minute(TimeOfForecast)/minutes(Time.Step));
-    TimesOfPreAlgo=(hour(TimeOfForecast)*Time.StepInd + minute(TimeOfForecast)/60*Time.StepInd)+1-1+ControlPeriods:24*Time.StepInd:length(Time.Sim.VecInd);
+	ShiftInds=(hour(TimeOfPreAlgo1)*Time.StepInd + minute(TimeOfPreAlgo1)/minutes(Time.Step));
+    TimesOfPreAlgo=sort([(hour(TimeOfPreAlgo1)*Time.StepInd + minute(TimeOfPreAlgo1)/60*Time.StepInd)+1-1+ControlPeriods:24*Time.StepInd:length(Time.Sim.VecInd); (hour(TimeOfPreAlgo2)*Time.StepInd + minute(TimeOfPreAlgo2)/60*Time.StepInd)+1-1+ControlPeriods:24*Time.StepInd:length(Time.Sim.VecInd)], 'ascend');
     InitialisePreAlgo;
     
     if UsePredictions
-        if ~exist("SpotmarketPrices", "var")
-            StorageFile=uigetfile(strcat(Path.Prediction, Dl), 'Select the Spotmarket Prediction');
-            load(strcat(Path.Prediction, StorageFile))
+        if ~exist("SpotmarketPricesPred1", "var")
+            [StorageFile, StoragePath]=uigetfile(strcat(Path.Prediction, Dl), 'Select the first Spotmarket Prediction');
+            load(strcat(StoragePath, StorageFile))
             if Pred.Time.StepPredInd~=Time.StepInd
-                SpotmarketPrices=repelem(Pred.Data, Time.StepInd/Pred.Time.StepPredInd);
+                SpotmarketPricesPred1=repelem(Pred.Data, Time.StepInd/Pred.Time.StepPredInd);
             end
-            TD.SpotmarketPrices=find(ismember(Pred.Time.Vec,Time.Sim.Start),1)-1;
+            TD.SpotmarketPricesPred1=find(ismember(Pred.Time.Vec,Time.Sim.Start),1)-1;
         end
-
-        PVPlants_Profile_Prediction="PredictionQH";
+        
+        if ~exist("SpotmarketPricesPred2", "var")
+            [StorageFile, StoragePath]=uigetfile(strcat(Path.Prediction, Dl), 'Select the second Spotmarket Prediction');
+            load(strcat(StoragePath, StorageFile))
+            if Pred.Time.StepPredInd~=Time.StepInd
+                SpotmarketPricesPred2=repelem(Pred.Data, Time.StepInd/Pred.Time.StepPredInd);
+            end
+            TD.SpotmarketPricesPred2=find(ismember(Pred.Time.Vec,Time.Sim.Start),1)-1;
+        end
+    else
+        SpotmarketPricesPred1=repelem(Smard.DayaheadRealH, Time.StepInd);
+        TD.SpotmarketPricesPred1=find(ismember(Time.Vec,Time.Sim.Start),1)-1;
+        SpotmarketPricesPred2=repelem(Smard.DayaheadRealH, Time.StepInd);
+        TD.SpotmarketPricesPred2=find(ismember(Time.Vec,Time.Sim.Start),1)-1;
     end
-else
-    SpotmarketPrices=Smard.DayaheadRealQH;
-    TD.SpotmarketPrices=find(ismember(Time.Vec,Time.Sim.Start),1)-1;
+end
 
+if UsePredictions
+    PVPlants_Profile_Prediction="PredictionQH";
+else
     PVPlants_Profile_Prediction="ProfileQH";
 end
+
+SpotmarketPrices=repelem(Smard.DayaheadRealH, Time.StepInd);
+TD.SpotmarketPrices=find(ismember(Time.Vec,Time.Sim.Start),1)-1;
 
 if ActivateWaitbar
     h=waitbar(0, "Simulate charging processes");
 end
-
-Users{1}.Time.Sim=Time.Sim;
 
 %% Start Simulation
 
@@ -115,7 +120,6 @@ for TimeInd=Time.Sim.VecInd(2:end)
             PublicChargerPower=max((rand(1)>=PublicChargerDistribution(find(PublicChargerDistribution>TripDistance/1000,1),:)).*PublicChargerDistribution(1,:)); % [kW]
             ChargingPower(n)=min([max([Users{n}.ACChargingPowerVehicle, Users{n}.DCChargingPowerVehicle]), PublicChargerPower])*Users{n}.ChargingEfficiency; % Actual ChargingPower at public charger in [kW]
 %             ChargingEfficiency(n)=PublicChargerDistribution(end,find(ChargingPower(n)<=PublicChargerDistribution(1,2:end),1)+1)*((1.01-0.91)*randn(1)+0.99);
-            Stat=[Stat; PublicChargerPower];
             
             EnergyDemandLeft(n)=double(min((Users{n}.PublicChargingThreshold*100 + 5+TruncatedGaussian(2,[1 10]-5,1))/100*Users{n}.BatterySize + double(ConsumptionTilNextHomeStop) - Users{n}.Logbook(TimeInd+TD.User-1,9), Users{n}.BatterySize - Users{n}.Logbook(TimeInd+TD.User-1,9)));
 %             EnergyDemandLeft(n)=double(min((double(PublicChargingThreshold)+5+TruncatedGaussian(4,[1 20]-5,1))/100*Users{n}.BatterySize+double(ConsumptionTilNextHomeStop)-Users{n}.Logbook(TimeInd+TD.User-1,9), Users{n}.BatterySize-Users{n}.Logbook(TimeInd+TD.User-1,9)));
@@ -208,14 +212,21 @@ for TimeInd=Time.Sim.VecInd(2:end)
     end
     
     if SmartCharging && ismember(TimeInd, TimesOfPreAlgo)
-        TimeInd=TimeInd-ControlPeriods+1;         
+        
+        if hour(TimeOfPreAlgo1)==hour(Time.Sim.Vec(TimeInd))
+            p=1;
+        else
+            p=2;
+        end
+        
+        TimeInd=TimeInd-ControlPeriods+1;
         PreAlgo;
     
                 %Users{n}.Logbook(TimeInd+TD.User+find((TimeInd+TD.User:TimeInd+TD.User+24*Time.StepInd-1)' .* sum(OptimalChargingEnergies(1:24*Time.StepInd,:,n-1), 2)>0))=5;
         for n=UserNum
-            Users{n}.Logbook(TimeInd+TD.User+find(ismember(Users{n}.Logbook(TimeInd+TD.User:TimeInd+TD.User+2*24*Time.StepInd-1,1), 4:5))-1,1)=4;
-            Users{n}.Logbook(TimeInd+TD.User+find(sum(OptimalChargingEnergies(1:2*24*Time.StepInd,:,n==UserNum), 2)>0)-1, 1) = 5;
-            Users{n}.Logbook(TimeInd+TD.User:TimeInd+TD.User+2*24*Time.StepInd-1, 5:7)=OptimalChargingEnergies(1:2*24*Time.StepInd,:,n==UserNum);
+            Users{n}.Logbook(TimeInd+TD.User+find(ismember(Users{n}.Logbook(TimeInd+TD.User:TimeInd+TD.User+ControlPeriods-1,1), 4:5))-1,1)=4;
+            Users{n}.Logbook(TimeInd+TD.User+find(sum(OptimalChargingEnergies(1:ControlPeriods,:,n==UserNum), 2)>0)-1, 1) = 5;
+            Users{n}.Logbook(TimeInd+TD.User:TimeInd+TD.User+ControlPeriods-1, 5:7)=OptimalChargingEnergies(1:ControlPeriods,:,n==UserNum);
             
             for k=0:ControlPeriods-1
                 Users{n}.Logbook(TimeInd+TD.User+k, 9)=Users{n}.Logbook(TimeInd+TD.User+k-1, 9)-Users{n}.Logbook(TimeInd+TD.User+k, 4) + sum(Users{n}.Logbook(TimeInd+TD.User+k, 5:8));
@@ -261,7 +272,7 @@ if ~SmartCharging
     
     for n=UserNum
 %         if isfield(Users{n}, 'NNEEnergyPrice')
-        Users{n}.FinListBase=uint32(double(Users{n}.Logbook(Time.Sim.VecInd+TD.User,5))/1000/Users{n}.ChargingEfficiency .* (Users{n}.PrivateElectricityPrice + SpotmarketPrices(Time.Sim.VecInd+TD.Main)/10 + Users{n}.NNEEnergyPrice)*1.19); % [ct] total electricity costs equal base price of user + realtime current production costs + NNE energy price. VAT applies to the end price
+        Users{n}.FinListBase=uint32(double(Users{n}.Logbook(Time.Sim.VecInd+TD.User,5))/1000/Users{n}.ChargingEfficiency .* (Users{n}.PrivateElectricityPrice + SpotmarketPrices(Time.Sim.VecInd+TD.SpotmarketPrices)/10 + Users{n}.NNEEnergyPrice)*1.19); % [ct] total electricity costs equal base price of user + realtime current production costs + NNE energy price. VAT applies to the end price
 %         else
 %             Users{n}.FinListBase=uint32(double(Users{n}.Logbook(Time.Sim.VecInd+TD.User,5))/1000/Users{n}.ChargingEfficiency .* (Users{n}.PrivateElectricityPrice + SpotmarketPrices(Time.Sim.VecInd+TD.Main)/10 + 7.06)*1.19); % [ct] total electricity costs equal base price of user + realtime current production costs + NNE energy price. VAT applies to the end price
 %         end

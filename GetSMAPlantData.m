@@ -62,7 +62,7 @@
 tic
 NumberPlantsToLoad=800; % Maximum number of plants to load. if larger than number existing plants, only number of existing plants are loaded
 AddPredictions=true; % if true the prediction data is added to plants for those which have prediction data
-LoadOnlyPlantsWithPrediction=true; % if true only plants with available prediction data are loaded
+LoadOnlyPlantsWithPrediction=false; % if true only plants with available prediction data are loaded
 
 NumberPlantsLoaded=0; % counter how many plants were loaded
 formatSpec = '%s'; % needed for reading of csv files
@@ -93,6 +93,7 @@ for n=1:size(Folders,1) % iterate through the plants
     if length(Properties)<20
         disp(['Properties of plant ' Folders(n).name ' are empty'])
     end
+    Properties=erase(Properties, '""');
     Delimiter=strfind(Properties, '"');
     ExistingDates=sort(unique(datetime(string(strsplit(Properties(Delimiter(2)+1:end), ',')'), 'InputFormat', 'dd.MM.yyyy', 'TimeZone', 'Africa/Tunis')), 'ascend');
     
@@ -248,8 +249,11 @@ for n=1:size(Folders,1) % iterate through the plants
         PVPlants{n}.PeakPower=str2double(strrep(erase(extractBefore(Properties{3}, 'kWp'), ' '), ',', '.'));
         PVPlants{n}.ID=Properties{4};
         PVPlants{n}.ProfileQH=uint16(LoadedSMAPlantDataComplete(DatesDiffStart*96+1:end-DatesDiffEnd*96)*1000); % Unit: W not kW! in order to save memory. Cut Vector to Time.Vec range 
-        PVPlants{n}.PredictionH=uint16(PVPlants{n}.PredictionH*1000);  % Unit: W not kW! in order to save memory.
-        PVPlants{n}.PredictionQH=uint16(PVPlants{n}.PredictionQH*1000); % Unit: W not kW! in order to save memory.
+
+        if isfield(PVPlants{n}, "PredictionH")
+            PVPlants{n}.PredictionH=uint16(PVPlants{n}.PredictionH*1000);  % Unit: W not kW! in order to save memory.
+            PVPlants{n}.PredictionQH=uint16(PVPlants{n}.PredictionQH*1000); % Unit: W not kW! in order to save memory.
+        end
     
         NumberPlantsLoaded=NumberPlantsLoaded+1; % increase the counter
 

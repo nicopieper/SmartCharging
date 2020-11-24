@@ -1,6 +1,6 @@
 %% Control Variables
 
-ControlPeriods=96*2;
+%ControlPeriods(2)=ControlPeriods(1)-(hour(TimeOfPreAlgo2)-hour(TimeOfPreAlgo1))*Time.StepInd;
 CostCats=logical([1, 1, 1]);
 NumCostCats=sum(CostCats);
 ConstantRLPowerPeriods=4*Time.StepInd;
@@ -15,7 +15,7 @@ options.Display = 'off';
 for n=UserNum
     Users{n}.GridConvenientChargingAvailabilityControlPeriod=repmat(Users{n}.GridConvenientChargingAvailability,2,1);
 	Users{n}.GridConvenientChargingAvailabilityControlPeriod=circshift(Users{n}.GridConvenientChargingAvailabilityControlPeriod, -ShiftInds);
-    Users{n}.GridConvenientChargingAvailabilityControlPeriod=Users{n}.GridConvenientChargingAvailabilityControlPeriod(1:ControlPeriods);
+    Users{n}.GridConvenientChargingAvailabilityControlPeriod=Users{n}.GridConvenientChargingAvailabilityControlPeriod(1:ControlPeriods(1));
 end
 
 %% Initialise Optimisation Variables
@@ -39,11 +39,18 @@ MinEnergyRequiredTS=[];
 MaxEnergyChargableDeadlockCP=[];
 DecissionGroups=cell(NumDecissionGroups,1);
 
-DemandInds=tril(ones(ControlPeriods,ControlPeriods)).*(1:ControlPeriods);
+DemandInds=tril(ones(ControlPeriods(1),ControlPeriods(1))).*(1:ControlPeriods(1));
 DemandInds(:,1)=0;
-DemandInds(DemandInds==0)=ControlPeriods+1;
+DemandInds(DemandInds==0)=ControlPeriods(1)+1;
+
+if TimeOfPreAlgo1 <= TimeOfReserveMarketOffer
+    ConsPeriods=(24*Time.StepInd-ShiftInds)/(4*Time.StepInd);
+else
+    ConsPeriods=(2*24*Time.StepInd-ShiftInds)/(4*Time.StepInd);
+end
 
 %% Initialise Constraints
+
 
 ConsSumPowerTSA=sparse(kron(sparse(eye(NumUsers/NumDecissionGroups, NumUsers/NumDecissionGroups)), repmat(sparse(diag(ones(ControlPeriods,1))),1,NumCostCats))); 
 ConsEnergyCPAeq=sparse(kron(sparse(eye(NumUsers/NumDecissionGroups, NumUsers/NumDecissionGroups)), ones(1,ControlPeriods*NumCostCats)));  % the ones of a single row represent the decission variable of one vehicle. the sum of all powers of one vehicle must no exceed the energy demand
@@ -59,17 +66,17 @@ RLOfferEqualiyMat2=sparse(kron(eye(ControlPeriods/ConstantRLPowerPeriods, Contro
 ConsRLOfferAeq=sparse(repmat([zeros((ConstantRLPowerPeriods-1)*ControlPeriods/ConstantRLPowerPeriods,ControlPeriods*sum(CostCats(1:2))), RLOfferEqualiyMat2],1,NumUsers/NumDecissionGroups)); % one row represents one time step. within one Zeitscheibe the sum of reserve powers offered by all vehicles must be equal. hence it must be the power in timestep=1 must be the same as in timestep=2. this is represented by  a one followed by a -1 per vehicle
 ConsRLOfferbeq=zeros((ConstantRLPowerPeriods-1)*ControlPeriods/ConstantRLPowerPeriods,1);
 
-
-if TimeOfForecast <= TimeOfReserveMarketOffer
-    ConsPeriods=(24*Time.StepInd-ShiftInds)/(4*Time.StepInd);
-else
-    ConsPeriods=(2*24*Time.StepInd-ShiftInds)/(4*Time.StepInd);
-end
 ConsMatchLastReservePowerOffers4HAeq=repmat([zeros(ControlPeriods/(4*Time.StepInd),ControlPeriods*sum(CostCats(1:2))), kron(eye(ControlPeriods/(4*Time.StepInd), ControlPeriods/(4*Time.StepInd)),ones(1,4*Time.StepInd))], 1, NumUsers/NumDecissionGroups);
-ConsMatchLastReservePowerOffers4HAeq=ConsMatchLastReservePowerOffers4HAeq(1:ConsPeriods,:);
+% % % % % %
+        ConsMatchLastReservePowerOffers4HAeq=ConsMatchLastReservePowerOffers4HAeq(1:ConsPeriods,:); %% Transfer to PreAlgo for dynamical ranging
+% %  % % % %
+%     ConsMatchLastReservePowerOffers4HAeq=repmat([zeros(ControlPeriods/(4*Time.StepInd),ControlPeriods*sum(CostCats(1:2))), kron(eye(ControlPeriods/(4*Time.StepInd), ControlPeriods/(4*Time.StepInd)),ones(1,4*Time.StepInd))], 1, NumUsers/NumDecissionGroups);
+%     ConsMatchLastReservePowerOffers4HAeq=ConsMatchLastReservePowerOffers4HAeq(1:length((hour(TimeOfPreAlgo2)-hour(TimeOfPreAlgo1))*Time.StepInd+1:4*Time.StepInd:24*Time.StepInd+ConsPeriods*4*Time.StepInd),:);
+
 ConsMatchLastReservePowerOffers4Hbeq=zeros(ConsPeriods,1);
 
 A=[ConsSumPowerTSA; ConsEnergyDemandTSA; -ConsEnergyDemandTSA];
-Aeq=[ConsEnergyCPAeq; ConsRLOfferAeq;ConsMatchLastReservePowerOffers4HAeq];
+Aeq=[ConsEnergyCPAeq; ConsRLOfferAeq; ConsMatchLastReservePowerOffers4HAeq];
 lb=zeros(ControlPeriods, NumCostCats, NumUsers);
 lb=lb(:);
+

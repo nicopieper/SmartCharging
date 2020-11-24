@@ -1,12 +1,20 @@
 %% Availability, EnergyDemand and Prices
 
-RLOfferPrices=repelem(ResPoPricesReal4H(floor((TimeInd+TD.Main-1)/(4*Time.StepInd))+1:floor((TimeInd+TD.Main-1)/(4*Time.StepInd))+1+ControlPeriods/(4*Time.StepInd),3)/1000,4*Time.StepInd); % [�/kW]
-RLOfferPrices=RLOfferPrices(1:ControlPeriods);
-AEOfferPrices=(ResEnPricesRealQH(TimeInd+TD.Main:TimeInd+TD.Main-1+ControlPeriods,7)-AEFactor*abs(ResEnPricesRealQH(TimeInd+TD.Main:TimeInd+TD.Main-1+ControlPeriods,7)))/1000; % [�/kWh]
+% % % % Should be replaced by a pricing algorithm basing on a price prediction
+RLOfferdPrices=repelem(ResPoPricesReal4H(floor((TimeInd+TD.Main-1)/(4*Time.StepInd))+1-6:floor((TimeInd+TD.Main-1)/(4*Time.StepInd))+1-6+ControlPeriods/(4*Time.StepInd),3)/1000,4*Time.StepInd); % [�/kW]
+%RLOfferPrices=repelem(ResPoPricesReal4H(floor((TimeInd+TD.Main-1)/(4*Time.StepInd))+1:floor((TimeInd+TD.Main-1)/(4*Time.StepInd))+1+ControlPeriods/(4*Time.StepInd),3)/1000,4*Time.StepInd); % [�/kW]
+RLOfferdPrices=RLOfferdPrices(1:ControlPeriods);
+AEOfferdPrices=(ResEnPricesRealQH(TimeInd+TD.Main:TimeInd+TD.Main-1+ControlPeriods,7)-AEFactor*abs(ResEnPricesRealQH(TimeInd+TD.Main:TimeInd+TD.Main-1+ControlPeriods,7)))/1000; % [�/kWh]
+% % % % 
 
-CostsSpotmarket=zeros(ControlPeriods, 1, NumUsers);
+
+CostsSpotmarketBase=zeros(ControlPeriods, 1, NumUsers);
 CostsPV=ones(ControlPeriods, 1, NumUsers)*0.097;
 CostsReserveMarket=zeros(ControlPeriods, 1, NumUsers);
+
+Availability=zeros(ControlPeriods, 1, numel(UserNum));
+MaxEnergyChargableSoCTS=zeros(ControlPeriods, 1, numel(UserNum));
+MinEnergyRequiredTS=zeros(ControlPeriods, 1, numel(UserNum));
 
 PVPower=zeros(ControlPeriods, 1,NumUsers);
 VarCounter=0;
@@ -48,7 +56,7 @@ for k=UserNum
     
     
     % The maximal energy that is chargable without exceeding the battery
-    % such that the battery is as full as possible at the end of the
+    % such that the battery is as  as possible at the end of the
     % ControlPeriod
     
     MaxEnergyChargableDeadlockTS=zeros(ControlPeriods,1);
@@ -91,17 +99,19 @@ for k=UserNum
 %     end
 %         
 %     MinEnergyChargableDeadlockCP(1,1,VarCounter)=sum(MinEnergyChargableDeadlockTS(:,1,VarCounter));
-    
-    
-    CostsSpotmarket(1:ControlPeriods, 1, VarCounter)=(Users{k}.PrivateElectricityPrice + Users{k}.NNEEnergyPrice + Smard.DayaheadRealQH(TimeInd+TD.Main:TimeInd+TD.Main-1+ControlPeriods)/10)/100*1.19;
-    
+
+
     if Users{k}.PVPlantExists==true
         PVPower(:,1,VarCounter)=double(PVPlants{Users{k}.PVPlant}.(PVPlants_Profile_Prediction)(TimeInd+TD.Main:TimeInd+TD.Main-1+ControlPeriods));
     else
         CostsPV(:,1,VarCounter)=10000*ones(ControlPeriods,1); % Ensure never use PVPlant if there is non. Also ensured by PowerCons as PVPower is constantly zero
     end
-    
-    CostsReserveMarket(1:ControlPeriods, 1, VarCounter)=((Users{k}.PrivateElectricityPrice + Users{k}.NNEEnergyPrice)/100 - AEOfferPrices)*1.19 - RLOfferPrices/16;
+
+    CostsSpotmarketBase(1:ControlPeriods, 1, VarCounter)=Users{k}.PrivateElectricityPrice + Users{k}.NNEEnergyPrice;
+    CostsReserveMarket(1:ControlPeriods, 1, VarCounter)=((Users{k}.PrivateElectricityPrice + Users{k}.NNEEnergyPrice)/100 - AEOfferdPrices)*1.19 - RLOfferdPrices/16;
+%         CostsSpotmarket(1:ControlPeriods, 1, VarCounter)=(Users{k}.PrivateElectricityPrice + Users{k}.NNEEnergyPrice + SpotmarketPricesPred1(TimeInd+TD.SpotmarketPricesPred1:TimeInd+TD.SpotmarketPricesPred1-1+ControlPeriods)/10)/100*1.19;
+%         CostsReserveMarket(1:ControlPeriods, 1, VarCounter)=((Users{k}.PrivateElectricityPrice + Users{k}.NNEEnergyPrice)/100 - AEOfferdPrices)*1.19 - RLOfferdPrices/16;
+
     
 end
 
@@ -112,7 +122,4 @@ end
 % end
 
 
-%% Aggregate Costs
 
-Costs=[CostsSpotmarket, CostsPV, CostsReserveMarket];
-Costs=Costs(:,CostCats,:);

@@ -68,7 +68,7 @@ MaxDelayIndGLM=max(DelayIndsGLM);
 TimeVecPred=Time.Start:Time.StepPred:Time.End;
 Range.TrainPredInd=[max([find(Range.TrainDate(1)==TimeVecPred,1), find(~isnan(Target),1)])  find(dateshift(Range.TrainDate(2),'end','day')-Time.StepPred==TimeVecPred,1)];
 %RangeVal=[RangeTrain(2)+1 RangeTrain(2)+floor(length(Target)*ShareVal/24)*24-MaxDelayInd];
-Range.TestPredInd=[find(Range.TestDate(1)==TimeVecPred,1) find(dateshift(Range.TestDate(2),'end','day')-Time.StepPred==TimeVecPred,1)];
+Range.TestPredInd=[find(dateshift(Range.TestDate(1),'start','day')+hours(Time.HourPred*Time.StepPredInd)==TimeVecPred,1) find(dateshift(Range.TestDate(2),'end','day')-Time.StepPred==TimeVecPred,1)];
 % else
 %     Range.TrainPredInd=[1 floor(length(Target)*Range.ShareTrain/(24*Time.StepInd))*(24*Time.StepInd)];
 %     %RangeVal=[RangeTrain(2)+1 RangeTrain(2)+floor(length(Target)*ShareVal/24)*24-MaxDelayInd];

@@ -1,25 +1,49 @@
 %% Calc Optimisation Variables
 
 CalcOptVars;
-SplitDecissionGroups;
+OptPeriods=ControlPeriods-mod(TimeInd-TimesOfPreAlgo(1)-1, ControlPeriods);
+
+
+if hour(TimeOfPreAlgo1)==hour(Time.Sim.Vec(TimeInd))
+    CostsSpotmarket=(CostsSpotmarketBase + SpotmarketPricesPred1(TimeInd+TD.SpotmarketPricesPred1:TimeInd+TD.SpotmarketPricesPred1-1+ControlPeriods)/10)/100*1.19;
+    SplitDecissionGroups;
+elseif hour(TimeOfPreAlgo2)==hour(Time-Sim.Vec(TimeInd))
+    CostsSpotmarket=(CostsSpotmarketBase + SpotmarketPricesPred1(TimeInd+TD.SpotmarketPricesPred1:TimeInd+TD.SpotmarketPricesPred2-1+ControlPeriods)/10)/100*1.19;
+end
+
+
+% else
+%     SuccessfulRLOffers=RLOfferdPrices(1:4*Time.StepInd:end)<=ResPoPricesReal4H(floor((TimeInd+TD.Main-1)/(4*Time.StepInd))+1:floor((TimeInd+TD.Main-1)/(4*Time.StepInd))+1+ControlPeriods/(4*Time.StepInd),3)/1000;
+%     ConsMatchLastReservePowerOffers4Hbeq=sum(squeeze(OptimalChargingEnergies((hour(TimeOfPreAlgo2)-hour(TimeOfPreAlgo1))*Time.StepInd+1:4*Time.StepInd:24*Time.StepInd+ConsPeriods*4*Time.StepInd,3,:)), 2);
+%     
+%     % Complete ConsMatchLastReservePowerOffers4Hbeq. dazugehöriges Aeq muss
+%     % für Algo2 entsprechend verlängert werden --> Neudefinition
+% end    
+    
+    
+    
+    
+    
 %ConsMatchLastReservePowerOffers4Hbeq=temp1;
+
 
 %% Calc Cost function and Constraints
 
+Costs=[CostsSpotmarket, CostsPV, CostsReserveMarket];
 Costs=Costs(:);
 
 SumPower=MaxPower/4.*Availability;
-ConsbSumPowerTS=SumPower(:);
+ConsbSumPowerTS=reshape(SumPower(end-OptPeriods+1:end), [], 1);
 
 PowerTS=repelem(MaxPower/4,ControlPeriods,NumCostCats,1);
 PowerTS(:,2,:)=min([PowerTS(:,2,:), PVPower/4], [], 2);
-ConsbPowerTS=PowerTS(:);
+ConsbPowerTS=reshape(PowerTS(end-OptPeriods+1:end), [], 1);
 
-ConsbMaxEnergyChargableSoCTS=MaxEnergyChargableSoCTS(:);
+ConsbMaxEnergyChargableSoCTS=reshape(MaxEnergyChargableSoCTS(end-OptPeriods+1:end), [], 1);
 
-ConsbMinEnergyRequiredTS=MinEnergyRequiredTS(:);
+ConsbMinEnergyRequiredTS=reshape(MinEnergyRequiredTS(end-OptPeriods+1:end), [], 1);
 
-ConsbeqMaxEnergyChargableDeadlockCP=MaxEnergyChargableDeadlockCP(:);
+ConsbeqMaxEnergyChargableDeadlockCP=reshape(MaxEnergyChargableDeadlockCP(end-OptPeriods+1:end), [], 1);
 
 
 %%
@@ -84,12 +108,8 @@ if UseParallel
     x=x(:);
 else
 	b=[ConsbSumPowerTS; ConsbMaxEnergyChargableSoCTS; -ConsbMinEnergyRequiredTS];
-    A=[ConsSumPowerTSA; ConsEnergyDemandTSA; -ConsEnergyDemandTSA];
-
     beq=[ConsbeqMaxEnergyChargableDeadlockCP; ConsRLOfferbeq; ConsMatchLastReservePowerOffers4Hbeq];
-    Aeq=[ConsEnergyCPAeq; ConsRLOfferAeq; ConsMatchLastReservePowerOffers4HAeq];
 
-    lb=zeros(ControlPeriods, NumCostCats, NumUsers);
     ub=ConsbPowerTS(:);
 
     Costf=Costs;
