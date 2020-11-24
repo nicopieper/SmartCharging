@@ -1,5 +1,5 @@
 function [Prediction, PredictionMat, TargetMat, MAE, mMAPE, RMSE, Accuracy] = TestPred(PredMethod, PredictorMat, TargetDelayedLSQ, TargetDelayedGLM, Target, Time,...
-    Range, MaxDelayIndLSQ, MaxDelayIndNARXNET, ForecastIntervalPredInd, Demo, TargetTitle, ActivateWaitbar, Path, Save); % The actual Prediction
+    Range, MaxDelayIndLSQ, MaxDelayIndNARXNET, ForecastIntervalPredInd, Demo, TargetTitle, ActivateWaitbar, Path, Dl, Save); % The actual Prediction
 %% Description
 % This function generates predictions basing on trained LSQ and NARXNET
 % models. The predictions can be visualised in a live demonstration.
@@ -187,7 +187,10 @@ if Save
         Pred.Range=Range;
         Pred.ForecastIntervalInd=ForecastIntervalPredInd;
         Pred.Time.Stamp=datetime('now');
-        Pred.FileName=strcat(Path.Prediction, datestr(Pred.Time.Stamp, 'yyyymmdd-HHMM'), Time.IntervalFile, "_", TargetTitle, "_", LegendVec(p), "_", num2str(ForecastIntervalPredInd), "_", "_", num2str(size(PredictorMatInput,2)), "_", ".mat");
+        Pred.FileName=strcat(Path.Prediction, TargetTitle, Dl, LegendVec(p), "_", datestr(Pred.Time.Stamp, 'yyyymmdd-HHMM'), "_", Time.IntervalFile, "_", num2str(ForecastIntervalPredInd), "h", "_", num2str(size(PredictorMatInput,2)), "Preds", "_", num2str(Time.HourPred), "hr", ".mat");
+        if ~isfolder(strcat(Path.Prediction, TargetTitle))
+            mkdir(strcat(Path.Prediction, TargetTitle))
+        end
         save(Pred.FileName, "Pred", "-v7.3");
     end
 Prediction=PredcitionTemp;
