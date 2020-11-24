@@ -54,8 +54,8 @@ for k=ExistingTargets
         ChargeProcesses{k,1}(n)=Users{n}.ChargeProcessesHomeBase;
         ChargeProcesses{k,2}(n)=Users{n}.ChargeProcessesOtherBase;
     end
-    ChargeProcessesPerWeek{k,1}=sum(ChargeProcesses{k,1})/days(Users{1}.Time.Sim.Vec(end)-Users{1}.Time.Sim.Vec(1))*7/length(TargetGroups{k});
-    ChargeProcessesPerWeek{k,2}=sum(ChargeProcesses{k,2})/days(Users{1}.Time.Sim.Vec(end)-Users{1}.Time.Sim.Vec(1))*7/length(TargetGroups{k});
+    ChargeProcessesPerWeek{k,1}=sum(ChargeProcesses{k,1})/days(Users{1}.Time.Vec(end)-Users{1}.Time.Vec(1))*7/length(TargetGroups{k});
+    ChargeProcessesPerWeek{k,2}=sum(ChargeProcesses{k,2})/days(Users{1}.Time.Vec(end)-Users{1}.Time.Vec(1))*7/length(TargetGroups{k});
 end
 ChargeProcessesPerWeek=ChargeProcessesPerWeek(ExistingTargets,:);
 DataTable.ChargingPorcessesPerWeek=round(cell2mat(ChargeProcessesPerWeek)*100)/100;
@@ -128,9 +128,9 @@ for k=ExistingTargets
     end
 end
 EnergyCharged=EnergyCharged(ExistingTargets,:);
-EnergyChargedPerDayPerVehicle=cellfun(@sum,EnergyCharged)/days(Users{1}.Time.Sim.Vec(end)-Users{1}.Time.Sim.Vec(1))/1000./cellfun(@length, TargetGroups(ExistingTargets));
+EnergyChargedPerDayPerVehicle=cellfun(@sum,EnergyCharged)/days(Users{1}.Time.Vec(end)-Users{1}.Time.Vec(1))/1000./cellfun(@length, TargetGroups(ExistingTargets));
 HomeChargingQuote=sum(EnergyChargedPerDayPerVehicle(:,1))/sum(EnergyChargedPerDayPerVehicle,'all');
-disp(strcat("The users charged in average ", num2str(sum(cellfun(@sum, EnergyCharged), 'all')/days(Users{1}.Time.Sim.Vec(end)-Users{1}.Time.Sim.Vec(1))/1000/length(Users)-1), " kWh per day"))
+disp(strcat("The users charged in average ", num2str(sum(cellfun(@sum, EnergyCharged), 'all')/days(Users{1}.Time.Vec(end)-Users{1}.Time.Vec(1))/1000/length(Users)-1), " kWh per day"))
 disp(strcat(num2str(HomeChargingQuote*100), " % of all energy was charged at home"))
 % DataTable.EnergyChargedPerDay=
 
@@ -149,8 +149,8 @@ for k=ExistingTargets
         ConnectionBlocksOther=[find(ismember(Users{n}.(Logbook)(1:end,1),6:7) & ~ismember([0;Users{n}.(Logbook)(1:end-1,1)],6:7)), find(ismember(Users{n}.(Logbook)(1:end,1),6:7) & ~ismember([Users{n}.(Logbook)(2:end,1);0],6:7))];
         ConnectionTime{k,1}=[ConnectionTime{k,1}; (ConnectionBlocksHome(:,2)-ConnectionBlocksHome(:,1)+1)*Time.StepMin];
         ConnectionTime{k,2}=[ConnectionTime{k,2}; (ConnectionBlocksOther(:,2)-ConnectionBlocksOther(:,1)+1)*Time.StepMin];
-        ArrivalTimes{k,1}=[ArrivalTimes{k,1}; datetime(ones(length(ConnectionBlocksHome),1),ones(length(ConnectionBlocksHome),1),ones(length(ConnectionBlocksHome),1), hour(Users{1}.Time.Sim.Vec(ConnectionBlocksHome(:,1)))', minute((Users{1}.Time.Sim.Vec(ConnectionBlocksHome(:,1))))',zeros(length(ConnectionBlocksHome),1), 'TimeZone', 'Africa/Tunis')];
-        ArrivalTimes{k,2}=[ArrivalTimes{k,2}; datetime(ones(length(ConnectionBlocksOther),1),ones(length(ConnectionBlocksOther),1),ones(length(ConnectionBlocksOther),1), hour(Users{1}.Time.Sim.Vec(ConnectionBlocksOther(:,1)))', minute((Users{1}.Time.Sim.Vec(ConnectionBlocksOther(:,1))))',zeros(length(ConnectionBlocksOther),1), 'TimeZone', 'Africa/Tunis')];
+        ArrivalTimes{k,1}=[ArrivalTimes{k,1}; datetime(ones(length(ConnectionBlocksHome),1),ones(length(ConnectionBlocksHome),1),ones(length(ConnectionBlocksHome),1), hour(Users{1}.Time.Vec(ConnectionBlocksHome(:,1)))', minute((Users{1}.Time.Vec(ConnectionBlocksHome(:,1))))',zeros(length(ConnectionBlocksHome),1), 'TimeZone', 'Africa/Tunis')];
+        ArrivalTimes{k,2}=[ArrivalTimes{k,2}; datetime(ones(length(ConnectionBlocksOther),1),ones(length(ConnectionBlocksOther),1),ones(length(ConnectionBlocksOther),1), hour(Users{1}.Time.Vec(ConnectionBlocksOther(:,1)))', minute((Users{1}.Time.Vec(ConnectionBlocksOther(:,1))))',zeros(length(ConnectionBlocksOther),1), 'TimeZone', 'Africa/Tunis')];
         AvailabilityTimes(:,1,k)=AvailabilityTimes(:,1,k)+ismember(Users{n}.(Logbook)(1:end,1),4:5);
         AvailabilityTimes(:,2,k)=AvailabilityTimes(:,2,k)+ismember(Users{n}.(Logbook)(1:end,1),6:7);
     end
@@ -158,8 +158,8 @@ end
 ConnectionTime=ConnectionTime(ExistingTargets,:);
 ArrivalTimes=ArrivalTimes(ExistingTargets,:);
 AvailabilityTimes=AvailabilityTimes(:,:,ExistingTargets)./permute((ones(1,1,1).*cellfun(@numel, TargetGroups(ExistingTargets))), [2,3,1]);
-if isfield(Users{1}.Time.Sim, 'StepInd')
-    AvailabilityTimes=squeeze(mean(reshape(AvailabilityTimes(1:floor(size(AvailabilityTimes,1)/(24*Users{1}.Time.Sim.StepInd))*24*Users{1}.Time.Sim.StepInd, :, :), 24*Users{1}.Time.Sim.StepInd, [], 2, NumExistingTargets), 2));
+if isfield(Users{1}.Time, 'StepInd')
+    AvailabilityTimes=squeeze(mean(reshape(AvailabilityTimes(1:floor(size(AvailabilityTimes,1)/(24*Users{1}.Time.StepInd))*24*Users{1}.Time.StepInd, :, :), 24*Users{1}.Time.StepInd, [], 2, NumExistingTargets), 2));
 else
     AvailabilityTimes=squeeze(mean(reshape(AvailabilityTimes(1:floor(size(AvailabilityTimes,1)/(24*4))*24*4, :, :), 24*4, [], 2, NumExistingTargets), 2));
 end
@@ -255,8 +255,8 @@ for k=ExistingTargets
     Load{k,1}=zeros(96,1);
     Load{k,2}=zeros(96,1);
     for n=TargetGroups{k}
-        Load{k,1}=Load{k,1}+sum(reshape(sum(Users{n}.(Logbook)(:,5:7), 2), 96, []),2)*4/1e3/days(Users{1}.Time.Sim.Vec(end)-Users{1}.Time.Sim.Vec(1));
-        Load{k,2}=Load{k,2}+sum(reshape(Users{n}.(Logbook)(:,8), 96, []),2)*4/1e3/days(Users{1}.Time.Sim.Vec(end)-Users{1}.Time.Sim.Vec(1));
+        Load{k,1}=Load{k,1}+sum(reshape(sum(Users{n}.(Logbook)(:,5:7), 2), 96, []),2)*4/1e3/days(Users{1}.Time.Vec(end)-Users{1}.Time.Vec(1));
+        Load{k,2}=Load{k,2}+sum(reshape(Users{n}.(Logbook)(:,8), 96, []),2)*4/1e3/days(Users{1}.Time.Vec(end)-Users{1}.Time.Vec(1));
     end
     Load{k,1}=Load{k,1};
     Load{k,2}=Load{k,2};

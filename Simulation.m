@@ -9,6 +9,7 @@ ControlPeriods=96*2;
 UsePV=true;
 ApplyGridConvenientCharging=true;
 ActivateWaitbar=true;
+SaveResults=false;
 
 rng('default');
 rng(1);
@@ -218,32 +219,11 @@ for TimeInd=Time.Sim.VecInd(2:end)
 
             TimeInd=TimeInd-ControlPeriods+1;
             PreAlgo;
-        
-            for n=UserNum
-                Users{n}.Logbook(TimeInd+TD.User+find(ismember(Users{n}.Logbook(TimeInd+TD.User:TimeInd+TD.User+ControlPeriods-1,1), 4:5))-1,1)=4;
-                Users{n}.Logbook(TimeInd+TD.User+find(sum(OptimalChargingEnergies(1:ControlPeriods,:,n==UserNum), 2)>0)-1, 1) = 5;
-                Users{n}.Logbook(TimeInd+TD.User:TimeInd+TD.User+ControlPeriods-1, 5:7)=OptimalChargingEnergies(1:ControlPeriods,:,n==UserNum);
-
-                for k=0:ControlPeriods-1
-                    Users{n}.Logbook(TimeInd+TD.User+k, 9)=Users{n}.Logbook(TimeInd+TD.User+k-1, 9)-Users{n}.Logbook(TimeInd+TD.User+k, 4) + sum(Users{n}.Logbook(TimeInd+TD.User+k, 5:8));
-    %                 if ~(Users{n}.Logbook(TimeInd+TD.User+k,9)<(Users{n}.Logbook(TimeInd+TD.User-1+k,9)+sum(Users{n}.Logbook(TimeInd+TD.User+k,5:8)) - Users{n}.Logbook(TimeInd+TD.User+k,4))+3 && Users{n}.Logbook(TimeInd+TD.User+k,9)>(Users{n}.Logbook(TimeInd+TD.User-1+k,9)+sum(Users{n}.Logbook(TimeInd+TD.User+k,5:8)) - Users{n}.Logbook(TimeInd+TD.User+k,4))-3)
-    %                     error("Wrong addition")
-    %                 end
-                end
-                if Users{n}.Logbook(TimeInd+TD.User:ControlPeriods-1, 9)>Users{n}.BatterySize
-                    2
-                end
-                Users{n}.Logbook(TimeInd+TD.User:TimeInd+TD.User+ControlPeriods-1, 9)=min([ones(ControlPeriods,1)*Users{n}.BatterySize, Users{n}.Logbook(TimeInd+TD.User:TimeInd+TD.User+ControlPeriods-1, 9)], [],2);
-    %             if ~(Users{n}.Logbook(TimeInd+TD.User,9)<(Users{n}.Logbook(TimeInd+TD.User-1,9)+sum(Users{n}.Logbook(TimeInd+TD.User,5:8)) - Users{n}.Logbook(TimeInd+TD.User,4))+3 && Users{n}.Logbook(TimeInd+TD.User,9)>(Users{n}.Logbook(TimeInd+TD.User-1,9)+sum(Users{n}.Logbook(TimeInd+TD.User,5:8)) - Users{n}.Logbook(TimeInd+TD.User,4))-3)
-    %                 error("Wrong addition")
-    %             end
-            end
             
+            LiveAlgo;
+            TimeInd=TimeInd+ControlPeriods-1;
         end
-        
-        LiveAlgo;
-        
-        TimeInd=TimeInd+ControlPeriods-1;
+
     end
     
     if ActivateWaitbar && mod(TimeInd+TD.User,1000)==0
@@ -349,7 +329,9 @@ for n=UserNum
     Users{n}=rmfield(Users{n}, 'Logbook');
 end
 
-save(Users{1}.FileName, "Users", "-v7.3");
+if SaveResults
+    save(Users{1}.FileName, "Users", "-v7.3");
+end
 disp(strcat("Successfully simulated within ", num2str(toc(TSim)), " seconds"))
 
 %% Clean up workspace
@@ -359,4 +341,4 @@ clearvars NextHomeStop PublicChargerPower ChargingPower EnergyDemandLeft TimeSte
 clearvars NumPredMethod TotalIterations NumUsers TimeOfForecast P PlugInTime PThreshold
 clearvars SimulatedUsers PublicChargerDistribution h k UserNum UsePV UsePredictions UseParallel TSim TimeInd temp TD tc tc1
 clearvars SpotmarketPrices PVPlants_Profile_Prediction ApplyGridConvenientCharging ChargingEnergy ConnectionDurations24h ControlPeriods IMSYSPrices n
-clearvars SmartCharging
+clearvars SmartCharging SaveResults
