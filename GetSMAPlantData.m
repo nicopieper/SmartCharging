@@ -62,7 +62,7 @@
 tic
 NumberPlantsToLoad=800; % Maximum number of plants to load. if larger than number existing plants, only number of existing plants are loaded
 AddPredictions=true; % if true the prediction data is added to plants for those which have prediction data
-LoadOnlyPlantsWithPrediction=false; % if true only plants with available prediction data are loaded
+LoadOnlyPlantsWithPrediction=true; % if true only plants with available prediction data are loaded
 
 NumberPlantsLoaded=0; % counter how many plants were loaded
 formatSpec = '%s'; % needed for reading of csv files

@@ -60,7 +60,7 @@ ConsRLOfferAeq=sparse(repmat([zeros((ConstantRLPowerPeriods-1)*ControlPeriods/Co
 ConsRLOfferbeq=zeros((ConstantRLPowerPeriods-1)*ControlPeriods/ConstantRLPowerPeriods,1);
 
 
-if TimeOfForecast <= TimeOfReserveMarketOffer
+if TimeOfPreAlgo1 <= TimeOfReserveMarketOffer
     ConsPeriods=(24*Time.StepInd-ShiftInds)/(4*Time.StepInd);
 else
     ConsPeriods=(2*24*Time.StepInd-ShiftInds)/(4*Time.StepInd);
