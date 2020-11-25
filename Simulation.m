@@ -9,6 +9,7 @@ ControlPeriods=96*2;
 UsePV=true;
 ApplyGridConvenientCharging=true;
 ActivateWaitbar=true;
+SaveResults=false;
 
 rng('default');
 rng(1);
@@ -57,7 +58,8 @@ if SmartCharging
     TimeOfReserveMarketOffer=datetime(1,1,1,8,0,0,'TimeZone','Africa/Tunis');
 	ShiftInds=(hour(TimeOfPreAlgo1)*Time.StepInd + minute(TimeOfPreAlgo1)/minutes(Time.Step));
     %TimesOfPreAlgo=sort([(hour(TimeOfPreAlgo1)*Time.StepInd + minute(TimeOfPreAlgo1)/60*Time.StepInd)+1-1+ControlPeriods:24*Time.StepInd:length(Time.Sim.VecInd); (hour(TimeOfPreAlgo2)*Time.StepInd + minute(TimeOfPreAlgo2)/60*Time.StepInd)+1-1+ControlPeriods:24*Time.StepInd:length(Time.Sim.VecInd)], 'ascend');
-    TimesOfPreAlgo=sort([(hour(TimeOfPreAlgo1)*Time.StepInd + minute(TimeOfPreAlgo1)/60*Time.StepInd)+1-1+ControlPeriods:24*Time.StepInd:length(Time.Sim.VecInd)], 'ascend');
+    %TimesOfPreAlgo=sort([(hour(TimeOfPreAlgo1)*Time.StepInd + minute(TimeOfPreAlgo1)/60*Time.StepInd)+1:24*Time.StepInd:length(Time.Sim.VecInd); (hour(TimeOfPreAlgo2)*Time.StepInd + minute(TimeOfPreAlgo2)/60*Time.StepInd)+1:24*Time.StepInd:length(Time.Sim.VecInd)], 'ascend');
+    TimesOfPreAlgo=sort([(hour(TimeOfPreAlgo1)*Time.StepInd + minute(TimeOfPreAlgo1)/60*Time.StepInd)+1:24*Time.StepInd:length(Time.Sim.VecInd)], 'ascend');
     InitialisePreAlgo;
     
     if UsePredictions
@@ -101,7 +103,7 @@ end
 
 %% Start Simulation
 
-for TimeInd=Time.Sim.VecInd(2:end)
+for TimeInd=Time.Sim.VecInd(2:end-ControlPeriods)
           
     for n=UserNum
         
@@ -147,110 +149,119 @@ for TimeInd=Time.Sim.VecInd(2:end)
             EnergyDemandLeft(n)=EnergyDemandLeft(n)-Users{n}.Logbook(TimeInd+TD.User,8); 
         end
         
-        % Private charging: Decide whether to plug in the car the or not
         
-        if Users{n}.Logbook(TimeInd+TD.User,1)==3
-            
-            if Users{n}.Logbook(TimeInd+TD.User-1,1)<3
+        Users{n}.Logbook(TimeInd+TD.User,9)=min(Users{n}.BatterySize, Users{n}.Logbook(TimeInd+TD.User-1,9) - Users{n}.Logbook(TimeInd+TD.User,4) + Users{n}.Logbook(TimeInd+TD.User,8));
+    %         if ~(Users{n}.Logbook(TimeInd+TD.User,9)<(Users{n}.Logbook(TimeInd+TD.User-1,9)+sum(Users{n}.Logbook(TimeInd+TD.User,5:8)) - Users{n}.Logbook(TimeInd+TD.User,4))+3 && Users{n}.Logbook(TimeInd+TD.User,9)>(Users{n}.Logbook(TimeInd+TD.User-1,9)+sum(Users{n}.Logbook(TimeInd+TD.User,5:8)) - Users{n}.Logbook(TimeInd+TD.User,4))-3)
+    %             error("Wrong addition")
+    %         end
+        
+    end
+    
+    if ~SmartCharging
+        
+        for n=UserNum
+        
+            % Private charging: Decide whether to plug in the car the or not
 
-                if Users{n}.ChargingStrategy==1 % Always connect car to charging point if Duration of parking is higher than MinimumPluginTime
-                    ParkingDuration=(find(Users{n}.Logbook(TimeInd+TD.User:end,1)<3,1)-1)*Time.Step;
-                    if ParkingDuration>Users{n}.MinimumPluginTime
-                        Users{n}.Logbook(TimeInd+TD.User,1)=4; % Plugged-in
-                    else
-                        Users{n}.Logbook(TimeInd+TD.User,1)=3; % Not plugged-in
-                    end
+            if Users{n}.Logbook(TimeInd+TD.User,1)==3
 
-                elseif Users{n}.ChargingStrategy==2 % The probability of connection is a function of Plug-in time, SoC and the consumption within the next 24h
-                    Consumption24h=sum(Users{n}.Logbook(TimeInd+TD.User:min(TimeInd+TD.User+24*Time.StepInd-1, size(Users{n}.Logbook,1)), 4)); % [Wh]
-                    ConnectionDurations24h=find(ismember(Users{n}.Logbook(TimeInd+TD.User:min(TimeInd+TD.User+24*Time.StepInd-1, size(Users{n}.Logbook,1)), 1), 3:5) & ~ismember([Users{n}.Logbook(TimeInd+TD.User+1:min(TimeInd+TD.User+24*Time.StepInd-1, size(Users{n}.Logbook,1)), 1);0], 3:5)) - find(ismember(Users{n}.Logbook(TimeInd+TD.User:min(TimeInd+TD.User+24*Time.StepInd-1, size(Users{n}.Logbook,1)), 1), 3:5) & ~ismember([0;Users{n}.Logbook(TimeInd+TD.User:min(TimeInd+TD.User+24*Time.StepInd-1-1, size(Users{n}.Logbook,1)-1), 1)], 3:5))+1;
-                    if Consumption24h>Users{n}.Logbook(TimeInd+TD.User-1,9) && ~max(ConnectionDurations24h)*Time.StepInd*Users{n}.ACChargingPowerHomeCharging < Consumption24h
-                        Users{n}.Logbook(TimeInd+TD.User,1)=4; % Plugged-in
-                    else
-                        PlugInTime=(find([Users{n}.Logbook(TimeInd+TD.User+1:end,1);0]<3,1)-1)/Time.StepInd;
-                        P=min(1,PlugInTime/3) + 0.9*min(1, (Users{n}.BatterySize-Users{n}.Logbook(TimeInd+TD.User-1,9))/Users{n}.BatterySize) + min(1, Consumption24h/Users{n}.Logbook(TimeInd+TD.User-1,9)) + 0.3*ConnectionDurations24h(1)/max(ConnectionDurations24h);
-                        if P>Users{n}.PrivateChargingThreshold
+                if Users{n}.Logbook(TimeInd+TD.User-1,1)<3
+
+                    if Users{n}.ChargingStrategy==1 % Always connect car to charging point if Duration of parking is higher than MinimumPluginTime
+                        ParkingDuration=(find(Users{n}.Logbook(TimeInd+TD.User:end,1)<3,1)-1)*Time.Step;
+                        if ParkingDuration>Users{n}.MinimumPluginTime
                             Users{n}.Logbook(TimeInd+TD.User,1)=4; % Plugged-in
                         else
                             Users{n}.Logbook(TimeInd+TD.User,1)=3; % Not plugged-in
                         end
-                    end
-                end
-            
-            elseif Users{n}.Logbook(TimeInd+TD.User-1,1)>=4
-                Users{n}.Logbook(TimeInd+TD.User,1)=4;
-            end
-        end
-        
-        Users{n}.Logbook(TimeInd+TD.User,9)=min(Users{n}.BatterySize, Users{n}.Logbook(TimeInd+TD.User-1,9) - Users{n}.Logbook(TimeInd+TD.User,4) + Users{n}.Logbook(TimeInd+TD.User,8));
-%         if ~(Users{n}.Logbook(TimeInd+TD.User,9)<(Users{n}.Logbook(TimeInd+TD.User-1,9)+sum(Users{n}.Logbook(TimeInd+TD.User,5:8)) - Users{n}.Logbook(TimeInd+TD.User,4))+3 && Users{n}.Logbook(TimeInd+TD.User,9)>(Users{n}.Logbook(TimeInd+TD.User-1,9)+sum(Users{n}.Logbook(TimeInd+TD.User,5:8)) - Users{n}.Logbook(TimeInd+TD.User,4))-3)
-%             error("Wrong addition")
-%         end
-    end
-    
-    for n=UserNum
-        if Users{n}.Logbook(TimeInd+TD.User,1)==4 && Users{n}.Logbook(TimeInd+TD.User,9)<Users{n}.BatterySize && (~ApplyGridConvenientCharging || Users{n}.GridConvenientChargingAvailability(mod(TimeInd+TD.User-1, 24*Time.StepInd)+1)) % Charging starts always when the car is plugged in, until the Battery is fully charged
-            Users{n}.Logbook(TimeInd+TD.User,1)=5;
-            ChargingEnergy=min((Time.StepMin-Users{n}.Logbook(TimeInd+TD.User,2))*Users{n}.ACChargingPowerHomeCharging/60, Users{n}.BatterySize-Users{n}.Logbook(TimeInd+TD.User-1,9)); %[Wh]
-            if UsePV && Users{n}.PVPlantExists
-                Users{n}.Logbook(TimeInd+TD.User,6)=min(uint32(PVPlants{Users{n}.PVPlant}.(PVPlants_Profile_Prediction)(TimeInd+TD.Main)), ChargingEnergy);
-            end
-            Users{n}.Logbook(TimeInd+TD.User,5)=ChargingEnergy-Users{n}.Logbook(TimeInd+TD.User,6);
-        end
-    end
 
-    
-	for n=UserNum
-        if  Users{n}.Logbook(TimeInd+TD.User,9)<Users{n}.BatterySize && Users{n}.Logbook(TimeInd+TD.User,1)>=5
-            Users{n}.Logbook(TimeInd+TD.User,9)=Users{n}.Logbook(TimeInd+TD.User,9)+sum(Users{n}.Logbook(TimeInd+TD.User,5:7));
-%             if Users{n}.Logbook(TimeInd+TD.User, 9)>Users{n}.BatterySize*1.01
-%                 error("Battery over charged")
-%             end
-%             if ~(Users{n}.Logbook(TimeInd+TD.User,9)<(Users{n}.Logbook(TimeInd+TD.User-1,9)+sum(Users{n}.Logbook(TimeInd+TD.User,5:8)) - Users{n}.Logbook(TimeInd+TD.User,4))+3 && Users{n}.Logbook(TimeInd+TD.User,9)>(Users{n}.Logbook(TimeInd+TD.User-1,9)+sum(Users{n}.Logbook(TimeInd+TD.User,5:8)) - Users{n}.Logbook(TimeInd+TD.User,4))-3)
-%                 error("Wrong addition")
-%             end
+                    elseif Users{n}.ChargingStrategy==2 % The probability of connection is a function of Plug-in time, SoC and the consumption within the next 24h
+                        Consumption24h=sum(Users{n}.Logbook(TimeInd+TD.User:min(TimeInd+TD.User+24*Time.StepInd-1, size(Users{n}.Logbook,1)), 4)); % [Wh]
+                        ConnectionDurations24h=find(ismember(Users{n}.Logbook(TimeInd+TD.User:min(TimeInd+TD.User+24*Time.StepInd-1, size(Users{n}.Logbook,1)), 1), 3:5) & ~ismember([Users{n}.Logbook(TimeInd+TD.User+1:min(TimeInd+TD.User+24*Time.StepInd-1, size(Users{n}.Logbook,1)), 1);0], 3:5)) - find(ismember(Users{n}.Logbook(TimeInd+TD.User:min(TimeInd+TD.User+24*Time.StepInd-1, size(Users{n}.Logbook,1)), 1), 3:5) & ~ismember([0;Users{n}.Logbook(TimeInd+TD.User:min(TimeInd+TD.User+24*Time.StepInd-1-1, size(Users{n}.Logbook,1)-1), 1)], 3:5))+1;
+                        if Consumption24h>Users{n}.Logbook(TimeInd+TD.User-1,9) && ~max(ConnectionDurations24h)*Time.StepInd*Users{n}.ACChargingPowerHomeCharging < Consumption24h
+                            Users{n}.Logbook(TimeInd+TD.User,1)=4; % Plugged-in
+                        else
+                            PlugInTime=(find([Users{n}.Logbook(TimeInd+TD.User+1:end,1);0]<3,1)-1)/Time.StepInd;
+                            P=min(1,PlugInTime/3) + 0.9*min(1, (Users{n}.BatterySize-Users{n}.Logbook(TimeInd+TD.User-1,9))/Users{n}.BatterySize) + min(1, Consumption24h/Users{n}.Logbook(TimeInd+TD.User-1,9)) + 0.3*ConnectionDurations24h(1)/max(ConnectionDurations24h);
+                            if P>Users{n}.PrivateChargingThreshold
+                                Users{n}.Logbook(TimeInd+TD.User,1)=4; % Plugged-in
+                            else
+                                Users{n}.Logbook(TimeInd+TD.User,1)=3; % Not plugged-in
+                            end
+                        end
+                    end
+
+                elseif Users{n}.Logbook(TimeInd+TD.User-1,1)>=4
+                    Users{n}.Logbook(TimeInd+TD.User,1)=4;
+                end
+            end
+
+
+            if Users{n}.Logbook(TimeInd+TD.User,1)==4 && Users{n}.Logbook(TimeInd+TD.User,9)<Users{n}.BatterySize && (~ApplyGridConvenientCharging || Users{n}.GridConvenientChargingAvailability(mod(TimeInd+TD.User-1, 24*Time.StepInd)+1)) % Charging starts always when the car is plugged in, until the Battery is fully charged
+                Users{n}.Logbook(TimeInd+TD.User,1)=5;
+                ChargingEnergy=min((Time.StepMin-Users{n}.Logbook(TimeInd+TD.User,2))*Users{n}.ACChargingPowerHomeCharging/60, Users{n}.BatterySize-Users{n}.Logbook(TimeInd+TD.User-1,9)); %[Wh]
+                if UsePV && Users{n}.PVPlantExists
+                    Users{n}.Logbook(TimeInd+TD.User,6)=min(uint32(PVPlants{Users{n}.PVPlant}.(PVPlants_Profile_Prediction)(TimeInd+TD.Main)), ChargingEnergy);
+                end
+                Users{n}.Logbook(TimeInd+TD.User,5)=ChargingEnergy-Users{n}.Logbook(TimeInd+TD.User,6);
+            end
+
+
+            if  Users{n}.Logbook(TimeInd+TD.User,9)<Users{n}.BatterySize && Users{n}.Logbook(TimeInd+TD.User,1)>=5
+                Users{n}.Logbook(TimeInd+TD.User,9)=Users{n}.Logbook(TimeInd+TD.User,9)+sum(Users{n}.Logbook(TimeInd+TD.User,5:7));
+    %             if Users{n}.Logbook(TimeInd+TD.User, 9)>Users{n}.BatterySize*1.01
+    %                 error("Battery over charged")
+    %             end
+    %             if ~(Users{n}.Logbook(TimeInd+TD.User,9)<(Users{n}.Logbook(TimeInd+TD.User-1,9)+sum(Users{n}.Logbook(TimeInd+TD.User,5:8)) - Users{n}.Logbook(TimeInd+TD.User,4))+3 && Users{n}.Logbook(TimeInd+TD.User,9)>(Users{n}.Logbook(TimeInd+TD.User-1,9)+sum(Users{n}.Logbook(TimeInd+TD.User,5:8)) - Users{n}.Logbook(TimeInd+TD.User,4))-3)
+    %                 error("Wrong addition")
+    %             end
+            end
         end
+    
+    else
+        
+        if ismember(TimeInd, TimesOfPreAlgo)
+
+            %TimeInd=TimeInd-ControlPeriods+1;
+            PreAlgo;
+
+            for n=UserNum
+                %Users{n}.Logbook(TimeInd+TD.User+find(ismember(Users{n}.Logbook(TimeInd+TD.User:TimeInd+TD.User+ControlPeriods-1,1), 4:5))-1,1)=4;
+%                 AvailableBlocks=[find(ismember(Users{n}.Logbook(TimeInd+TD.User:TimeInd+TD.User+ControlPeriods-1,1),3:5) & ~ismember([0;Users{n}.Logbook(TimeInd+TD.User:TimeInd+TD.User+ControlPeriods-2,1)],3:5)), find(ismember(Users{n}.Logbook(TimeInd+TD.User:TimeInd+TD.User+ControlPeriods-1,1),3:5) & ~ismember([Users{n}.Logbook(TimeInd+TD.User+1:TimeInd+TD.User+ControlPeriods-1,1);0],3:5))];
+%                 ChargingBlocks=any(AvailableBlocks(:,1)'<=find(sum(OptimalChargingEnergies(1:ControlPeriods,:,n==UserNum), 2)>0)-1 & AvailableBlocks(:,2)'>=find(sum(OptimalChargingEnergies(1:ControlPeriods,:,n==UserNum), 2)>0)-1, 1)';
+%                 Users{n}.Logbook(TimeInd+TD.User+AvailableBlocks(ChargingBlocks,1)-1:TimeInd+TD.User+AvailableBlocks(ChargingBlocks,2)-1)=4;
+                %Users{n}.Logbook(TimeInd+TD.User+find(sum(OptimalChargingEnergies(1:ControlPeriods,:,n==UserNum), 2)>0)-1, 1) = 5;
+                
+                Users{n}.Logbook(TimeInd+TD.User:TimeInd+TD.User+ControlPeriods-1, 5:7)=OptimalChargingEnergies(1:ControlPeriods,:,n==UserNum);
+            end
+
+            %TimeInd=TimeInd+ControlPeriods-1;
+        end
+        
+        LiveAlgo;
+
     end
     
-    if SmartCharging && ismember(TimeInd, TimesOfPreAlgo)
-        
-        if hour(TimeOfPreAlgo1)==hour(Time.Sim.Vec(TimeInd))
-            p=1;
-        else
-            p=2;
-        end
-        
-        TimeInd=TimeInd-ControlPeriods+1;
-        PreAlgo;
     
-                %Users{n}.Logbook(TimeInd+TD.User+find((TimeInd+TD.User:TimeInd+TD.User+24*Time.StepInd-1)' .* sum(OptimalChargingEnergies(1:24*Time.StepInd,:,n-1), 2)>0))=5;
-        for n=UserNum
-            Users{n}.Logbook(TimeInd+TD.User+find(ismember(Users{n}.Logbook(TimeInd+TD.User:TimeInd+TD.User+ControlPeriods-1,1), 4:5))-1,1)=4;
-            Users{n}.Logbook(TimeInd+TD.User+find(sum(OptimalChargingEnergies(1:ControlPeriods,:,n==UserNum), 2)>0)-1, 1) = 5;
-            Users{n}.Logbook(TimeInd+TD.User:TimeInd+TD.User+ControlPeriods-1, 5:7)=OptimalChargingEnergies(1:ControlPeriods,:,n==UserNum);
-            
-            for k=0:ControlPeriods-1
-                Users{n}.Logbook(TimeInd+TD.User+k, 9)=Users{n}.Logbook(TimeInd+TD.User+k-1, 9)-Users{n}.Logbook(TimeInd+TD.User+k, 4) + sum(Users{n}.Logbook(TimeInd+TD.User+k, 5:8));
-%                 if ~(Users{n}.Logbook(TimeInd+TD.User+k,9)<(Users{n}.Logbook(TimeInd+TD.User-1+k,9)+sum(Users{n}.Logbook(TimeInd+TD.User+k,5:8)) - Users{n}.Logbook(TimeInd+TD.User+k,4))+3 && Users{n}.Logbook(TimeInd+TD.User+k,9)>(Users{n}.Logbook(TimeInd+TD.User-1+k,9)+sum(Users{n}.Logbook(TimeInd+TD.User+k,5:8)) - Users{n}.Logbook(TimeInd+TD.User+k,4))-3)
-%                     error("Wrong addition")
-%                 end
-            end
-            if Users{n}.Logbook(TimeInd+TD.User:ControlPeriods-1, 9)>Users{n}.BatterySize
-                2
-            end
-            Users{n}.Logbook(TimeInd+TD.User:TimeInd+TD.User+ControlPeriods-1, 9)=min([ones(ControlPeriods,1)*Users{n}.BatterySize, Users{n}.Logbook(TimeInd+TD.User:TimeInd+TD.User+ControlPeriods-1, 9)], [],2);
-%             if ~(Users{n}.Logbook(TimeInd+TD.User,9)<(Users{n}.Logbook(TimeInd+TD.User-1,9)+sum(Users{n}.Logbook(TimeInd+TD.User,5:8)) - Users{n}.Logbook(TimeInd+TD.User,4))+3 && Users{n}.Logbook(TimeInd+TD.User,9)>(Users{n}.Logbook(TimeInd+TD.User-1,9)+sum(Users{n}.Logbook(TimeInd+TD.User,5:8)) - Users{n}.Logbook(TimeInd+TD.User,4))-3)
-%                 error("Wrong addition")
-%             end
-        end
-        
-        TimeInd=TimeInd+ControlPeriods-1;
-    end
+    % Wie werden normal und SmartCharging voneinander getrennt? Bei beidem
+    % Bei SmartCharging gibt zunächst der Aggregator vor, wann zu laden ist
+    
     
     if ActivateWaitbar && mod(TimeInd+TD.User,1000)==0
         waitbar(TimeInd/length(Time.Sim.Vec));
     end
 end
+
+for n=UserNum
+    AvailableBlocks=[find(ismember(Users{n}.Logbook(1:end,1),3:5) & ~ismember([0;Users{n}.Logbook(1:end-1,1)],3:5)), find(ismember(Users{n}.Logbook(1:end,1),3:5) & ~ismember([Users{n}.Logbook(2:end,1);0],3:5))];
+    ChargingBlocks=any(AvailableBlocks(:,1)'<=find(Users{n}.Logbook(1:end,1)==5) & AvailableBlocks(:,2)'>=find(Users{n}.Logbook(1:end,1)==5))';
+    for k=find(ChargingBlocks)'
+        Users{n}.Logbook(AvailableBlocks(k,1)-1:AvailableBlocks(k,2)-1,1)=4;
+    end
+    Users{n}.Logbook(any(Users{n}.Logbook(:,5:7)>0,2),1)=5;
+end
+
+
 if ActivateWaitbar
     close(h);
 end
@@ -350,7 +361,9 @@ for n=UserNum
     Users{n}=rmfield(Users{n}, 'Logbook');
 end
 
-save(Users{1}.FileName, "Users", "-v7.3");
+if SaveResults
+    save(Users{1}.FileName, "Users", "-v7.3");
+end
 disp(strcat("Successfully simulated within ", num2str(toc(TSim)), " seconds"))
 
 %% Clean up workspace
@@ -360,4 +373,4 @@ clearvars NextHomeStop PublicChargerPower ChargingPower EnergyDemandLeft TimeSte
 clearvars NumPredMethod TotalIterations NumUsers TimeOfForecast P PlugInTime PThreshold
 clearvars SimulatedUsers PublicChargerDistribution h k UserNum UsePV UsePredictions UseParallel TSim TimeInd temp TD tc tc1
 clearvars SpotmarketPrices PVPlants_Profile_Prediction ApplyGridConvenientCharging ChargingEnergy ConnectionDurations24h ControlPeriods IMSYSPrices n
-clearvars SmartCharging
+clearvars SmartCharging SaveResults

@@ -4,16 +4,11 @@ CalcOptVars;
 SplitDecissionGroups;
 %ConsMatchLastReservePowerOffers4Hbeq=temp1;
 
-%% Calc Cost function and Constraints
+%% Define Cost function and Constraints
 
 Costs=Costs(:);
 
-SumPower=MaxPower/4.*Availability;
 ConsbSumPowerTS=SumPower(:);
-
-PowerTS=repelem(MaxPower/4,ControlPeriods,NumCostCats,1);
-PowerTS(:,2,:)=min([PowerTS(:,2,:), PVPower/4], [], 2);
-ConsbPowerTS=PowerTS(:);
 
 ConsbMaxEnergyChargableSoCTS=MaxEnergyChargableSoCTS(:);
 
@@ -83,11 +78,20 @@ if UseParallel
     x=x(:,:,BackwardsOrder);
     x=x(:);
 else
-	b=[ConsbSumPowerTS; ConsbMaxEnergyChargableSoCTS; -ConsbMinEnergyRequiredTS];
+    
+%     b=[ConsbSumPowerTS; -ConsbMinEnergyRequiredTS];
+%     A=[ConsSumPowerTSA; -ConsEnergyDemandTSA];
+% 
+%     beq=[];
+%     Aeq=[];
+    
+    b=[ConsbSumPowerTS; ConsbMaxEnergyChargableSoCTS; -ConsbMinEnergyRequiredTS];
     A=[ConsSumPowerTSA; ConsEnergyDemandTSA; -ConsEnergyDemandTSA];
 
     beq=[ConsbeqMaxEnergyChargableDeadlockCP; ConsRLOfferbeq; ConsMatchLastReservePowerOffers4Hbeq];
     Aeq=[ConsEnergyCPAeq; ConsRLOfferAeq; ConsMatchLastReservePowerOffers4HAeq];
+
+
 
     lb=zeros(ControlPeriods, NumCostCats, NumUsers);
     ub=ConsbPowerTS(:);

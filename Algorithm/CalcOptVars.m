@@ -1,6 +1,6 @@
 %% Availability, EnergyDemand and Prices
 
-RLOfferPrices=repelem(ResPoPricesReal4H(floor((TimeInd+TD.Main-1)/(4*Time.StepInd))+1:floor((TimeInd+TD.Main-1)/(4*Time.StepInd))+1+ControlPeriods/(4*Time.StepInd),3)/1000,4*Time.StepInd); % [�/kW]
+RLOfferPrices=repelem(ResPoPricesReal4H(floor((TimeInd+TD.Main)/(4*Time.StepInd))+1:floor((TimeInd+TD.Main)/(4*Time.StepInd))+ControlPeriods/(4*Time.StepInd),3)/1000,4*Time.StepInd); % [�/kW]
 RLOfferPrices=RLOfferPrices(1:ControlPeriods);
 AEOfferPrices=(ResEnPricesRealQH(TimeInd+TD.Main:TimeInd+TD.Main-1+ControlPeriods,7)-AEFactor*abs(ResEnPricesRealQH(TimeInd+TD.Main:TimeInd+TD.Main-1+ControlPeriods,7)))/1000; % [�/kWh]
 
@@ -13,7 +13,7 @@ VarCounter=0;
 for k=UserNum
     VarCounter=VarCounter+1;
     
-    Availability(:,1,VarCounter)=(max(0, double(ismember(Users{k}.Logbook(TimeInd+TD.User:TimeInd+TD.User-1+ControlPeriods,1), 4:5)) - double(Users{k}.Logbook(TimeInd+TD.User:TimeInd+TD.User-1+ControlPeriods,2))/Time.StepMin)) .* Users{k}.GridConvenientChargingAvailabilityControlPeriod;
+    Availability(:,1,VarCounter)=(max(0, double(ismember(Users{k}.Logbook(TimeInd+TD.User:TimeInd+TD.User-1+ControlPeriods,1), 3:5)) - double(Users{k}.Logbook(TimeInd+TD.User:TimeInd+TD.User-1+ControlPeriods,2))/Time.StepMin)) .* Users{k}.GridConvenientChargingAvailabilityControlPeriod;
     
     %EnergyDemandCP(1,1,VarCounter)=Users{k}.BatterySize - double(Users{k}.Logbook(TimeInd+TD.User-1,9)) + sum(Users{k}.Logbook(TimeInd+TD.User:TimeInd+TD.User-1+ControlPeriods,4));
     
@@ -25,28 +25,20 @@ for k=UserNum
     % The maximal energy that is charagble without exceeding the battery
     % limit in every time step
     
-    SoC=Users{k}.Logbook(TimeInd+TD.User,9) - sum(Users{k}.Logbook(TimeInd+TD.User,5:7),2) - [0;cumsum(Consumed)] + [0;cumsum(PublicCharged)]; % in Wh
-%     SoC1=Users{k}.Logbook(TimeInd+TD.User,9) - sum(Users{k}.Logbook(TimeInd+TD.User,5:7),2) - sum(Consumed1(DemandInds),2) + sum(PublicCharged1(DemandInds),2); % in Wh
+    SoC=Users{k}.Logbook(TimeInd+TD.User,9) - [0;cumsum(Consumed)]; % in Wh
+    %SoC=Users{k}.Logbook(TimeInd+TD.User,9) - sum(Users{k}.Logbook(TimeInd+TD.User,5:7),2) - [0;cumsum(Consumed)] + [0;cumsum(PublicCharged)]; % in Wh
+
+    
+    
+    %     SoC1=Users{k}.Logbook(TimeInd+TD.User,9) - sum(Users{k}.Logbook(TimeInd+TD.User,5:7),2) - sum(Consumed1(DemandInds),2) + sum(PublicCharged1(DemandInds),2); % in Wh
 %     if any(SoC1~=SoC)
 %         error("error")
 %     end
+
+    
     MaxEnergyChargableSoCTS(:,1,VarCounter)=Users{k}.BatterySize - SoC ;
-    
-    
-    % The energy required to charge in every time step to avoid empty
-    % batteries
-    
-    
-    % Wie viel Energie kann ich auf MinEnergyRequiredTS maximal drauf
-    % addieren, sodass die Energie ladbar ist? Ladbar im Sinne von gen�gend
-    % M�glichkeiten die Energie zu laden und ohne dass das SoC �berl�uft.
-    
-    %
-    
-    MinEnergyRequiredTS(:,1,VarCounter)=round(Users{k}.PublicChargingThreshold_Wh*0.3) - SoC;
-%     MinEnergyRequiredTS(:,1,VarCounter)=sum(Consumed(DemandInds),2) - sum(PublicCharged(DemandInds),2) - (Users{k}.Logbook(TimeInd+TD.User,9) - sum(Users{k}.Logbook(TimeInd+TD.User,5:7),2));
-    
-    
+        
+       
     % The maximal energy that is chargable without exceeding the battery
     % such that the battery is as full as possible at the end of the
     % ControlPeriod
@@ -75,7 +67,12 @@ for k=UserNum
         MaxEnergyChargableDeadlockCP(1,1,VarCounter)=0;
     end
     
+    % Wie viel Energie muss ich mindestens laden, damit mein SoC nicht
+    % unter den PublicCharging-Schwellwert fallen wird?
+    % Wird nach der Schleife noch verkleinert!
    
+    MinEnergyRequiredTS(:,1,VarCounter)=round(Users{k}.PublicChargingThreshold_Wh*0.3) - SoC;
+%     MinEnergyRequiredTS(:,1,VarCounter)=sum(Consumed(DemandInds),2) - sum(PublicCharged(DemandInds),2) - (Users{k}.Logbook(TimeInd+TD.User,9) - sum(Users{k}.Logbook(TimeInd+TD.User,5:7),2));
     
     
     
@@ -104,6 +101,14 @@ for k=UserNum
     CostsReserveMarket(1:ControlPeriods, 1, VarCounter)=((Users{k}.PrivateElectricityPrice + Users{k}.NNEEnergyPrice)/100 - AEOfferPrices)*1.19 - RLOfferPrices/16;
     
 end
+
+SumPower=MaxPower/4.*Availability;
+
+PowerTS=repelem(MaxPower/4,ControlPeriods,NumCostCats,1);
+PowerTS(:,2,:)=min([PowerTS(:,2,:), PVPower/4], [], 2);
+ConsbPowerTS=PowerTS(:);    
+
+MinEnergyRequiredTS=min(min([MinEnergyRequiredTS, MaxEnergyChargableSoCTS, SumPower], [], 2), MaxEnergyChargableDeadlockCP);
 
 % if any(MaxEnergyChargableSoCTS(:)<-3)
 %     error("Error calculating MaxEnergyChargableSoCTS. Negative values found")
