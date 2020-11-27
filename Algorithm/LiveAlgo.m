@@ -13,7 +13,7 @@ for n=UserNum
         error("Wrong addition")
     end
     
-    if Users{n}.Logbook(TimeInd+TD.User:TimeInd+TD.User+ControlPeriods-1, 9)>Users{n}.BatterySize
+    if Users{n}.Logbook(TimeInd+TD.User:TimeInd+TD.User+ControlPeriodsIt-1, 9)>Users{n}.BatterySize
         2
     end
 
@@ -21,7 +21,7 @@ end
 
 
     
-%     Users{n}.Logbook(TimeInd+TD.User:TimeInd+TD.User+ControlPeriods-1, 9)=min([ones(ControlPeriods,1)*Users{n}.BatterySize, Users{n}.Logbook(TimeInd+TD.User:TimeInd+TD.User+ControlPeriods-1, 9)], [],2);
+%     Users{n}.Logbook(TimeInd+TD.User:TimeInd+TD.User+ControlPeriodsIt-1, 9)=min([ones(ControlPeriodsIt,1)*Users{n}.BatterySize, Users{n}.Logbook(TimeInd+TD.User:TimeInd+TD.User+ControlPeriodsIt-1, 9)], [],2);
 %     if ~(Users{n}.Logbook(TimeInd+TD.User,9)<(Users{n}.Logbook(TimeInd+TD.User-1,9)+sum(Users{n}.Logbook(TimeInd+TD.User,5:8)) - Users{n}.Logbook(TimeInd+TD.User,4))+3 && Users{n}.Logbook(TimeInd+TD.User,9)>(Users{n}.Logbook(TimeInd+TD.User-1,9)+sum(Users{n}.Logbook(TimeInd+TD.User,5:8)) - Users{n}.Logbook(TimeInd+TD.User,4))-3)
 %         error("Wrong addition")
 %     end

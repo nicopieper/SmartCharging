@@ -3,7 +3,7 @@ tic
 NumUsers=20; % size(Users,1)-1
 SmartCharging=true;
 UseParallel=false;
-UsePredictions=false;
+UsePredictions=true;
 
 ControlPeriods=96*2;
 UsePV=true;
@@ -58,13 +58,13 @@ if SmartCharging
     TimeOfReserveMarketOffer=datetime(1,1,1,8,0,0,'TimeZone','Africa/Tunis');
 	ShiftInds=(hour(TimeOfPreAlgo1)*Time.StepInd + minute(TimeOfPreAlgo1)/minutes(Time.Step));
     %TimesOfPreAlgo=sort([(hour(TimeOfPreAlgo1)*Time.StepInd + minute(TimeOfPreAlgo1)/60*Time.StepInd)+1-1+ControlPeriods:24*Time.StepInd:length(Time.Sim.VecInd); (hour(TimeOfPreAlgo2)*Time.StepInd + minute(TimeOfPreAlgo2)/60*Time.StepInd)+1-1+ControlPeriods:24*Time.StepInd:length(Time.Sim.VecInd)], 'ascend');
-    %TimesOfPreAlgo=sort([(hour(TimeOfPreAlgo1)*Time.StepInd + minute(TimeOfPreAlgo1)/60*Time.StepInd)+1:24*Time.StepInd:length(Time.Sim.VecInd); (hour(TimeOfPreAlgo2)*Time.StepInd + minute(TimeOfPreAlgo2)/60*Time.StepInd)+1:24*Time.StepInd:length(Time.Sim.VecInd)], 'ascend');
-    TimesOfPreAlgo=sort([(hour(TimeOfPreAlgo1)*Time.StepInd + minute(TimeOfPreAlgo1)/60*Time.StepInd)+1:24*Time.StepInd:length(Time.Sim.VecInd)], 'ascend');
+    TimesOfPreAlgo=sort([(hour(TimeOfPreAlgo1)*Time.StepInd + minute(TimeOfPreAlgo1)/60*Time.StepInd)+1:24*Time.StepInd:length(Time.Sim.VecInd); (hour(TimeOfPreAlgo2)*Time.StepInd + minute(TimeOfPreAlgo2)/60*Time.StepInd)+1:24*Time.StepInd:length(Time.Sim.VecInd)], 'ascend');
+    %TimesOfPreAlgo=sort([(hour(TimeOfPreAlgo1)*Time.StepInd + minute(TimeOfPreAlgo1)/60*Time.StepInd)+1:24*Time.StepInd:length(Time.Sim.VecInd)], 'ascend');
     InitialisePreAlgo;
     
     if UsePredictions
         if ~exist("SpotmarketPricesPred1", "var")
-            [StorageFile, StoragePath]=uigetfile(strcat(Path.Prediction, Dl), 'Select the first Spotmarket Prediction');
+            [StorageFile, StoragePath]=uigetfile(strcat(Path.Prediction, Dl, "DeayAheadRealH", Dl), 'Select the first Spotmarket Prediction');
             load(strcat(StoragePath, StorageFile))
             if Pred.Time.StepPredInd~=Time.StepInd
                 SpotmarketPricesPred1=repelem(Pred.Data, Time.StepInd/Pred.Time.StepPredInd);
@@ -73,7 +73,7 @@ if SmartCharging
         end
         
         if ~exist("SpotmarketPricesPred2", "var")
-            [StorageFile, StoragePath]=uigetfile(strcat(Path.Prediction, Dl), 'Select the second Spotmarket Prediction');
+            [StorageFile, StoragePath]=uigetfile(strcat(Path.Prediction, Dl, "DeayAheadRealH", Dl), 'Select the second Spotmarket Prediction');
             load(strcat(StoragePath, StorageFile))
             if Pred.Time.StepPredInd~=Time.StepInd
                 SpotmarketPricesPred2=repelem(Pred.Data, Time.StepInd/Pred.Time.StepPredInd);
@@ -218,12 +218,33 @@ for TimeInd=Time.Sim.VecInd(2:end-ControlPeriods)
             end
         end
     
-    else
+    elseif TimeInd>=TimesOfPreAlgo(1,1)
+        
+        ControlPeriodsIt=ControlPeriods-mod(TimeInd-TimesOfPreAlgo(1,1),96);        
         
         if ismember(TimeInd, TimesOfPreAlgo)
+            
+            %% Optimise
 
             %TimeInd=TimeInd-ControlPeriods+1;
+            if UsePredictions
+                if ismember(TimeInd, TimesOfPreAlgo(1,:))
+                    SpotmarktPricesCP=[SpotmarketPrices(TimeInd+TD.Main:TimeInd+TD.Main+(24-hour(TimeOfPreAlgo1))*Time.StepInd-1); SpotmarketPricesPred1(TimeInd+TD.SpotmarketPricesPred1+(24-hour(TimeOfPreAlgo1))*Time.StepInd+1:TimeInd+TD.SpotmarketPricesPred1+ControlPeriods)];
+                else
+                    SpotmarktPricesCP=[SpotmarketPrices(TimeInd+TD.Main:TimeInd+TD.Main+(48-hour(TimeOfPreAlgo1))*Time.StepInd-1); SpotmarketPricesPred1(TimeInd+TD.SpotmarketPricesPred1+(48-hour(TimeOfPreAlgo1))*Time.StepInd+1:TimeInd+TD.SpotmarketPricesPred1+ControlPeriods)];
+                end
+            end
+            
+            CalcConsOptVars;
+            CalcDynOptVars;
             PreAlgo;
+            Costs=reshape(Costs,192,3,[]);
+            C(:,PreAlgoCounter)=mean(reshape(CostsReserveMarket, 192, []), 2);
+            
+            
+            %%
+            % Check for proper integration of second PreAlgo
+            % Include RL auctions
 
             for n=UserNum
                 %Users{n}.Logbook(TimeInd+TD.User+find(ismember(Users{n}.Logbook(TimeInd+TD.User:TimeInd+TD.User+ControlPeriods-1,1), 4:5))-1,1)=4;
@@ -232,11 +253,14 @@ for TimeInd=Time.Sim.VecInd(2:end-ControlPeriods)
 %                 Users{n}.Logbook(TimeInd+TD.User+AvailableBlocks(ChargingBlocks,1)-1:TimeInd+TD.User+AvailableBlocks(ChargingBlocks,2)-1)=4;
                 %Users{n}.Logbook(TimeInd+TD.User+find(sum(OptimalChargingEnergies(1:ControlPeriods,:,n==UserNum), 2)>0)-1, 1) = 5;
                 
-                Users{n}.Logbook(TimeInd+TD.User:TimeInd+TD.User+ControlPeriods-1, 5:7)=OptimalChargingEnergies(1:ControlPeriods,:,n==UserNum);
+                Users{n}.Logbook(TimeInd+TD.User:TimeInd+TD.User+ControlPeriodsIt-1, 5:7)=OptimalChargingEnergies(1:ControlPeriodsIt,:,n==UserNum);
             end
 
             %TimeInd=TimeInd+ControlPeriods-1;
+        else
+            CalcDynOptVars;
         end
+           
         
         LiveAlgo;
 
@@ -310,6 +334,11 @@ end
 
 if SmartCharging
     %ChargingVehicle=reshape(permute(squeeze(sum(Users{1}.ChargingMat(1:96,:,:,:),2)), [1,3,2]), [], NumUsers)/1000*4;
+    ChargingMat1=zeros(24*Time.StepInd,3);
+    for n=UserNum
+        ChargingMat1=ChargingMat1+squeeze(sum(reshape(Users{n}.Logbook(:,5:7),24*Time.StepInd,[],3),2));
+    end
+    ChargingMat1=ChargingMat1*4/1000/(length(Time.Sim.VecInd(1:end-ControlPeriods))/(24*Time.StepInd));
     ChargingType=reshape(permute(squeeze(sum(Users{1}.ChargingMat(1:96,:,:,:),3)), [1,3,2]), [], Users{1}.NumCostCats)/1000*4;
     ChargingSum=sum(ChargingType, 2);
     
@@ -371,6 +400,6 @@ disp(strcat("Successfully simulated within ", num2str(toc(TSim)), " seconds"))
 clearvars TimeInd+TD.User n ActivateWaitbar Consumption24h ParkingDuration ConsumptionTilNextHomeStop TripDistance
 clearvars NextHomeStop PublicChargerPower ChargingPower EnergyDemandLeft TimeStepIndsNeededForCharging EndOfShift
 clearvars NumPredMethod TotalIterations NumUsers TimeOfForecast P PlugInTime PThreshold
-clearvars SimulatedUsers PublicChargerDistribution h k UserNum UsePV UsePredictions UseParallel TSim TimeInd temp TD tc tc1
+clearvars SimulatedUsers PublicChargerDistribution h k UserNum UsePV UsePredictions UseParallel TSim TimeInd temp tc tc1
 clearvars SpotmarketPrices PVPlants_Profile_Prediction ApplyGridConvenientCharging ChargingEnergy ConnectionDurations24h ControlPeriods IMSYSPrices n
 clearvars SmartCharging SaveResults
