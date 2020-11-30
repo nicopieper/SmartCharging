@@ -1,32 +1,91 @@
 %% Calc Optimisation Variables
 
-CalcOptVars;
 SplitDecissionGroups;
-%ConsMatchLastReservePowerOffers4Hbeq=temp1;
+%ConseqMatchLastResPoOffersSucessful4Hb=temp1;
+
+%% Update Costs
+
+CostsSpotmarket=(CostsElectricityBase(end-ControlPeriodsIt+1:end,1,:)/100 + SpotmarktPricesCP/1000)*MwSt;
+CostsReserveMarket=(CostsElectricityBase/100 - ResEnOfferPrices - ResPoOfferPrices/16)*MwSt;
+
+if ismember(TimeInd, TimesOfPreAlgo(1,:))
+%     C1(:,:,PreAlgoCounter)=CostsReserveMarket;
+%     C2(:,PreAlgoCounter)=-ResEnOfferPrices;
+%     C3(:,PreAlgoCounter)=-ResPoOfferPrices/16;
+end
+
+Costs=[CostsSpotmarket, CostsPV(end-ControlPeriodsIt+1:end,1,:), CostsReserveMarket(end-ControlPeriodsIt+1:end,1,:)];
+Costs=Costs(:,CostCats,:);
+
 
 %% Define Cost function and Constraints
 
-Costs=Costs(:);
+ConsSumPowerTSbIt=SumPower(:);
 
-ConsbSumPowerTS=SumPower(:);
+ConsMaxEnergyChargableSoCTSbIt=MaxEnergyChargableSoCTS(:);
 
-ConsbMaxEnergyChargableSoCTS=MaxEnergyChargableSoCTS(:);
+ConsMinEnergyRequiredTSbIt=MinEnergyRequiredTS(:);
 
-ConsbMinEnergyRequiredTS=MinEnergyRequiredTS(:);
+ConseqMaxEnergyChargableDeadlockCPbIt=MaxEnergyChargableDeadlockCP(:);
 
-ConsbeqMaxEnergyChargableDeadlockCP=MaxEnergyChargableDeadlockCP(:);
+
+ConsSumPowerTSAIt=ConsSumPowerTSA;
+ConsEnergyDemandTSAIt=ConsEnergyDemandTSA;
+ConseqEnergyCPAIt=ConseqEnergyCPA;
+ConseqResPoOfferAIt=ConseqResPoOfferA;
+
+ConseqResPoOfferbIt=zeros((ConstantResPoPowerPeriods-1)*ControlPeriodsIt/ConstantResPoPowerPeriods,1);
+
+DelCols2=(1:(ControlPeriods-ControlPeriodsIt))'+(0:NumUsers*NumCostCats-1)*ControlPeriods;
+DelCols2=DelCols2(:);
+
+ResPoBlockedIndices=(floor(floor(mod(TimeInd-1, 24*Time.StepInd)/Time.StepInd)/4):5)+1 + (mod(TimeInd-1, (24*Time.StepInd))<=32)*6 - 2;
+if hour(Time.Sim.Vec(TimeInd))+minute(Time.Sim.Vec(TimeInd))>hour(TimeOfPreAlgo1)
+    ResPoBlockedIndices=[ResPoBlockedIndices, 5:10];
+end
+ResPoBlockedIndices=((ResPoBlockedIndices(1):1/(4*Time.StepInd/ConstantResPoPowerPeriods):ResPoBlockedIndices(end)+1-1/(4*Time.StepInd/ConstantResPoPowerPeriods))-1)*4*Time.StepInd/ConstantResPoPowerPeriods+1;
+
+ConseqMatchLastResPoOffers4HbIt=LastResPoOffersSucessful4Hb(ResPoBlockedIndices, end); % Valid for 192
+ConseqMatchLastResPoOffers4HAIt=ConseqMatchLastResPoOffers4HA(1:length(ResPoBlockedIndices),:);
+ConseqMatchLastResPoOffers4HAIt(:,repelem(ControlPeriods:ControlPeriods*2:ControlPeriods*NumUsers*NumCostCats*2,ControlPeriods-ControlPeriodsIt)'-DelCols2)=[];
+
+% Sicherstellen, dass beide Variablen korrekt zugeschnitten werden, für beide oder
+% alle Fälle.
+% Nach Ursacher für Fehlermeldung suchen
+
+if ControlPeriodsIt<ControlPeriods
+    DelRows=(ControlPeriodsIt+1:ControlPeriods)'+(0:NumUsers-1)*ControlPeriods;
+    DelRows=DelRows(:);
+    DelCols=(ControlPeriodsIt+1:ControlPeriods)'+(0:NumUsers*NumCostCats-1)*ControlPeriods;
+    DelCols=DelCols(:);
+    
+    ConsSumPowerTSAIt(DelRows,:)=[];
+    ConsSumPowerTSAIt(:,DelCols)=[];
+    
+    ConsEnergyDemandTSAIt(DelRows,:)=[];
+    ConsEnergyDemandTSAIt(:,DelCols)=[];
+
+    ConseqEnergyCPAIt(:,DelCols)=[];
+    
+    DelRows2=1:(ControlPeriods-ControlPeriodsIt - (floor((ControlPeriods-ControlPeriodsIt)/(4*Time.StepInd))));
+    
+    ConseqResPoOfferAIt(DelRows2,:)=[];
+    ConseqResPoOfferAIt(:,DelCols2)=[];
+    
+%     Costs(DelCols2)=[];
+end
 
 
 %%
 
-% b=[ConsbSumPowerTS; ConsbMaxEnergyChargableSoCTS; -ConsbMinEnergyRequiredTS];
-% A=[ConsSumPowerTSA; ConsEnergyDemandTSA; -ConsEnergyDemandTSA];
+% b=[ConsSumPowerTSbIt; ConsMaxEnergyChargableSoCTSbIt; -ConsMinEnergyRequiredTSbIt];
+% A=[ConsSumPowerTSA; ConsEnergyDemandTSAIt; -ConsEnergyDemandTSAIt];
 % 
-% beq=[ConsbeqMaxEnergyChargableDeadlockCP; ConsRLOfferbeq; ConsMatchLastReservePowerOffers4Hbeq];
-% Aeq=[ConsEnergyCPAeq; ConsRLOfferAeq; ConsMatchLastReservePowerOffers4HAeq];
+% beq=[ConseqMaxEnergyChargableDeadlockCPbIt; ConseqResPoOfferbIt; ConseqMatchLastResPoOffersSucessful4Hb];
+% Aeq=[ConsEnergyCPAeq; ConseqResPoOfferAIt; ConsMatchLastResPoOffers4HAeq];
 % 
 % lb=zeros(ControlPeriods, NumCostCats, NumUsers);
-% ub=ConsbPowerTS(:);
+% ub=ConsPowerTSb(:);
 % % ub=[];
 % 
 % Costf=Costs;
@@ -34,11 +93,11 @@ ConsbeqMaxEnergyChargableDeadlockCP=MaxEnergyChargableDeadlockCP(:);
 
 
 
-% A=[ConsSumPowerTSA; ConsEnergyDemandTSA; -ConsEnergyDemandTSA];
-% b=[ConsbSumPowerTS; ConsbMaxEnergyChargableSoCTS; -ConsbMinEnergyRequiredTS];
+% A=[ConsSumPowerTSA; ConsEnergyDemandTSAIt; -ConsEnergyDemandTSAIt];
+% b=[ConsSumPowerTSbIt; ConsMaxEnergyChargableSoCTSbIt; -ConsMinEnergyRequiredTSbIt];
 % 
-% beq=[ConsbeqMaxEnergyChargableDeadlockCP; ConsRLOfferbeq; ConsMatchLastReservePowerOffers4Hbeq];
-% Aeq=[ConsEnergyCPAeq; ConsRLOfferAeq; ConsMatchLastReservePowerOffers4HAeq];
+% beq=[ConseqMaxEnergyChargableDeadlockCPbIt; ConseqResPoOfferbIt; ConseqMatchLastResPoOffersSucessful4Hb];
+% Aeq=[ConsEnergyCPAeq; ConseqResPoOfferAIt; ConsMatchLastResPoOffers4HAeq];
 
 
 
@@ -47,21 +106,22 @@ ConsbeqMaxEnergyChargableDeadlockCP=MaxEnergyChargableDeadlockCP(:);
 tic
 if UseParallel
     
-    ConsbSumPowerTS=ConsbSumPowerTS';
-    ConsbMaxEnergyChargableSoCTS=ConsbMaxEnergyChargableSoCTS';
-    ConsbMinEnergyRequiredTS=ConsbMinEnergyRequiredTS';
-    ConsbeqMaxEnergyChargableDeadlockCP=ConsbeqMaxEnergyChargableDeadlockCP';
-    ConsbPowerTS=ConsbPowerTS';
+    ConsSumPowerTSbIt=ConsSumPowerTSbIt';
+    ConsMaxEnergyChargableSoCTSbIt=ConsMaxEnergyChargableSoCTSbIt';
+    ConsMinEnergyRequiredTSbIt=ConsMinEnergyRequiredTSbIt';
+    ConseqMaxEnergyChargableDeadlockCPbIt=ConseqMaxEnergyChargableDeadlockCPbIt';
+    ConsPowerTSb=ConsPowerTSb';
     Costs=Costs';
 
     x1=cell(NumDecissionGroups,1);
     lb=zeros(ControlPeriods, NumCostCats, NumUsers/NumDecissionGroups);
 
     parfor k=1:NumDecissionGroups
-        b=[ConsbSumPowerTS(DecissionGroups{k,2}); ConsbMaxEnergyChargableSoCTS(DecissionGroups{k,2}); -ConsbMinEnergyRequiredTS(DecissionGroups{k,2})]';
-        beq=[ConsbeqMaxEnergyChargableDeadlockCP(DecissionGroups{k,1})'; ConsRLOfferbeq; DecissionGroups{k,4}]'; %% this is wrong as ConsMatchLastReservePowerOffers4Hbeq must be constant in sum
-        ub=ConsbPowerTS(DecissionGroups{k,3})';
-        Costf=Costs(DecissionGroups{k,3})';
+        b=[ConsSumPowerTSbIt(DecissionGroups{k,2}); ConsMaxEnergyChargableSoCTSbIt(DecissionGroups{k,2}); -ConsMinEnergyRequiredTSbIt(DecissionGroups{k,2})]';
+        beq=[ConseqMaxEnergyChargableDeadlockCPbIt(DecissionGroups{k,1})'; ConseqResPoOfferbIt; DecissionGroups{k,4}]'; %% this is wrong as ConseqMatchLastResPoOffersSucessful4Hb must be constant in sum
+        ub=ConsPowerTSb(DecissionGroups{k,3})';
+        Costf=Costs(:);
+        Costf=Costsf(DecissionGroups{k,3})';
         [x11,fval]=linprog(Costf,A,b,Aeq,beq,lb,ub, options);
         x11(x11<0)=0;
         x1{k}=x11;
@@ -78,25 +138,23 @@ if UseParallel
     x=x(:,:,BackwardsOrder);
     x=x(:);
 else
-    
-%     b=[ConsbSumPowerTS; -ConsbMinEnergyRequiredTS];
-%     A=[ConsSumPowerTSA; -ConsEnergyDemandTSA];
+
+%     b=[ConsSumPowerTSbIt; ];
+%     A=[ConsSumPowerTSAIt; ];
 % 
-%     beq=[];
-%     Aeq=[];
+%     beq=[ConseqResPoOfferbIt; ConseqMatchLastResPoOffers4HbIt];
+%     Aeq=[ConseqResPoOfferAIt; ConseqMatchLastResPoOffers4HAIt];
     
-    b=[ConsbSumPowerTS; ConsbMaxEnergyChargableSoCTS; -ConsbMinEnergyRequiredTS];
-    A=[ConsSumPowerTSA; ConsEnergyDemandTSA; -ConsEnergyDemandTSA];
+    b=[ConsSumPowerTSbIt; ConsMaxEnergyChargableSoCTSbIt; -ConsMinEnergyRequiredTSbIt];
+    A=[ConsSumPowerTSAIt; ConsEnergyDemandTSAIt; -ConsEnergyDemandTSAIt];
+    
+    beq=[ConseqMaxEnergyChargableDeadlockCPbIt; ConseqResPoOfferbIt; ConseqMatchLastResPoOffers4HbIt];
+    Aeq=[ConseqEnergyCPAIt; ConseqResPoOfferAIt; ConseqMatchLastResPoOffers4HAIt];
 
-    beq=[ConsbeqMaxEnergyChargableDeadlockCP; ConsRLOfferbeq; ConsMatchLastReservePowerOffers4Hbeq];
-    Aeq=[ConsEnergyCPAeq; ConsRLOfferAeq; ConsMatchLastReservePowerOffers4HAeq];
+    lb=zeros(ControlPeriodsIt, NumCostCats, NumUsers);
+    ub=ConsPowerTSb(:);
 
-
-
-    lb=zeros(ControlPeriods, NumCostCats, NumUsers);
-    ub=ConsbPowerTS(:);
-
-    Costf=Costs;
+    Costf=Costs(:);
     
     [x,fval]=linprog(Costf,A,b,Aeq,beq,lb,ub, options);
     x(x<0)=0;   
@@ -104,14 +162,14 @@ end
 tc1=tc1+toc;
 
 
-% b=[ConsbSumPowerTS; ConsbMaxEnergyChargableSoCTS; -ConsbMinEnergyRequiredTS];
-% A=[ConsSumPowerTSA; ConsEnergyDemandTSA; -ConsEnergyDemandTSA];
+% b=[ConsSumPowerTSbIt; ConsMaxEnergyChargableSoCTSbIt; -ConsMinEnergyRequiredTSbIt];
+% A=[ConsSumPowerTSA; ConsEnergyDemandTSAIt; -ConsEnergyDemandTSAIt];
 % 
-% beq=[ConsbeqMaxEnergyChargableDeadlockCP; ConsRLOfferbeq; ConsMatchLastReservePowerOffers4Hbeq];
-% Aeq=[ConsEnergyCPAeq; ConsRLOfferAeq; ConsMatchLastReservePowerOffers4HAeq];
+% beq=[ConseqMaxEnergyChargableDeadlockCPbIt; ConseqResPoOfferbIt; ConseqMatchLastResPoOffersSucessful4Hb];
+% Aeq=[ConsEnergyCPAeq; ConseqResPoOfferAIt; ConsMatchLastResPoOffers4HAeq];
 % 
 % lb=zeros(ControlPeriods, NumCostCats, NumUsers);
-% ub=ConsbPowerTS(:);
+% ub=ConsPowerTSb(:);
 % ub=[];
 
 % tic
@@ -123,16 +181,22 @@ tc1=tc1+toc;
 
 
 %% Evaluate result
-OptimalChargingEnergies=reshape(x,ControlPeriods, NumCostCats, NumUsers);
+OptimalChargingEnergies=reshape(x,ControlPeriodsIt, NumCostCats, NumUsers);
 PostPreAlgo;
 OptimalChargingEnergies(:,1,:)=OptimalChargingEnergiesSpotmarket;
 
-PreAlgoCounter=PreAlgoCounter+1;
-ChargingMat(:,:,:,PreAlgoCounter)=OptimalChargingEnergies;
-AvailabilityMat=[AvailabilityMat, Availability(1:96,1,:)];
+if ismember(TimeInd, TimesOfPreAlgo(1,:))
+    ChargingMat(:,:,:,PreAlgoCounter)=OptimalChargingEnergies;
+    AvailabilityMat=[AvailabilityMat, Availability(1:96,1,:)];
+    
+    SuccessfulResPoOffers=ResPoOffers(:,1,PreAlgoCounter+1)<=ResPoPricesReal4H(floor((TimeInd+TD.Main)/(4*Time.StepInd))+1:floor((TimeInd+TD.Main)/(4*Time.StepInd))+6,3)/1000; %[€/MW]
+    LastResPoOffers(:,PreAlgoCounter+1)=sum(OptimalChargingEnergies(1:ConstantResPoPowerPeriods:end,3,:), 3);
+    LastResPoOffersSucessful4Hb(:,PreAlgoCounter+1)=LastResPoOffers(:,PreAlgoCounter+1);
+    LastResPoOffersSucessful4Hb(ConsPeriods+1:ConsPeriods+6,PreAlgoCounter+1)=LastResPoOffersSucessful4Hb(ConsPeriods+1:ConsPeriods+6,PreAlgoCounter+1).*SuccessfulResPoOffers;
+end
 
-ConsMatchLastReservePowerOffers4Hbeq=sum(squeeze(OptimalChargingEnergies(24*Time.StepInd+1:4*Time.StepInd:24*Time.StepInd+ConsPeriods*4*Time.StepInd,3,:)), 2);
-temp1=ConsMatchLastReservePowerOffers4Hbeq;
+%ConseqMatchLastResPoOffersSucessful4Hb=sum(squeeze(OptimalChargingEnergies(24*Time.StepInd+1:4*Time.StepInd:24*Time.StepInd+ConsPeriods*4*Time.StepInd,3,:)), 2);
+%temp1=ConseqMatchLastResPoOffersSucessful4Hb;
 
 
 % if round(sum(x))<round(ConsMinEnergyToChargeCPbeq)
