@@ -2,7 +2,8 @@
 tic
 NumUsers=1; % size(Users,1)-1
 SmartCharging=true;
-UseParallel=false;
+%UseParallel=false;
+UseParallel=true;
 UsePredictions=true;
 
 ControlPeriods=96*2;
