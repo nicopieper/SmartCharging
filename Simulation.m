@@ -1,6 +1,6 @@
 %% Initialisation
 tic
-NumUsers=450; % size(Users,1)-1
+NumUsers=360; % size(Users,1)-1
 SmartCharging=true;
 UseParallel=true;
 UsePredictions=true;
