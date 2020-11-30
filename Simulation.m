@@ -1,6 +1,8 @@
 %% Initialisation
 tic
-NumUsers=360; % size(Users,1)-1
+%Why does this produce an error?
+%Compare for 2 Users with and without parallel
+NumUsers=2; % size(Users,1)-1
 SmartCharging=true;
 %UseParallel=true;
 UseParallel=true;

@@ -233,8 +233,8 @@ for n=2:NumUsers+1
     Users{n}.LogbookSource(1,9)=uint32(double(Users{n}.BatterySize)*0.7+TruncatedGaussian(0.1,[0.4 1]-0.7,1)); % Initial SoC between 0.4 and 1 of BatterySize. Distribution is normal
     
     % Evaluation of User properties
-    Users{n}.AverageMileageDay_m=uint32(sum(Users{n}.LogbookSource(:,3))/days(Time.End-Time.Start)); %[m]
-    Users{n}.AverageMileageYear_km=uint32(sum(Users{n}.LogbookSource(:,3))/days(Time.End-Time.Start)*365.25/1000); %[km]
+    Users{n}.AverageMileageDay_m=uint32(sum(Users{n}.LogbookSource(:,3))/days(Time.Sim.Vec(end)-Time.Sim.Vec(1))); %[m]
+    Users{n}.AverageMileageYear_km=uint32(sum(Users{n}.LogbookSource(:,3))/days(Time.Sim.Vec(end)-Time.Sim.Vec(1))*365.25/1000); %[km]
 end
 
 disp(strcat("Users successfully initialised ", num2str(toc)))
