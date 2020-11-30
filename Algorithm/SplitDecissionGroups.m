@@ -10,7 +10,7 @@ for k=1:NumDecissionGroups
     DecissionGroups{k,3}=(DecissionGroups{k,1}-1)*ControlPeriods*NumCostCats+(1:ControlPeriods*NumCostCats);
     DecissionGroups{k,4}=0;
     for l=DecissionGroups{k,1}'
-        DecissionGroups{k,4}=DecissionGroups{k,4} + Users{l+1}.Logbook(TimeInd+TD.User:4*Time.StepInd:TimeInd+TD.User+ConsPeriods*4*Time.StepInd-1,7);
+        DecissionGroups{k,4}=DecissionGroups{k,4} + Users{l+1}.Logbook(TimeInd+TD.User:4*Time.StepInd:TimeInd+TD.User+ConsPeriods*length(ResPoBlockedIndices)*Time.StepInd-1,7);
 %         sum(squeeze(OptimalChargingEnergies(24*Time.StepInd+1:4*Time.StepInd:24*Time.StepInd+ConsPeriods*4*Time.StepInd,3,:)), 2);
     end
 end

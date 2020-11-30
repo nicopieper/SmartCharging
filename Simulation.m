@@ -1,6 +1,6 @@
 %% Initialisation
 tic
-NumUsers=20; % size(Users,1)-1
+NumUsers=1; % size(Users,1)-1
 SmartCharging=true;
 UseParallel=false;
 UsePredictions=true;
@@ -19,7 +19,7 @@ TSim=tic;
 
 if SmartCharging
     if UseParallel
-        NumDecissionGroups=12;
+        NumDecissionGroups=1;
         UseParallel=true;
         gcp
     else

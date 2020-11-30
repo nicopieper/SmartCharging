@@ -1,8 +1,3 @@
-%% Calc Optimisation Variables
-
-SplitDecissionGroups;
-%ConseqMatchLastResPoOffersSucessful4Hb=temp1;
-
 %% Update Costs
 
 CostsSpotmarket=(CostsElectricityBase(end-ControlPeriodsIt+1:end,1,:)/100 + SpotmarktPricesCP/1000)*MwSt;
@@ -18,7 +13,7 @@ Costs=[CostsSpotmarket, CostsPV(end-ControlPeriodsIt+1:end,1,:), CostsReserveMar
 Costs=Costs(:,CostCats,:);
 
 
-%% Define Cost function and Constraints
+%% Define Cost function, Constraints and DecissionGroups
 
 ConsSumPowerTSbIt=SumPower(:);
 
@@ -36,7 +31,7 @@ ConseqResPoOfferAIt=ConseqResPoOfferA;
 
 ConseqResPoOfferbIt=zeros((ConstantResPoPowerPeriods-1)*ControlPeriodsIt/ConstantResPoPowerPeriods,1);
 
-DelCols2=(1:(ControlPeriods-ControlPeriodsIt))'+(0:NumUsers*NumCostCats-1)*ControlPeriods;
+DelCols2=(1:(ControlPeriods-ControlPeriodsIt))'+(0:NumUsers/NumDecissionGroups*NumCostCats-1)*ControlPeriods;
 DelCols2=DelCols2(:);
 
 ResPoBlockedIndices=(floor(floor(mod(TimeInd-1, 24*Time.StepInd)/Time.StepInd)/4):5)+1 + (mod(TimeInd-1, (24*Time.StepInd))<=32)*6 - 2;
@@ -47,16 +42,16 @@ ResPoBlockedIndices=((ResPoBlockedIndices(1):1/(4*Time.StepInd/ConstantResPoPowe
 
 ConseqMatchLastResPoOffers4HbIt=LastResPoOffersSucessful4Hb(ResPoBlockedIndices, end); % Valid for 192
 ConseqMatchLastResPoOffers4HAIt=ConseqMatchLastResPoOffers4HA(1:length(ResPoBlockedIndices),:);
-ConseqMatchLastResPoOffers4HAIt(:,repelem(ControlPeriods:ControlPeriods*2:ControlPeriods*NumUsers*NumCostCats*2,ControlPeriods-ControlPeriodsIt)'-DelCols2)=[];
+ConseqMatchLastResPoOffers4HAIt(:,repelem(ControlPeriods:ControlPeriods*2:ControlPeriods*NumUsers/NumDecissionGroups*NumCostCats*2,ControlPeriods-ControlPeriodsIt)'-DelCols2)=[];
 
 % Sicherstellen, dass beide Variablen korrekt zugeschnitten werden, für beide oder
 % alle Fälle.
 % Nach Ursacher für Fehlermeldung suchen
 
 if ControlPeriodsIt<ControlPeriods
-    DelRows=(ControlPeriodsIt+1:ControlPeriods)'+(0:NumUsers-1)*ControlPeriods;
+    DelRows=(ControlPeriodsIt+1:ControlPeriods)'+(0:NumUsers/NumDecissionGroups-1)*ControlPeriods;
     DelRows=DelRows(:);
-    DelCols=(ControlPeriodsIt+1:ControlPeriods)'+(0:NumUsers*NumCostCats-1)*ControlPeriods;
+    DelCols=(ControlPeriodsIt+1:ControlPeriods)'+(0:NumUsers/NumDecissionGroups*NumCostCats-1)*ControlPeriods;
     DelCols=DelCols(:);
     
     ConsSumPowerTSAIt(DelRows,:)=[];
@@ -74,6 +69,8 @@ if ControlPeriodsIt<ControlPeriods
     
 %     Costs(DelCols2)=[];
 end
+
+SplitDecissionGroups;
 
 
 %%
@@ -111,17 +108,21 @@ if UseParallel
     ConsMinEnergyRequiredTSbIt=ConsMinEnergyRequiredTSbIt';
     ConseqMaxEnergyChargableDeadlockCPbIt=ConseqMaxEnergyChargableDeadlockCPbIt';
     ConsPowerTSb=ConsPowerTSb';
-    Costs=Costs';
+    Costsf=Costs(:)';
 
     x1=cell(NumDecissionGroups,1);
-    lb=zeros(ControlPeriods, NumCostCats, NumUsers/NumDecissionGroups);
+    lb=zeros(ControlPeriodsIt, NumCostCats, NumUsers/NumDecissionGroups);
 
     parfor k=1:NumDecissionGroups
-        b=[ConsSumPowerTSbIt(DecissionGroups{k,2}); ConsMaxEnergyChargableSoCTSbIt(DecissionGroups{k,2}); -ConsMinEnergyRequiredTSbIt(DecissionGroups{k,2})]';
-        beq=[ConseqMaxEnergyChargableDeadlockCPbIt(DecissionGroups{k,1})'; ConseqResPoOfferbIt; DecissionGroups{k,4}]'; %% this is wrong as ConseqMatchLastResPoOffersSucessful4Hb must be constant in sum
-        ub=ConsPowerTSb(DecissionGroups{k,3})';
-        Costf=Costs(:);
-        Costf=Costsf(DecissionGroups{k,3})';
+        b=[ConsSumPowerTSbIt(SubIndices(DecissionGroups{k,2}, ControlPeriods, ControlPeriodsIt, 1))'; ConsMaxEnergyChargableSoCTSbIt(SubIndices(DecissionGroups{k,2}, ControlPeriods, ControlPeriodsIt, 1))'; -ConsMinEnergyRequiredTSbIt(SubIndices(DecissionGroups{k,2}, ControlPeriods, ControlPeriodsIt, 1))'];
+        A=[ConsSumPowerTSAIt; ConsEnergyDemandTSAIt; -ConsEnergyDemandTSAIt];
+        
+        beq=[ConseqMaxEnergyChargableDeadlockCPbIt(DecissionGroups{k,1})'; ConseqResPoOfferbIt; DecissionGroups{k,4}]; %% this is wrong as ConseqMatchLastResPoOffersSucessful4Hb must be constant in sum
+        Aeq=[ConseqEnergyCPAIt; ConseqResPoOfferAIt; ConseqMatchLastResPoOffers4HAIt];
+        ub=ConsPowerTSb(SubIndices(DecissionGroups{k,3}, ControlPeriods, ControlPeriodsIt, 3))';
+        
+        Costf=Costsf(SubIndices(DecissionGroups{k,3}, ControlPeriods, ControlPeriodsIt, 3))';
+        
         [x11,fval]=linprog(Costf,A,b,Aeq,beq,lb,ub, options);
         x11(x11<0)=0;
         x1{k}=x11;
@@ -134,7 +135,7 @@ if UseParallel
         BackwardsOrder=[BackwardsOrder; DecissionGroups{k,1}];
     end
     [~, BackwardsOrder]=sort(BackwardsOrder, 'ascend');
-    x=reshape(x,ControlPeriods,NumCostCats,NumUsers);
+    x=reshape(x,ControlPeriodsIt,NumCostCats,NumUsers);
     x=x(:,:,BackwardsOrder);
     x=x(:);
 else
