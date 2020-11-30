@@ -2,6 +2,7 @@
 tic
 NumUsers=1; % size(Users,1)-1
 SmartCharging=true;
+%UseParallel=true;
 UseParallel=true;
 UsePredictions=true;
 

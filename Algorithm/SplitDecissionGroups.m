@@ -13,5 +13,6 @@ for k=1:NumDecissionGroups
         DecissionGroups{k,4}=DecissionGroups{k,4} + Users{l+1}.Logbook(TimeInd+TD.User:4*Time.StepInd:TimeInd+TD.User+ConsPeriods*length(ResPoBlockedIndices)*Time.StepInd-1,7);
 %         sum(squeeze(OptimalChargingEnergies(24*Time.StepInd+1:4*Time.StepInd:24*Time.StepInd+ConsPeriods*4*Time.StepInd,3,:)), 2);
     end
+    DecissionGroups{k,4}=DecissionGroups{k,4}.*(ConseqMatchLastResPoOffers4HbIt>0);
 end
 
