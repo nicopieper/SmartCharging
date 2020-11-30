@@ -1,6 +1,6 @@
 %% Initialisation
 tic
-NumUsers=360; % size(Users,1)-1
+NumUsers=1; % size(Users,1)-1
 SmartCharging=true;
 UseParallel=true;
 UsePredictions=true;
@@ -19,7 +19,7 @@ TSim=tic;
 
 if SmartCharging
     if UseParallel
-        NumDecissionGroups=12;
+        NumDecissionGroups=1;
         UseParallel=true;
         gcp
     else
@@ -64,7 +64,7 @@ if SmartCharging
     
     if UsePredictions
         if ~exist("SpotmarketPricesPred1", "var")
-            [StorageFile, StoragePath]=uigetfile(strcat(Path.Prediction, Dl, "DayAheadRealH", Dl), 'Select the first Spotmarket Prediction');
+            [StorageFile, StoragePath]=uigetfile(strcat(Path.Prediction, "DayaheadRealH", Dl), 'Select the first Spotmarket Prediction');
             load(strcat(StoragePath, StorageFile))
             if Pred.Time.StepPredInd~=Time.StepInd
                 SpotmarketPricesPred1=repelem(Pred.Data, Time.StepInd/Pred.Time.StepPredInd);
@@ -73,7 +73,7 @@ if SmartCharging
         end
         
         if ~exist("SpotmarketPricesPred2", "var")
-            [StorageFile, StoragePath]=uigetfile(strcat(Path.Prediction, Dl, "DayAheadRealH", Dl), 'Select the second Spotmarket Prediction');
+            [StorageFile, StoragePath]=uigetfile(strcat(Path.Prediction, "DayaheadRealH", Dl), 'Select the second Spotmarket Prediction');
             load(strcat(StoragePath, StorageFile))
             if Pred.Time.StepPredInd~=Time.StepInd
                 SpotmarketPricesPred2=repelem(Pred.Data, Time.StepInd/Pred.Time.StepPredInd);
