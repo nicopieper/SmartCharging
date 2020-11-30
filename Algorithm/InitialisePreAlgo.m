@@ -13,8 +13,8 @@ ResPoOffers=NaN(6,2,1);
 ResEnOffers=NaN(6,1,1);
 MwSt=1.19; % The VAT rate
 
-SubIndices = @(Vector, ControlPeriods, ControlPeriodsIt, CostCatsNum) (reshape(Vector((1:ControlPeriodsIt)'+(0:CostCatsNum-1)*ControlPeriodsIt),1,[])'-(Vector(1)-1)/ControlPeriods*(ControlPeriods-ControlPeriodsIt));
-    
+%SubIndices = @(Vector, ControlPeriods, ControlPeriodsIt, CostCatsNum) (reshape(Vector(:,(1:ControlPeriodsIt)'+(0:CostCatsNum-1)*ControlPeriodsIt),1,[])'-(Vector(1)-1)/ControlPeriods*(ControlPeriods-ControlPeriodsIt));
+SubIndices = @(Vector, ControlPeriods, ControlPeriodsIt, CostCatsNum) (Vector(:,reshape((1:ControlPeriodsIt)'+(0:CostCatsNum-1)*ControlPeriodsIt,1,[]))-((Vector(:,1)-1)/ControlPeriods*(ControlPeriods-ControlPeriodsIt)));
 
 %% Prepare Users
 
