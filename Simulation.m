@@ -20,7 +20,7 @@ TSim=tic;
 
 if SmartCharging
     if UseParallel
-        NumDecissionGroups=1;
+        NumDecissionGroups=12;
         UseParallel=true;
         gcp
     else
