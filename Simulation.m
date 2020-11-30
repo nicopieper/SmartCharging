@@ -64,7 +64,7 @@ if SmartCharging
     
     if UsePredictions
         if ~exist("SpotmarketPricesPred1", "var")
-            [StorageFile, StoragePath]=uigetfile(strcat(Path.Prediction, Dl, "DeayAheadRealH", Dl), 'Select the first Spotmarket Prediction');
+            [StorageFile, StoragePath]=uigetfile(strcat(Path.Prediction, Dl, "DayAheadRealH", Dl), 'Select the first Spotmarket Prediction');
             load(strcat(StoragePath, StorageFile))
             if Pred.Time.StepPredInd~=Time.StepInd
                 SpotmarketPricesPred1=repelem(Pred.Data, Time.StepInd/Pred.Time.StepPredInd);
@@ -73,7 +73,7 @@ if SmartCharging
         end
         
         if ~exist("SpotmarketPricesPred2", "var")
-            [StorageFile, StoragePath]=uigetfile(strcat(Path.Prediction, Dl, "DeayAheadRealH", Dl), 'Select the second Spotmarket Prediction');
+            [StorageFile, StoragePath]=uigetfile(strcat(Path.Prediction, Dl, "DayAheadRealH", Dl), 'Select the second Spotmarket Prediction');
             load(strcat(StoragePath, StorageFile))
             if Pred.Time.StepPredInd~=Time.StepInd
                 SpotmarketPricesPred2=repelem(Pred.Data, Time.StepInd/Pred.Time.StepPredInd);
@@ -227,23 +227,29 @@ for TimeInd=Time.Sim.VecInd(2:end-ControlPeriods)
             %% Optimise
 
             %TimeInd=TimeInd-ControlPeriods+1;
-            if UsePredictions
-                if ismember(TimeInd, TimesOfPreAlgo(1,:))
-                    SpotmarktPricesCP=[SpotmarketPrices(TimeInd+TD.Main:TimeInd+TD.Main+(24-hour(TimeOfPreAlgo1))*Time.StepInd-1); SpotmarketPricesPred1(TimeInd+TD.SpotmarketPricesPred1+(24-hour(TimeOfPreAlgo1))*Time.StepInd+1:TimeInd+TD.SpotmarketPricesPred1+ControlPeriods)];
-                else
-                    SpotmarktPricesCP=[SpotmarketPrices(TimeInd+TD.Main:TimeInd+TD.Main+(48-hour(TimeOfPreAlgo1))*Time.StepInd-1); SpotmarketPricesPred1(TimeInd+TD.SpotmarketPricesPred1+(48-hour(TimeOfPreAlgo1))*Time.StepInd+1:TimeInd+TD.SpotmarketPricesPred1+ControlPeriods)];
+            if ismember(TimeInd, TimesOfPreAlgo(1,:))
+                PreAlgoCounter=PreAlgoCounter+1;
+                
+                if UsePredictions
+                    SpotmarktPricesCP=[SpotmarketPrices(TimeInd+TD.Main:TimeInd+TD.Main+(24-hour(TimeOfPreAlgo1))*Time.StepInd-1); SpotmarketPricesPred1(TimeInd+TD.SpotmarketPricesPred1+(24-hour(TimeOfPreAlgo1))*Time.StepInd+1:TimeInd+TD.SpotmarketPricesPred1+ControlPeriodsIt)];
                 end
+                
+                CalcConsOptVars;
+                
+            elseif UsePredictions
+                SpotmarktPricesCP=[SpotmarketPrices(TimeInd+TD.Main:TimeInd+TD.Main+(48-hour(TimeOfPreAlgo1))*Time.StepInd-1); SpotmarketPricesPred1(TimeInd+TD.SpotmarketPricesPred1+(48-hour(TimeOfPreAlgo1))*Time.StepInd+1:TimeInd+TD.SpotmarketPricesPred1+ControlPeriodsIt)];
             end
             
-            CalcConsOptVars;
             CalcDynOptVars;
             PreAlgo;
-            Costs=reshape(Costs,192,3,[]);
-            C(:,PreAlgoCounter)=mean(reshape(CostsReserveMarket, 192, []), 2);
+            
+            if ismember(TimeInd, TimesOfPreAlgo(1,:))
+                %C(:,:,PreAlgoCounter)=Costs;
+                %C2(:,:,PreAlgoCounter)=CostsReserveMarket;
+            end
             
             
             %%
-            % Check for proper integration of second PreAlgo
             % Include RL auctions
 
             for n=UserNum
@@ -265,10 +271,6 @@ for TimeInd=Time.Sim.VecInd(2:end-ControlPeriods)
         LiveAlgo;
 
     end
-    
-    
-    % Wie werden normal und SmartCharging voneinander getrennt? Bei beidem
-    % Bei SmartCharging gibt zunächst der Aggregator vor, wann zu laden ist
     
     
     if ActivateWaitbar && mod(TimeInd+TD.User,1000)==0

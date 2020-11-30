@@ -6,7 +6,7 @@
 % EVs with the highest market share in Germany in 2019 are used as
 % references. Their properties regarding market share, battery size,
 % vehicle size and consumption were collected from KBA and ev-database.com.
-% These information are loaded from a local xsls file. The file covers
+% These information are loaded from a local xlsx file. The file covers
 % also a guess (because there was not public data!) regarding the 
 % distribution of private charger power for each model. Basing on these 
 % information and the driving profile, each users is assigned with an real

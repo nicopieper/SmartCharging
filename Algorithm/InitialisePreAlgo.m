@@ -3,11 +3,15 @@
 ControlPeriods=96*2;
 CostCats=logical([1, 1, 1]);
 NumCostCats=sum(CostCats);
-ConstantRLPowerPeriods=4*Time.StepInd;
-RLFactor=[0.8];
-AEFactor=-0.1;
+ConstantResPoPowerPeriods=4*Time.StepInd;
+ResPoPriceFactor=[0.8];
+ResEnPriceFactor=-0.1;
 options = optimoptions('linprog','Algorithm','dual-simplex');
 options.Display = 'off';
+
+ResPoOffers=NaN(6,2,1);
+ResEnOffers=NaN(6,1,1);
+MwSt=1.19; % The VAT rate
     
 
 %% Prepare Users
@@ -57,12 +61,12 @@ ConseqEnergyCPA=sparse(kron(sparse(eye(NumUsers/NumDecissionGroups, NumUsers/Num
 ConsEnergyDemandTSA=sparse(kron(sparse(eye(NumUsers/NumDecissionGroups, NumUsers/NumDecissionGroups)), sparse(repmat(sparse(tril(ones(ControlPeriods))), 1, NumCostCats))));
 
 
-RLOfferEqualiyMat1=sparse(zeros(ConstantRLPowerPeriods-1,ConstantRLPowerPeriods));
-x=0:ConstantRLPowerPeriods-2;
-RLOfferEqualiyMat1(x*ConstantRLPowerPeriods+1)=1;
-RLOfferEqualiyMat1(x*ConstantRLPowerPeriods+1+ConstantRLPowerPeriods-1)=-1;
-RLOfferEqualiyMat2=sparse(kron(eye(ControlPeriods/ConstantRLPowerPeriods, ControlPeriods/ConstantRLPowerPeriods), RLOfferEqualiyMat1));
-ConseqRLOfferA=sparse(repmat([zeros((ConstantRLPowerPeriods-1)*ControlPeriods/ConstantRLPowerPeriods,ControlPeriods*sum(CostCats(1:2))), RLOfferEqualiyMat2],1,NumUsers/NumDecissionGroups)); % one row represents one time step. within one Zeitscheibe the sum of reserve powers offered by all vehicles must be equal. hence it must be the power in timestep=1 must be the same as in timestep=2. this is represented by  a one followed by a -1 per vehicle
+ResPoOfferEqualiyMat1=sparse(zeros(ConstantResPoPowerPeriods-1,ConstantResPoPowerPeriods));
+x=0:ConstantResPoPowerPeriods-2;
+ResPoOfferEqualiyMat1(x*ConstantResPoPowerPeriods+1)=1;
+ResPoOfferEqualiyMat1(x*ConstantResPoPowerPeriods+1+ConstantResPoPowerPeriods-1)=-1;
+ResPoOfferEqualiyMat2=sparse(kron(eye(ControlPeriods/ConstantResPoPowerPeriods, ControlPeriods/ConstantResPoPowerPeriods), ResPoOfferEqualiyMat1));
+ConseqResPoOfferA=sparse(repmat([zeros((ConstantResPoPowerPeriods-1)*ControlPeriods/ConstantResPoPowerPeriods,ControlPeriods*sum(CostCats(1:2))), ResPoOfferEqualiyMat2],1,NumUsers/NumDecissionGroups)); % one row represents one time step. within one Zeitscheibe the sum of reserve powers offered by all vehicles must be equal. hence it must be the power in timestep=1 must be the same as in timestep=2. this is represented by  a one followed by a -1 per vehicle
 
 
 if TimeOfPreAlgo1 <= TimeOfReserveMarketOffer
@@ -71,16 +75,17 @@ else
     ConsPeriods=(2*24*Time.StepInd-ShiftInds)/(4*Time.StepInd);
 end
 
-%ConseqMatchLastReservePowerOffers4HA=repmat([zeros(ControlPeriods/(4*Time.StepInd),ControlPeriods*sum(CostCats(1:2))), kron(eye(ControlPeriods/(4*Time.StepInd), ControlPeriods/(4*Time.StepInd)),ones(1,4*Time.StepInd))], 1, NumUsers/NumDecissionGroups);
-ConseqMatchLastReservePowerOffers4HA=repmat([zeros(ControlPeriods/ConstantRLPowerPeriods,ControlPeriods*sum(CostCats(1:2))), kron(eye(ControlPeriods/(4*Time.StepInd)),kron(eye(4*Time.StepInd/ConstantRLPowerPeriods),[zeros(1,ConstantRLPowerPeriods-1),ones(1,1)]))], 1, NumUsers/NumDecissionGroups);
+%ConseqMatchLastResPoOffers4HA=repmat([zeros(ControlPeriods/(4*Time.StepInd),ControlPeriods*sum(CostCats(1:2))), kron(eye(ControlPeriods/(4*Time.StepInd), ControlPeriods/(4*Time.StepInd)),ones(1,4*Time.StepInd))], 1, NumUsers/NumDecissionGroups);
+ConseqMatchLastResPoOffers4HA=repmat([zeros(ControlPeriods/ConstantResPoPowerPeriods,ControlPeriods*sum(CostCats(1:2))), kron(eye(ControlPeriods/(4*Time.StepInd)),kron(eye(4*Time.StepInd/ConstantResPoPowerPeriods),[zeros(1,ConstantResPoPowerPeriods-1),ones(1,1)]))], 1, NumUsers/NumDecissionGroups);
 
 
-%ConseqMatchLastReservePowerOffers4HA=sparse(ConseqMatchLastReservePowerOffers4HA(1:ConsPeriods,:));
-ConseqMatchLastReservePowerOffers4HA=sparse(ConseqMatchLastReservePowerOffers4HA(1:ceil(ControlPeriods/(ConstantRLPowerPeriods)),:));
-%ConseqMatchLastReservePowerOffers4Hb=zeros(ConsPeriods,1);
-LastReservePowerOffers4Hb=zeros(ceil(ControlPeriods/(ConstantRLPowerPeriods)),1);
+%ConseqMatchLastResPoOffers4HA=sparse(ConseqMatchLastResPoOffers4HA(1:ConsPeriods,:));
+ConseqMatchLastResPoOffers4HA=sparse(ConseqMatchLastResPoOffers4HA(1:ceil(ControlPeriods/(ConstantResPoPowerPeriods)),:));
+%ConseqMatchLastResPoOffers4Hb=zeros(ConsPeriods,1);
+LastResPoOffers=zeros(ceil(ControlPeriods/(ConstantResPoPowerPeriods)),1);
+LastResPoOffersSucessful4Hb=zeros(ceil(ControlPeriods/(ConstantResPoPowerPeriods)),1);
 
 A=[ConsSumPowerTSA; ConsEnergyDemandTSA; -ConsEnergyDemandTSA];
-Aeq=[ConseqEnergyCPA; ConseqRLOfferA;ConseqMatchLastReservePowerOffers4HA];
+Aeq=[ConseqEnergyCPA; ConseqResPoOfferA;ConseqMatchLastResPoOffers4HA];
 lb=zeros(ControlPeriods, NumCostCats, NumUsers);
 lb=lb(:);
