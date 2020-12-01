@@ -9,7 +9,7 @@ MinEnergyRequiredTS=zeros(ControlPeriodsIt,1,NumUsers);
 for k=UserNum
     VarCounter=VarCounter+1;
     
-    Availability(:,1,VarCounter)=(max(0, double(ismember(Users{k}.Logbook(TimeInd+TD.User:TimeInd+TD.User-1+ControlPeriodsIt,1), 3:5)) - double(Users{k}.Logbook(TimeInd+TD.User:TimeInd+TD.User-1+ControlPeriodsIt,2))/Time.StepMin)) .* Users{k}.GridConvenientChargingAvailabilityControlPeriod(end-ControlPeriodsIt+1:end);
+    Availability(:,1,VarCounter)=(max(0, double(ismember(Users{k}.Logbook(TimeInd+TD.User:TimeInd+TD.User-1+ControlPeriodsIt,1), 3:5)) - Users{k}.Logbook(TimeInd+TD.User:TimeInd+TD.User-1+ControlPeriodsIt,2)/Time.StepMin)) .* Users{k}.GridConvenientChargingAvailabilityControlPeriod(end-ControlPeriodsIt+1:end);
     
     Consumed=Users{k}.Logbook(TimeInd+TD.User+1:TimeInd+TD.User+ControlPeriodsIt-1,4);
     SoC=Users{k}.Logbook(TimeInd+TD.User,9) - [0;cumsum(Consumed)]; % in Wh

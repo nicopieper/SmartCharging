@@ -2,7 +2,7 @@
 tic
 %Why does this produce an error?
 %Compare for 2 Users with and without parallel
-NumUsers=2; % size(Users,1)-1
+NumUsers=40; % size(Users,1)-1
 SmartCharging=true;
 UseParallel=false;
 %UseParallel=true;
@@ -331,52 +331,15 @@ end
 if SmartCharging
     Users{1}.ChargingMat=ChargingMat;
     Users{1}.AvailabilityMat=AvailabilityMat;
-    Users{1}.ShiftInds=ShiftInds;
-    Users{1}.NumCostCats=NumCostCats;
-end
-
-%% Evaluate Smart Charging
-
-if SmartCharging
-    %ChargingVehicle=reshape(permute(squeeze(sum(Users{1}.ChargingMat(1:96,:,:,:),2)), [1,3,2]), [], NumUsers)/1000*4;
-    ChargingMatReal=zeros(24*Time.StepInd,3);
-    for n=UserNum
-        ChargingMatReal=ChargingMatReal+squeeze(sum(reshape(Users{n}.Logbook(:,5:7),24*Time.StepInd,[],3),2));
+    Users{1}.ShiftInds=cell(2,1);
+    for k=1:2
+        Users{1}.ShiftInds{k}=mod(TimesOfPreAlgo(k,1)-1,ControlPeriods);
     end
-    ChargingMatReal=ChargingMatReal*4/1000/(length(Time.Sim.VecInd(1:end-ControlPeriods))/(24*Time.StepInd));
-    ChargingType=reshape(permute(squeeze(sum(Users{1}.ChargingMat(1:96,:,:,:),3)), [1,3,2]), [], Users{1}.NumCostCats)/1000*4;
-    ChargingSum=sum(ChargingType, 2);
-    
-    [sum(ChargingType(:,1,:),'all'), sum(ChargingType(:,2,:),'all'), sum(ChargingType(:,3,:),'all')]/sum(ChargingType(:,:,:),'all')
-
-    figure
-    Load=mean(reshape(ChargingType',3,96,[]),3)';
-    Load=circshift(Load, [Users{1}.ShiftInds, 0]);
-    x = 1:96;
-    y = circshift(mean(reshape(ChargingSum, 96, []), 2)', [0,Users{1}.ShiftInds]);
-    z = zeros(size(x));
-    col = (Load./repmat(max(Load, [], 2),1,3))';
-    surface([x;x],[y;y],[z;z],[permute(repmat(col,1,1,2),[3,2,1])], 'facecol','no', 'edgecol','interp', 'linew',2);
-    xticks(1:16:96)
-    xticklabels({datestr(Time.Vec(1:16:96),'HH:MM')})
-    ylabel("Charging power in kW")
-    xlabel("Time")
-    grid on
-
-    hold on
-    plot(circshift(squeeze(mean(reshape(ChargingType(:,1),96,[],1),2)), Users{1}.ShiftInds), "LineWidth", 1.2, "Color", [1, 0, 0])
-    plot(circshift(squeeze(mean(reshape(ChargingType(:,2),96,[],1),2)), Users{1}.ShiftInds), "LineWidth", 1.2, "Color", [0, 1, 0])
-    plot(circshift(squeeze(mean(reshape(ChargingType(:,3),96,[],1),2)), Users{1}.ShiftInds), "LineWidth", 1.2, "Color", [0, 0, 1])
-    xticks(1:16:96)
-    xticklabels({datestr(Time.Vec(1:16:96),'HH:MM')})
-    legend(["All", "Spotmarket", "PV", "Secondary Reserve Energy"])
-
-    figure
-    plot(datetime(1,1,1,0,0,0, 'TimeZone', 'Africa/Tunis'):minutes(Time.StepMin):datetime(1,1,1,23,45,0, 'TimeZone', 'Africa/Tunis'), circshift(mean(sum(Users{1}.AvailabilityMat,3),2), ShiftInds))
-    xticks(datetime(1,1,1,0,0,0, 'TimeZone', 'Africa/Tunis'):hours(4):datetime(1,1,2,0,0,0, 'TimeZone', 'Africa/Tunis'))
-    xticklabels(datestr(datetime(1,1,1,0,0,0, 'TimeZone', 'Africa/Tunis'):hours(4):datetime(1,1,2,0,0,0, 'TimeZone', 'Africa/Tunis'), "HH:MM"))
-    
+    Users{1}.NumCostCats=NumCostCats;
+    Users{1}.UserNum=UserNum;
+    Users{1}.ControlPeriods=ControlPeriods;
 end
+Users{1}.SmartCharging=SmartCharging;
 
 %% Save Data
 
@@ -399,6 +362,64 @@ if SaveResults
     save(Users{1}.FileName, "Users", "-v7.3");
 end
 disp(strcat("Successfully simulated within ", num2str(toc(TSim)), " seconds"))
+
+
+%% Evaluate Smart Charging
+
+if Users{1}.SmartCharging
+    
+    %ChargingVehicle=reshape(permute(squeeze(sum(Users{1}.ChargingMat(1:96,:,:,:),2)), [1,3,2]), [], NumUsers)/1000*4;
+    ChargingMatReal=zeros(24*Time.StepInd,3);
+    for n=Users{1}.UserNum
+        ChargingMatReal=ChargingMatReal+squeeze(sum(reshape(Users{n}.LogbookSmart(:,5:7),24*Time.StepInd,[],3),2));
+    end
+    ChargingMatReal=ChargingMatReal*4/1000/(length(Time.Sim.VecInd(1:end-Users{1}.ControlPeriods))/(24*Time.StepInd));
+    
+    ChargingType=cell(2,1);
+    ChargingSum=cell(2,1);
+    Load=cell(2,1);
+    for k=1:2
+        
+        ChargingType{k}=reshape(permute(squeeze(sum(Users{1}.ChargingMat{k}(24*Time.StepInd-Users{1}.ShiftInds{k}+1:24*Time.StepInd-Users{1}.ShiftInds{k}+24*Time.StepInd,:,:,:),3)), [1,3,2]), [], Users{1}.NumCostCats)/1000*4;
+        [sum(ChargingType{k}(:,1,:),'all'), sum(ChargingType{k}(:,2,:),'all'), sum(ChargingType{k}(:,3,:),'all')]/sum(ChargingType{k}(:,:,:),'all')
+        ChargingSum{k}=sum(ChargingType{k}, 2);
+
+        figure
+        Load{k}=mean(reshape(ChargingType{k}',3,96,[]),3)';
+        %Load{k}=circshift(Load{k}, [Users{1}.ShiftInds{k}, 0]);
+        x = 1:96;
+        %y = circshift(mean(reshape(ChargingSum{k}, 96, []), 2)', [0,Users{1}.ShiftInds{k}]);
+        y = mean(reshape(ChargingSum{k}, 96, []), 2)';
+        z = zeros(size(x));
+        col = (Load{k}./repmat(max(Load{k}, [], 2),1,3))';
+        surface([x;x],[y;y],[z;z],[permute(repmat(col,1,1,2),[3,2,1])], 'facecol','no', 'edgecol','interp', 'linew',2);
+        xticks(1:16:96)
+        xticklabels({datestr(Time.Vec(1:16:96),'HH:MM')})
+        ylabel("Charging power in kW")
+        xlabel("Time")
+        grid on
+
+        hold on
+%         plot(circshift(squeeze(mean(reshape(ChargingType{k}(:,1),96,[],1),2)), Users{1}.ShiftInds{k}), "LineWidth", 1.2, "Color", [1, 0, 0])
+%         plot(circshift(squeeze(mean(reshape(ChargingType{k}(:,2),96,[],1),2)), Users{1}.ShiftInds{k}), "LineWidth", 1.2, "Color", [0, 1, 0])
+%         plot(circshift(squeeze(mean(reshape(ChargingType{k}(:,3),96,[],1),2)), Users{1}.ShiftInds{k}), "LineWidth", 1.2, "Color", [0, 0, 1])
+        plot(squeeze(mean(reshape(ChargingType{k}(:,1),96,[],1),2)), "LineWidth", 1.2, "Color", [1, 0, 0])
+        plot(squeeze(mean(reshape(ChargingType{k}(:,2),96,[],1),2)), "LineWidth", 1.2, "Color", [0, 1, 0])
+        plot(squeeze(mean(reshape(ChargingType{k}(:,3),96,[],1),2)), "LineWidth", 1.2, "Color", [0, 0, 1])
+        xticks(1:16:96)
+        xticklabels({datestr(Time.Vec(1:16:96),'HH:MM')})
+        legend(["All", "Spotmarket", "PV", "Secondary Reserve Energy"])
+        
+    end
+
+    disp(strcat(num2str(sum(SuccessfulResPoOffers(:,2:end),'all')/numel(SuccessfulResPoOffers(:,2:end))*100), "% of all reserve power offers were successful"))
+    
+    figure
+    plot(datetime(1,1,1,0,0,0, 'TimeZone', 'Africa/Tunis'):minutes(Time.StepMin):datetime(1,1,1,23,45,0, 'TimeZone', 'Africa/Tunis'), circshift(mean(sum(Users{1}.AvailabilityMat,3),2), ShiftInds))
+    xticks(datetime(1,1,1,0,0,0, 'TimeZone', 'Africa/Tunis'):hours(4):datetime(1,1,2,0,0,0, 'TimeZone', 'Africa/Tunis'))
+    xticklabels(datestr(datetime(1,1,1,0,0,0, 'TimeZone', 'Africa/Tunis'):hours(4):datetime(1,1,2,0,0,0, 'TimeZone', 'Africa/Tunis'), "HH:MM"))
+    
+end
 
 %% Clean up workspace
  

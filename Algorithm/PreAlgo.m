@@ -190,16 +190,17 @@ PostPreAlgo;
 OptimalChargingEnergies(:,1,:)=OptimalChargingEnergiesSpotmarket;
 
 if ismember(TimeInd, TimesOfPreAlgo(1,:))
-    ChargingMat(:,:,:,PreAlgoCounter)=OptimalChargingEnergies;
+    ChargingMat{1}(:,:,:,PreAlgoCounter)=OptimalChargingEnergies;
     AvailabilityMat=[AvailabilityMat, Availability(1:96,1,:)];
     
-    SuccessfulResPoOffers=ResPoOffers(:,1,PreAlgoCounter+1)<=ResPoPricesReal4H(floor((TimeInd+TD.Main)/(4*Time.StepInd))+1:floor((TimeInd+TD.Main)/(4*Time.StepInd))+6,3)/1000; %[€/MW]
+    %SuccessfulResPoOffers(:,PreAlgoCounter+1)=ResPoOffers(:,1,PreAlgoCounter+1)<=ResPoPricesReal4H(floor((TimeInd+TD.Main)/(4*Time.StepInd))+1:floor((TimeInd+TD.Main)/(4*Time.StepInd))+6,3)/1000; %[€/MW]
+    SuccessfulResPoOffers(:,PreAlgoCounter+1)=ResPoOffers(:,1,PreAlgoCounter+1)<=ResPoPricesReal4H(floor((TimeInd+TD.Main)/(4*Time.StepInd))+1+(24-hour(TimeOfPreAlgo1))/4:floor((TimeInd+TD.Main)/(4*Time.StepInd))+(24-hour(TimeOfPreAlgo1))/4+6,3)/1000; %[€/MW]
     LastResPoOffers(:,PreAlgoCounter+1)=sum(OptimalChargingEnergies(1:ConstantResPoPowerPeriods:end,3,:), 3);
     LastResPoOffersSucessful4Hb(:,PreAlgoCounter+1)=LastResPoOffers(:,PreAlgoCounter+1);
-    LastResPoOffersSucessful4Hb(ConsPeriods+1:ConsPeriods+6,PreAlgoCounter+1)=LastResPoOffersSucessful4Hb(ConsPeriods+1:ConsPeriods+6,PreAlgoCounter+1).*SuccessfulResPoOffers;
+    LastResPoOffersSucessful4Hb(ConsPeriods+1:ConsPeriods+6,PreAlgoCounter+1)=LastResPoOffersSucessful4Hb(ConsPeriods+1:ConsPeriods+6,PreAlgoCounter+1).*SuccessfulResPoOffers(:,PreAlgoCounter+1);
 end
 if ismember(TimeInd, TimesOfPreAlgo(2,:))
-    ChargingMat2(:,:,:,PreAlgoCounter)=OptimalChargingEnergies;
+    ChargingMat{2}(:,:,:,PreAlgoCounter)=OptimalChargingEnergies;
 end
 
 %ConseqMatchLastResPoOffersSucessful4Hb=sum(squeeze(OptimalChargingEnergies(24*Time.StepInd+1:4*Time.StepInd:24*Time.StepInd+ConsPeriods*4*Time.StepInd,3,:)), 2);
