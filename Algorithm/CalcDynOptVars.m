@@ -53,7 +53,7 @@ SumPower=MaxPower/4.*Availability;
 
 PowerTS=repelem(MaxPower/4,ControlPeriodsIt,NumCostCats,1);
 PowerTS(:,2,:)=min([PowerTS(:,2,:), PVPower(end-ControlPeriodsIt+1:end,:,:)/4], [], 2);
-ConsPowerTSb=PowerTS(:);
+ConsPowerTSb=PowerTS;
 
 MinEnergyRequiredTS=min(min([MinEnergyRequiredTS, MaxEnergyChargableSoCTS, SumPower], [], 2), MaxEnergyChargableDeadlockCP);
 

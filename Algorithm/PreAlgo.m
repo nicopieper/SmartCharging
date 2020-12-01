@@ -67,8 +67,11 @@ if ControlPeriodsIt<ControlPeriods
     ConseqResPoOfferAIt(DelRows2,:)=[];
     ConseqResPoOfferAIt(:,DelCols2)=[];
     
-%     Costs(DelCols2)=[];
+else
+    ConsPowerTSb((24-hour(TimeOfPreAlgo1))*Time.StepInd+1:(24-hour(TimeOfPreAlgo1))*Time.StepInd+24*Time.StepInd,3,:)=ConsPowerTSb((24-hour(TimeOfPreAlgo1))*Time.StepInd+1:(24-hour(TimeOfPreAlgo1))*Time.StepInd+24*Time.StepInd,3,:)*ResPoBuffer;
 end
+
+ConsPowerTSb=ConsPowerTSb(:);
 
 SplitDecissionGroups;
 
@@ -140,17 +143,17 @@ if UseParallel
     x=x(:);
 else
 
-%     b=[ConsSumPowerTSbIt; ];
-%     A=[ConsSumPowerTSAIt; ];
-% 
-%     beq=[ConseqResPoOfferbIt; ConseqMatchLastResPoOffers4HbIt];
-%     Aeq=[ConseqResPoOfferAIt; ConseqMatchLastResPoOffers4HAIt];
-    
     b=[ConsSumPowerTSbIt; ConsMaxEnergyChargableSoCTSbIt; -ConsMinEnergyRequiredTSbIt];
     A=[ConsSumPowerTSAIt; ConsEnergyDemandTSAIt; -ConsEnergyDemandTSAIt];
     
     beq=[ConseqMaxEnergyChargableDeadlockCPbIt; ConseqResPoOfferbIt; ConseqMatchLastResPoOffers4HbIt];
     Aeq=[ConseqEnergyCPAIt; ConseqResPoOfferAIt; ConseqMatchLastResPoOffers4HAIt];
+    
+%     b=[ConsSumPowerTSbIt; ConsMaxEnergyChargableSoCTSbIt; -ConsMinEnergyRequiredTSbIt];
+%     A=[ConsSumPowerTSAIt; ConsEnergyDemandTSAIt; -ConsEnergyDemandTSAIt];
+%     
+%     beq=[ConseqMaxEnergyChargableDeadlockCPbIt; ConseqResPoOfferbIt; ConseqMatchLastResPoOffers4HbIt];
+%     Aeq=[ConseqEnergyCPAIt; ConseqResPoOfferAIt; ConseqMatchLastResPoOffers4HAIt];
 
     lb=zeros(ControlPeriodsIt, NumCostCats, NumUsers);
     ub=ConsPowerTSb(:);
@@ -194,6 +197,9 @@ if ismember(TimeInd, TimesOfPreAlgo(1,:))
     LastResPoOffers(:,PreAlgoCounter+1)=sum(OptimalChargingEnergies(1:ConstantResPoPowerPeriods:end,3,:), 3);
     LastResPoOffersSucessful4Hb(:,PreAlgoCounter+1)=LastResPoOffers(:,PreAlgoCounter+1);
     LastResPoOffersSucessful4Hb(ConsPeriods+1:ConsPeriods+6,PreAlgoCounter+1)=LastResPoOffersSucessful4Hb(ConsPeriods+1:ConsPeriods+6,PreAlgoCounter+1).*SuccessfulResPoOffers;
+end
+if ismember(TimeInd, TimesOfPreAlgo(2,:))
+    ChargingMat2(:,:,:,PreAlgoCounter)=OptimalChargingEnergies;
 end
 
 %ConseqMatchLastResPoOffersSucessful4Hb=sum(squeeze(OptimalChargingEnergies(24*Time.StepInd+1:4*Time.StepInd:24*Time.StepInd+ConsPeriods*4*Time.StepInd,3,:)), 2);

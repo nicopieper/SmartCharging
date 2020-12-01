@@ -4,8 +4,8 @@ tic
 %Compare for 2 Users with and without parallel
 NumUsers=2; % size(Users,1)-1
 SmartCharging=true;
-%UseParallel=false;
-UseParallel=true;
+UseParallel=false;
+%UseParallel=true;
 UsePredictions=true;
 
 ControlPeriods=96*2;
@@ -339,11 +339,11 @@ end
 
 if SmartCharging
     %ChargingVehicle=reshape(permute(squeeze(sum(Users{1}.ChargingMat(1:96,:,:,:),2)), [1,3,2]), [], NumUsers)/1000*4;
-    ChargingMat1=zeros(24*Time.StepInd,3);
+    ChargingMatReal=zeros(24*Time.StepInd,3);
     for n=UserNum
-        ChargingMat1=ChargingMat1+squeeze(sum(reshape(Users{n}.Logbook(:,5:7),24*Time.StepInd,[],3),2));
+        ChargingMatReal=ChargingMatReal+squeeze(sum(reshape(Users{n}.Logbook(:,5:7),24*Time.StepInd,[],3),2));
     end
-    ChargingMat1=ChargingMat1*4/1000/(length(Time.Sim.VecInd(1:end-ControlPeriods))/(24*Time.StepInd));
+    ChargingMatReal=ChargingMatReal*4/1000/(length(Time.Sim.VecInd(1:end-ControlPeriods))/(24*Time.StepInd));
     ChargingType=reshape(permute(squeeze(sum(Users{1}.ChargingMat(1:96,:,:,:),3)), [1,3,2]), [], Users{1}.NumCostCats)/1000*4;
     ChargingSum=sum(ChargingType, 2);
     
