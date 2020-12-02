@@ -28,3 +28,5 @@ for k=UserNum
         CostsPV(:,1,VarCounter)=10000*ones(ControlPeriods,1); % Ensure never use PVPlant if there is non. Also ensured by PowerCons as PVPower is constantly zero
     end
 end
+
+CostsPV=CostsPV+((1:ControlPeriodsIt)'-ControlPeriodsIt/2)*0.00001;

@@ -2,7 +2,7 @@
 tic
 %Why does this produce an error?
 %Compare for 2 Users with and without parallel
-NumUsers=40; % size(Users,1)-1
+NumUsers=20; % size(Users,1)-1
 SmartCharging=true;
 UseParallel=false;
 %UseParallel=true;
@@ -263,6 +263,9 @@ for TimeInd=Time.Sim.VecInd(2:end-ControlPeriods)
                 %Users{n}.Logbook(TimeInd+TD.User+find(sum(OptimalChargingEnergies(1:ControlPeriods,:,n==UserNum), 2)>0)-1, 1) = 5;
                 
                 Users{n}.Logbook(TimeInd+TD.User:TimeInd+TD.User+ControlPeriodsIt-1, 5:7)=OptimalChargingEnergies(1:ControlPeriodsIt,:,n==UserNum);
+                if ismember(TimeInd, TimesOfPreAlgo(2,:))
+                    PPower2(:,n-1,PreAlgoCounter)=OptimalChargingEnergies(1:ControlPeriodsIt,2,n==UserNum);
+                end
             end
 
             %TimeInd=TimeInd+ControlPeriods-1;
@@ -368,19 +371,20 @@ disp(strcat("Successfully simulated within ", num2str(toc(TSim)), " seconds"))
 
 if Users{1}.SmartCharging
     
-    %ChargingVehicle=reshape(permute(squeeze(sum(Users{1}.ChargingMat(1:96,:,:,:),2)), [1,3,2]), [], NumUsers)/1000*4;
-    ChargingMatReal=zeros(24*Time.StepInd,3);
+    %ChargingVehicle=reshape(permute(squeeze(sum(Users{1}.ChargingMat(1:96,:,:,:),2)), [1,3,2]), [], NumUsers)/1000*4;    
     for n=Users{1}.UserNum
-        ChargingMatReal=ChargingMatReal+squeeze(sum(reshape(Users{n}.LogbookSmart(:,5:7),24*Time.StepInd,[],3),2));
+        Users{1}.ChargingMat{3}(:,:,n,:)=permute(reshape(Users{n}.LogbookSmart(:,5:7),24*Time.StepInd,[],3), [1, 3, 2]);
     end
-    ChargingMatReal=ChargingMatReal*4/1000/(length(Time.Sim.VecInd(1:end-Users{1}.ControlPeriods))/(24*Time.StepInd));
+    Users{1}.ShiftInds{3}=96;
+    %ChargingMat{3}=ChargingMat{3}*4/1000/(length(Time.Sim.VecInd(1:end-Users{1}.ControlPeriods))/(24*Time.StepInd));
     
-    ChargingType=cell(2,1);
-    ChargingSum=cell(2,1);
-    Load=cell(2,1);
-    for k=1:2
+    ChargingType=cell(3,1);
+    ChargingSum=cell(3,1);
+    Load=cell(3,1);
+    for k=1:3
         
         ChargingType{k}=reshape(permute(squeeze(sum(Users{1}.ChargingMat{k}(24*Time.StepInd-Users{1}.ShiftInds{k}+1:24*Time.StepInd-Users{1}.ShiftInds{k}+24*Time.StepInd,:,:,:),3)), [1,3,2]), [], Users{1}.NumCostCats)/1000*4;
+            
         [sum(ChargingType{k}(:,1,:),'all'), sum(ChargingType{k}(:,2,:),'all'), sum(ChargingType{k}(:,3,:),'all')]/sum(ChargingType{k}(:,:,:),'all')
         ChargingSum{k}=sum(ChargingType{k}, 2);
 
