@@ -8,7 +8,7 @@ ResPoPriceFactor=[0.8];
 ResEnPriceFactor=-0.1;
 options = optimoptions('linprog','Algorithm','dual-simplex');
 options.Display = 'off';
-ResPoBuffer=max(0,1-NumDecissionGroups/NumUsers*1.2);
+ResPoBuffer=max(0,1-NumDecissionGroups/NumUsers*1.4);
 
 ResPoOffers=NaN(6,2,1);
 ResEnOffers=NaN(6,1,1);
@@ -37,8 +37,7 @@ end
 PreAlgoCounter=0;
 Availability=[];
 EnergyDemand=[];
-ChargingMat=[];
-ChargingMat2=[];
+ChargingMat=cell(2,1);
 ChargingVehicle=[];
 ChargingType=[];
 AvailabilityMat=[];
@@ -46,6 +45,7 @@ MaxEnergyChargableSoCTS=[];
 MinEnergyRequiredTS=[];
 MaxEnergyChargableDeadlockCP=[];
 DecissionGroups=cell(NumDecissionGroups,1);
+SuccessfulResPoOffers=zeros(6,1);
 
 DemandInds=tril(ones(ControlPeriods,ControlPeriods)).*(1:ControlPeriods);
 DemandInds(:,1)=0;

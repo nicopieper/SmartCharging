@@ -15,6 +15,8 @@ Costs=Costs(:,CostCats,:);
 
 %% Define Cost function, Constraints and DecissionGroups
 
+ConsPowerTSb=PowerTS;
+
 ConsSumPowerTSbIt=SumPower(:);
 
 ConsMaxEnergyChargableSoCTSbIt=MaxEnergyChargableSoCTS(:);
@@ -40,7 +42,7 @@ if hour(Time.Sim.Vec(TimeInd))+minute(Time.Sim.Vec(TimeInd))>hour(TimeOfPreAlgo1
 end
 ResPoBlockedIndices=((ResPoBlockedIndices(1):1/(4*Time.StepInd/ConstantResPoPowerPeriods):ResPoBlockedIndices(end)+1-1/(4*Time.StepInd/ConstantResPoPowerPeriods))-1)*4*Time.StepInd/ConstantResPoPowerPeriods+1;
 
-ConseqMatchLastResPoOffers4HbIt=LastResPoOffersSucessful4Hb(ResPoBlockedIndices, end);
+ConseqMatchLastResPoOffers4HbIt=LastResPoOffersSucessful4Hb(ResPoBlockedIndices, PreAlgoCounter+1-double(ControlPeriodsIt==ControlPeriods));
 ConseqMatchLastResPoOffers4HAIt=ConseqMatchLastResPoOffers4HA(1:length(ResPoBlockedIndices),:);
 ConseqMatchLastResPoOffers4HAIt(:,repelem(ControlPeriods:ControlPeriods*2:ControlPeriods*NumUsers/NumDecissionGroups*NumCostCats*2,ControlPeriods-ControlPeriodsIt)'-DelCols2)=[];
 
@@ -67,8 +69,9 @@ if ControlPeriodsIt<ControlPeriods
     ConseqResPoOfferAIt(DelRows2,:)=[];
     ConseqResPoOfferAIt(:,DelCols2)=[];
     
+    
 else
-    ConsPowerTSb((24-hour(TimeOfPreAlgo1))*Time.StepInd+1:(24-hour(TimeOfPreAlgo1))*Time.StepInd+24*Time.StepInd,3,:)=ConsPowerTSb((24-hour(TimeOfPreAlgo1))*Time.StepInd+1:(24-hour(TimeOfPreAlgo1))*Time.StepInd+24*Time.StepInd,3,:)*ResPoBuffer;
+    ConsPowerTSb((24-hour(TimeOfPreAlgo1))*Time.StepInd+1:(24-hour(TimeOfPreAlgo1))*Time.StepInd+24*Time.StepInd,3,:)=PowerTS((24-hour(TimeOfPreAlgo1))*Time.StepInd+1:(24-hour(TimeOfPreAlgo1))*Time.StepInd+24*Time.StepInd,3,:)*ResPoBuffer; % Limit the available power for reserve power. That is needed to avoid underfullfilment issues, when the planned driving schedules deviate from the real driving schedules.
 end
 
 ConsPowerTSb=ConsPowerTSb(:);
@@ -190,16 +193,19 @@ PostPreAlgo;
 OptimalChargingEnergies(:,1,:)=OptimalChargingEnergiesSpotmarket;
 
 if ismember(TimeInd, TimesOfPreAlgo(1,:))
-    ChargingMat(:,:,:,PreAlgoCounter)=OptimalChargingEnergies;
+    ChargingMat{1}(:,:,:,PreAlgoCounter)=OptimalChargingEnergies;
     AvailabilityMat=[AvailabilityMat, Availability(1:96,1,:)];
     
-    SuccessfulResPoOffers=ResPoOffers(:,1,PreAlgoCounter+1)<=ResPoPricesReal4H(floor((TimeInd+TD.Main)/(4*Time.StepInd))+1:floor((TimeInd+TD.Main)/(4*Time.StepInd))+6,3)/1000; %[€/MW]
+    %SuccessfulResPoOffers(:,PreAlgoCounter+1)=ResPoOffers(:,1,PreAlgoCounter+1)<=ResPoPricesReal4H(floor((TimeInd+TD.Main)/(4*Time.StepInd))+1:floor((TimeInd+TD.Main)/(4*Time.StepInd))+6,3)/1000; %[€/MW]
+    SuccessfulResPoOffers(:,PreAlgoCounter+1)=ResPoOffers(:,1,PreAlgoCounter+1)<=ResPoPricesReal4H(floor((TimeInd+TD.Main)/(4*Time.StepInd))+1+(24-hour(TimeOfPreAlgo1))/4:floor((TimeInd+TD.Main)/(4*Time.StepInd))+(24-hour(TimeOfPreAlgo1))/4+6,3)/1000; %[€/MW]
     LastResPoOffers(:,PreAlgoCounter+1)=sum(OptimalChargingEnergies(1:ConstantResPoPowerPeriods:end,3,:), 3);
     LastResPoOffersSucessful4Hb(:,PreAlgoCounter+1)=LastResPoOffers(:,PreAlgoCounter+1);
-    LastResPoOffersSucessful4Hb(ConsPeriods+1:ConsPeriods+6,PreAlgoCounter+1)=LastResPoOffersSucessful4Hb(ConsPeriods+1:ConsPeriods+6,PreAlgoCounter+1).*SuccessfulResPoOffers;
+    LastResPoOffersSucessful4Hb(ConsPeriods+1:ConsPeriods+6,PreAlgoCounter+1)=LastResPoOffersSucessful4Hb(ConsPeriods+1:ConsPeriods+6,PreAlgoCounter+1).*SuccessfulResPoOffers(:,PreAlgoCounter+1);
 end
 if ismember(TimeInd, TimesOfPreAlgo(2,:))
-    ChargingMat2(:,:,:,PreAlgoCounter)=OptimalChargingEnergies;
+    ChargingMat{2}(:,:,:,PreAlgoCounter)=OptimalChargingEnergies;
+    PPower(:,PreAlgoCounter)=sum(OptimalChargingEnergies(:,2,:),3);
+    PPPower(:,:,PreAlgoCounter)=squeeze(PVPower);
 end
 
 %ConseqMatchLastResPoOffersSucessful4Hb=sum(squeeze(OptimalChargingEnergies(24*Time.StepInd+1:4*Time.StepInd:24*Time.StepInd+ConsPeriods*4*Time.StepInd,3,:)), 2);
