@@ -123,13 +123,28 @@ if UseParallel
         b=[reshape(ConsSumPowerTSbIt(SubIndices(DecissionGroups{k,2}, ControlPeriods, ControlPeriodsIt, 1)'),[],1); reshape(ConsMaxEnergyChargableSoCTSbIt(SubIndices(DecissionGroups{k,2}, ControlPeriods, ControlPeriodsIt, 1)'),[],1); reshape(-ConsMinEnergyRequiredTSbIt(SubIndices(DecissionGroups{k,2}, ControlPeriods, ControlPeriodsIt, 1)'),[],1)];
         A=[ConsSumPowerTSAIt; ConsEnergyDemandTSAIt; -ConsEnergyDemandTSAIt];
         
-        beq=[ConseqMaxEnergyChargableDeadlockCPbIt(DecissionGroups{k,1})'; ConseqResPoOfferbIt; DecissionGroups{k,4}]; %% this is wrong as ConseqMatchLastResPoOffersSucessful4Hb must be constant in sum
+        beq=[ConseqMaxEnergyChargableDeadlockCPbIt(DecissionGroups{k,1})'; ConseqResPoOfferbIt; DecissionGroups{k,4}];
         Aeq=[ConseqEnergyCPAIt; ConseqResPoOfferAIt; ConseqMatchLastResPoOffers4HAIt];
         ub=ConsPowerTSb(SubIndices(DecissionGroups{k,3}, ControlPeriods, ControlPeriodsIt, 3))';
         
         Costf=Costsf(SubIndices(DecissionGroups{k,3}, ControlPeriods, ControlPeriodsIt, 3))';
         
         [x11,fval]=linprog(Costf,A,b,Aeq,beq,lb,ub, options);
+        
+        if isempty(x11) % Resolves the issue that the buffer does not cover the deviation: In this case the underfullfilment must be accepted and as much reserve power as possible will be provided. The deviation from the offer must be satisfied by the other units of the VPP.
+            b=[reshape(ConsSumPowerTSbIt(SubIndices(DecissionGroups{k,2}, ControlPeriods, ControlPeriodsIt, 1)'),[],1); reshape(ConsMaxEnergyChargableSoCTSbIt(SubIndices(DecissionGroups{k,2}, ControlPeriods, ControlPeriodsIt, 1)'),[],1); reshape(-ConsMinEnergyRequiredTSbIt(SubIndices(DecissionGroups{k,2}, ControlPeriods, ControlPeriodsIt, 1)'),[],1); DecissionGroups{k,4}];
+            A=[ConsSumPowerTSAIt; ConsEnergyDemandTSAIt; -ConsEnergyDemandTSAIt; ConseqMatchLastResPoOffers4HAIt];
+
+            beq=[ConseqMaxEnergyChargableDeadlockCPbIt(DecissionGroups{k,1})'; ConseqResPoOfferbIt]; 
+            Aeq=[ConseqEnergyCPAIt; ConseqResPoOfferAIt];
+
+            Costf=Costs;
+            Costf(1:length(ResPoBlockedIndices)*Time.StepInd*4,3,:)=-10000;
+            Costf=Costf(:);
+
+            [x11,fval]=linprog(Costf,A,b,Aeq,beq,lb,ub, options);
+        end
+        
         x11(x11<0)=0;
         x1{k}=x11;
     end
@@ -164,6 +179,21 @@ else
     Costf=Costs(:);
     
     [x,fval]=linprog(Costf,A,b,Aeq,beq,lb,ub, options);
+    
+    if isempty(x) % Resolves the issue that the buffer does not cover the deviation: In this case the underfullfilment must be accepted and as much reserve power as possible will be provided. The deviation from the offer must be satisfied by the other units of the VPP.
+        b=[ConsSumPowerTSbIt; ConsMaxEnergyChargableSoCTSbIt; -ConsMinEnergyRequiredTSbIt; ConseqMatchLastResPoOffers4HbIt];
+        A=[ConsSumPowerTSAIt; ConsEnergyDemandTSAIt; -ConsEnergyDemandTSAIt; ConseqMatchLastResPoOffers4HAIt];
+
+        beq=[ConseqMaxEnergyChargableDeadlockCPbIt; ConseqResPoOfferbIt;];
+        Aeq=[ConseqEnergyCPAIt; ConseqResPoOfferAIt;];
+    
+        Costf=Costs;
+        Costf(1:length(ResPoBlockedIndices)*Time.StepInd*4,3,:)=-10000;
+        Costf=Costf(:);
+    
+        [x,fval]=linprog(Costf,A,b,Aeq,beq,lb,ub, options);
+    end
+    
     x(x<0)=0;   
 end
 tc1=tc1+toc;
