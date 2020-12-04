@@ -45,7 +45,7 @@
 %                       processes the demand data will be executed. If data
 %                       is processed completly new depends on 
 %                       OnlyAddNewLists. logical (1,1)
-%   ProcessDataNewRegelOfferLists: Control variable. If true, the section 
+%   ProcessDataNewRegelResOfferLists4H: Control variable. If true, the section 
 %                       that processes the offer lists will be 
 %                       executed. If data is processed completly new 
 %                       depends on OnlyAddNewLists. logical (1,1)
@@ -77,7 +77,7 @@
 tic
 OnlyAddNewLists=false;
 ProcessDataNewRegelDemand=false;
-ProcessDataNewRegelOfferLists=false;
+ProcessDataNewRegelResOfferLists4H=false;
 ProcessDataNewRegelPrices=true;
 Time.StartRegelOffers=datetime(2019,08,10,0,0,0,'TimeZone', 'Africa/Tunis');
 RegelTypeLoad="aFRR";
@@ -155,11 +155,11 @@ if ProcessDataNew.Regel
         
         %% Offer Lists  Date_From, Date_To, Type_Of_Reserve, Product, Capacity_Price[€/MW], Energy_Price[€/MWh], Offered_Capacity[MW], Allocated_Capacity[MW], Country    
         
-        if ProcessDataNewRegelOfferLists==1
+        if ProcessDataNewRegelResOfferLists4H==1
             
             h=waitbar(0, "Verarbeite Regelleistungsangebotslisten");
             
-            StorageFileMonth=strcat(Path.Regel, RegelType, Dl, 'Angebotslisten', Dl, 'RESULT_LIST*'); % All OfferLists are located in this path 
+            StorageFileMonth=strcat(Path.Regel, RegelType, Dl, 'Angebotslisten', Dl, 'RESULT_LIST*'); % All ResOfferLists4H are located in this path 
             Files=dir(StorageFileMonth); % they are named like RESULT_LIST_ANONYM_aFRR_DE_2020-01-01_2020-01-31.xlsx
             
             for n=1:size(Files,1) % iterate through all found OfferList files
@@ -167,14 +167,14 @@ if ProcessDataNew.Regel
                 Year=StrRange(Files(n).name, 28, 31);  % ... and yera from file name
                 
                 if OnlyAddNewLists==true % if true, only process xslx files newly when there is not a corresponding mat file 
-                    if Month=="07" && Year=="2018" % form this month on OfferLists exist. The list of 07.2018 starts at 12.07.2017
+                    if Month=="07" && Year=="2018" % form this month on ResOfferLists4H exist. The list of 07.2018 starts at 12.07.2017
                         DayVec=datetime(strcat(Year, ".", Month, ".12 00:00:00"), 'InputFormat', 'yyyy.MM.dd HH:mm:ss'):caldays(1):dateshift(datetime(strcat(Year, ".", Month, ".01 00:00:00"), 'InputFormat', 'yyyy.MM.dd HH:mm:ss'),'end','month'); % get all days of month of OfferList file
                     else
                         DayVec=datetime(strcat(Year, ".", Month, ".01 00:00:00"), 'InputFormat', 'yyyy.MM.dd HH:mm:ss'):caldays(1):dateshift(datetime(strcat(Year, ".", Month, ".01 00:00:00"), 'InputFormat', 'yyyy.MM.dd HH:mm:ss'),'end','month');
                     end
                     
                     DataComplete=true; 
-                    MonthFiles=dir(strcat(Path.Regel, RegelType, Dl, "Offers", Dl, Year, Dl, Month, Dl, "OfferLists_*")); % check if which corresponding mat files exist
+                    MonthFiles=dir(strcat(Path.Regel, RegelType, Dl, "Offers", Dl, Year, Dl, Month, Dl, "ResOfferLists4H_*")); % check if which corresponding mat files exist
                     ExistingDates=NaT(0,0);
                     
                     for k=1:size(MonthFiles,1)
@@ -210,7 +210,7 @@ if ProcessDataNew.Regel
                     mkdir(StoragePath)
                 end
                 
-                % now, the OfferLists are split into separate lists. 
+                % now, the ResOfferLists4H are split into separate lists. 
                 % each lists covers all offers for one product 
                 % (e. g. negative control reserve from 00:00 until 04:00 
                 % of 01.01.2020). all 12 lists of one day are stored in 
@@ -231,7 +231,7 @@ if ProcessDataNew.Regel
                             LoadedOfferLists{Row,1}=datetime(strcat(LoadedOfferListData(Start,1), " ", TimeTemp(5:6)), 'InputFormat', 'dd-MMM-yyyy HH', 'Locale', 'de_DE');
                         end
                     end
-                    LoadedOfferLists{Row,Col}=[str2double(LoadedOfferListData(Start:End,4)), str2double(LoadedOfferListData(Start:End,5)).*str2double(LoadedOfferListData(Start:End,3)), str2double(LoadedOfferListData(Start:End,6))]; % OfferLists  CapacityPrice[€/MW], EnergyPrice[€/MWh], AllocatedCapacity[MW]. store extracted sublist in variable
+                    LoadedOfferLists{Row,Col}=[str2double(LoadedOfferListData(Start:End,4)), str2double(LoadedOfferListData(Start:End,5)).*str2double(LoadedOfferListData(Start:End,3)), str2double(LoadedOfferListData(Start:End,6))]; % ResOfferLists4H  CapacityPrice[€/MW], EnergyPrice[€/MWh], AllocatedCapacity[MW]. store extracted sublist in variable
                     [sortedValues, sortOrder] = sort(LoadedOfferLists{Row,Col}(:,2)); % sort it according to energy price so that the merit order is generated
                     LoadedOfferLists{Row,Col} = LoadedOfferLists{Row,Col}(sortOrder, :);   
                     Start=End+1; % the starting index of the next sublist
@@ -243,7 +243,7 @@ if ProcessDataNew.Regel
                     end
                     if mod(k,12)==0 % if all sublists of one day are generated, store the data in a mat file
                         StoragePath=strcat(Path.Regel, RegelType, Dl, 'Offers', Dl, Year, Dl, Month, Dl);
-                        save(strcat(StoragePath, 'OfferLists_', Year, '-', Month, '-', datestr(LoadedOfferLists{1,1},'dd')), 'LoadedOfferLists', '-v7.3')
+                        save(strcat(StoragePath, 'ResOfferLists4H_', Year, '-', Month, '-', datestr(LoadedOfferLists{1,1},'dd')), 'LoadedOfferLists', '-v7.3')
                         LoadedOfferLists={}; % Capacity Price [€/MW], Energy Price [€/MWh], Allocated Capacity [MW]
                     end
                     k=k+1; % counter for the sublists
@@ -255,10 +255,10 @@ if ProcessDataNew.Regel
             
         %% Caluculate Capacity and Energy Prices
         
-        % in this section from the OfferLists and the demand data, the real
+        % in this section from the ResOfferLists4H and the demand data, the real
         % paid power and energy prices will be reconstructed applying the 
         % real pricing mechanism. the power prices are trivial. they are 
-        % shown directly in the OfferLists. The OfferLists represent the
+        % shown directly in the ResOfferLists4H. The ResOfferLists4H represent the
         % merit order with resepect to the power prices. every  participant
         % who made it to the list gets the its power price, independent 
         % from the whether he supplied reserve energy later. the energy 
@@ -280,7 +280,7 @@ if ProcessDataNew.Regel
                 
                 Year=datestr(Date, 'yyyy'); % extract year
                 Month=datestr(Date, 'mm'); % and month
-                StoragePath=strcat(Path.Regel, RegelType, Dl, 'Prices', Dl, Year, Dl, Month, Dl); % to open the Demand data OfferLists mat files from local path for this day specified by Date
+                StoragePath=strcat(Path.Regel, RegelType, Dl, 'Prices', Dl, Year, Dl, Month, Dl); % to open the Demand data ResOfferLists4H mat files from local path for this day specified by Date
                 
                 if OnlyAddNewLists && isfile(strcat(StoragePath, 'ResEnPricesData', Year, '-', Month, '-', datestr(Date,'dd'), ".mat")) && isfile(strcat(StoragePath, 'ResPoPricesData', Year, '-', Month, '-', datestr(Date,'dd'), ".mat")) % check if the price data already exists
                     DateCounter=DateCounter+1;
@@ -289,7 +289,7 @@ if ProcessDataNew.Regel
                 end                
                 
                 load(strcat(Path.Regel, RegelType, Dl, 'Demand', Dl, Year, Dl, Month, Dl, 'DemandData_', Year, '-', Month, '-', datestr(Date, 'dd'), '.mat')); % load demand data 
-                load(strcat(Path.Regel, RegelType, Dl, 'Offers', Dl, Year, Dl, Month, Dl, 'OfferLists_', Year, '-', Month, '-', datestr(Date, 'dd'), '.mat')); % load OfferLists
+                load(strcat(Path.Regel, RegelType, Dl, 'Offers', Dl, Year, Dl, Month, Dl, 'ResOfferLists4H_', Year, '-', Month, '-', datestr(Date, 'dd'), '.mat')); % load ResOfferLists4H
                 LoadedResEnPrices=[zeros(length(LoadedDemandData),4), -1000*ones(length(LoadedDemandData),2), zeros(length(LoadedDemandData),2)]; % [Total Amount Payed for Energy Neg [€],  Total Amount Payed for Energy Pos [€], Mean Price Energy Neg [€/MWh], Mean Price Energy Pos [€/MWh], Marginal Price Energy Neg [€/MWh], Marginal Price Energy Pos [€/MWh], Min Price Energy Neg [€/MWh], Min Price Energy Pos [€/MWh]]. in this matrix all information about the real paid energy prices will be stored
                 
                 for Col=1:2 % iterate through the columns of LoadedOfferLists. (Col==1: negative reserve energy, Col==2: positive reserve energy)
@@ -319,7 +319,7 @@ if ProcessDataNew.Regel
                 
                 % now the real paid resevere power prices are calculated,
                 % which is much more easy, as they are fixed and given in
-                % the OfferLists. Just multiply all allocated power
+                % the ResOfferLists4H. Just multiply all allocated power
                 % capacities the the offered power prices for each
                 % supplier and add the products all up.
 
@@ -351,7 +351,7 @@ end
 %% Load Data from Storage
 
 ResPoDemRealQH=NaN(round(days(Time.End-Time.Start))*96,2); % ReservePowerDemandRealMeasuredQuaterHourly
-OfferLists=cell(6*round(days(Time.End-Time.Start)),3);
+ResOfferLists4H=cell(6*round(days(Time.End-Time.Start)),3);
 ResEnPricesRealQH=NaN(round(days(Time.End-Time.Start))*96,10); % ReserveEnergyPricesQuaterHourly
 ResPoPricesReal4H=NaN(round(days(Time.End-Time.Start))*6,8); % ReservePowerPrices4hInterval
 
@@ -366,7 +366,7 @@ for Date=DateVec % iterate through the days between Time.Start and Time.End
 
     if Date>=Time.StartRegelOffers % if price data exists
         load(strcat(Path.Regel, RegelTypeLoad, Dl, 'Offers', Dl, Year, Dl, Month, Dl, 'OfferLists_', Year, '-', Month, '-', datestr(Date, 'dd'), '.mat')); % same mechanism as above
-        OfferLists(DateCounter*6+1:(DateCounter+1)*6,:)=LoadedOfferLists; % [Time, Neg. OfferLists, Pos. OfferLists]
+        ResOfferLists4H(DateCounter*6+1:(DateCounter+1)*6,:)=LoadedOfferLists; % [Time, Neg. ResOfferLists4H, Pos. ResOfferLists4H]
         load(strcat(Path.Regel, RegelTypeLoad, Dl, 'Prices', Dl, Year, Dl, Month, Dl, 'ResEnPricesData', Year, '-', Month, '-', datestr(Date,'dd')));
         ResEnPricesRealQH(DateCounter*96+1:(DateCounter+1)*96,:)=LoadedResEnPrices; % [Total Amount Payed for Energy Neg [€],  Total Amount Payed for Energy Pos [€], Mean Price Energy Neg [€/MWh], Mean Price Energy Pos [€/MWh], Marginal Price Energy Neg [€/MWh], Marginal Price Energy Pos [€/MWh], Min Price Energy Neg [€/MWh], Min Price Energy Pos [€/MWh]]
         load(strcat(Path.Regel, RegelTypeLoad, Dl, 'Prices', Dl, Year, Dl, Month, Dl, 'ResPoPricesData', Year, '-', Month, '-', datestr(Date,'dd')));
@@ -385,6 +385,6 @@ disp(['Reserve energy data successfully imported ' num2str(toc) 's'])
 %% Clean up workspace
 
 clearvars Date LoadedDemandData LoadedOfferLists LoadedResEnPrices LoadedResPoPrices Month Path.Regel RegelType RegelTypeLoad Start StrRange Year 
-clearvars ProcessDataNewRegelOfferLists ProcessDataNewRegelDemand DateCounter DateVec h DayVec Row RowDem RowOffer SatisfiedOffer sortedValues sortOrder 
+clearvars ProcessDataNewRegelResOfferLists4H ProcessDataNewRegelDemand DateCounter DateVec h DayVec Row RowDem RowOffer SatisfiedOffer sortedValues sortOrder 
 clearvars StartDate StorageFileMonth TimeData TimeTemp  ProcessDataNewRegelPrices OnlyAddNewLists LoadedOfferListData LoadedOfferListData2 Files End DSTChangesQH
 clearvars DateVecPrices DateChanges Col AllocatedDemand LoadedDemandDataMonth SatisfiedDemand

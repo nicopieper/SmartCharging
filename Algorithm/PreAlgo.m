@@ -42,7 +42,7 @@ if hour(Time.Sim.Vec(TimeInd))+minute(Time.Sim.Vec(TimeInd))>hour(TimeOfPreAlgo1
 end
 ResPoBlockedIndices=((ResPoBlockedIndices(1):1/(4*Time.StepInd/ConstantResPoPowerPeriods):ResPoBlockedIndices(end)+1-1/(4*Time.StepInd/ConstantResPoPowerPeriods))-1)*4*Time.StepInd/ConstantResPoPowerPeriods+1;
 
-ConseqMatchLastResPoOffers4HbIt=LastResPoOffersSucessful4Hb(ResPoBlockedIndices, PreAlgoCounter+1-double(ControlPeriodsIt==ControlPeriods));
+ConseqMatchLastResPoOffers4HbIt=LastResPoOffersSucessful4H(ResPoBlockedIndices, PreAlgoCounter+1-double(ControlPeriodsIt==ControlPeriods));
 ConseqMatchLastResPoOffers4HAIt=ConseqMatchLastResPoOffers4HA(1:length(ResPoBlockedIndices),:);
 ConseqMatchLastResPoOffers4HAIt(:,repelem(ControlPeriods:ControlPeriods*2:ControlPeriods*NumUsers/NumDecissionGroups*NumCostCats*2,ControlPeriods-ControlPeriodsIt)'-DelCols2)=[];
 
@@ -84,7 +84,7 @@ SplitDecissionGroups;
 % b=[ConsSumPowerTSbIt; ConsMaxEnergyChargableSoCTSbIt; -ConsMinEnergyRequiredTSbIt];
 % A=[ConsSumPowerTSA; ConsEnergyDemandTSAIt; -ConsEnergyDemandTSAIt];
 % 
-% beq=[ConseqMaxEnergyChargableDeadlockCPbIt; ConseqResPoOfferbIt; ConseqMatchLastResPoOffersSucessful4Hb];
+% beq=[ConseqMaxEnergyChargableDeadlockCPbIt; ConseqResPoOfferbIt; ConseqMatchLastResPoOffersSucessful4H];
 % Aeq=[ConsEnergyCPAeq; ConseqResPoOfferAIt; ConsMatchLastResPoOffers4HAeq];
 % 
 % lb=zeros(ControlPeriods, NumCostCats, NumUsers);
@@ -99,7 +99,7 @@ SplitDecissionGroups;
 % A=[ConsSumPowerTSA; ConsEnergyDemandTSAIt; -ConsEnergyDemandTSAIt];
 % b=[ConsSumPowerTSbIt; ConsMaxEnergyChargableSoCTSbIt; -ConsMinEnergyRequiredTSbIt];
 % 
-% beq=[ConseqMaxEnergyChargableDeadlockCPbIt; ConseqResPoOfferbIt; ConseqMatchLastResPoOffersSucessful4Hb];
+% beq=[ConseqMaxEnergyChargableDeadlockCPbIt; ConseqResPoOfferbIt; ConseqMatchLastResPoOffersSucessful4H];
 % Aeq=[ConsEnergyCPAeq; ConseqResPoOfferAIt; ConsMatchLastResPoOffers4HAeq];
 
 
@@ -202,7 +202,7 @@ tc1=tc1+toc;
 % b=[ConsSumPowerTSbIt; ConsMaxEnergyChargableSoCTSbIt; -ConsMinEnergyRequiredTSbIt];
 % A=[ConsSumPowerTSA; ConsEnergyDemandTSAIt; -ConsEnergyDemandTSAIt];
 % 
-% beq=[ConseqMaxEnergyChargableDeadlockCPbIt; ConseqResPoOfferbIt; ConseqMatchLastResPoOffersSucessful4Hb];
+% beq=[ConseqMaxEnergyChargableDeadlockCPbIt; ConseqResPoOfferbIt; ConseqMatchLastResPoOffersSucessful4H];
 % Aeq=[ConsEnergyCPAeq; ConseqResPoOfferAIt; ConsMatchLastResPoOffers4HAeq];
 % 
 % lb=zeros(ControlPeriods, NumCostCats, NumUsers);
@@ -229,23 +229,17 @@ if ismember(TimeInd, TimesOfPreAlgo(1,:))
     %SuccessfulResPoOffers(:,PreAlgoCounter+1)=ResPoOffers(:,1,PreAlgoCounter+1)<=ResPoPricesReal4H(floor((TimeInd+TD.Main)/(4*Time.StepInd))+1:floor((TimeInd+TD.Main)/(4*Time.StepInd))+6,3)/1000; %[€/MW]
     SuccessfulResPoOffers(:,PreAlgoCounter+1)=ResPoOffers(:,1,PreAlgoCounter+1)<=ResPoPricesReal4H(floor((TimeInd+TD.Main)/(4*Time.StepInd))+1+(24-hour(TimeOfPreAlgo1))/4:floor((TimeInd+TD.Main)/(4*Time.StepInd))+(24-hour(TimeOfPreAlgo1))/4+6,3)/1000; %[€/MW]
     LastResPoOffers(:,PreAlgoCounter+1)=sum(OptimalChargingEnergies(1:ConstantResPoPowerPeriods:end,3,:), 3);
-    LastResPoOffersSucessful4Hb(:,PreAlgoCounter+1)=LastResPoOffers(:,PreAlgoCounter+1);
-    LastResPoOffersSucessful4Hb(ConsPeriods+1:ConsPeriods+6,PreAlgoCounter+1)=LastResPoOffersSucessful4Hb(ConsPeriods+1:ConsPeriods+6,PreAlgoCounter+1).*SuccessfulResPoOffers(:,PreAlgoCounter+1);
+    LastResPoOffersSucessful4H(:,PreAlgoCounter+1)=LastResPoOffers(:,PreAlgoCounter+1);
+    LastResPoOffersSucessful4H(ConsPeriods+1:ConsPeriods+6,PreAlgoCounter+1)=LastResPoOffersSucessful4H(ConsPeriods+1:ConsPeriods+6,PreAlgoCounter+1).*SuccessfulResPoOffers(:,PreAlgoCounter+1);
 end
 if ismember(TimeInd, TimesOfPreAlgo(2,:))
     ChargingMat{2}(:,:,:,PreAlgoCounter)=OptimalChargingEnergies;
-    PPower(:,PreAlgoCounter)=sum(OptimalChargingEnergies(:,2,:),3);
-    PPPower(:,:,PreAlgoCounter)=squeeze(PVPower);
+%     PPower(:,PreAlgoCounter)=sum(OptimalChargingEnergies(:,2,:),3);
+%     PPPower(:,:,PreAlgoCounter)=squeeze(PVPower);
 end
 
-%ConseqMatchLastResPoOffersSucessful4Hb=sum(squeeze(OptimalChargingEnergies(24*Time.StepInd+1:4*Time.StepInd:24*Time.StepInd+ConsPeriods*4*Time.StepInd,3,:)), 2);
-%temp1=ConseqMatchLastResPoOffersSucessful4Hb;
-
-
-% if round(sum(x))<round(ConsMinEnergyToChargeCPbeq)
-%     1
-% end
-
-% if sum(reshape(x,ControlPeriods, NumCostCats, NumUsers)>0 & Availability==0)>1
-%     error("Availability was not considered")
-% end
+%%
+% LastResPoOffersSucessful4H:   The first row corresponds to the
+%                               Zeitscheibe at the time of PreAlgo1
+%                               (usually 8:00), the second one to the
+%                               Zeitscheibe afterwards (12:00) and so on.
