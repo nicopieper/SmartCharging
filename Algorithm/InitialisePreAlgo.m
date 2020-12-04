@@ -87,9 +87,19 @@ ConseqMatchLastResPoOffers4HA=repmat([zeros(ControlPeriods/ConstantResPoPowerPer
 ConseqMatchLastResPoOffers4HA=sparse(ConseqMatchLastResPoOffers4HA(1:ceil(ControlPeriods/(ConstantResPoPowerPeriods)),:));
 %ConseqMatchLastResPoOffers4Hb=zeros(ConsPeriods,1);
 LastResPoOffers=zeros(ceil(ControlPeriods/(ConstantResPoPowerPeriods)),1);
-LastResPoOffersSucessful4Hb=zeros(ceil(ControlPeriods/(ConstantResPoPowerPeriods)),1);
+LastResPoOffersSucessful4H=zeros(ceil(ControlPeriods/(ConstantResPoPowerPeriods)),1);
 
 A=[ConsSumPowerTSA; ConsEnergyDemandTSA; -ConsEnergyDemandTSA];
 Aeq=[ConseqEnergyCPA; ConseqResPoOfferA;ConseqMatchLastResPoOffers4HA];
 lb=zeros(ControlPeriods, NumCostCats, NumUsers);
 lb=lb(:);
+
+
+
+% One row represents one constraint. The columns represent the decission
+% variables. They are ordered in the following way: The first 192 decission
+% variables represent the charging powers for the first 192 quaterly hours
+% that could be used for charging using CostCat1 by User1. Then 192
+% variables for CostCat2 two and 192 for CostCat3 for User1. Then the
+% decission variables for all other users are concatenated in the same
+% manner

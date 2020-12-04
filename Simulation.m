@@ -60,10 +60,11 @@ if SmartCharging
     TimeOfPreAlgo2=datetime(1,1,1,12,0,0,'TimeZone','Africa/Tunis');
     TimeOfReserveMarketOffer=datetime(1,1,1,8,0,0,'TimeZone','Africa/Tunis');
 	ShiftInds=(hour(TimeOfPreAlgo1)*Time.StepInd + minute(TimeOfPreAlgo1)/minutes(Time.Step));
-    %TimesOfPreAlgo=sort([(hour(TimeOfPreAlgo1)*Time.StepInd + minute(TimeOfPreAlgo1)/60*Time.StepInd)+1-1+ControlPeriods:24*Time.StepInd:length(Time.Sim.VecInd); (hour(TimeOfPreAlgo2)*Time.StepInd + minute(TimeOfPreAlgo2)/60*Time.StepInd)+1-1+ControlPeriods:24*Time.StepInd:length(Time.Sim.VecInd)], 'ascend');
     TimesOfPreAlgo=sort([(hour(TimeOfPreAlgo1)*Time.StepInd + minute(TimeOfPreAlgo1)/60*Time.StepInd)+1:24*Time.StepInd:length(Time.Sim.VecInd); (hour(TimeOfPreAlgo2)*Time.StepInd + minute(TimeOfPreAlgo2)/60*Time.StepInd)+1:24*Time.StepInd:length(Time.Sim.VecInd)], 'ascend');
+    TimesOfZeitscheiben=mod(16-hour(Time.Sim.Vec(1))*4 + minute(Time.Sim.Vec(1)),16)+1:4*Time.StepInd:length(Time.Sim.VecInd);
     %TimesOfPreAlgo=sort([(hour(TimeOfPreAlgo1)*Time.StepInd + minute(TimeOfPreAlgo1)/60*Time.StepInd)+1:24*Time.StepInd:length(Time.Sim.VecInd)], 'ascend');
     InitialisePreAlgo;
+    InitialiseLiveAlgo;
     
     if UsePredictions
         if ~exist("SpotmarketPricesPred1", "var")
@@ -263,18 +264,40 @@ for TimeInd=Time.Sim.VecInd(2:end-ControlPeriods)
                 %Users{n}.Logbook(TimeInd+TD.User+find(sum(OptimalChargingEnergies(1:ControlPeriods,:,n==UserNum), 2)>0)-1, 1) = 5;
                 
                 Users{n}.Logbook(TimeInd+TD.User:TimeInd+TD.User+ControlPeriodsIt-1, 5:7)=OptimalChargingEnergies(1:ControlPeriodsIt,:,n==UserNum);
-                if ismember(TimeInd, TimesOfPreAlgo(2,:))
-                    PPower2(:,n-1,PreAlgoCounter)=OptimalChargingEnergies(1:ControlPeriodsIt,2,n==UserNum);
-                end
+%                 if ismember(TimeInd, TimesOfPreAlgo(2,:))
+%                     PPower2(:,n-1,PreAlgoCounter)=OptimalChargingEnergies(1:ControlPeriodsIt,2,n==UserNum);
+%                 end
             end
 
             %TimeInd=TimeInd+ControlPeriods-1;
         else
             CalcDynOptVars;
         end
-           
         
         LiveAlgo;
+           
+        for n=UserNum % Battery clipping: In case the battery would be overcharged, clip the energy
+
+            ChargedEnergy=min([Users{n}.BatterySize - (Users{n}.Logbook(TimeInd+TD.User-1, 9) - Users{n}.Logbook(TimeInd+TD.User, 4)), sum(Users{n}.Logbook(TimeInd+TD.User, 5:8))]);
+            Users{n}.Logbook(TimeInd+TD.User, 9)=Users{n}.Logbook(TimeInd+TD.User-1, 9)-Users{n}.Logbook(TimeInd+TD.User, 4) + ChargedEnergy;
+            if ChargedEnergy==0 && Users{n}.Logbook(TimeInd+TD.User, 1)==5
+                Users{n}.Logbook(TimeInd+TD.User, 1)=4;
+            end
+            if ChargedEnergy < sum(Users{n}.Logbook(TimeInd+TD.User, 5:8)) - 0.01
+                Users{n}.Logbook(TimeInd+TD.User, 5:8)=Users{n}.Logbook(TimeInd+TD.User, 5:8).*(ChargedEnergy/sum(Users{n}.Logbook(TimeInd+TD.User, 5:8)));
+            end
+
+            if ~(Users{n}.Logbook(TimeInd+TD.User,9)<(Users{n}.Logbook(TimeInd+TD.User-1,9)+sum(Users{n}.Logbook(TimeInd+TD.User,5:8)) - Users{n}.Logbook(TimeInd+TD.User,4))+3 && Users{n}.Logbook(TimeInd+TD.User,9)>(Users{n}.Logbook(TimeInd+TD.User-1,9)+sum(Users{n}.Logbook(TimeInd+TD.User,5:8)) - Users{n}.Logbook(TimeInd+TD.User,4))-3)
+                error("Wrong addition")
+            end
+
+            if Users{n}.Logbook(TimeInd+TD.User:TimeInd+TD.User+ControlPeriodsIt-1, 9)>Users{n}.BatterySize
+                2
+            end
+
+        end
+        
+        
 
     end
     
