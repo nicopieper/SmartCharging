@@ -49,6 +49,10 @@ if OfferedResPo>0
 
         VarCounter=0;
         for n=UserNum
+            if Users{n}.PVPlantExists % First set PV power consumption to min of prediction and real generation consumption via PV can be raised later on during the optimisation but it deallocates power in case of for the threatening underfulfillment of  dispatched reserve power
+                Users{n}.Logbook(TimeInd+TD.User,6)=min(Users{n}.Logbook(TimeInd+TD.User,6), double(PVPlants{Users{n}.PVPlant}.ProfileQH(TimeInd+TD.Main))/4); % [Wh]
+            end
+            
             VarCounter=VarCounter+1;
             AvailableDispatchedResPo(VarCounter,1)=min(Users{n}.BatterySize - Users{n}.Logbook(TimeInd+TD.User,9),Users{n}.Logbook(TimeInd+TD.User,7)*Availability(1,1,VarCounter));
             AvailableDispatchedResPoBuffer(VarCounter,1)=min(Users{n}.BatterySize - Users{n}.Logbook(TimeInd+TD.User,9), double(Users{n}.ACChargingPowerHomeCharging)/4 - sum(Users{n}.Logbook(TimeInd+TD.User,5:6))*Availability(1,1,VarCounter))*double(Users{n}.Logbook(TimeInd+TD.User,7)>0);
@@ -89,6 +93,10 @@ if OfferedResPo>0
             PriorityChargingList=[PriorityChargingList, [PriorityChargingList(1:MOLPos,3); zeros(size(PriorityChargingList,1)-MOLPos,1)]];
             PriorityChargingList(MOLPos,4)=DispatchedResPo(TimeInd)-temp(MOLPos+1);
             PriorityChargingList=PriorityChargingList(SortedOrder,[1,3,4]);
+            
+            if sum(PriorityChargingList(:,end))-0.1 > DispatchedResPo(TimeInd) || sum(PriorityChargingList(:,end))+0.1 < DispatchedResPo(TimeInd)
+                1
+            end
 
 %             1
 
@@ -117,6 +125,9 @@ if OfferedResPo>0
             PriorityChargingList=[PriorityChargingList, [PriorityChargingList(1:MOLPos,3)+PriorityChargingList(1:MOLPos,5); PriorityChargingList(MOLPos+1:end,3)]];
             PriorityChargingList(MOLPos,6)=PriorityChargingList(MOLPos,3) + (DispatchedResPo(TimeInd) - temp(MOLPos)-sum(PriorityChargingList(:,3)));
 
+            if sum(PriorityChargingList(:,end))-0.1 > DispatchedResPo(TimeInd) || sum(PriorityChargingList(:,end))+0.1 < DispatchedResPo(TimeInd)
+                1
+            end
 %             1
 
         else %if DispatchedResPo(TimeInd) <= sum(AvailableDispatchedResPoMax) % 0.57% + 0% = 0.57%
@@ -140,13 +151,20 @@ if OfferedResPo>0
             PriorityChargingList=[PriorityChargingList, PriorityChargingList(:,5)-PriorityChargingList(:,4)]; % Cols: UserNumber, energy left until public charging, dispatched reserve power, max reserve power, max additional dispatchable reserve power
             temp=[0;cumsum(PriorityChargingList(:,6))];
             MOLPos=find(temp>=(DispatchedResPo(TimeInd)-sum(PriorityChargingList(:,4))), 1)-1; % 
-            PriorityChargingList=[PriorityChargingList, [PriorityChargingList(1:MOLPos,3)+PriorityChargingList(1:MOLPos,6); PriorityChargingList(MOLPos+1:end,4)]];
-            PriorityChargingList(MOLPos,7)=PriorityChargingList(MOLPos,4) + (DispatchedResPo(TimeInd) - temp(MOLPos+1)-sum(PriorityChargingList(:,4)));
+            PriorityChargingList=[PriorityChargingList, [PriorityChargingList(1:MOLPos,4)+PriorityChargingList(1:MOLPos,6); PriorityChargingList(MOLPos+1:end,4)]];
+            PriorityChargingList(MOLPos,7)=PriorityChargingList(MOLPos,4) + (DispatchedResPo(TimeInd) - temp(MOLPos)-sum(PriorityChargingList(:,4)));
+            
+            if (sum(PriorityChargingList(:,end))-0.1 > DispatchedResPo(TimeInd) || sum(PriorityChargingList(:,end))+0.1 < DispatchedResPo(TimeInd)) && sum(AvailableDispatchedResPoMax)>DispatchedResPo(TimeInd)
+                1
+            end
             
         end
         
+        ProvidedResPo(TimeInd)=0;
+        
         for n=PriorityChargingList(:,1)'
             Users{n}.Logbook(TimeInd+TD.User,7)=PriorityChargingList(PriorityChargingList(:,1)==n, end);
+            ProvidedResPo(TimeInd)=ProvidedResPo(TimeInd)+Users{n}.Logbook(TimeInd+TD.User,7);
         end
 
     end
