@@ -8,7 +8,7 @@ ResPoPriceFactor=[0.8];
 ResEnPriceFactor=-0.1;
 options = optimoptions('linprog','Algorithm','dual-simplex');
 options.Display = 'off';
-ResPoBuffer=max(0,1-NumDecissionGroups/NumUsers*1.4);
+ResPoBuffer=1;%max(0,1-NumDecissionGroups/NumUsers*1.4);
 
 ResPoOffers=NaN(6,2,1);
 ResEnOffers=NaN(6,1,1);

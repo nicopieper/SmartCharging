@@ -46,9 +46,9 @@ ConseqMatchLastResPoOffers4HbIt=LastResPoOffersSucessful4Hb(ResPoBlockedIndices,
 ConseqMatchLastResPoOffers4HAIt=ConseqMatchLastResPoOffers4HA(1:length(ResPoBlockedIndices),:);
 ConseqMatchLastResPoOffers4HAIt(:,repelem(ControlPeriods:ControlPeriods*2:ControlPeriods*NumUsers/NumDecissionGroups*NumCostCats*2,ControlPeriods-ControlPeriodsIt)'-DelCols2)=[];
 
-% Sicherstellen, dass beide Variablen korrekt zugeschnitten werden, für beide oder
-% alle Fälle.
-% Nach Ursacher für Fehlermeldung suchen
+% Sicherstellen, dass beide Variablen korrekt zugeschnitten werden, fï¿½r beide oder
+% alle Fï¿½lle.
+% Nach Ursacher fï¿½r Fehlermeldung suchen
 
 if ControlPeriodsIt<ControlPeriods
     DelRows=(ControlPeriodsIt+1:ControlPeriods)'+(0:NumUsers/NumDecissionGroups-1)*ControlPeriods;
@@ -123,13 +123,29 @@ if UseParallel
         b=[reshape(ConsSumPowerTSbIt(SubIndices(DecissionGroups{k,2}, ControlPeriods, ControlPeriodsIt, 1)'),[],1); reshape(ConsMaxEnergyChargableSoCTSbIt(SubIndices(DecissionGroups{k,2}, ControlPeriods, ControlPeriodsIt, 1)'),[],1); reshape(-ConsMinEnergyRequiredTSbIt(SubIndices(DecissionGroups{k,2}, ControlPeriods, ControlPeriodsIt, 1)'),[],1)];
         A=[ConsSumPowerTSAIt; ConsEnergyDemandTSAIt; -ConsEnergyDemandTSAIt];
         
-        beq=[ConseqMaxEnergyChargableDeadlockCPbIt(DecissionGroups{k,1})'; ConseqResPoOfferbIt; DecissionGroups{k,4}]; %% this is wrong as ConseqMatchLastResPoOffersSucessful4Hb must be constant in sum
+        beq=[ConseqMaxEnergyChargableDeadlockCPbIt(DecissionGroups{k,1})'; ConseqResPoOfferbIt; DecissionGroups{k,4}];
         Aeq=[ConseqEnergyCPAIt; ConseqResPoOfferAIt; ConseqMatchLastResPoOffers4HAIt];
         ub=ConsPowerTSb(SubIndices(DecissionGroups{k,3}, ControlPeriods, ControlPeriodsIt, 3))';
         
         Costf=Costsf(SubIndices(DecissionGroups{k,3}, ControlPeriods, ControlPeriodsIt, 3))';
         
         [x11,fval]=linprog(Costf,A,b,Aeq,beq,lb,ub, options);
+        
+        if isempty(x11) % Resolves the issue that the buffer does not cover the deviation: In this case the underfullfilment must be accepted and as much reserve power as possible will be provided. The deviation from the offer must be satisfied by the other units of the VPP.
+            b=[reshape(ConsSumPowerTSbIt(SubIndices(DecissionGroups{k,2}, ControlPeriods, ControlPeriodsIt, 1)'),[],1); reshape(ConsMaxEnergyChargableSoCTSbIt(SubIndices(DecissionGroups{k,2}, ControlPeriods, ControlPeriodsIt, 1)'),[],1); reshape(-ConsMinEnergyRequiredTSbIt(SubIndices(DecissionGroups{k,2}, ControlPeriods, ControlPeriodsIt, 1)'),[],1); DecissionGroups{k,4}];
+            A=[ConsSumPowerTSAIt; ConsEnergyDemandTSAIt; -ConsEnergyDemandTSAIt; ConseqMatchLastResPoOffers4HAIt];
+
+            beq=[ConseqMaxEnergyChargableDeadlockCPbIt(DecissionGroups{k,1})'; ConseqResPoOfferbIt]; 
+            Aeq=[ConseqEnergyCPAIt; ConseqResPoOfferAIt];
+
+            Costf=Costs;
+            Costf(1:length(ResPoBlockedIndices)*Time.StepInd*4,3,:)=-10000;
+            Costf=Costf(:);
+            Costf=Costf(SubIndices(DecissionGroups{k,3}, ControlPeriods, ControlPeriodsIt, 3))';
+
+            [x11,fval]=linprog(Costf,A,b,Aeq,beq,lb,ub, options);
+        end
+        
         x11(x11<0)=0;
         x1{k}=x11;
     end
@@ -164,6 +180,21 @@ else
     Costf=Costs(:);
     
     [x,fval]=linprog(Costf,A,b,Aeq,beq,lb,ub, options);
+    
+    if isempty(x) % Resolves the issue that the buffer does not cover the deviation: In this case the underfullfilment must be accepted and as much reserve power as possible will be provided. The deviation from the offer must be satisfied by the other units of the VPP.
+        b=[ConsSumPowerTSbIt; ConsMaxEnergyChargableSoCTSbIt; -ConsMinEnergyRequiredTSbIt; ConseqMatchLastResPoOffers4HbIt];
+        A=[ConsSumPowerTSAIt; ConsEnergyDemandTSAIt; -ConsEnergyDemandTSAIt; ConseqMatchLastResPoOffers4HAIt];
+
+        beq=[ConseqMaxEnergyChargableDeadlockCPbIt; ConseqResPoOfferbIt;];
+        Aeq=[ConseqEnergyCPAIt; ConseqResPoOfferAIt;];
+    
+        Costf=Costs;
+        Costf(1:length(ResPoBlockedIndices)*Time.StepInd*4,3,:)=-10000;
+        Costf=Costf(:);
+    
+        [x,fval]=linprog(Costf,A,b,Aeq,beq,lb,ub, options);
+    end
+    
     x(x<0)=0;   
 end
 tc1=tc1+toc;
@@ -196,8 +227,8 @@ if ismember(TimeInd, TimesOfPreAlgo(1,:))
     ChargingMat{1}(:,:,:,PreAlgoCounter)=OptimalChargingEnergies;
     AvailabilityMat=[AvailabilityMat, Availability(1:96,1,:)];
     
-    %SuccessfulResPoOffers(:,PreAlgoCounter+1)=ResPoOffers(:,1,PreAlgoCounter+1)<=ResPoPricesReal4H(floor((TimeInd+TD.Main)/(4*Time.StepInd))+1:floor((TimeInd+TD.Main)/(4*Time.StepInd))+6,3)/1000; %[€/MW]
-    SuccessfulResPoOffers(:,PreAlgoCounter+1)=ResPoOffers(:,1,PreAlgoCounter+1)<=ResPoPricesReal4H(floor((TimeInd+TD.Main)/(4*Time.StepInd))+1+(24-hour(TimeOfPreAlgo1))/4:floor((TimeInd+TD.Main)/(4*Time.StepInd))+(24-hour(TimeOfPreAlgo1))/4+6,3)/1000; %[€/MW]
+    %SuccessfulResPoOffers(:,PreAlgoCounter+1)=ResPoOffers(:,1,PreAlgoCounter+1)<=ResPoPricesReal4H(floor((TimeInd+TD.Main)/(4*Time.StepInd))+1:floor((TimeInd+TD.Main)/(4*Time.StepInd))+6,3)/1000; %[ï¿½/MW]
+    SuccessfulResPoOffers(:,PreAlgoCounter+1)=ResPoOffers(:,1,PreAlgoCounter+1)<=ResPoPricesReal4H(floor((TimeInd+TD.Main)/(4*Time.StepInd))+1+(24-hour(TimeOfPreAlgo1))/4:floor((TimeInd+TD.Main)/(4*Time.StepInd))+(24-hour(TimeOfPreAlgo1))/4+6,3)/1000; %[ï¿½/MW]
     LastResPoOffers(:,PreAlgoCounter+1)=sum(OptimalChargingEnergies(1:ConstantResPoPowerPeriods:end,3,:), 3);
     LastResPoOffersSucessful4Hb(:,PreAlgoCounter+1)=LastResPoOffers(:,PreAlgoCounter+1);
     LastResPoOffersSucessful4Hb(ConsPeriods+1:ConsPeriods+6,PreAlgoCounter+1)=LastResPoOffersSucessful4Hb(ConsPeriods+1:ConsPeriods+6,PreAlgoCounter+1).*SuccessfulResPoOffers(:,PreAlgoCounter+1);
