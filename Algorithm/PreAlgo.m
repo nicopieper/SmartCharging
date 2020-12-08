@@ -180,12 +180,6 @@ else
     
     tic
     [x,fval]=linprog(Costf,A,b,Aeq,beq,lb,ub, options);
-    if ismember(TimeInd, TimesOfPreAlgo(1,:))
-        a1=a1+toc;
-    else
-        a2=a2+toc;
-    end
-    
     
     if isempty(x) % Resolves the issue that the buffer does not cover the deviation: In this case the underfulfillment must be accepted and as much reserve power as possible will be provided. The deviation from the offer must be satisfied by the other units of the VPP.
         b=[ConsSumPowerTSbIt; ConsMaxEnergyChargableSoCTSbIt; -ConsMinEnergyRequiredTSbIt; ConseqMatchLastResPoOffers4HbIt];
