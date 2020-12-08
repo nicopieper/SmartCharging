@@ -29,7 +29,7 @@ if OfferedResPo>0
     elseif MOLPos==OwnOfferMOLPos
         if OwnOfferMOLPos>1
             DispatchedResPo(TimeInd)=TSOResPoDemand-temp(OwnOfferMOLPos-1);
-        else    
+        else
             DispatchedResPo(TimeInd)=TSOResPoDemand;
         end
     else
@@ -81,7 +81,7 @@ if OfferedResPo>0
             VarCounter=0;
             for n=UserNum
                 VarCounter=VarCounter+1;
-                PriorityChargingList(VarCounter,:)=[n,Users{n}.Logbook(TimeInd+TD.User,9)-Users{n}.PublicChargingThreshold_Wh]; % UserNumber, Energy left until public charging necessary [Wh], dispatched reserve power [W]
+                PriorityChargingList(VarCounter,:)=[n,Users{n}.Logbook(TimeInd+TD.User,9)-Users{n}.PublicChargingThreshold_Wh]; % UserNumber, Energy left until public charging necessary [Wh], pre dispatched reserve power [W]
             end
             PriorityChargingList=[PriorityChargingList, AvailableDispatchedResPo];
             PriorityChargingList=PriorityChargingList(PriorityChargingList(:,3)>0,:);
@@ -90,8 +90,8 @@ if OfferedResPo>0
             temp=[0;cumsum(PriorityChargingList(:,3))];
             MOLPos=find(temp>=DispatchedResPo(TimeInd), 1)-1; % 
 
-            PriorityChargingList=[PriorityChargingList, [PriorityChargingList(1:MOLPos,3); zeros(size(PriorityChargingList,1)-MOLPos,1)]];
-            PriorityChargingList(MOLPos,4)=DispatchedResPo(TimeInd)-temp(MOLPos+1);
+            PriorityChargingList=[PriorityChargingList, [PriorityChargingList(1:MOLPos,3); zeros(size(PriorityChargingList,1)-MOLPos,1)]]; % UserNumber, Energy left until public charging necessary [Wh], pre dispatched reserve power [W], now dispatched reserve power [W]
+            PriorityChargingList(MOLPos,4)=DispatchedResPo(TimeInd)-temp(MOLPos); % now dispatched reserve power of marginal vehicle
             PriorityChargingList=PriorityChargingList(SortedOrder,[1,3,4]);
             
             if sum(PriorityChargingList(:,end))-0.1 > DispatchedResPo(TimeInd) || sum(PriorityChargingList(:,end))+0.1 < DispatchedResPo(TimeInd)
@@ -100,7 +100,7 @@ if OfferedResPo>0
 
 %             1
 
-        elseif round(DispatchedResPo(TimeInd)*100) == round(sum(AvailableDispatchedResPo)*100) % 69.18%
+        elseif DispatchedResPo(TimeInd)+0.5 >= sum(AvailableDispatchedResPo) && DispatchedResPo(TimeInd)-0.5 <= sum(AvailableDispatchedResPo) % 69.18%
             % do nothing
             PriorityChargingList=[UserNum', zeros(NumUsers, 1), AvailableDispatchedResPo, AvailableDispatchedResPo];
             PriorityChargingList=PriorityChargingList(PriorityChargingList(:,4)>0,:);
@@ -119,7 +119,7 @@ if OfferedResPo>0
             [~, SortedOrder]=sort(PriorityChargingList(:,2), 'ascend'); % Create a Merit-Order-List for the cars to charge energy. The car with the least energy left before public charging is needed is on top of the MOL
             PriorityChargingList=PriorityChargingList(SortedOrder,:);
             
-            PriorityChargingList=[PriorityChargingList, PriorityChargingList(:,4)-PriorityChargingList(:,3)]; % Cols: UserNumber, energy left until public charging, dispatched reserve power, max reserve power, max additional dispatchable reserve power
+            PriorityChargingList=[PriorityChargingList, PriorityChargingList(:,4)-PriorityChargingList(:,3)]; % Cols: UserNumber, energy left until public charging, pre dispatched reserve power, max reserve power, max additional dispatchable reserve power
             temp=[0;cumsum(PriorityChargingList(:,5))];
             MOLPos=find(temp>=(DispatchedResPo(TimeInd)-sum(PriorityChargingList(:,3))), 1)-1; % 
             PriorityChargingList=[PriorityChargingList, [PriorityChargingList(1:MOLPos,3)+PriorityChargingList(1:MOLPos,5); PriorityChargingList(MOLPos+1:end,3)]];
@@ -150,9 +150,12 @@ if OfferedResPo>0
             
             PriorityChargingList=[PriorityChargingList, PriorityChargingList(:,5)-PriorityChargingList(:,4)]; % Cols: UserNumber, energy left until public charging, dispatched reserve power, max reserve power, max additional dispatchable reserve power
             temp=[0;cumsum(PriorityChargingList(:,6))];
-            MOLPos=find(temp>=(DispatchedResPo(TimeInd)-sum(PriorityChargingList(:,4))), 1)-1; % 
+            MOLPos=find(temp>=(DispatchedResPo(TimeInd)-sum(PriorityChargingList(:,4))), 1)-1;
+            if isempty(MOLPos)
+                MOLPos=size(PriorityChargingList,1);
+            end
             PriorityChargingList=[PriorityChargingList, [PriorityChargingList(1:MOLPos,4)+PriorityChargingList(1:MOLPos,6); PriorityChargingList(MOLPos+1:end,4)]];
-            PriorityChargingList(MOLPos,7)=PriorityChargingList(MOLPos,4) + (DispatchedResPo(TimeInd) - temp(MOLPos)-sum(PriorityChargingList(:,4)));
+            PriorityChargingList(MOLPos,7)=min(PriorityChargingList(MOLPos,5), PriorityChargingList(MOLPos,4) + (DispatchedResPo(TimeInd) - temp(MOLPos)-sum(PriorityChargingList(:,4))));
             
             if (sum(PriorityChargingList(:,end))-0.1 > DispatchedResPo(TimeInd) || sum(PriorityChargingList(:,end))+0.1 < DispatchedResPo(TimeInd)) && sum(AvailableDispatchedResPoMax)>DispatchedResPo(TimeInd)
                 1
@@ -168,6 +171,7 @@ if OfferedResPo>0
         end
 
     end
+    
 end
 
 

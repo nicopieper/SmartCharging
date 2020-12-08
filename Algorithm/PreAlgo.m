@@ -71,7 +71,7 @@ if ControlPeriodsIt<ControlPeriods
     
     
 else
-    ConsPowerTSb((24-hour(TimeOfPreAlgo1))*Time.StepInd+1:(24-hour(TimeOfPreAlgo1))*Time.StepInd+24*Time.StepInd,3,:)=PowerTS((24-hour(TimeOfPreAlgo1))*Time.StepInd+1:(24-hour(TimeOfPreAlgo1))*Time.StepInd+24*Time.StepInd,3,:)*ResPoBuffer; % Limit the available power for reserve power. That is needed to avoid underfullfilment issues, when the planned driving schedules deviate from the real driving schedules.
+    ConsPowerTSb((24-hour(TimeOfPreAlgo1))*Time.StepInd+1:(24-hour(TimeOfPreAlgo1))*Time.StepInd+24*Time.StepInd,3,:)=PowerTS((24-hour(TimeOfPreAlgo1))*Time.StepInd+1:(24-hour(TimeOfPreAlgo1))*Time.StepInd+24*Time.StepInd,3,:)*ResPoBuffer; % Limit the available power for reserve power. That is needed to avoid underfulfillment issues, when the planned driving schedules deviate from the real driving schedules.
 end
 
 ConsPowerTSb=ConsPowerTSb(:);
@@ -179,9 +179,10 @@ else
 
     Costf=Costs(:);
     
+    tic
     [x,fval]=linprog(Costf,A,b,Aeq,beq,lb,ub, options);
     
-    if isempty(x) % Resolves the issue that the buffer does not cover the deviation: In this case the underfullfilment must be accepted and as much reserve power as possible will be provided. The deviation from the offer must be satisfied by the other units of the VPP.
+    if isempty(x) % Resolves the issue that the buffer does not cover the deviation: In this case the underfulfillment must be accepted and as much reserve power as possible will be provided. The deviation from the offer must be satisfied by the other units of the VPP.
         b=[ConsSumPowerTSbIt; ConsMaxEnergyChargableSoCTSbIt; -ConsMinEnergyRequiredTSbIt; ConseqMatchLastResPoOffers4HbIt];
         A=[ConsSumPowerTSAIt; ConsEnergyDemandTSAIt; -ConsEnergyDemandTSAIt; ConseqMatchLastResPoOffers4HAIt];
 
@@ -189,7 +190,7 @@ else
         Aeq=[ConseqEnergyCPAIt; ConseqResPoOfferAIt;];
     
         Costf=Costs;
-        Costf(1:length(ResPoBlockedIndices)*Time.StepInd*4,3,:)=-10000;
+        Costf(1:length(ResPoBlockedIndices)*Time.StepInd*4,3,:)=-10000; % set costs for reserve power virtually so low that it will be used at its maximum possible
         Costf=Costf(:);
     
         [x,fval]=linprog(Costf,A,b,Aeq,beq,lb,ub, options);

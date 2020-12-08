@@ -2,7 +2,11 @@
 tic
 %Why does this produce an error?
 %Compare for 2 Users with and without parallel
+<<<<<<< HEAD
 NumUsers=1800; % size(Users,1)-1
+=======
+NumUsers=20; % size(Users,1)-1
+>>>>>>> a8fdb339581ab420cde3e6e54ea58d4bb7e76ef6
 SmartCharging=true;
 %UseParallel=false;
 UseParallel=true;
