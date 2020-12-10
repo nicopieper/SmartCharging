@@ -37,7 +37,7 @@ end
 PreAlgoCounter=0;
 Availability=[];
 EnergyDemand=[];
-ChargingMat=cell(2,1);
+ChargingMat=cell(size(TimesOfPreAlgo,1)+1,1);
 ChargingVehicle=[];
 ChargingType=[];
 AvailabilityMat=[];
@@ -73,7 +73,7 @@ ResPoOfferEqualiyMat2=sparse(kron(eye(ControlPeriods/ConstantResPoPowerPeriods, 
 ConseqResPoOfferA=sparse(repmat([zeros((ConstantResPoPowerPeriods-1)*ControlPeriods/ConstantResPoPowerPeriods,ControlPeriods*sum(CostCats(1:2))), ResPoOfferEqualiyMat2],1,NumUsers/NumDecissionGroups)); % one row represents one time step. within one Zeitscheibe the sum of reserve powers offered by all vehicles must be equal. hence it must be the power in timestep=1 must be the same as in timestep=2. this is represented by  a one followed by a -1 per vehicle
 
 
-if TimeOfPreAlgo1 <= TimeOfReserveMarketOffer
+if TimeOfPreAlgo(1) <= TimeOfReserveMarketOffer
     ConsPeriods=(24*Time.StepInd-ShiftInds)/(4*Time.StepInd);
 else
     ConsPeriods=(2*24*Time.StepInd-ShiftInds)/(4*Time.StepInd);
@@ -90,7 +90,7 @@ LastResPoOffers=zeros(ceil(ControlPeriods/(ConstantResPoPowerPeriods)),1);
 LastResPoOffersSucessful4H=zeros(ceil(ControlPeriods/(ConstantResPoPowerPeriods)),1);
 
 A=[ConsSumPowerTSA; ConsEnergyDemandTSA; -ConsEnergyDemandTSA];
-Aeq=[ConseqEnergyCPA; ConseqResPoOfferA;ConseqMatchLastResPoOffers4HA];
+Aeq=[ConseqEnergyCPA; ConseqResPoOfferA; ConseqMatchLastResPoOffers4HA];
 lb=zeros(ControlPeriods, NumCostCats, NumUsers);
 lb=lb(:);
 

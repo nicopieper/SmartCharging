@@ -37,7 +37,7 @@ DelCols2=(1:(ControlPeriods-ControlPeriodsIt))'+(0:NumUsers/NumDecissionGroups*N
 DelCols2=DelCols2(:);
 
 ResPoBlockedIndices=(floor(floor(mod(TimeInd-1, 24*Time.StepInd)/Time.StepInd)/4):5)+1 + (mod(TimeInd-1, (24*Time.StepInd))<=32)*6 - 2;
-if hour(Time.Sim.Vec(TimeInd))+minute(Time.Sim.Vec(TimeInd))>hour(TimeOfPreAlgo1)
+if hour(Time.Sim.Vec(TimeInd))+minute(Time.Sim.Vec(TimeInd))>hour(TimeOfPreAlgo(1))
     ResPoBlockedIndices=[ResPoBlockedIndices, 5:10];
 end
 ResPoBlockedIndices=((ResPoBlockedIndices(1):1/(4*Time.StepInd/ConstantResPoPowerPeriods):ResPoBlockedIndices(end)+1-1/(4*Time.StepInd/ConstantResPoPowerPeriods))-1)*4*Time.StepInd/ConstantResPoPowerPeriods+1;
@@ -70,8 +70,8 @@ if ControlPeriodsIt<ControlPeriods
     ConseqResPoOfferAIt(:,DelCols2)=[];
     
     
-else
-    ConsPowerTSb((24-hour(TimeOfPreAlgo1))*Time.StepInd+1:(24-hour(TimeOfPreAlgo1))*Time.StepInd+24*Time.StepInd,3,:)=PowerTS((24-hour(TimeOfPreAlgo1))*Time.StepInd+1:(24-hour(TimeOfPreAlgo1))*Time.StepInd+24*Time.StepInd,3,:)*ResPoBuffer; % Limit the available power for reserve power. That is needed to avoid underfulfillment issues, when the planned driving schedules deviate from the real driving schedules.
+elseif CostCats(3)
+    ConsPowerTSb((24-hour(TimeOfPreAlgo(1)))*Time.StepInd+1:(24-hour(TimeOfPreAlgo(1)))*Time.StepInd+24*Time.StepInd,sum(CostCats(1:3)),:)=PowerTS((24-hour(TimeOfPreAlgo(1)))*Time.StepInd+1:(24-hour(TimeOfPreAlgo(1)))*Time.StepInd+24*Time.StepInd,sum(CostCats(1:3)),:)*ResPoBuffer; % Limit the available power for reserve power. That is needed to avoid underfulfillment issues, when the planned driving schedules deviate from the real driving schedules.
 end
 
 ConsPowerTSb=ConsPowerTSb(:);
@@ -178,7 +178,6 @@ else
 
     Costf=Costs(:);
     
-    tic
     [x,fval]=linprog(Costf,A,b,Aeq,beq,lb,ub, options);
     
     if isempty(x) % Resolves the issue that the buffer does not cover the deviation: In this case the underfulfillment must be accepted and as much reserve power as possible will be provided. The deviation from the offer must be satisfied by the other units of the VPP.
@@ -220,23 +219,23 @@ tc1=tc1+toc;
 
 %% Evaluate result
 OptimalChargingEnergies=reshape(x,ControlPeriodsIt, NumCostCats, NumUsers);
-PostPreAlgo;
-OptimalChargingEnergies(:,1,:)=OptimalChargingEnergiesSpotmarket;
+if CostCats(1)
+    PostPreAlgo;
+    OptimalChargingEnergies(:,1,:)=OptimalChargingEnergiesSpotmarket;
+end
 
 if ismember(TimeInd, TimesOfPreAlgo(1,:))
     ChargingMat{1}(:,:,:,PreAlgoCounter)=OptimalChargingEnergies;
     AvailabilityMat=[AvailabilityMat, Availability(1:96,1,:)];
     
     %SuccessfulResPoOffers(:,PreAlgoCounter+1)=ResPoOffers(:,1,PreAlgoCounter+1)<=ResPoPricesReal4H(floor((TimeInd+TD.Main)/(4*Time.StepInd))+1:floor((TimeInd+TD.Main)/(4*Time.StepInd))+6,3)/1000; %[€/MW]
-    SuccessfulResPoOffers(:,PreAlgoCounter+1)=ResPoOffers(:,1,PreAlgoCounter+1)<=ResPoPricesReal4H(floor((TimeInd+TD.Main)/(4*Time.StepInd))+1+(24-hour(TimeOfPreAlgo1))/4:floor((TimeInd+TD.Main)/(4*Time.StepInd))+(24-hour(TimeOfPreAlgo1))/4+6,3)/1000; %[€/MW]
-    LastResPoOffers(:,PreAlgoCounter+1)=sum(OptimalChargingEnergies(1:ConstantResPoPowerPeriods:end,3,:), 3);
+    SuccessfulResPoOffers(:,PreAlgoCounter+1)=ResPoOffers(:,1,PreAlgoCounter+1)<=ResPoPricesReal4H(floor((TimeInd+TD.Main)/(4*Time.StepInd))+1+(24-hour(TimeOfPreAlgo(1)))/4:floor((TimeInd+TD.Main)/(4*Time.StepInd))+(24-hour(TimeOfPreAlgo(1)))/4+6,3)/1000; %[€/MW]
+    LastResPoOffers(:,PreAlgoCounter+1)=sum(OptimalChargingEnergies(1:ConstantResPoPowerPeriods:end,sum(CostCats(1:3)),:), 3);
     LastResPoOffersSucessful4H(:,PreAlgoCounter+1)=LastResPoOffers(:,PreAlgoCounter+1);
     LastResPoOffersSucessful4H(ConsPeriods+1:ConsPeriods+6,PreAlgoCounter+1)=LastResPoOffersSucessful4H(ConsPeriods+1:ConsPeriods+6,PreAlgoCounter+1).*SuccessfulResPoOffers(:,PreAlgoCounter+1);
-end
-if ismember(TimeInd, TimesOfPreAlgo(2,:))
-    ChargingMat{2}(:,:,:,PreAlgoCounter)=OptimalChargingEnergies;
-%     PPower(:,PreAlgoCounter)=sum(OptimalChargingEnergies(:,2,:),3);
-%     PPPower(:,:,PreAlgoCounter)=squeeze(PVPower);
+else
+    [Row, ~]=find(TimeInd==TimesOfPreAlgo);
+    ChargingMat{Row}(:,:,:,PreAlgoCounter)=OptimalChargingEnergies;
 end
 
 %%
