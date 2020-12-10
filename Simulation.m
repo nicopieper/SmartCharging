@@ -1,12 +1,6 @@
 %% Initialisation
 tic
-%Why does this produce an error?
-%Compare for 2 Users with and without parallel
-<<<<<<< HEAD
-NumUsers=1800; % size(Users,1)-1
-=======
-NumUsers=20; % size(Users,1)-1
->>>>>>> a8fdb339581ab420cde3e6e54ea58d4bb7e76ef6
+NumUsers=20000; % size(Users,1)-1
 SmartCharging=true;
 %UseParallel=false;
 UseParallel=true;
@@ -26,7 +20,7 @@ TSim=tic;
 
 if SmartCharging
     if UseParallel
-        NumDecissionGroups=12;
+        NumDecissionGroups=1000;
         UseParallel=true;
         gcp
     else
@@ -306,7 +300,7 @@ for TimeInd=Time.Sim.VecInd(2:end-ControlPeriods)
     end
     
     
-    if ActivateWaitbar && mod(TimeInd+TD.User,1000)==0
+    if ActivateWaitbar %&& mod(TimeInd+TD.User,1000)==0
         waitbar(TimeInd/length(Time.Sim.Vec));
     end
 end

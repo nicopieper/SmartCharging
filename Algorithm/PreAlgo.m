@@ -1,3 +1,5 @@
+tic
+
 %% Update Costs
 
 CostsSpotmarket=(CostsElectricityBase(end-ControlPeriodsIt+1:end,1,:)/100 + SpotmarktPricesCP/1000)*MwSt;
@@ -106,7 +108,7 @@ SplitDecissionGroups;
 
 %% Calc optimal charging powers
 
-tic
+
 if UseParallel
     
     ConsSumPowerTSbIt=ConsSumPowerTSbIt';
@@ -179,7 +181,6 @@ else
 
     Costf=Costs(:);
     
-    tic
     [x,fval]=linprog(Costf,A,b,Aeq,beq,lb,ub, options);
     
     if isempty(x) % Resolves the issue that the buffer does not cover the deviation: In this case the underfulfillment must be accepted and as much reserve power as possible will be provided. The deviation from the offer must be satisfied by the other units of the VPP.
@@ -198,7 +199,7 @@ else
     
     x(x<0)=0;   
 end
-tc1=tc1+toc;
+
 
 
 % b=[ConsSumPowerTSbIt; ConsMaxEnergyChargableSoCTSbIt; -ConsMinEnergyRequiredTSbIt];
@@ -239,6 +240,7 @@ if ismember(TimeInd, TimesOfPreAlgo(2,:))
 %     PPower(:,PreAlgoCounter)=sum(OptimalChargingEnergies(:,2,:),3);
 %     PPPower(:,:,PreAlgoCounter)=squeeze(PVPower);
 end
+tc1=tc1+toc;
 
 %%
 % LastResPoOffersSucessful4H:   The first row corresponds to the
