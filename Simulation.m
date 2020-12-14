@@ -416,7 +416,7 @@ for n=2:length(Users)
 end
 
 if isfield(Users{2}, "LogbookBase")
-    TotalCostsBase=zeros(3,6);
+    TotalCostsBase=zeros(3,7);
     
     for n=2:length(Users)
         
@@ -431,11 +431,13 @@ if isfield(Users{2}, "LogbookBase")
     %TotalCostsBase(2,4)=0;
     TotalCostsBase(1:2,6)=sum(TotalCostsBase(1:2,1:4),2);
     TotalCostsBase(3,:)=TotalCostsBase(2,:)./TotalCostsBase(1,:);
+    TotalCostsBase(1:2,7)=TotalCostsSmart(1:2,6)/(length(Users)-1);
+    TotalCostsBase(1:2,8)=TotalCostsBase(2,6)/(length(Users)-1)/(length(Users{2}.LogbookBase)/(24*Time.StepInd))*365;
     
-    disp(strcat("Total costs for base charging the fleet were ", num2str(sum(TotalCostsBase)/100/1000), "k€"));
+    disp(strcat("Costs for base charging the fleet were ", num2str(TotalCostsBase(2,8)/100), "€ per user per year"));
 end
 if isfield(Users{2}, "LogbookSmart")
-    TotalCostsSmart=zeros(3,5); % [kWh (6. column kW); ct; ct/kWh]
+    TotalCostsSmart=zeros(3,7); % [kWh (6. column kW); ct; ct/kWh]
     ResEnOffersList=repelem(reshape(ResEnOffers(:,1,1:end-1),[],1),4*Time.StepInd);
     for n=2:length(Users)
         TotalCostsSmart(1,1:4)=TotalCostsSmart(1,1:4)+sum(Users{n}.LogbookSmart(:,5:8)/1000/Users{n}.ChargingEfficiency, 1);
@@ -454,9 +456,12 @@ if isfield(Users{2}, "LogbookSmart")
     TotalCostsSmart(1,6)=sum(TotalCostsSmart(1,1:4));
     TotalCostsSmart(2,6)=sum(TotalCostsSmart(2,1:5),2);
     TotalCostsSmart(3,6)=TotalCostsSmart(2,6)/TotalCostsSmart(1,6);
+    TotalCostsSmart(1:2,7)=TotalCostsSmart(1:2,6)/(length(Users)-1);
+    TotalCostsSmart(1:2,8)=TotalCostsSmart(2,6)/(length(Users)-1)/(length(Users{2}.LogbookSmart)/(24*Time.StepInd))*365;
     
-    disp(strcat("Total costs for smart charging the fleet were ", num2str(sum(TotalCostsSmart(2,:),2)/100/1000), "k€"));
+    disp(strcat("Total costs for smart charging the fleet were ", num2str(TotalCostsSmart(2,8)/100), "€ per User per year"));
 end
+% if isfield(Users{2}, "LogbookBase") && isfield(Users{2}, "LogbookSmart")
 
 
 %% Evaluate Smart Charging
