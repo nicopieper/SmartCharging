@@ -10,8 +10,11 @@ options = optimoptions('linprog','Algorithm','dual-simplex');
 options.Display = 'off';
 ResPoBuffer=1;%max(0,1-NumDecissionGroups/NumUsers*1.4);
 
-ResPoOffers=NaN(6,2,1);
-ResEnOffers=NaN(6,1,1);
+% ResPoOffers=[NaN(6,1,1), zeros(6,1,1)];
+% ResEnOffers=NaN(6,1,1);
+ResPoOffers=[-10000*ones(6,1,1), zeros(6,1,1)];
+ResEnOffers=-10000*ones(6,1,1);
+
 MwSt=1.19; % The VAT rate
 
 %SubIndices = @(Vector, ControlPeriods, ControlPeriodsIt, CostCatsNum) (reshape(Vector(:,(1:ControlPeriodsIt)'+(0:CostCatsNum-1)*ControlPeriodsIt),1,[])'-(Vector(1)-1)/ControlPeriods*(ControlPeriods-ControlPeriodsIt));
