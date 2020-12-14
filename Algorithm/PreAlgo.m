@@ -48,9 +48,6 @@ ConseqMatchLastResPoOffers4HbIt=LastResPoOffersSucessful4H(ResPoBlockedIndices, 
 ConseqMatchLastResPoOffers4HAIt=ConseqMatchLastResPoOffers4HA(1:length(ResPoBlockedIndices),:);
 ConseqMatchLastResPoOffers4HAIt(:,repelem(ControlPeriods:ControlPeriods*2:ControlPeriods*NumUsers/NumDecissionGroups*NumCostCats*2,ControlPeriods-ControlPeriodsIt)'-DelCols2)=[];
 
-% Sicherstellen, dass beide Variablen korrekt zugeschnitten werden, f�r beide oder
-% alle F�lle.
-% Nach Ursacher f�r Fehlermeldung suchen
 
 if ControlPeriodsIt<ControlPeriods
     DelRows=(ControlPeriodsIt+1:ControlPeriods)'+(0:NumUsers/NumDecissionGroups-1)*ControlPeriods;
@@ -236,6 +233,14 @@ if ismember(TimeInd, TimesOfPreAlgo(1,:))
     LastResPoOffers(:,PreAlgoCounter+1)=sum(OptimalChargingEnergies(1:ConstantResPoPowerPeriods:end,sum(CostCats(1:3)),:), 3);
     LastResPoOffersSucessful4H(:,PreAlgoCounter+1)=LastResPoOffers(:,PreAlgoCounter+1);
     LastResPoOffersSucessful4H(ConsPeriods+1:ConsPeriods+6,PreAlgoCounter+1)=LastResPoOffersSucessful4H(ConsPeriods+1:ConsPeriods+6,PreAlgoCounter+1).*SuccessfulResPoOffers(:,PreAlgoCounter+1);
+    
+    VarCounter=0;
+    for n=UserNum
+        VarCounter=VarCounter+1;
+        ResPoOffers(:,2,PreAlgoCounter+1)=ResPoOffers(:,2,PreAlgoCounter+1)+OptimalChargingEnergies((24-hour(TimeOfPreAlgo(1)))*Time.StepInd+1:ConstantResPoPowerPeriods:(24-hour(TimeOfPreAlgo(1))+24)*Time.StepInd,sum(CostCats(1:3)),VarCounter)/Users{n}.ChargingEfficiency;
+    end
+    ResPoOffers(:,2,PreAlgoCounter+1)=ResPoOffers(:,2,PreAlgoCounter+1).*SuccessfulResPoOffers(:,PreAlgoCounter+1);
+    
 else
     [Row, ~]=find(TimeInd==TimesOfPreAlgo);
     ChargingMat{Row}(:,:,:,PreAlgoCounter)=OptimalChargingEnergies;
@@ -244,6 +249,6 @@ tc1=tc1+toc;
 
 %%
 % LastResPoOffersSucessful4H:   The first row corresponds to the
-%                               Zeitscheibe at the time of PreAlgo1
+%                               Zeitscheibe at the time of PreAlgo(1)
 %                               (usually 8:00), the second one to the
 %                               Zeitscheibe afterwards (12:00) and so on.
