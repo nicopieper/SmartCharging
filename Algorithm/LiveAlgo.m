@@ -46,10 +46,13 @@ if OfferedResPo>0
         AvailableDispatchedResPo=[];
         AvailableDispatchedResPoBuffer=[];
         AvailableDispatchedResPoMax=[];
+        
+%         PreAllocatedPVPower=zeros(ControlPeriodsIt, Num+1);
 
         VarCounter=0;
         for n=UserNum
             if Users{n}.PVPlantExists % First set PV power consumption to min of prediction and real generation consumption via PV can be raised later on during the optimisation but it deallocates power in case of for the threatening underfulfillment of  dispatched reserve power
+%                 PreAllocatedPVPower(:,n)=Users{n}.Logbook(TimeInd+TD.User:TimeInd+TD.User+ControlPeriodsIt-1,6);
                 Users{n}.Logbook(TimeInd+TD.User,6)=min(Users{n}.Logbook(TimeInd+TD.User,6), double(PVPlants{Users{n}.PVPlant}.ProfileQH(TimeInd+TD.Main))/4); % [Wh]
             end
             
@@ -174,29 +177,35 @@ if OfferedResPo>0
     
 end
 
-
-% the power is limited by the allocated res po per vehicle multiplied with
-% the actual availability given in this moment. Should be given by
-% Availability
-
-% NO, that is wrong. When I consider only allocated powers, I can not make
-% use of the buffer power. Should I only use the buffer if I can not
-% fullfil the required energy? Might be an option as it could reduce
-% computational power for most cases
-
-
-
-% Does max SoCTS has to be considered? Yes, as SoC might have changed due
-% to public charging
-
-% The allocated res pos of all vehicles must match DispatchedResPo
-
-% MaxResPo=OptimalChargingEnergies(
-
-
-
-
 % 2. Optimise the spotmarket and pv energy consumption separately using realtime pv energy production
+
+% a. PV power consumption must not exceed generation!
+% b. How an optimisation without CostCat must look like:
+%    - SumPower=SumPower - Logbook(TimeInd+TD.User,7)
+%    - MaxSoCTS must be recalculated considering reserve energy
+%    - MaxChargableCP must be recalculated considering reserve energy
+%    - MinEnergyRequiredTS must be recalculated considering reserve energy
+%    - All constraints must be cutted to two CostCats
+
+% a non optimal solution idea:
+
+% 
+% 
+
+% "Der Regelleistungsistwert einer TE, RE oder RG ergibt sich grundsätzlich
+% aus dem Messwert der Einspeisung (oder des Leistungsbezugs) abzüglich des gemeldeten Arbeitspunkts."
+% !Abweichungen von der Prognose sind auszugleichen!
+
+% 
+% VarCounter=0;
+% for n=UserNum
+%     VarCounter=VarCounter+1;
+%     if Users{n}.PVPlantExists
+%         if PVPlants{Users{n}.PVPlant}.ProfileQH(TimeInd+TD.Main)-1 > Users{n}.Logbook(TimeInd+TD.User,6)% PreAllocatedPVPower(1,n)
+%             MaxPVEnergy=min(MaxEnergyChargableDeadlockCP(1,1,VarCounter), MaxEnergyChargableSoCTS(1,1,VarCounter), SumPower(1,1,VarCounter)-
+                
+        
+
 
 
 % 

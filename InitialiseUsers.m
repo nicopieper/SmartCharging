@@ -83,7 +83,7 @@
 %% Initialisation
 rng('default');
 rng(1);
-NumUsers=20000; % number of users
+NumUsers=50000; % number of users
 LikelihoodPV=0.50; % 44 % der privaten und 46 % der gewerblichen Nutzer �ber eine eigene Photovoltaikanlage, https://elib.dlr.de/96491/1/Ergebnisbericht_E-Nutzer_2015.pdf S. 10
 AddPV=true; % determines wheter PV plants shall be assigned to the users. In general true, only false for test purposes
 MeanPrivateElectricityPrice=30.43/1.19 - 3.7513 - 7.06; % [ct/kWh] average German electricity price in 2019 according to Strom-Report without VAT (19%), electricity production price (avg. Dayahead price was 3.7513 ct/kWh in 2019) and NNE energy price (avg. was 7.06 ct/kWh in 2019)
@@ -128,7 +128,7 @@ end
 
 Time.Sim.Start=dateshift(max([Range.TestDate(1), Vehicles{1}.Time.Vec(1)]), 'start', 'day');
 Time.Sim.End=min([Range.TestDate(2), Vehicles{1}.Time.Vec(end)]);
-Time.Sim.End=min([Range.TestDate(2), Vehicles{1}.Time.Vec(end)])-days(170);
+Time.Sim.End=min([Range.TestDate(2), Vehicles{1}.Time.Vec(end)])-days(140);
 Time.Sim.Vec=Time.Sim.Start:Time.Step:Time.Sim.End;
 Time.Sim.VecInd=1:length(Time.Sim.Vec);
 Time.Sim.StepInd=Time.StepInd;

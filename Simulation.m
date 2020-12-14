@@ -1,6 +1,6 @@
 %% Initialisation
 tic
-NumUsers=20000; % size(Users,1)-1
+NumUsers=50000; % size(Users,1)-1
 SmartCharging=true;
 %UseParallel=false;
 UseParallel=true;
@@ -20,7 +20,7 @@ TSim=tic;
 
 if SmartCharging
     if UseParallel
-        NumDecissionGroups=1000;
+        NumDecissionGroups=500;
         UseParallel=true;
         gcp
     else
@@ -54,13 +54,20 @@ for n=UserNum
 end
 
 if SmartCharging
-    TimeOfPreAlgo1=datetime(1,1,1,8,0,0,'TimeZone','Africa/Tunis');
-    TimeOfPreAlgo2=datetime(1,1,1,12,0,0,'TimeZone','Africa/Tunis');
+    TimeOfPreAlgo=[datetime(1,1,1,8,0,0,'TimeZone','Africa/Tunis'), datetime(1,1,1,12,0,0,'TimeZone','Africa/Tunis'), datetime(1,1,1,16,0,0,'TimeZone','Africa/Tunis'), datetime(1,1,1,20,0,0,'TimeZone','Africa/Tunis'), datetime(1,1,1,0,0,0,'TimeZone','Africa/Tunis'), datetime(1,1,1,4,0,0,'TimeZone','Africa/Tunis')];
     TimeOfReserveMarketOffer=datetime(1,1,1,8,0,0,'TimeZone','Africa/Tunis');
-	ShiftInds=(hour(TimeOfPreAlgo1)*Time.StepInd + minute(TimeOfPreAlgo1)/minutes(Time.Step));
-    TimesOfPreAlgo=sort([(hour(TimeOfPreAlgo1)*Time.StepInd + minute(TimeOfPreAlgo1)/60*Time.StepInd)+1:24*Time.StepInd:length(Time.Sim.VecInd); (hour(TimeOfPreAlgo2)*Time.StepInd + minute(TimeOfPreAlgo2)/60*Time.StepInd)+1:24*Time.StepInd:length(Time.Sim.VecInd)], 'ascend');
+    TimeOfDayAheadMarketPriceRelease=datetime(1,1,1,13,0,0,'TimeZone','Africa/Tunis');
+	ShiftInds=(hour(TimeOfPreAlgo(1))*Time.StepInd + minute(TimeOfPreAlgo(1))/minutes(Time.Step));
+    TimesOfPreAlgo=[(hour(TimeOfPreAlgo(1))*Time.StepInd + minute(TimeOfPreAlgo(1))/60*Time.StepInd)+1:24*Time.StepInd:length(Time.Sim.VecInd);...
+                    (hour(TimeOfPreAlgo(2))*Time.StepInd + minute(TimeOfPreAlgo(2))/60*Time.StepInd)+1:24*Time.StepInd:length(Time.Sim.VecInd);...
+                    (hour(TimeOfPreAlgo(3))*Time.StepInd + minute(TimeOfPreAlgo(3))/60*Time.StepInd)+1:24*Time.StepInd:length(Time.Sim.VecInd);...
+                    (hour(TimeOfPreAlgo(4))*Time.StepInd + minute(TimeOfPreAlgo(4))/60*Time.StepInd)+1:24*Time.StepInd:length(Time.Sim.VecInd);...
+                    (hour(TimeOfPreAlgo(5))*Time.StepInd + minute(TimeOfPreAlgo(5))/60*Time.StepInd)+1:24*Time.StepInd:length(Time.Sim.VecInd);...
+                    (hour(TimeOfPreAlgo(6))*Time.StepInd + minute(TimeOfPreAlgo(6))/60*Time.StepInd)+1:24*Time.StepInd:length(Time.Sim.VecInd);...
+                    ];
     TimesOfZeitscheiben=mod(16-hour(Time.Sim.Vec(1))*4 + minute(Time.Sim.Vec(1)),16)+1:4*Time.StepInd:length(Time.Sim.VecInd);
-    %TimesOfPreAlgo=sort([(hour(TimeOfPreAlgo1)*Time.StepInd + minute(TimeOfPreAlgo1)/60*Time.StepInd)+1:24*Time.StepInd:length(Time.Sim.VecInd)], 'ascend');
+    TimesOfDayAheadMarketPriceRelease=(hour(TimeOfDayAheadMarketPriceRelease)*Time.StepInd + minute(TimeOfDayAheadMarketPriceRelease)/60*Time.StepInd)+1:24*Time.StepInd:length(Time.Sim.VecInd);
+    %TimesOfPreAlgo=sort([(hour(TimeOfPreAlgo(1))*Time.StepInd + minute(TimeOfPreAlgo(1))/60*Time.StepInd)+1:24*Time.StepInd:length(Time.Sim.VecInd)], 'ascend');
     InitialisePreAlgo;
     InitialiseLiveAlgo;
     
@@ -233,14 +240,22 @@ for TimeInd=Time.Sim.VecInd(2:end-ControlPeriods)
                 PreAlgoCounter=PreAlgoCounter+1;
                 
                 if UsePredictions
-                    SpotmarktPricesCP=[SpotmarketPrices(TimeInd+TD.Main:TimeInd+TD.Main+(24-hour(TimeOfPreAlgo1))*Time.StepInd-1); SpotmarketPricesPred1(TimeInd+TD.SpotmarketPricesPred1+(24-hour(TimeOfPreAlgo1))*Time.StepInd+1:TimeInd+TD.SpotmarketPricesPred1+ControlPeriodsIt)];
+%                     SpotmarktPricesCP=[SpotmarketPrices(TimeInd+TD.Main:TimeInd+TD.Main+(24-hour(TimeOfPreAlgo(1)))*Time.StepInd-1); SpotmarketPricesPred1(TimeInd+TD.SpotmarketPricesPred1+(24-hour(TimeOfPreAlgo(1)))*Time.StepInd+1:TimeInd+TD.SpotmarketPricesPred1+ControlPeriodsIt)];
+%                     SpotmarktPricesCP=[SpotmarketPrices(TimeInd+TD.Main:TimeInd+TD.Main + (floor((TimeInd+(24-13)*Time.StepInd-1)/(24*Time.StepInd))+1)*24*Time.StepInd+1-TimeInd)]; % Prices at Day-ahead market are released at ~13:00
+%                     SpotmarktPricesCP=[SpotmarktPricesCP; SpotmarketPricesPred1(TimeInd+ TD.SpotmarketPricesPred1 + (floor((TimeInd+(24-13)*Time.StepInd-1)/(24*Time.StepInd))+1)*24*Time.StepInd+1:length(SpotmarktPricesCP
+                    SpotmarktPricesCP=[SpotmarketPrices(TimeInd+TD.User:TimeInd+TD.User + 24*Time.StepInd-mod(TimeInd-1,24*Time.StepInd)-1 + (mod(TimeInd-1,24*Time.StepInd)-13*Time.StepInd > 0)*96); SpotmarketPricesPred1(TimeInd+TD.SpotmarketPricesPred1 + 24*Time.StepInd-mod(TimeInd-1,24*Time.StepInd)-1 + (mod(TimeInd-1,24*Time.StepInd)-13*Time.StepInd > 0)*96+1:TimeInd+TD.SpotmarketPricesPred1+ControlPeriodsIt-1)];
                 end
                 
                 CalcConsOptVars;
                 
             elseif UsePredictions
-                SpotmarktPricesCP=[SpotmarketPrices(TimeInd+TD.Main:TimeInd+TD.Main+(48-hour(TimeOfPreAlgo1))*Time.StepInd-1); SpotmarketPricesPred1(TimeInd+TD.SpotmarketPricesPred1+(48-hour(TimeOfPreAlgo1))*Time.StepInd+1:TimeInd+TD.SpotmarketPricesPred1+ControlPeriodsIt)];
+                %SpotmarktPricesCP=[SpotmarketPrices(TimeInd+TD.Main:TimeInd+TD.Main+(48-hour(TimeOfPreAlgo(1)))*Time.StepInd-1); SpotmarketPricesPred1(TimeInd+TD.SpotmarketPricesPred1+(48-hour(TimeOfPreAlgo(1)))*Time.StepInd+1:TimeInd+TD.SpotmarketPricesPred1+ControlPeriodsIt)];
+%                 SpotmarktPricesCP=[SpotmarketPrices(TimeInd+TD.Main:TimeInd+TD.Main + (floor((TimeInd+(24-13)*Time.StepInd-1)/(4*Time.StepInd))+1)*4*Time.StepInd+1-TimeInd)];
+                SpotmarktPricesCP=[SpotmarketPrices(TimeInd+TD.User:TimeInd+TD.User + 24*Time.StepInd-mod(TimeInd-1,24*Time.StepInd)-1 + (mod(TimeInd-1,24*Time.StepInd)-13*Time.StepInd > 0)*96); SpotmarketPricesPred2(TimeInd+TD.SpotmarketPricesPred2 + 24*Time.StepInd-mod(TimeInd-1,24*Time.StepInd)-1 + (mod(TimeInd-1,24*Time.StepInd)-13*Time.StepInd > 0)*96+1:TimeInd+TD.SpotmarketPricesPred2+ControlPeriodsIt-1)];
+%                 ; SpotmarketPricesPred1(TimeInd+TD.SpotmarketPricesPred1+(48-hour(TimeOfPreAlgo(1)))*Time.StepInd+1:TimeInd+TD.SpotmarketPricesPred1+ControlPeriodsIt)];
             end
+            
+                
             
             CalcDynOptVars;
             PreAlgo;
@@ -261,7 +276,7 @@ for TimeInd=Time.Sim.VecInd(2:end-ControlPeriods)
 %                 Users{n}.Logbook(TimeInd+TD.User+AvailableBlocks(ChargingBlocks,1)-1:TimeInd+TD.User+AvailableBlocks(ChargingBlocks,2)-1)=4;
                 %Users{n}.Logbook(TimeInd+TD.User+find(sum(OptimalChargingEnergies(1:ControlPeriods,:,n==UserNum), 2)>0)-1, 1) = 5;
                 
-                Users{n}.Logbook(TimeInd+TD.User:TimeInd+TD.User+ControlPeriodsIt-1, 5:7)=OptimalChargingEnergies(1:ControlPeriodsIt,:,n==UserNum);
+                Users{n}.Logbook(TimeInd+TD.User:TimeInd+TD.User+ControlPeriodsIt-1, [false(1,4), CostCats])=OptimalChargingEnergies(1:ControlPeriodsIt,:,n==UserNum);
 %                 if ismember(TimeInd, TimesOfPreAlgo(2,:))
 %                     PPower2(:,n-1,PreAlgoCounter)=OptimalChargingEnergies(1:ControlPeriodsIt,2,n==UserNum);
 %                 end
@@ -295,8 +310,6 @@ for TimeInd=Time.Sim.VecInd(2:end-ControlPeriods)
 
         end
         
-        
-
     end
     
     
@@ -355,9 +368,9 @@ end
 if SmartCharging
     Users{1}.ChargingMat=ChargingMat;
     Users{1}.AvailabilityMat=AvailabilityMat;
-    Users{1}.ShiftInds=cell(2,1);
-    for k=1:2
-        Users{1}.ShiftInds{k}=mod(TimesOfPreAlgo(k,1)-1,ControlPeriods);
+    Users{1}.ShiftInds=cell(size(ChargingMat,1),1);
+    for k=1:size(ChargingMat,1)-1
+        Users{1}.ShiftInds{k}=mod(TimesOfPreAlgo(k,1)-1,ControlPeriods) + 96*(TimeOfPreAlgo(k)<TimeOfPreAlgo(1));
     end
     Users{1}.NumCostCats=NumCostCats;
     Users{1}.UserNum=UserNum;
@@ -394,45 +407,55 @@ if Users{1}.SmartCharging
     
     %ChargingVehicle=reshape(permute(squeeze(sum(Users{1}.ChargingMat(1:96,:,:,:),2)), [1,3,2]), [], NumUsers)/1000*4;    
     for n=Users{1}.UserNum
-        Users{1}.ChargingMat{3}(:,:,n,:)=permute(reshape(Users{n}.LogbookSmart(:,5:7),24*Time.StepInd,[],3), [1, 3, 2]);
+        Users{1}.ChargingMat{end}(:,:,n,:)=permute(reshape(Users{n}.LogbookSmart(:,5:7),24*Time.StepInd,[],3), [1, 3, 2]);
     end
-    Users{1}.ShiftInds{3}=96;
+    Users{1}.ShiftInds{end}=96;
     %ChargingMat{3}=ChargingMat{3}*4/1000/(length(Time.Sim.VecInd(1:end-Users{1}.ControlPeriods))/(24*Time.StepInd));
     
-    ChargingType=cell(3,1);
-    ChargingSum=cell(3,1);
-    Load=cell(3,1);
-    for k=1:3
+    ChargingType=cell(size(Users{1}.ChargingMat,1),1);
+    ChargingSum=cell(size(Users{1}.ChargingMat,1),1);
+    Load=cell(size(Users{1}.ChargingMat,1),1);
+    for k=1:size(Users{1}.ChargingMat,1)
         
-        ChargingType{k}=reshape(permute(squeeze(sum(Users{1}.ChargingMat{k}(24*Time.StepInd-Users{1}.ShiftInds{k}+1:24*Time.StepInd-Users{1}.ShiftInds{k}+24*Time.StepInd,:,:,:),3)), [1,3,2]), [], Users{1}.NumCostCats)/1000*4;
+        ChargingType{k}=reshape(permute(squeeze(sum(Users{1}.ChargingMat{k}(max(1,24*Time.StepInd-Users{1}.ShiftInds{k}+1):24*Time.StepInd-Users{1}.ShiftInds{k}+24*Time.StepInd,:,:,:),3)), [1,3,2]), [], Users{1}.NumCostCats)/1000*4;
             
         [sum(ChargingType{k}(:,1,:),'all'), sum(ChargingType{k}(:,2,:),'all'), sum(ChargingType{k}(:,3,:),'all')]/sum(ChargingType{k}(:,:,:),'all')
         ChargingSum{k}=sum(ChargingType{k}, 2);
+        
+        % Case for k==6 must be fixed. In this case, for Load, ChargingType
+        % must be reshaped in 96-16 length for first dimension
 
         figure
-        Load{k}=mean(reshape(ChargingType{k}',3,96,[]),3)';
+        Load{k}=mean(reshape(ChargingType{k}',3,length(max(1,24*Time.StepInd-Users{1}.ShiftInds{k}+1):24*Time.StepInd-Users{1}.ShiftInds{k}+24*Time.StepInd),[]),3)';
         %Load{k}=circshift(Load{k}, [Users{1}.ShiftInds{k}, 0]);
-        x = 1:96;
+        x = 1+96-size(Load{k},1):96;
         %y = circshift(mean(reshape(ChargingSum{k}, 96, []), 2)', [0,Users{1}.ShiftInds{k}]);
-        y = mean(reshape(ChargingSum{k}, 96, []), 2)';
+        y = mean(reshape(ChargingSum{k}, size(Load{k},1), []), 2)';
         z = zeros(size(x));
         col = (Load{k}./repmat(max(Load{k}, [], 2),1,3))';
         surface([x;x],[y;y],[z;z],[permute(repmat(col,1,1,2),[3,2,1])], 'facecol','no', 'edgecol','interp', 'linew',2);
         xticks(1:16:96)
+        xlim([1 96])
         xticklabels({datestr(Time.Vec(1:16:96),'HH:MM')})
         ylabel("Charging power in kW")
         xlabel("Time")
+        if k<size(Users{1}.ChargingMat,1)
+            title(strcat("Optimal charging energies for optimisation at ", datestr(TimeOfPreAlgo(k), "hh:MM")))
+        else
+            title(strcat("Optimal charging energies for optimisation in total"))
+        end
         grid on
+        
 
         hold on
 %         plot(circshift(squeeze(mean(reshape(ChargingType{k}(:,1),96,[],1),2)), Users{1}.ShiftInds{k}), "LineWidth", 1.2, "Color", [1, 0, 0])
 %         plot(circshift(squeeze(mean(reshape(ChargingType{k}(:,2),96,[],1),2)), Users{1}.ShiftInds{k}), "LineWidth", 1.2, "Color", [0, 1, 0])
 %         plot(circshift(squeeze(mean(reshape(ChargingType{k}(:,3),96,[],1),2)), Users{1}.ShiftInds{k}), "LineWidth", 1.2, "Color", [0, 0, 1])
-        plot(squeeze(mean(reshape(ChargingType{k}(:,1),96,[],1),2)), "LineWidth", 1.2, "Color", [1, 0, 0])
-        plot(squeeze(mean(reshape(ChargingType{k}(:,2),96,[],1),2)), "LineWidth", 1.2, "Color", [0, 1, 0])
-        plot(squeeze(mean(reshape(ChargingType{k}(:,3),96,[],1),2)), "LineWidth", 1.2, "Color", [0, 0, 1])
-        xticks(1:16:96)
-        xticklabels({datestr(Time.Vec(1:16:96),'HH:MM')})
+        plot(x,squeeze(mean(reshape(ChargingType{k}(:,1),length(x),[],1),2)), "LineWidth", 1.2, "Color", [1, 0, 0])
+        plot(x,squeeze(mean(reshape(ChargingType{k}(:,2),length(x),[],1),2)), "LineWidth", 1.2, "Color", [0, 1, 0])
+        plot(x,squeeze(mean(reshape(ChargingType{k}(:,3),length(x),[],1),2)), "LineWidth", 1.2, "Color", [0, 0, 1])
+%         xticks(1:16:96)
+%         xticklabels({datestr(Time.Vec(1:16:96),'HH:MM')})
         legend(["All", "Spotmarket", "PV", "Secondary Reserve Energy"])
         
     end

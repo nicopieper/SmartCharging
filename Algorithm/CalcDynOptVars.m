@@ -12,7 +12,11 @@ for k=UserNum
     Availability(:,1,VarCounter)=(max(0, double(ismember(Users{k}.Logbook(TimeInd+TD.User:TimeInd+TD.User-1+ControlPeriodsIt,1), 3:5)) - Users{k}.Logbook(TimeInd+TD.User:TimeInd+TD.User-1+ControlPeriodsIt,2)/Time.StepMin)) .* Users{k}.GridConvenientChargingAvailabilityControlPeriod(end-ControlPeriodsIt+1:end);
     
     Consumed=Users{k}.Logbook(TimeInd+TD.User+1:TimeInd+TD.User+ControlPeriodsIt-1,4);
+    
     SoC=Users{k}.Logbook(TimeInd+TD.User,9) - [0;cumsum(Consumed)]; % in Wh
+    if ~ismember(TimeInd, TimesOfPreAlgo)
+        SoC=SoC + cumsum(sum(Users{k}.Logbook(TimeInd+TD.User:TimeInd+TD.User+ControlPeriodsIt-1,[false(1,4), CostCats]),2)); % in Wh
+    end
     
     % The maximal energy that is charagble without exceeding the battery
     % limit in every time step
