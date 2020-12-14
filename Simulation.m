@@ -431,8 +431,8 @@ if isfield(Users{2}, "LogbookBase")
     %TotalCostsBase(2,4)=0;
     TotalCostsBase(1:2,6)=sum(TotalCostsBase(1:2,1:4),2);
     TotalCostsBase(3,:)=TotalCostsBase(2,:)./TotalCostsBase(1,:);
-    TotalCostsBase(1:2,7)=TotalCostsSmart(1:2,6)/(length(Users)-1);
-    TotalCostsBase(1:2,8)=TotalCostsBase(2,6)/(length(Users)-1)/(length(Users{2}.LogbookBase)/(24*Time.StepInd))*365;
+    TotalCostsBase(1:2,7)=TotalCostsBase(1:2,6)/(length(Users)-1);
+    TotalCostsBase(1:2,8)=TotalCostsBase(1:2,6)/(length(Users)-1)/(length(Users{2}.LogbookBase)/(24*Time.StepInd))*365;
     
     disp(strcat("Costs for base charging the fleet were ", num2str(TotalCostsBase(2,8)/100), "� per user per year"));
 end
@@ -457,7 +457,7 @@ if isfield(Users{2}, "LogbookSmart")
     TotalCostsSmart(2,6)=sum(TotalCostsSmart(2,1:5),2);
     TotalCostsSmart(3,6)=TotalCostsSmart(2,6)/TotalCostsSmart(1,6);
     TotalCostsSmart(1:2,7)=TotalCostsSmart(1:2,6)/(length(Users)-1);
-    TotalCostsSmart(1:2,8)=TotalCostsSmart(2,6)/(length(Users)-1)/(length(Users{2}.LogbookSmart)/(24*Time.StepInd))*365;
+    TotalCostsSmart(1:2,8)=TotalCostsSmart(1:2,6)/(length(Users)-1)/(length(Users{2}.LogbookSmart)/(24*Time.StepInd))*365;
     
     disp(strcat("Total costs for smart charging the fleet were ", num2str(TotalCostsSmart(2,8)/100), "� per User per year"));
 end
