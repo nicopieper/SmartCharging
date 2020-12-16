@@ -48,10 +48,15 @@ UserNum=2:NumUsers+1;
 % NumUsers=2;
 % UserNum=54:55;
 
+a3=[];
 
+
+for ResPoPriceFactor=[0, 0.2, 0.4, 0.6, 0.8]
+    
 for n=UserNum
     Users{n}.Logbook=double(Users{n}.LogbookSource);
 end
+
 
 if SmartCharging
     TimeOfPreAlgo=[datetime(1,1,1,8,0,0,'TimeZone','Africa/Tunis'), datetime(1,1,1,12,0,0,'TimeZone','Africa/Tunis'), datetime(1,1,1,16,0,0,'TimeZone','Africa/Tunis'), datetime(1,1,1,20,0,0,'TimeZone','Africa/Tunis'), datetime(1,1,1,0,0,0,'TimeZone','Africa/Tunis'), datetime(1,1,1,4,0,0,'TimeZone','Africa/Tunis')];
@@ -527,6 +532,8 @@ end
 % if isfield(Users{2}, "LogbookBase") && isfield(Users{2}, "LogbookSmart")
 
 
+a3{end+1}=TotalCostsSmart;
+end
 
 
 %% Clean up workspace
