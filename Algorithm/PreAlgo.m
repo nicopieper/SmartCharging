@@ -229,7 +229,7 @@ if ismember(TimeInd, TimesOfPreAlgo(1,:))
     AvailabilityMat=[AvailabilityMat, Availability(1:96,1,:)];
     
     %SuccessfulResPoOffers(:,PreAlgoCounter+1)=ResPoOffers(:,1,PreAlgoCounter+1)<=ResPoPricesReal4H(floor((TimeInd+TD.Main)/(4*Time.StepInd))+1:floor((TimeInd+TD.Main)/(4*Time.StepInd))+6,3)/1000; %[�/MW]
-    SuccessfulResPoOffers(:,PreAlgoCounter+1)=ResPoOffers(:,1,PreAlgoCounter+1)<=ResPoPricesReal4H(floor((TimeInd+TD.Main)/(4*Time.StepInd))+1+(24-hour(TimeOfPreAlgo(1)))/4:floor((TimeInd+TD.Main)/(4*Time.StepInd))+(24-hour(TimeOfPreAlgo(1)))/4+6,3)/1000; %[�/MW]
+    SuccessfulResPoOffers(:,PreAlgoCounter+1)=ResPoOffers(:,1,PreAlgoCounter+1)<=ResPoPricesReal4H(floor((TimeInd+TD.Main)/(4*Time.StepInd))+1+(24-hour(TimeOfPreAlgo(1)))/4:floor((TimeInd+TD.Main)/(4*Time.StepInd))+(24-hour(TimeOfPreAlgo(1)))/4+6,5)/1000; %[�/kW]
     LastResPoOffers(:,PreAlgoCounter+1)=sum(OptimalChargingEnergies(1:ConstantResPoPowerPeriods:end,sum(CostCats(1:3)),:), 3);
     LastResPoOffersSucessful4H(:,PreAlgoCounter+1)=LastResPoOffers(:,PreAlgoCounter+1);
     LastResPoOffersSucessful4H(ConsPeriods+1:ConsPeriods+6,PreAlgoCounter+1)=LastResPoOffersSucessful4H(ConsPeriods+1:ConsPeriods+6,PreAlgoCounter+1).*SuccessfulResPoOffers(:,PreAlgoCounter+1);
@@ -237,7 +237,7 @@ if ismember(TimeInd, TimesOfPreAlgo(1,:))
     VarCounter=0;
     for n=UserNum
         VarCounter=VarCounter+1;
-        ResPoOffers(:,2,PreAlgoCounter+1)=ResPoOffers(:,2,PreAlgoCounter+1)+OptimalChargingEnergies((24-hour(TimeOfPreAlgo(1)))*Time.StepInd+1:ConstantResPoPowerPeriods:(24-hour(TimeOfPreAlgo(1))+24)*Time.StepInd,sum(CostCats(1:3)),VarCounter)/Users{n}.ChargingEfficiency;
+        ResPoOffers(:,2,PreAlgoCounter+1)=ResPoOffers(:,2,PreAlgoCounter+1)+OptimalChargingEnergies((24-hour(TimeOfPreAlgo(1)))*Time.StepInd+1:ConstantResPoPowerPeriods:(24-hour(TimeOfPreAlgo(1))+24)*Time.StepInd,sum(CostCats(1:3)),VarCounter)/Users{n}.ChargingEfficiency; %[Wh]
     end
     ResPoOffers(:,2,PreAlgoCounter+1)=ResPoOffers(:,2,PreAlgoCounter+1).*SuccessfulResPoOffers(:,PreAlgoCounter+1);
     

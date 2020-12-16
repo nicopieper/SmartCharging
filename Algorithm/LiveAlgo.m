@@ -3,8 +3,8 @@
 % 1. Allocate the demanded reserve energy to the fleet
 
 if ismember(TimeInd, TimesOfZeitscheiben)
-    OfferedResPo1=LastResPoOffersSucessful4H(floor(mod(TimeInd-TimesOfPreAlgo(1,1), 24*Time.StepInd)/(4*Time.StepInd))+1, PreAlgoCounter+1-double(ControlPeriodsIt==ControlPeriods));
-    OfferedResPo=ResPoOffers(floor(mod((TimeInd-1),(24*Time.StepInd))/(4*Time.StepInd))+1, 2, floor((TimeInd-1)/(24*Time.StepInd))+1);
+    OfferedResPo=LastResPoOffersSucessful4H(floor(mod(TimeInd-TimesOfPreAlgo(1,1), 24*Time.StepInd)/(4*Time.StepInd))+1, PreAlgoCounter+1-double(ControlPeriodsIt==ControlPeriods));
+    %OfferedResPo=ResPoOffers(floor(mod((TimeInd-1),(24*Time.StepInd))/(4*Time.StepInd))+1, 2, floor((TimeInd-1)/(24*Time.StepInd))+1);
     
     if OfferedResPo>0
         % ResOfferLists4H are the offers of the competitors fetched from  the regelleistung.net data. columns 2-3 of cell-column 2 contain the offered energy price [ï¿½/MWh] and the allocated power [MW] for negative reserve energy.
@@ -65,9 +65,6 @@ if OfferedResPo>0
             Users{n}.Logbook(TimeInd+TD.User,7)=0;
         end
 
-
-
-        a1(TimeInd,:)=[sum(AvailableDispatchedResPo), sum(AvailableDispatchedResPoBuffer), sum(AvailableDispatchedResPoMax), DispatchedResPo(TimeInd)];
     
         %% Dispatch reserve power to fleet
 
@@ -155,7 +152,7 @@ if OfferedResPo>0
             PriorityChargingList=[PriorityChargingList, PriorityChargingList(:,5)-PriorityChargingList(:,4)]; % Cols: UserNumber, energy left until public charging, dispatched reserve power, max reserve power, max additional dispatchable reserve power
             temp=[0;cumsum(PriorityChargingList(:,6))];
             MOLPos=find(temp>=(DispatchedResPo(TimeInd)-sum(PriorityChargingList(:,4))), 1)-1;
-            if isempty(MOLPos)
+            if isempty(MOLPos) 
                 MOLPos=size(PriorityChargingList,1);
             end
             PriorityChargingList=[PriorityChargingList, [PriorityChargingList(1:MOLPos,4)+PriorityChargingList(1:MOLPos,6); PriorityChargingList(MOLPos+1:end,4)]];
@@ -196,6 +193,9 @@ end
 % "Der Regelleistungsistwert einer TE, RE oder RG ergibt sich grundsätzlich
 % aus dem Messwert der Einspeisung (oder des Leistungsbezugs) abzüglich des gemeldeten Arbeitspunkts."
 % !Abweichungen von der Prognose sind auszugleichen!
+
+% Ausgebliebene Regelarbeitbezüge können durch Grid-Laden zum nächst besten
+% Zeitpunkt nachgeholt werden, das kann keine Begrenzungen verletzen.
 
 % 
 % VarCounter=0;

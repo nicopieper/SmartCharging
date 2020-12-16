@@ -49,7 +49,8 @@ for k=UserNum
     % unter den PublicCharging-Schwellwert fallen wird?
     % Wird nach der Schleife noch verkleinert!
    
-    MinEnergyRequiredTS(:,1,VarCounter)=round(Users{k}.PublicChargingThreshold_Wh*0.3) - SoC;
+    %MinEnergyRequiredTS(:,1,VarCounter)=round(Users{k}.PublicChargingThreshold_Wh*0.3) - SoC;
+    MinEnergyRequiredTS(:,1,VarCounter)=round(Users{k}.PublicChargingThreshold_Wh*1.8) - SoC;
     
 end
 

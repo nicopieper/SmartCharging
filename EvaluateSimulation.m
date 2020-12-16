@@ -6,19 +6,19 @@ if ~exist("Users", "var")
     load(strcat(Path.Simulation, Dl, StorageFiles(StorageInd).name))
 end
 
-Logbook="LogbookSmart";
+Logbook="LogbookBase";
 
 % Targets=["small"; "medium"; "large"; "transporter"];
 Targets=["one user"; "only one user"; "several users"; "undefined"];
-% Targets=["company car"; "fleet vehicle"; "undefined"];
+Targets=["company car"; "fleet vehicle"; "undefined"];
 % Targets=[0.5; 1; 3; 1000];
 % Targets=[hours(10); hours(12); hours(14); hours(24)];
 
 TargetGroups=cell(length(Targets),1);
 for n=2:length(Users)
 %     TargetNum=find(strcmp(Users{n}.VehicleSize,Targets),1);
-    TargetNum=find(strcmp(Users{n}.NumUsers,Targets),1);
-%     TargetNum=find(strcmp(Users{n}.VehicleUtilisation,Targets),1);
+%     TargetNum=find(strcmp(Users{n}.NumUsers,Targets),1);
+     TargetNum=find(strcmp(Users{n}.VehicleUtilisation,Targets),1);
 %     TargetNum=find(Users{n}.DistanceCompanyToHome<Targets,1);
 %     TargetNum=find(Users{n}.AvgHomeParkingTime<Targets,1);
 
@@ -114,7 +114,7 @@ for col=1:2
     ylabel("Probability")
 end
 
-disp(strcat("In average per charging event, ", num2str(mean(cell2mat(EnergyPerChargingProcess(:,1))/1000/Users{n}.ChargingEfficiency)), " kWh were charged at home and ", num2str(mean(cell2mat(EnergyPerChargingProcess(:,2))/1000/Users{n}.ChargingEfficiency)), " kWh at other places"))
+disp(strcat("In average per charging event, ", num2str(mean(cell2mat(EnergyPerChargingProcess(:,1))/1000)), " kWh were charged at home and ", num2str(mean(cell2mat(EnergyPerChargingProcess(:,2))/1000)), " kWh at other places"))
 
 DataTable.EnergyPerChargingProcess=round(cellfun(@mean,EnergyPerChargingProcess)/1000*100)/100;
 
