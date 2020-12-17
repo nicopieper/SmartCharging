@@ -83,7 +83,7 @@
 %% Initialisation
 rng('default');
 rng(1);
-NumUsers=600; % number of users
+NumUsers=120; % number of users
 %LikelihoodPV=0.5; % 44 % der privaten und 46 % der gewerblichen Nutzer �ber eine eigene Photovoltaikanlage, https://elib.dlr.de/96491/1/Ergebnisbericht_E-Nutzer_2015.pdf S. 10
 %LikelihoodGridConvenientCharging=0.5;
 %LikelihoodGridConvenientCharging=0;

@@ -1,6 +1,6 @@
 %% Initialisation
 tic
-NumUsers=600; % size(Users,1)-1
+NumUsers=120; % size(Users,1)-1
 SmartCharging=true;
 UseParallel=true;
 %UseParallel=true;
@@ -8,7 +8,7 @@ UsePredictions=true;
 
 ControlPeriods=96*2;
 UsePV=true;
-ApplyGridConvenientCharging=false;
+ApplyGridConvenientCharging=true;
 ActivateWaitbar=true;
 SaveResults=false;
 
@@ -48,10 +48,10 @@ UserNum=2:NumUsers+1;
 % NumUsers=2;
 % UserNum=54:55;
 
-a3={};
 
 
-for ResPoPriceFactor=[0, 0.2, 0.4, 0.6, 0.8]
+
+for ResEnPriceFactor=[-0.4, -0.2, 0, 0.2]
     
 for n=UserNum
     Users{n}.Logbook=double(Users{n}.LogbookSource);
@@ -463,6 +463,10 @@ end
 
 %% Evaluate base electricity costs
 
+for n=2:length(Users)
+	Users{n}.AverageConsumptionBaseYear_kWh=sum(double(Users{n}.LogbookSource(:,5:8))/Users{n}.ChargingEfficiency, 'all')/1000/days(Time.End-Time.Start)*365.25;
+end
+
 if Users{1}.ApplyGridConvenientCharging
     IMSYSPrices=readmatrix(strcat(Path.Simulation, "IMSYS_Prices.csv"), 'NumHeaderLines', 1);
     for n=2:length(Users)
@@ -472,10 +476,6 @@ if Users{1}.ApplyGridConvenientCharging
     end
 end
 
-
-for n=2:length(Users)
-	Users{n}.AverageConsumptionBaseYear_kWh=sum(double(Users{n}.LogbookSource(:,5:8))/Users{n}.ChargingEfficiency, 'all')/1000/days(Time.End-Time.Start)*365.25;
-end
 
 if isfield(Users{2}, "LogbookBase")
     TotalCostsBase=zeros(3,7); 
