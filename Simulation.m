@@ -50,8 +50,7 @@ UserNum=2:NumUsers+1;
 
 
 
-
-for ResEnPriceFactor=[-0.4, -0.2, 0, 0.2]
+for ResPoPriceFactor=0.6
     
 for n=UserNum
     Users{n}.Logbook=double(Users{n}.LogbookSource);
@@ -477,7 +476,7 @@ if Users{1}.ApplyGridConvenientCharging
 end
 
 
-if isfield(Users{2}, "LogbookBase")
+if isfield(Users{2}, "LogbookBase") && ~Users{1}.SmartCharging
     TotalCostsBase=zeros(3,7); 
     
     for n=2:length(Users)
@@ -503,7 +502,8 @@ if isfield(Users{2}, "LogbookBase")
     
     disp(strcat("Costs for base charging the fleet were ", num2str(TotalCostsBase(2,8)), "� per user per year"));
 end
-if isfield(Users{2}, "LogbookSmart")
+
+if isfield(Users{2}, "LogbookSmart") && Users{1}.SmartCharging
     TotalCostsSmart=zeros(3,7); % [kWh (6. column kW); �; ct/kWh]
     ResEnOffersList=repelem(reshape(ResEnOffers(:,1,1:end-1),[],1),4*Time.StepInd);
     for n=2:length(Users)

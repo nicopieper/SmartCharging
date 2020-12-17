@@ -72,7 +72,7 @@ if ~exist('Smard', 'var') || ~exist('ResPoPricesReal4H', 'var')
 end
 
 Target=ResPoPricesReal4H(:,3); % double(PVPlants{1}.Profile); %Smard.DayaheadRealH; Availability1 ResEnPricesRealQH(:,7)
-TargetTitle="ResPoPricesReal4H_MeanNeg";  % "DayaheadRealH"; "PVPlants_1"
+TargetTitle="ResPoPricesReal4H_NegMean";  % "DayaheadRealH"; "PVPlants_1"
 Time.Pred=Time.H4;%Users{1}.Time.Vec;
 Predictors=[Smard.LoadPredH(1:4:end,:), Smard.GenPredH(1:4:end,:)];% [Smard.GenPredQH(:,4)]; [Smard.LoadPredH, Smard.GenPredH]; [SoC1, Weekday]
 PredMethod={1};
