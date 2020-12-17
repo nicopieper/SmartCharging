@@ -74,12 +74,12 @@ end
 Target=ResPoPricesReal4H(:,3); % double(PVPlants{1}.Profile); %Smard.DayaheadRealH; Availability1 ResEnPricesRealQH(:,7)
 TargetTitle="ResPoPricesReal4H_MeanNeg";  % "DayaheadRealH"; "PVPlants_1"
 Time.Pred=Time.H4;%Users{1}.Time.Vec;
-Predictors=[];% [Smard.GenPredQH(:,4)]; [Smard.LoadPredH, Smard.GenPredH]; [SoC1, Weekday]
+Predictors=[Smard.LoadPredH(1:4:end,:), Smard.GenPredH(1:4:end,:)];% [Smard.GenPredQH(:,4)]; [Smard.LoadPredH, Smard.GenPredH]; [SoC1, Weekday]
 PredMethod={1};
 TrainModelNew=0;
-Save=true;
+Save=false;
 
-DelayIndsLSQ=[1:6*7];
+DelayIndsLSQ=[1:24*7];
 DelayIndsNARXNET=[1:96];
 DelayIndsGLM=[1:8, 9:2:18, 48, 95:97, 2*96-1:2*96+1, 3*96-1:3*96+1];
 GLMDistribution='binomial';
