@@ -74,6 +74,7 @@ if SmartCharging
     %TimesOfPreAlgo=sort([(hour(TimeOfPreAlgo(1))*Time.StepInd + minute(TimeOfPreAlgo(1))/60*Time.StepInd)+1:24*Time.StepInd:length(Time.Sim.VecInd)], 'ascend');
     InitialisePreAlgo;
     InitialiseLiveAlgo;
+    PreAlgoCounter=0;
     
     if UsePredictions
         if ~exist("SpotmarketPricesPred1", "var")
@@ -239,6 +240,10 @@ for TimeInd=Time.Sim.VecInd(2:end-ControlPeriods)
             
             %% Optimise
 
+            if ~UsePredictions
+                SpotmarktPricesCP=SpotmarketPrices(TimeInd+TD.User:TimeInd+TD.User+ControlPeriodsIt-1);
+            end
+        
             %TimeInd=TimeInd-ControlPeriods+1;
             if ismember(TimeInd, TimesOfPreAlgo(1,:))
                 PreAlgoCounter=PreAlgoCounter+1;

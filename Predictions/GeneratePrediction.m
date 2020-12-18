@@ -75,7 +75,7 @@ Target=ResPoPricesReal4H(:,3); % double(PVPlants{1}.Profile); %Smard.DayaheadRea
 TargetTitle="ResPoPricesReal4H_NegMean";  % "DayaheadRealH"; "PVPlants_1"
 Time.Pred=Time.H4;%Users{1}.Time.Vec;
 Predictors=[Smard.LoadPredH(1:4:end,:), Smard.GenPredH(1:4:end,:)];% [Smard.GenPredQH(:,4)]; [Smard.LoadPredH, Smard.GenPredH]; [SoC1, Weekday]
-PredMethod={1};
+PredMethod={1;2};
 TrainModelNew=0;
 Save=false;
 
