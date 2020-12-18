@@ -50,7 +50,7 @@ UserNum=2:NumUsers+1;
 
 
 
-for ResPoPriceFactor=0.6
+for ResEnPriceFactor=[-2, -1, 0, 1, 2]
     
 for n=UserNum
     Users{n}.Logbook=double(Users{n}.LogbookSource);
@@ -352,6 +352,18 @@ if SmartCharging
     Users{1}.NumCostCats=NumCostCats;
     Users{1}.ControlPeriods=ControlPeriods;
     disp(strcat(num2str(sum(LastResPoOffersSucessful4H(:,2:end)>0,'all')/sum(LastResPoOffers(:,2:end)>0,'all')*100), "% of all reserve power offers were successful"))
+    
+    ResEnVolumenFulfilled=0;
+    for n=2:length(Users)
+        ResEnVolumenFulfilled=ResEnVolumenFulfilled+sum(Users{n}.LogbookSmart(:,7))/Users{n}.ChargingEfficiency/1000;
+    end
+    
+    ResEnVolumenAllocated=0;
+    for n=2:length(Users)
+        ResEnVolumenAllocated=ResEnVolumenAllocated+sum(Users{1}.ChargingMatSmart{5}(96-24*4+1:96-24*4+96,3,n-1,:),'all')/Users{n}.ChargingEfficiency/1000;
+    end
+
+    disp(strcat(num2str(ResEnVolumenFulfilled/ResEnVolumenAllocated*100), " % of the succcessfully offered reserve energy was actually charged"))
 else
     Users{1}.ChargingMatBase=cell(1,2);
     Users{1}.ChargingMatBase{1}=zeros(96, 3, NumUsers, ceil(size(Users{UserNum(1)}.Logbook,1)/(24*Time.StepInd)));
@@ -533,6 +545,9 @@ end
 
 
 a3{end+1}=TotalCostsSmart;
+a3{end}(1,end+1)=ResEnVolumenAllocated;
+a3{end}(2,end)=ResEnVolumenFulfilled/ResEnVolumenAllocated;
+a3{end}(3,end)=ResEnPriceFactor;
 end
 a4=a3;
 
@@ -543,4 +558,4 @@ clearvars NextHomeStop PublicChargerPower ChargingPower EnergyDemandLeft TimeSte
 clearvars NumPredMethod TotalIterations NumUsers TimeOfForecast P PlugInTime PThreshold
 clearvars SimulatedUsers PublicChargerDistribution h k UserNum UsePV UsePredictions UseParallel TSim TimeInd temp tc tc1
 clearvars SpotmarketPrices PVPlants_Profile_Prediction ApplyGridConvenientCharging ChargingEnergy ConnectionDurations24h ControlPeriods IMSYSPrices n
-clearvars SmartCharging SaveResults
+clearvars SmartCharging SaveResults ResEnVolumen
