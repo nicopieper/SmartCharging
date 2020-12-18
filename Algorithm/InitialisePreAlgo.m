@@ -37,7 +37,6 @@ for n=UserNum
     VarCounter=VarCounter+1;
 end
 
-PreAlgoCounter=0;
 Availability=[];
 EnergyDemand=[];
 ChargingMat=cell(size(TimesOfPreAlgo,1)+1,1);

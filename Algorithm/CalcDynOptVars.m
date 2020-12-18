@@ -2,14 +2,18 @@
 
 VarCounter=0;
 Availability=zeros(ControlPeriodsIt,1,NumUsers);
+SumPower=zeros(ControlPeriodsIt,1,NumUsers);
 MaxEnergyChargableSoCTS=zeros(ControlPeriodsIt,1,NumUsers);
 MaxEnergyChargableDeadlockCP=zeros(1,1,NumUsers);
 MinEnergyRequiredTS=zeros(ControlPeriodsIt,1,NumUsers);
+MaxPossibleSoCTS=zeros(ControlPeriodsIt,1,NumUsers);
 
 for k=UserNum
     VarCounter=VarCounter+1;
     
     Availability(:,1,VarCounter)=(max(0, double(ismember(Users{k}.Logbook(TimeInd+TD.User:TimeInd+TD.User-1+ControlPeriodsIt,1), 3:5)) - Users{k}.Logbook(TimeInd+TD.User:TimeInd+TD.User-1+ControlPeriodsIt,2)/Time.StepMin)) .* Users{k}.GridConvenientChargingAvailabilityControlPeriod(end-ControlPeriodsIt+1:end);
+    
+    SumPower(:,1,VarCounter)=MaxPower(:,1,VarCounter)/4.*Availability(:,1,VarCounter);
     
     Consumed=Users{k}.Logbook(TimeInd+TD.User+1:TimeInd+TD.User+ControlPeriodsIt-1,4);
     
@@ -45,21 +49,31 @@ for k=UserNum
         MaxEnergyChargableDeadlockCP(1,1,VarCounter)=0;
     end
     
+    
+    % Wie viel Energie kann maximal in der Batterie sein zu jedem
+    % Zeitpunkt?
+    
+    MaxPossibleSoCTS=min(Users{k}.BatterySize, SoC(1)+SumPower(1,1,VarCounter));
+    for p=2:ControlPeriodsIt
+        MaxPossibleSoCTS(p)=min(Users{k}.BatterySize, MaxPossibleSoCTS(p-1)-Consumed(p-1)+SumPower(p,1,VarCounter));
+    end
+    
+    
     % Wie viel Energie muss ich mindestens laden, damit mein SoC nicht
     % unter den PublicCharging-Schwellwert fallen wird?
     % Wird nach der Schleife noch verkleinert!
    
     %MinEnergyRequiredTS(:,1,VarCounter)=round(Users{k}.PublicChargingThreshold_Wh*0.3) - SoC;
-    MinEnergyRequiredTS(:,1,VarCounter)=round(Users{k}.PublicChargingThreshold_Wh*1.8) - SoC;
+    MinEnergyRequiredTS(:,1,VarCounter)=min(round(Users{k}.PublicChargingThreshold_Wh*1.8), MaxPossibleSoCTS') - SoC;
     
 end
 
-SumPower=MaxPower/4.*Availability;
+
 
 PowerTS=repelem(MaxPower/4,ControlPeriodsIt,NumCostCats,1);
 PowerTS(:,2,:)=min([PowerTS(:,2,:), PVPower(end-ControlPeriodsIt+1:end,:,:)/4], [], 2);
 ConsPowerTSb=PowerTS;
 
-% MinEnergyRequiredTS=min(min([MinEnergyRequiredTS, MaxEnergyChargableSoCTS, SumPower], [], 2), MaxEnergyChargableDeadlockCP);
-MinEnergyRequiredTS=min(min([MinEnergyRequiredTS, MaxEnergyChargableSoCTS], [], 2), MaxEnergyChargableDeadlockCP);
+MinEnergyRequiredTS=min(min([MinEnergyRequiredTS, MaxEnergyChargableSoCTS, cumsum(SumPower,1)], [], 2), MaxEnergyChargableDeadlockCP);
+%MinEnergyRequiredTS=min(min([MinEnergyRequiredTS, MaxEnergyChargableSoCTS], [], 2), MaxEnergyChargableDeadlockCP);
 

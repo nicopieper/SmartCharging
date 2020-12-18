@@ -61,7 +61,7 @@ Prediction=zeros(Range.TestPredInd(2)-Range.TrainPredInd(1)+1, NumPredMethod);
 % PredictionMat=zeros(ForecastIntervalPredInd, floor((Range.TestPredInd(2)-Range.TestPredInd(1))/(24*Time.StepPredInd)), NumPredMethod);
 PredictionMat=zeros(ForecastIntervalPredInd, Range.TestPredInd(2)-Range.TrainPredInd(1)+1, NumPredMethod);
 % TargetMat=zeros(ForecastIntervalPredInd, floor((Range.TestPredInd(2)-Range.TrainPredInd(1))/(24*Time.StepPredInd)), NumPredMethod);
-TargetMat=zeros(ForecastIntervalPredInd, Range.TestPredInd(2)-Range.TrainPredInd(1)+1, NumPredMethod);
+TargetMat=zeros(ForecastIntervalPredInd, Range.TestPredInd(2)-Range.TrainPredInd(1)+1);
 TimeInd=Range.TestPredInd(1);
 k=1;
 ymin=-20; % round(min(Target)*1.1/10)*10;
@@ -195,6 +195,7 @@ if Save
     end
 Prediction=PredcitionTemp;
 PredictionMat=PredictionMatTemp;
+PredMethod=PredMethodTemp;
 end
 
 %% Evaluation
@@ -216,9 +217,9 @@ for p=1:NumPredMethod
     
     PredCoulmns=zeros(ForecastIntervalPredInd,1)==PredictionMat(:,:,p);
     PredictionMatEval=PredictionMat(:,~all(PredCoulmns,1),p);
-    TargetMatEval=TargetMat(:,~all(PredCoulmns,1),p);
+    TargetMatEval=TargetMat(:,~all(PredCoulmns,1));
     MAE(:,p)=mean(abs(PredictionMatEval-TargetMatEval),2); % Mean Absolute Error
-    mMAPE(:,p)=mean(abs(TargetMatEval-PredictionMatEval)./mean(abs(TargetMatEval),2),2); % Mean Absolute Percentage Error
+    mMAPE(:,p)=mean(abs(TargetMatEval-PredictionMatEval)/sum(abs(TargetMatEval),2),2); % Mean Absolute Percentage Error
     RMSE(:,p)=sqrt(mean((PredictionMatEval-TargetMatEval).^2,2)); % Mean Squared Error
     
     MAEConst(1,p)=round(mean(abs(PredictionMatEval-TargetMatEval),'all'),3);
