@@ -74,29 +74,32 @@ end
 Target=ResPoPricesReal4H(:,3); % double(PVPlants{1}.Profile); %Smard.DayaheadRealH; Availability1 ResEnPricesRealQH(:,7)
 TargetTitle="ResPoPricesReal4H_NegMean";  % "DayaheadRealH"; "PVPlants_1"
 Time.Pred=Time.H4;%Users{1}.Time.Vec;
-Predictors=[Smard.LoadPredH(1:4:end,:), Smard.GenPredH(1:4:end,:)];% [Smard.GenPredQH(:,4)]; [Smard.LoadPredH, Smard.GenPredH]; [SoC1, Weekday]
+Predictors=[Smard.LoadPredH(1:4:end), Smard.GenPredH(1:4:end,:)];% [Smard.GenPredQH(:,4)]; [Smard.LoadPredH, Smard.GenPredH]; [SoC1, Weekday]
 PredMethod={1;2};
-TrainModelNew=0;
-Save=false;
+TrainModelNew=1;
+Save=true;
 
-DelayIndsLSQ=[1:24*7];
-DelayIndsNARXNET=[1:96];
+DelayIndsLSQ=[1:6];
+DelayIndsNARXNET=[1:6];
 DelayIndsGLM=[1:8, 9:2:18, 48, 95:97, 2*96-1:2*96+1, 3*96-1:3*96+1];
+DelayIndsGLM=[1:24*4];
 GLMDistribution='binomial';
+GLMDistribution='normal';
 GLMLinkFunction='logit';
 
 % DelayIndsNARXNET={[1:10], [95,96,97,96*2-1:96*2+1]};
 % MaxDelayHours=7*24/7*3;
 Time.HourPred=8;
+DelayPredictionMarketData=round(Time.HourPred*1/(hours(Time.Pred(2)-Time.Pred(1))));
 ForecastIntervalHours=52-(Time.HourPred-hour(Range.TestDate(1))); % 52h  % The model must be able %to predict the value of Wednesday 12:00 at Monday 8:00 --> 52 forecast interval
 Demo=0;
 ActivateWaitbar=1;
 
-if ~exist('PredVarsInput', 'var') || ~isequaln(PredVarsInput,{Target, Time.Pred, Predictors, DelayIndsLSQ, DelayIndsNARXNET, Time.HourPred})
+if ~exist('PredVarsInput', 'var') || ~isequaln(PredVarsInput,{Target, Time.Pred, Predictors, DelayIndsLSQ, DelayIndsNARXNET, Time.HourPred, DelayPredictionMarketData})
     disp('Calculate Predictor Variables')
     %%
-    [PredictorMat, TargetDelayedLSQ, TargetDelayedNARXNET, TargetDelayedGLM, MaxDelayIndLSQ, NumDelayIndsLSQ, MaxDelayIndNARXNET, NumDelayIndsNARXNET, MaxDelayIndGLM, NumDelayIndsGLM, Time, Range]=PredVars(ForecastIntervalHours, DelayIndsLSQ, DelayIndsNARXNET, DelayIndsGLM, Target, Predictors, Time, Range);
-    PredVarsInput={Target, Time.Pred, Predictors, DelayIndsLSQ, DelayIndsNARXNET, Time.HourPred};
+    [PredictorMat, TargetDelayedLSQ, TargetDelayedNARXNET, TargetDelayedGLM, MaxDelayIndLSQ, NumDelayIndsLSQ, MaxDelayIndNARXNET, NumDelayIndsNARXNET, MaxDelayIndGLM, NumDelayIndsGLM, Time, Range]=PredVars(ForecastIntervalHours, DelayIndsLSQ, DelayIndsNARXNET, DelayIndsGLM, DelayPredictionMarketData, Target, Predictors, Time, Range);
+    PredVarsInput={Target, Time.Pred, Predictors, DelayIndsLSQ, DelayIndsNARXNET, Time.HourPred, DelayPredictionMarketData};
     disp('Successfully calculated Predictor Variables')
 end
 ForecastIntervalPredInd=ForecastIntervalHours*Time.StepPredInd;
@@ -124,9 +127,9 @@ elseif any(ismember(cell2mat(PredMethod(:,1)),1))
 end
 
 NarxnetFiles=dir(StorageFileNarxnet);
-if sum(ismember(cell2mat(PredMethod(:,1)),2)) && (TrainModelNew || ~isfile(StorageFileNarxnet))
+if sum(ismember(cell2mat(PredMethod(:,1)),2)) && (TrainModelNew || isempty(NarxnetFiles))
     disp('Start Narxnet Training')
-    [Narxnets, Ai] = TrainNarxnets(Target, PredictorMat, ForecastIntervalPredInd, DelayIndsNARXNET, Range, Time);
+    [Narxnets, Ai] = TrainNarxnets(Target, PredictorMat, ForecastIntervalPredInd, DelayIndsNARXNET, DelayPredictionMarketData, Range, Time);
     if Save
         StorageFileNarxnet=strrep(StorageFileNarxnet, '*', datestr(datetime('now'), 'yyyymmdd'));
         if ~isfolder(strcat(Path.TrainedModel, TargetTitle))
@@ -141,7 +144,7 @@ elseif any(ismember(cell2mat(PredMethod(:,1)),2))
 end
 
 GLMFiles=dir(StorageFileGLM);
-if sum(ismember(cell2mat(PredMethod(:,1)),3)) && (TrainModelNew || ~isfile(StorageFileGLM))
+if sum(ismember(cell2mat(PredMethod(:,1)),3)) && (TrainModelNew || isempty(GLMFiles))
     disp('Start GLM Training')
     [GLMCoeffs] = TrainGLM(Target, TargetDelayedGLM, PredictorMat, ForecastIntervalPredInd, Range.TrainPredInd, MaxDelayIndGLM, GLMDistribution);
     if Save

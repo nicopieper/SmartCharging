@@ -1,4 +1,4 @@
-function [Narxnets, Ai] = TrainNarxnets(Target, PredictorMat, ForecastIntervalPredInd, DelayIndsNARXNET, Range, Time)
+function [Narxnets, Ai] = TrainNarxnets(Target, PredictorMat, ForecastIntervalPredInd, DelayIndsNARXNET, DelayPredictionMarketData, Range, Time)
 %% Description
 % tbd
 
@@ -13,7 +13,7 @@ Narxnets=num2cell(zeros(ForecastIntervalPredInd,1));
 %% Training 
 h=waitbar(0, 'Berechne Narxnet Prognosemodelle');
 for ForecastDuration=1:ForecastIntervalPredInd
-    Narxnets{ForecastDuration} = narxnet(0, DelayIndsNARXNET+ForecastDuration-1,10);
+    Narxnets{ForecastDuration} = narxnet(0, DelayIndsNARXNET+ForecastDuration-1+DelayPredictionMarketData,10);
     Narxnets{ForecastDuration}.trainParam.showWindow=0;
     [Xs,Xi,Ai,Ts] = preparets(Narxnets{ForecastDuration},PredictorCell,{},TargetCell);
     Narxnets{ForecastDuration} = train(Narxnets{ForecastDuration},Xs,Ts,Xi,Ai);

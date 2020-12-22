@@ -15,17 +15,19 @@ ResPoBuffer=1;%max(0,1-NumDecissionGroups/NumUsers*1.4);
 ResPoOffers=[-10000*ones(6,1,1), zeros(6,1,1)];
 ResEnOffers=-10000*ones(6,1,1);
 
-MwSt=1.19; % The VAT rate
-
 %SubIndices = @(Vector, ControlPeriods, ControlPeriodsIt, CostCatsNum) (reshape(Vector(:,(1:ControlPeriodsIt)'+(0:CostCatsNum-1)*ControlPeriodsIt),1,[])'-(Vector(1)-1)/ControlPeriods*(ControlPeriods-ControlPeriodsIt));
 SubIndices = @(Vector, ControlPeriods, ControlPeriodsIt, CostCatsNum) (Vector(:,reshape((1:ControlPeriodsIt)'+(0:CostCatsNum-1)*ControlPeriodsIt,1,[]))-((Vector(:,1)-1)/ControlPeriods*(ControlPeriods-ControlPeriodsIt)));
 
 %% Prepare Users
 
 for n=UserNum
-    Users{n}.GridConvenientChargingAvailabilityControlPeriod=repmat(Users{n}.GridConvenientChargingAvailability,2,1);
-	Users{n}.GridConvenientChargingAvailabilityControlPeriod=circshift(Users{n}.GridConvenientChargingAvailabilityControlPeriod, -ShiftInds);
-    Users{n}.GridConvenientChargingAvailabilityControlPeriod=Users{n}.GridConvenientChargingAvailabilityControlPeriod(1:ControlPeriods);
+    if ApplyGridConvenientCharging
+        Users{n}.GridConvenientChargingAvailabilityControlPeriod=repmat(Users{n}.GridConvenientChargingAvailability,2,1);
+        Users{n}.GridConvenientChargingAvailabilityControlPeriod=circshift(Users{n}.GridConvenientChargingAvailabilityControlPeriod, -ShiftInds);
+        Users{n}.GridConvenientChargingAvailabilityControlPeriod=Users{n}.GridConvenientChargingAvailabilityControlPeriod(1:ControlPeriods);
+    else
+        Users{n}.GridConvenientChargingAvailabilityControlPeriod=ones(ControlPeriods,1);
+    end
 end
 
 %% Initialise Optimisation Variables

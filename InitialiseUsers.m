@@ -83,25 +83,28 @@
 %% Initialisation
 rng('default');
 rng(1);
-NumUsers=120; % number of users
-%LikelihoodPV=0.5; % 44 % der privaten und 46 % der gewerblichen Nutzer ï¿½ber eine eigene Photovoltaikanlage, https://elib.dlr.de/96491/1/Ergebnisbericht_E-Nutzer_2015.pdf S. 10
+NumUsers=80; % number of users
+%LikelihoodPV=0.5; % 44 % der privaten und 46 % der gewerblichen Nutzer über eine eigene Photovoltaikanlage, https://elib.dlr.de/96491/1/Ergebnisbericht_E-Nutzer_2015.pdf S. 10
 %LikelihoodGridConvenientCharging=0.5;
 %LikelihoodGridConvenientCharging=0;
 PVGridConvenientChargingLikelihoodMatrix=[0, 1; 1, 0]; % PV&14a, PV&~14a; ~PV&14a, ~PV&~14a
 
-PVGridConvenientChargingLikelihoodMatrix=cumsum(PVGridConvenientChargingLikelihoodMatrix(:)/sum(PVGridConvenientChargingLikelihoodMatrix,'all'));
+Users=cell(NumUsers+1,1); % the main cell variable all user data is stored in
+Users{1}.MwSt=1.19; % The VAT rate
+Users{1}.PVEEGBonus=9.7; %[ct/kWh] Bonus paid by the DSO to PV plant owner for supplying energy to the grid
 AddPV=true; % determines wheter PV plants shall be assigned to the users. In general true, only false for test purposes
 MeanPrivateElectricityPrice=30.43/1.19 - 3.7513 - 7.06; % [ct/kWh] average German electricity price in 2019 according to Strom-Report without VAT (19%), electricity production price (avg. Dayahead price was 3.7513 ct/kWh in 2019) and NNE energy price (avg. was 7.06 ct/kWh in 2019)
 PublicACChargingPrices=[29, 39];
 PublicDCChargingPrices=[39, 49];
+IMSYSInstallationCostsMean=80000; % [ct] The costs for the installation of the IMSYS have to be paid by the wallbox owner.
 
 PrivateChargingThresholdMean=1.4;
 PublicChargingThresholdMean=0.33;
 VCity=14; % [m/s] lower velocities indicate driving within the city, hence low consumption
 VHighway=27; % [m/s] higher velocities indicate driving on a highway, hence high consumption
 
-Users=cell(NumUsers+1,1); % the main cell variable all user data is stored in
 PVPlantPointer=1; % 
+PVGridConvenientChargingLikelihoodMatrix=cumsum(PVGridConvenientChargingLikelihoodMatrix(:)/sum(PVGridConvenientChargingLikelihoodMatrix,'all'));
 VehicleSizes=[{'small'}; {'medium'}; {['large', 'transporter']}]; % determines which sizes shall be considered. In general, {'small'}; {'medium'}; {['large', 'transporter']}
 VehicleUtilisation=[{'company car'}]; % determines which vehicle utilisations shall be considered. In general, {'company car'}; {'fleet vehicle'}; {'undefined'}
 VehiclePointer=zeros(length(VehicleSizes),1); % the pointers that indicate which vehicle will be assigned next per vehicle size class
@@ -134,12 +137,10 @@ end
 
 Time.Sim.Start=dateshift(max([Range.TestDate(1), Vehicles{1}.Time.Vec(1)]), 'start', 'day');
 Time.Sim.End=min([Range.TestDate(2), Vehicles{1}.Time.Vec(end)]);
-Time.Sim.End=min([Range.TestDate(2), Vehicles{1}.Time.Vec(end)])-days(140);
 Time.Sim.Vec=Time.Sim.Start:Time.Step:Time.Sim.End;
 Time.Sim.VecInd=1:length(Time.Sim.Vec);
 Time.Sim.StepInd=Time.StepInd;
 Time.Sim.Step=Time.Step;
-
 
 Users{1}.Time=Time.Sim;
 Users{1}.VehicleDataFileName=Vehicles{1}.FileName; % save general processing information in the first cell
@@ -197,20 +198,24 @@ for n=2:NumUsers+1
     % Selection of a grid convenient charging profile
     GridConvenientChargingProfile=max(double(RandomNumbers(8)>=(0:1/size(GridConvenienChargingDistribution,2):1-1/size(GridConvenienChargingDistribution,2))).*(1:size(GridConvenienChargingDistribution,2)));
 %     if RandomNumbers(8)<=LikelihoodGridConvenientCharging
+    Users{n}.NNEEnergyPriceGridConvenientCharging=GridConvenienChargingDistribution(3,GridConvenientChargingProfile); % [ct/kWh] netto (without VAT). reduced NNE energy price due to the allowance for the DSO to manage the charging
+    Users{n}.NNEEnergyPriceNotGridConvenientCharging=GridConvenienChargingDistribution(1,GridConvenientChargingProfile); % [ct/kWh] netto (without VAT). normal NNE prices
     if RandomNumbers(6)<=PVGridConvenientChargingLikelihoodMatrix(1) || (RandomNumbers(6)>PVGridConvenientChargingLikelihoodMatrix(2) & RandomNumbers(6)<=PVGridConvenientChargingLikelihoodMatrix(3))
         Users{n}.GridConvenientCharging=true;
         Users{n}.GridConvenientChargingAvailability=GridConvenienChargingDistribution(5:end,GridConvenientChargingProfile);
-        Users{n}.NNEEnergyPrice=GridConvenienChargingDistribution(3,GridConvenientChargingProfile); % [ct/kWh] netto (without VAT). reduced NNE energy price due to the allowance for the DSO to manage the charging
         Users{n}.NNEExtraBasePrice=GridConvenienChargingDistribution(2,GridConvenientChargingProfile)*100; % [ct/a] netto (without VAT) due to the extra electricity meter
         Users{n}.NNEBonus=GridConvenienChargingDistribution(4,GridConvenientChargingProfile)*100; % [ct] a single bonus paid by the DSO
+        Users{n}.IMSYSInstallationCosts=IMSYSInstallationCostsMean*(1+TruncatedGaussian(0.1,[0.5 1.5]-1,1));
+        Users{n}.NNEEnergyPrice=Users{n}.NNEEnergyPriceGridConvenientCharging;
     else
         Users{n}.GridConvenientCharging=false;
         Users{n}.GridConvenientChargingAvailability=ones(24*Time.StepInd,1);
-        Users{n}.NNEEnergyPrice=GridConvenienChargingDistribution(1,GridConvenientChargingProfile); % [ct/kWh] netto (without VAT). normal NNE prices
         Users{n}.NNEExtraBasePrice=0; % not extra electricity meter required
         Users{n}.NNEBonus=0; % no extra Bonus
+        Users{n}.IMSYSInstallationCosts=0;
+        Users{n}.NNEEnergyPrice=Users{n}.NNEEnergyPriceNotGridConvenientCharging;
     end
-    Users{n}.NNEEnergyPriceNotGridConvenientCharging=GridConvenienChargingDistribution(1,GridConvenientChargingProfile); % [ct/kWh] netto (without VAT). normal NNE prices
+    
     
     % Choose a driving profile from VehicleData
     SizeNum=find(cellfun(@length, strfind(VehicleSizes, Users{n}.ModelSize)),1); % find a vehicle that fits the size of the assigned car model
@@ -255,3 +260,4 @@ clearvars LikelihoodPV PVPlantPointer Consumption Velocities SizeNum VehiclePoin
 clearvars RandomNumbers n Model VehicleSizes MeanPrivateElectricityPrice NumTripDays NumUsers PublicACChargingPrices PublicDCChargingPrices StorageFiles StorageInd
 clearvars TimeNoiseStdFac UsersTime VehicleProperties GridConvenientChargingProfile UsersTimeVecLogical VCity VHighway PublicChargingThresholdMean
 clearvars PrivateChargingThresholdMean LikelihoodGridConvenientCharging GridConvenienChargingDistribution PVGridConvenientChargingLikelihoodMatrix
+clearvars VehicleUtilisation

@@ -86,7 +86,7 @@ if Demo
     cla
     title(strcat(TargetTitle, " Prediction vs. Target at ", datestr(Time.Pred(TimeInd),'dd.mm.yyyy HH:MM')),'Interpreter','none')
     xlabel('Time.Pred')
-    ylabel('Price [MWh/ï¿½]')
+    ylabel('Price [MWh/€]')
     grid on   
     hold on    
     
@@ -103,7 +103,7 @@ if ActivateWaitbar
     h=waitbar(0, 'Berechne Prognose');
 end
 while TimeInd<=Range.TestPredInd(2)
-    for ForecastDuration=0:min(ForecastIntervalPredInd-1, Range.TestPredInd(2)-TimeInd)        
+    for ForecastDuration=0:min(ForecastIntervalPredInd-1, Range.TestPredInd(2)-TimeInd)
         for p=1:NumPredMethod
             if PredMethod{p,1}==1 % if it is a LSQ Model
                 
@@ -167,6 +167,17 @@ while TimeInd<=Range.TestPredInd(2)
         waitbar((TimeInd-Range.TestPredInd(1))/(Range.TestPredInd(2)-Range.TestPredInd(1)))
     end
 end
+
+% Apply correction for unrealistic values
+temp=Prediction;
+for p=1:NumPredMethod
+    Prediction(abs(Prediction(:,p))>mean(abs(Prediction(:,p)),1)*std(Target(1:Range.TrainPredInd(2)))*4,p)=mean(Target(1:Range.TrainPredInd(2)));
+    if sum(temp(:,p)~=Prediction(:,p))>0
+        disp(strcat("PredMethod ", num2str(p), ": ", num2str(sum(temp(:,p)~=Prediction(:,p))), " outliers corrected"))
+    end
+end
+
+
 if ActivateWaitbar
     close(h)
 end
@@ -201,29 +212,30 @@ end
 %% Evaluation
 for p=1:NumPredMethod
     
-    Accuracy(:,p)=0;
-    if PredMethod{p,1}==3
-        [Accuracy, Prediction(:,p), PredictionMat(:,:,p)] = GetAccuracy(Prediction, PredictionMat, Target, Range);
-        disp(strcat("The prediction accuracy was ", num2str(Accuracy(1))))
-        
-        figure(12)
-        clf
-        plot(Time.Pred, Target)
-        hold on
-        plot(Time.Vec, Prediction(:,p)*0.8+0.1)
-        ylim([-0.1 1.1])
-        legend([TargetTitle, "GLM"])
-    end
+     Accuracy(:,p)=0;
+%     if PredMethod{p,1}==3
+%         [Accuracy, Prediction(:,p), PredictionMat(:,:,p)] = GetAccuracy(Prediction, PredictionMat, Target, Range);
+%         disp(strcat("The prediction accuracy was ", num2str(Accuracy(1))))
+%         
+%         figure(12)
+%         clf
+%         plot(Time.Pred, Target)
+%         hold on
+%         plot(Time.Vec, Prediction(:,p)*0.8+0.1)
+%         ylim([-0.1 1.1])
+%         legend([TargetTitle, "GLM"])
+%     end
     
     PredCoulmns=zeros(ForecastIntervalPredInd,1)==PredictionMat(:,:,p);
     PredictionMatEval=PredictionMat(:,~all(PredCoulmns,1),p);
     TargetMatEval=TargetMat(:,~all(PredCoulmns,1));
     MAE(:,p)=mean(abs(PredictionMatEval-TargetMatEval),2); % Mean Absolute Error
-    mMAPE(:,p)=mean(abs(TargetMatEval-PredictionMatEval)/sum(abs(TargetMatEval),2),2); % Mean Absolute Percentage Error
+    mMAPE(:,p)=mean(sum(abs(TargetMatEval-PredictionMatEval),'all')/sum(TargetMatEval,'all'),2); % Mean Absolute Percentage Error
     RMSE(:,p)=sqrt(mean((PredictionMatEval-TargetMatEval).^2,2)); % Mean Squared Error
     
     MAEConst(1,p)=round(mean(abs(PredictionMatEval-TargetMatEval),'all'),3);
-    mMAPEConst(1,p)=round(mean(abs(TargetMatEval-PredictionMatEval),'all')./mean(abs(TargetMatEval),'all'),3);     
+%     mMAPEConst(1,p)=round(mean(abs(TargetMatEval-PredictionMatEval),'all')./mean(abs(TargetMatEval),'all'),3);     
+    mMAPEConst(1,p)=round(sum(abs(TargetMatEval-PredictionMatEval),'all')./sum(TargetMatEval,'all'),3);     
     RMSEConst(1,p)=round(sqrt(mean((PredictionMatEval-TargetMatEval).^2,'all')),3);
     MEANConst(1,p)=round(mean(abs(TargetMatEval),'all'),3);
     STDConst(1,p)=round(std(TargetMat, 0, 'all'),3);

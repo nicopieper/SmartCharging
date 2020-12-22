@@ -7,8 +7,8 @@ if ismember(TimeInd, TimesOfZeitscheiben)
     %OfferedResPo=ResPoOffers(floor(mod((TimeInd-1),(24*Time.StepInd))/(4*Time.StepInd))+1, 2, floor((TimeInd-1)/(24*Time.StepInd))+1);
     
     if OfferedResPo>0
-        % ResOfferLists4H are the offers of the competitors fetched from  the regelleistung.net data. columns 2-3 of cell-column 2 contain the offered energy price [ï¿½/MWh] and the allocated power [MW] for negative reserve energy.
-        % ResEnOffers are the price offers [ï¿½/kWh] of the simulated aggregator.OfferedResPo covers the allocated power [kW] corresponding to the price
+        % ResOfferLists4H are the offers of the competitors fetched from  the regelleistung.net data. columns 2-3 of cell-column 2 contain the offered energy price [€/MWh] and the allocated power [MW] for negative reserve energy.
+        % ResEnOffers are the price offers [€/kWh] of the simulated aggregator.OfferedResPo covers the allocated power [kW] corresponding to the price
         ResEnMOL=[ResOfferLists4H{floor((TimeInd+TD.Main)/(4*Time.StepInd))+1,2}(:,2:3) .* [1/1000, 1000]; [ResEnOffers(floor(mod(TimeInd-TimesOfPreAlgo(1,1), 24*Time.StepInd)/(4*Time.StepInd))+1,1,PreAlgoCounter+1-double(ControlPeriodsIt==ControlPeriods)), OfferedResPo]]; % Merit-Order-List for the current Zeitscheibe. Includes offered prices in first column and allocated energy in second column. 
         ResEnMOL=[ResEnMOL, [zeros(size(ResEnMOL,1)-1,1);1]];
         [~, SortedOrder]=sort(ResEnMOL(:,1),1,'ascend');
@@ -131,7 +131,7 @@ if OfferedResPo>0
             end
 %             1
 
-        else %if DispatchedResPo(TimeInd) <= sum(AvailableDispatchedResPoMax) % 0.57% + 0% = 0.57%
+        elseif sum(AvailableDispatchedResPoMax)>0 % DispatchedResPo(TimeInd) <= sum(AvailableDispatchedResPoMax) % 0.57% + 0% = 0.57%
             % dispatch energy using all available charging energy even from
             % those cars that were not dispatched for reserve power but are
             % currently available
@@ -166,9 +166,11 @@ if OfferedResPo>0
         
         ProvidedResPo(TimeInd)=0;
         
-        for n=PriorityChargingList(:,1)'
-            Users{n}.Logbook(TimeInd+TD.User,7)=PriorityChargingList(PriorityChargingList(:,1)==n, end);
-            ProvidedResPo(TimeInd)=ProvidedResPo(TimeInd)+Users{n}.Logbook(TimeInd+TD.User,7);
+        if ~isempty(PriorityChargingList)
+            for n=PriorityChargingList(:,1)'
+                Users{n}.Logbook(TimeInd+TD.User,7)=PriorityChargingList(PriorityChargingList(:,1)==n, end);
+                ProvidedResPo(TimeInd)=ProvidedResPo(TimeInd)+Users{n}.Logbook(TimeInd+TD.User,7);
+            end 
         end
 
     end

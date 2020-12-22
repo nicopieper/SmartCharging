@@ -75,10 +75,10 @@
 %% Initialisation
 
 tic
-OnlyAddNewLists=false;
+OnlyAddNewLists=true;
 ProcessDataNewRegelDemand=false;
-ProcessDataNewRegelResOfferLists4H=false;
-ProcessDataNewRegelPrices=true;
+ProcessDataNewRegelResOfferLists4H=true;
+ProcessDataNewRegelPrices=false;
 Time.StartRegelOffers=datetime(2019,08,10,0,0,0,'TimeZone', 'Africa/Tunis');
 RegelTypeLoad="aFRR";
 
@@ -178,7 +178,7 @@ if ProcessDataNew.Regel
                     ExistingDates=NaT(0,0);
                     
                     for k=1:size(MonthFiles,1)
-                        ExistingDates=[ExistingDates; datetime(MonthFiles(k).name(12:21), 'InputFormat', 'yyyy-MM-dd')]; % all days a corresponding mat file already exists
+                        ExistingDates=[ExistingDates; datetime(MonthFiles(k).name(17:26), 'InputFormat', 'yyyy-MM-dd')]; % all days a corresponding mat file already exists
                     end
                     
                     if isempty(find(ismember(DayVec, ExistingDates)==0,1)) % if there is not a single day missing, then go ahead with the next month file
@@ -365,7 +365,7 @@ for Date=DateVec % iterate through the days between Time.Start and Time.End
     ResPoDemRealQH(DateCounter*96+1:(DateCounter+1)*96,:)=LoadedDemandData; % add it to ResPoDemRealQH at the right place within the vector, such that the rows of this variable correspomd to the rows of Time.Vec
 
     if Date>=Time.StartRegelOffers % if price data exists
-        load(strcat(Path.Regel, RegelTypeLoad, Dl, 'Offers', Dl, Year, Dl, Month, Dl, 'OfferLists_', Year, '-', Month, '-', datestr(Date, 'dd'), '.mat')); % same mechanism as above
+        load(strcat(Path.Regel, RegelTypeLoad, Dl, 'Offers', Dl, Year, Dl, Month, Dl, 'ResOfferLists4H_', Year, '-', Month, '-', datestr(Date, 'dd'), '.mat')); % same mechanism as above
         ResOfferLists4H(DateCounter*6+1:(DateCounter+1)*6,:)=LoadedOfferLists; % [Time, Neg. ResOfferLists4H, Pos. ResOfferLists4H]
         load(strcat(Path.Regel, RegelTypeLoad, Dl, 'Prices', Dl, Year, Dl, Month, Dl, 'ResEnPricesData', Year, '-', Month, '-', datestr(Date,'dd')));
         ResEnPricesRealQH(DateCounter*96+1:(DateCounter+1)*96,:)=LoadedResEnPrices; % [Total Amount Payed for Energy Neg [€],  Total Amount Payed for Energy Pos [€], Mean Price Energy Neg [€/MWh], Mean Price Energy Pos [€/MWh], Marginal Price Energy Neg [€/MWh], Marginal Price Energy Pos [€/MWh], Min Price Energy Neg [€/MWh], Min Price Energy Pos [€/MWh]]

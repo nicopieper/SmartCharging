@@ -1,4 +1,4 @@
-function  [PredictorMat, TargetDelayedLSQ, TargetDelayedNARXNET, TargetDelayedGLM, MaxDelayIndLSQ, NumDelayIndsLSQ, MaxDelayIndNARXNET, NumDelayIndsNARXNET, MaxDelayIndGLM, NumDelayIndsGLM, Time, Range]=PredVars(ForecastIntervalHours, DelayIndsLSQ, DelayIndsNARXNET, DelayIndsGLM, Target, Predictors, Time, Range)
+function  [PredictorMat, TargetDelayedLSQ, TargetDelayedNARXNET, TargetDelayedGLM, MaxDelayIndLSQ, NumDelayIndsLSQ, MaxDelayIndNARXNET, NumDelayIndsNARXNET, MaxDelayIndGLM, NumDelayIndsGLM, Time, Range]=PredVars(ForecastIntervalHours, DelayIndsLSQ, DelayIndsNARXNET, DelayIndsGLM, DelayPredictionMarketData, Target, Predictors, Time, Range)
 %% Description
 % This function generates the input variables for the DayAhead Price
 % predictions.
@@ -54,22 +54,22 @@ Time.StepPredInd=1/(minutes(Time.Pred(2)-Time.Pred(1))/60); % H:1, HH: 2, QH: 4
 % MaxDelayInd=MaxDelayHours*Time.StepPredInd;
 
 NumDelayIndsLSQ=numel(DelayIndsLSQ);
-MaxDelayIndLSQ=max(DelayIndsLSQ);
+MaxDelayIndLSQ=max(DelayIndsLSQ)+DelayPredictionMarketData;
 % NumDelayIndsNARXNET=size(DelayIndsNARXNET{1},2)+size(DelayIndsNARXNET{2},2);
 % MaxDelayIndNARXNET=max([DelayIndsNARXNET{1}, DelayIndsNARXNET{2}]);
 % DelayIndsNARXNETMat=GetDelayInds(DelayIndsNARXNET, ForecastIntervalPredInd, Time);
 NumDelayIndsNARXNET=numel(DelayIndsNARXNET);
-MaxDelayIndNARXNET=max(DelayIndsNARXNET);
+MaxDelayIndNARXNET=max(DelayIndsNARXNET)+DelayPredictionMarketData;
 NumDelayIndsGLM=numel(DelayIndsGLM);
 MaxDelayIndGLM=max(DelayIndsGLM);
 
 
-TimeVecPred=Time.Start:Time.StepPred:Time.End;
-Range.TrainPredInd=[max([find(Range.TrainDate(1)==TimeVecPred,1), find(~isnan(Target),1)])  find(dateshift(Range.TrainDate(2),'end','day')-Time.StepPred==TimeVecPred,1)];
+Time.Pred=Time.Start:Time.StepPred:Time.End;
+Range.TrainPredInd=[max([find(Range.TrainDate(1)==Time.Pred,1), find(~isnan(Target),1)])  find(dateshift(Range.TrainDate(2),'end','day')-Time.StepPred==Time.Pred,1)];
 
 % Did this line lead to a shift from prediction and targets for 4H and QH?
-% Range.TestPredInd=[find(dateshift(Range.TestDate(1),'start','day')+hours(Time.HourPred*Time.StepPredInd)==TimeVecPred,1) find(dateshift(Range.TestDate(2),'end','day')-Time.StepPred==TimeVecPred,1)];
-Range.TestPredInd=[find(dateshift(Range.TestDate(1),'start','day')+hours(Time.HourPred)==TimeVecPred,1) find(dateshift(Range.TestDate(2),'end','day')-Time.StepPred==TimeVecPred,1)];
+% Range.TestPredInd=[find(dateshift(Range.TestDate(1),'start','day')+hours(Time.HourPred*Time.StepPredInd)==Time.Pred,1) find(dateshift(Range.TestDate(2),'end','day')-Time.StepPred==Time.Pred,1)];
+Range.TestPredInd=[find(dateshift(Range.TestDate(1),'start','day')+hours(Time.HourPred)==Time.Pred,1) find(dateshift(Range.TestDate(2),'end','day')-Time.StepPred==Time.Pred,1)];
 
 
 %% Calc Daily and Weekly Mean Values
@@ -107,18 +107,28 @@ MeanTargetWCirc=repmat(MeanTargetWCirc,ceil(Range.TestPredInd(2)/(24*Time.StepPr
 %using last 7 time of day values and last two values but performance was
 %worse.
 
+% TargetDelayedLSQ=zeros(length(1:Range.TestPredInd(2)),NumDelayIndsLSQ);
+% Counter=0;
+% for n=DelayIndsLSQ
+%     Counter=Counter+1;
+%     TargetDelayedLSQ(MaxDelayIndLSQ+1:end,Counter)=Target(1+MaxDelayIndLSQ-n:Range.TestPredInd(2)-n);
+% end
+
 TargetDelayedLSQ=zeros(length(1:Range.TestPredInd(2)),NumDelayIndsLSQ);
 Counter=0;
 for n=DelayIndsLSQ
     Counter=Counter+1;
-    TargetDelayedLSQ(MaxDelayIndLSQ+1:end,Counter)=Target(1+MaxDelayIndLSQ-n:Range.TestPredInd(2)-n);
+    TargetDelayedLSQ(MaxDelayIndLSQ+1:end,Counter)=Target(1+MaxDelayIndLSQ-n-DelayPredictionMarketData:Range.TestPredInd(2)-n-DelayPredictionMarketData);
 end
+
+
+
 
 TargetDelayedNARXNET=zeros(length(1:Range.TestPredInd(2)), NumDelayIndsNARXNET);
 Counter=0;
 for n=DelayIndsNARXNET
     Counter=Counter+1;
-    TargetDelayedNARXNET(MaxDelayIndNARXNET+1:end,Counter)=Target(1+MaxDelayIndNARXNET-n:Range.TestPredInd(2)-n);
+    TargetDelayedNARXNET(MaxDelayIndNARXNET+1:end,Counter)=Target(1+MaxDelayIndNARXNET-n-DelayPredictionMarketData:Range.TestPredInd(2)-n-DelayPredictionMarketData);
 end
 
 TargetDelayedGLM=zeros(length(1:Range.TestPredInd(2)), NumDelayIndsGLM);
