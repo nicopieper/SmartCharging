@@ -249,11 +249,19 @@ for n=1:size(Folders,1) % iterate through the plants
         PVPlants{n}.PeakPower=str2double(strrep(erase(extractBefore(Properties{3}, 'kWp'), ' '), ',', '.'));
         PVPlants{n}.ID=Properties{4};
         PVPlants{n}.ProfileQH=uint16(LoadedSMAPlantDataComplete(DatesDiffStart*96+1:end-DatesDiffEnd*96)*1000); % Unit: W not kW! in order to save memory. Cut Vector to Time.Vec range 
-
+        
         if isfield(PVPlants{n}, "PredictionH")
-            PVPlants{n}.PredictionH=uint16(PVPlants{n}.PredictionH*1000);  % Unit: W not kW! in order to save memory.
-            PVPlants{n}.PredictionQH=uint16(PVPlants{n}.PredictionQH*1000); % Unit: W not kW! in order to save memory.
+%             if PVPlants{n}.PeakPower>10
+%                 PVPlants{n}.ProfileQH=uint16(LoadedSMAPlantDataComplete(DatesDiffStart*96+1:end-DatesDiffEnd*96)*1000/PVPlants{n}.PeakPower*10); % Unit: W not kW! in order to save memory. Cut Vector to Time.Vec range 
+%                 PVPlants{n}.PredictionH=uint16(PVPlants{n}.PredictionH*1000/PVPlants{n}.PeakPower*10);
+%                 PVPlants{n}.PredictionQH=uint16(PVPlants{n}.PredictionQH*1000/PVPlants{n}.PeakPower*10);
+%                 PVPlants{n}.PeakPower=10;
+%             else
+                PVPlants{n}.PredictionH=uint16(PVPlants{n}.PredictionH*1000);  % Unit: W not kW! in order to save memory.
+                PVPlants{n}.PredictionQH=uint16(PVPlants{n}.PredictionQH*1000); % Unit: W not kW! in order to save memory.
+%             end
         end
+        
     
         NumberPlantsLoaded=NumberPlantsLoaded+1; % increase the counter
 

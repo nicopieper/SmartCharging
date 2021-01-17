@@ -1,12 +1,12 @@
 %% Initialisation
 clear
-Time.Start=datetime(2018,09,1,0,0,0, 'TimeZone', 'Africa/Tunis');
+Time.Start=datetime(2019,01,01,0,0,0, 'TimeZone', 'Africa/Tunis');
 Time.End=datetime(2020,08,31,23,45,0, 'TimeZone', 'Africa/Tunis');
 Time.EndTrain=datetime(2019,08,31,23,45,0, 'TimeZone', 'Africa/Tunis');
 Time.Step=minutes(15);
 Time.StepMin=minutes(Time.Step);
 
-ProcessDataNew.Smard=0;
+ProcessDataNew.Smard=0; 
 ProcessDataNew.EC=0;
 ProcessDataNew.SMAPlant=0;
 ProcessDataNew.Regel=0;
