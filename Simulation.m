@@ -2,9 +2,10 @@
 tic
 NumUsers=80; % size(Users,1)-1
 SmartCharging=true;
-UseParallel=false;
+UseParallel=true;
 %UseParallel=true;
-UsePredictions=true;
+UseSpotPredictions=true;
+UsePVPredictions=false;
 
 ControlPeriods=96*2;
 UsePV=true;
@@ -81,7 +82,7 @@ if SmartCharging
     InitialiseLiveAlgo;
     PreAlgoCounter=0;
     
-    if UsePredictions
+    if UseSpotPredictions
         if ~exist("SpotmarketPricesPred1", "var")
             [StorageFile, StoragePath]=uigetfile(strcat(Path.Prediction, "DayaheadRealH", Dl), 'Select the first Spotmarket Prediction');
             load(strcat(StoragePath, StorageFile))
@@ -107,7 +108,7 @@ if SmartCharging
     end
 end
 
-if UsePredictions
+if UsePVPredictions
     PVPlants_Profile_Prediction="PredictionQH";
 else
     PVPlants_Profile_Prediction="ProfileQH";
@@ -245,7 +246,7 @@ for TimeInd=Time.Sim.VecInd(2:end-ControlPeriods)
             
             %% Optimise
 
-            if ~UsePredictions
+            if ~UseSpotPredictions
                 SpotmarktPricesCP=SpotmarketPrices(TimeInd+TD.User:TimeInd+TD.User+ControlPeriodsIt-1);
             end
         
@@ -253,7 +254,7 @@ for TimeInd=Time.Sim.VecInd(2:end-ControlPeriods)
             if ismember(TimeInd, TimesOfPreAlgo(1,:))
                 PreAlgoCounter=PreAlgoCounter+1;
                 
-                if UsePredictions
+                if UseSpotPredictions
 %                     SpotmarktPricesCP=[SpotmarketPrices(TimeInd+TD.Main:TimeInd+TD.Main+(24-hour(TimeOfPreAlgo(1)))*Time.StepInd-1); SpotmarketPricesPred1(TimeInd+TD.SpotmarketPricesPred1+(24-hour(TimeOfPreAlgo(1)))*Time.StepInd+1:TimeInd+TD.SpotmarketPricesPred1+ControlPeriodsIt)];
 %                     SpotmarktPricesCP=[SpotmarketPrices(TimeInd+TD.Main:TimeInd+TD.Main + (floor((TimeInd+(24-13)*Time.StepInd-1)/(24*Time.StepInd))+1)*24*Time.StepInd+1-TimeInd)]; % Prices at Day-ahead market are released at ~13:00
 %                     SpotmarktPricesCP=[SpotmarktPricesCP; SpotmarketPricesPred1(TimeInd+ TD.SpotmarketPricesPred1 + (floor((TimeInd+(24-13)*Time.StepInd-1)/(24*Time.StepInd))+1)*24*Time.StepInd+1:length(SpotmarktPricesCP
@@ -262,7 +263,7 @@ for TimeInd=Time.Sim.VecInd(2:end-ControlPeriods)
                 
                 CalcConsOptVars;
                 
-            elseif UsePredictions
+            elseif UseSpotPredictions
                 %SpotmarktPricesCP=[SpotmarketPrices(TimeInd+TD.Main:TimeInd+TD.Main+(48-hour(TimeOfPreAlgo(1)))*Time.StepInd-1); SpotmarketPricesPred1(TimeInd+TD.SpotmarketPricesPred1+(48-hour(TimeOfPreAlgo(1)))*Time.StepInd+1:TimeInd+TD.SpotmarketPricesPred1+ControlPeriodsIt)];
 %                 SpotmarktPricesCP=[SpotmarketPrices(TimeInd+TD.Main:TimeInd+TD.Main + (floor((TimeInd+(24-13)*Time.StepInd-1)/(4*Time.StepInd))+1)*4*Time.StepInd+1-TimeInd)];
                 SpotmarktPricesCP=[SpotmarketPrices(TimeInd+TD.User:TimeInd+TD.User + 24*Time.StepInd-mod(TimeInd-1,24*Time.StepInd)-1 + (mod(TimeInd-1,24*Time.StepInd)-13*Time.StepInd > 0)*96); SpotmarketPricesPred2(TimeInd+TD.SpotmarketPricesPred2 + 24*Time.StepInd-mod(TimeInd-1,24*Time.StepInd)-1 + (mod(TimeInd-1,24*Time.StepInd)-13*Time.StepInd > 0)*96+1:TimeInd+TD.SpotmarketPricesPred2+ControlPeriodsIt-1)];
@@ -367,6 +368,9 @@ if SmartCharging
     Users{1}.AvailabilityMat=AvailabilityMat;
     Users{1}.NumCostCats=NumCostCats;
     Users{1}.ControlPeriods=ControlPeriods;
+    Users{1}.ShiftInds=ShiftInds;
+    Users{1}.NumDecissionGroups=NumDecissionGroups;
+    Users{1}.TimeOfPreAlgo=TimeOfPreAlgo;
     disp(strcat(num2str(sum(LastResPoOffersSucessful4H(:,2:end)>0,'all')/sum(LastResPoOffers(:,2:end)>0,'all')*100), "% of all reserve power offers were successful"))
     
     ResEnVolumenFulfilled=0;
@@ -457,7 +461,7 @@ for k=1:size(ChargingMat,1)
     ylabel("Charging power in kW")
     xlabel("Time")
     if k<size(ChargingMat,1)
-        title(strcat("Optimal charging energies for optimisation at ", datestr(TimeOfPreAlgo(k), "hh:MM")))
+        title(strcat("Optimal charging energies for optimisation at ", datestr(Users{1}.TimeOfPreAlgo(k), "hh:MM")))
     else
         title(strcat("Optimal charging energies for optimisation in total"))
     end
@@ -479,7 +483,7 @@ end
 
 if Users{1}.SmartCharging
     figure(k+1)
-    plot(datetime(1,1,1,0,0,0, 'TimeZone', 'Africa/Tunis'):minutes(Time.StepMin):datetime(1,1,1,23,45,0, 'TimeZone', 'Africa/Tunis'), circshift(mean(sum(Users{1}.AvailabilityMat,3),2), ShiftInds))
+    plot(datetime(1,1,1,0,0,0, 'TimeZone', 'Africa/Tunis'):minutes(Time.StepMin):datetime(1,1,1,23,45,0, 'TimeZone', 'Africa/Tunis'), circshift(mean(sum(Users{1}.AvailabilityMat,3),2), Users{1}.ShiftInds))
     xticks(datetime(1,1,1,0,0,0, 'TimeZone', 'Africa/Tunis'):hours(4):datetime(1,1,2,0,0,0, 'TimeZone', 'Africa/Tunis'))
     xticklabels(datestr(datetime(1,1,1,0,0,0, 'TimeZone', 'Africa/Tunis'):hours(4):datetime(1,1,2,0,0,0, 'TimeZone', 'Africa/Tunis'), "HH:MM"))
 end

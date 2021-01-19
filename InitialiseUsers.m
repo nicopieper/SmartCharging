@@ -84,18 +84,15 @@
 rng('default');
 rng(1);
 NumUsers=80; % number of users
-%LikelihoodPV=0.5; % 44 % der privaten und 46 % der gewerblichen Nutzer über eine eigene Photovoltaikanlage, https://elib.dlr.de/96491/1/Ergebnisbericht_E-Nutzer_2015.pdf S. 10
-%LikelihoodGridConvenientCharging=0.5;
-%LikelihoodGridConvenientCharging=0;
-PVGridConvenientChargingLikelihoodMatrix=[0, 1; 1, 0]; % PV&14a, PV&~14a; ~PV&14a, ~PV&~14a
+PVGridConvenientChargingLikelihoodMatrix=[0, 1; 1, 0]; % Matrix that defines with type of users use grid convenient charging (14a) and own a PV plant: [PV&14a, PV&~14a; ~PV&14a, ~PV&~14a]
 
 Users=cell(NumUsers+1,1); % the main cell variable all user data is stored in
 Users{1}.MwSt=1.19; % The VAT rate
 Users{1}.PVEEGBonus=9.7; %[ct/kWh] Bonus paid by the DSO to PV plant owner for supplying energy to the grid
 AddPV=true; % determines wheter PV plants shall be assigned to the users. In general true, only false for test purposes
 MeanPrivateElectricityPrice=30.43/1.19 - 3.7513 - 7.06; % [ct/kWh] average German electricity price in 2019 according to Strom-Report without VAT (19%), electricity production price (avg. Dayahead price was 3.7513 ct/kWh in 2019) and NNE energy price (avg. was 7.06 ct/kWh in 2019)
-PublicACChargingPrices=[29, 39];
-PublicDCChargingPrices=[39, 49];
+PublicACChargingPrices=[29, 39]; % [ct/kWh]
+PublicDCChargingPrices=[39, 49]; % [ct/kWh]
 IMSYSInstallationCostsMean=80000; % [ct] The costs for the installation of the IMSYS have to be paid by the wallbox owner.
 
 PrivateChargingThresholdMean=1.4;
@@ -103,7 +100,7 @@ PublicChargingThresholdMean=0.33;
 VCity=14; % [m/s] lower velocities indicate driving within the city, hence low consumption
 VHighway=27; % [m/s] higher velocities indicate driving on a highway, hence high consumption
 
-PVPlantPointer=1; % 
+PVPlantPointer=1;
 PVGridConvenientChargingLikelihoodMatrix=cumsum(PVGridConvenientChargingLikelihoodMatrix(:)/sum(PVGridConvenientChargingLikelihoodMatrix,'all'));
 VehicleSizes=[{'small'}; {'medium'}; {['large', 'transporter']}]; % determines which sizes shall be considered. In general, {'small'}; {'medium'}; {['large', 'transporter']}
 VehicleUtilisation=[{'company car'}]; % determines which vehicle utilisations shall be considered. In general, {'company car'}; {'fleet vehicle'}; {'undefined'}
