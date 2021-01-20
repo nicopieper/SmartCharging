@@ -26,9 +26,9 @@ Path.Database='C:\Users\nicop\Seafile\SmartCharging4EWEGo\';
 
 Path.Base=pwd;
 if ismember('\', pwd)
-    Dl='\'; % Linux path delimiter
+    Dl='\'; % Windows path delimiter
 else
-    Dl='/'; % Windows path delimiter
+    Dl='/'; % Linux path delimiter
 end
 
 Path.Smard=strcat(Path.Database, 'SmardData', Dl);

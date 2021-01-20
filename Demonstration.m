@@ -1,4 +1,5 @@
 %% Intitialisation 
+
 TimeOfForecast=datetime(1,1,1,08,0,0,'TimeZone','Africa/Tunis');
 Time.Demo.Step=minutes(60);
 Time.Demo.StepInd=1;
@@ -201,7 +202,7 @@ for l=1:6
     DemoPlots{n}.DataMat{l,k}=[zeros(ForecastIntervalInd,96*floor(l/5)),[zeros(ForecastIntervalInd-size(ChargingTypeMat{l},1),size(ChargingTypeMat{l},2));squeeze(ChargingTypeMat{l}(:,:,k))]];
 end
 DemoPlots{n}.Time.Vec{k}=Users{1}.Time.Vec;
-DemoPlots{n}.Label{k}="Spotmarket";
+DemoPlots{n}.Label{k}="Spot market";
 DemoPlots{n}.YLabel{k}="Charging Power in kW";
 DemoPlots{n}.YMin{k}=-1;
 DemoPlots{n}.YMax{k}='dynamic';
