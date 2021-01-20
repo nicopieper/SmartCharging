@@ -49,7 +49,6 @@ Time.StepInd=hours(1)/Time.Step;
 Time.IntervalFile=strcat(datestr(Time.Start, 'yyyymmdd'), "-", datestr(Time.End, 'yyyymmdd'));
 
 Range.TrainInd=[find(Range.TrainDate(1)==Time.Vec,1) find(dateshift(Range.TrainDate(2),'end','day')-Time.Step==Time.Vec,1)];
-%Range.Val=[Range.Train(2)+1 Range.Train(2)+floor(length(Target)*ShareVal/24)*24-MaxDelayInd];
 Range.TestInd=[find(Range.TestDate(1)==Time.Vec,1) find(dateshift(Range.TestDate(2),'end','day')-Time.Step==Time.Vec,1)];
 
 
