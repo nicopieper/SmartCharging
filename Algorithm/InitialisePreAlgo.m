@@ -6,6 +6,7 @@ NumCostCats=sum(CostCats);
 ConstantResPoPowerPeriods=4*Time.StepInd;
 ResPoPriceFactor=[0.4];
 ResEnPriceFactor=-0.1;
+ResEnPriceFactor=-1;
 options = optimoptions('linprog','Algorithm','dual-simplex');
 options.Display = 'off';
 ResPoBuffer=1;

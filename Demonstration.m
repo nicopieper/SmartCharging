@@ -2,7 +2,7 @@
 TimeOfForecast=datetime(1,1,1,08,0,0,'TimeZone','Africa/Tunis');
 Time.Demo.Step=minutes(60);
 Time.Demo.StepInd=1;
-Time.Demo.StepIndForecast=4;
+Time.Demo.StepIndForecast=8;
 ForecastIntervalInd=48*Time.StepInd;
 ChargingMatNumber=1;
 
@@ -38,13 +38,6 @@ if size(DemoPlots{n}.Data)<=1
     DemoPlots{n}.DataMat{1,k}=repelem(Pred.DataMat(:,find(Pred.Time.Pred>Pred.Time.EndTrain,1):end), Time.StepInd/Pred.Time.StepPredInd, Time.StepInd/Pred.Time.StepPredInd);
 end
 DemoPlots{n}.Time.Vec{k}=repelem(Pred.Time.Pred(find(Pred.Time.Pred>Pred.Time.EndTrain,1):end), Time.StepInd/Pred.Time.StepPredInd, Time.StepInd/Pred.Time.StepPredInd);
-% if size(DemoPlots{n}.Data)<=2
-%     StoragePath=strcat(Path.Prediction, "DayaheadRealH", Dl);
-%     [StorageFile, StoragePath]=uigetfile(StoragePath, strcat("Select ", DemoPlots{n}.Title, " ", DemoPlots{n}.Label{k}));
-%     StorageFile="LSQ_20201123-1246_20190901-20200831_48h_56Preds_12hr.mat";
-%     load(strcat(StoragePath, StorageFile))
-%     DemoPlots{n}.DataMat{2,k}=repelem(Pred.DataMat(:,find(Pred.Time.Pred>Pred.Time.EndTrain,1):end), Time.StepInd/Pred.Time.StepPredInd, Time.StepInd/Pred.Time.StepPredInd);
-% end
 DemoPlots{n}.YMin{k}='dynamic';
 DemoPlots{n}.YMax{k}='dynamic';
 DemoPlots{n}.YAxis{k}=1;
@@ -143,7 +136,7 @@ end
 Demand=double(Users{DemoUser}.LogbookSmart(:,4));
 DemoPlots{n}.Data{k}=Demand/1000*4;
 DemoPlots{n}.DataSource{k}=Users{DemoUser}.LogbookSmart(:,4)/1000*4;
-DemoPlots{n}.DataMat{k}=DemandForecastMat/1000;
+DemoPlots{n}.DataMat{k}=DemandForecastMat/1000*4;
 DemoPlots{n}.Time.Vec{k}=Users{1}.Time.Vec(1:length(Users{DemoUser}.LogbookSmart)-ForecastIntervalInd);
 DemoPlots{n}.Label{k}="Demand plan";
 DemoPlots{n}.YLabel{k}="Power in kW";

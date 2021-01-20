@@ -23,7 +23,7 @@ if ismember(TimeInd, TimesOfPreAlgo)
                 if isfield(DemoPlots{n}, 'DataMat') && size(DemoPlots{n}.DataMat,2)>=k && size(DemoPlots{n}.DataMat,1)>=PreAlgoTime && ~isempty(DemoPlots{n}.DataMat{PreAlgoTime,k})
                     DemoPlots{n}.Data{k}(TimeInd+DemoPlots{n}.Time.TD{k}+ForecastDuration:TimeInd+DemoPlots{n}.Time.TD{k}+ForecastDuration+Time.Demo.StepIndForecast-1)=DemoPlots{n}.DataMat{PreAlgoTime,k}(ForecastDuration+1+(ForecastIntervalInd-size(Users{1}.ChargingMatSmart{PreAlgoTime,1},1)):ForecastDuration+(ForecastIntervalInd-size(Users{1}.ChargingMatSmart{PreAlgoTime,1},1))+Time.Demo.StepIndForecast,TimeInd+DemoPlots{n}.Time.TD{k});
 
-                    if ForecastDuration<=ForcastLength-24*Time.Demo.StepIndForecast || PreAlgoTime~=1
+                    if ForecastDuration<=ForcastLength-24*Time.Demo.StepInd || PreAlgoTime~=1
                         clearpoints(DemoPlots{n}.Fig{k})
                         addpoints(DemoPlots{n}.Fig{k},Time.Demo.VecDateNum(max([Time.Demo.StartInd, TimeInd-300]):EndCounter),DemoPlots{n}.Data{k}(max([Time.Demo.StartInd+DemoPlots{n}.Time.TD{k}, TimeInd+DemoPlots{n}.Time.TD{k}-300]):EndCounter+DemoPlots{n}.Time.TD{k}))
                     else
