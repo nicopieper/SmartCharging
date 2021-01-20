@@ -87,8 +87,6 @@ GLMDistribution='binomial';
 GLMDistribution='normal';
 GLMLinkFunction='logit';
 
-% DelayIndsNARXNET={[1:10], [95,96,97,96*2-1:96*2+1]};
-% MaxDelayHours=7*24/7*3;
 Time.HourPred=8;
 DelayPredictionMarketData=round(Time.HourPred*1/(hours(Time.Pred(2)-Time.Pred(1))));
 ForecastIntervalHours=52-(Time.HourPred-hour(Range.TestDate(1))); % 52h  % The model must be able %to predict the value of Wednesday 12:00 at Monday 8:00 --> 52 forecast interval
@@ -180,25 +178,4 @@ clearvars StorageFileNarxnet Demo TargetTitle ActivateWaitbar PredMethod TrainFu
 
 
 toc
-% Succesive prediction: 
-% Predict ForecastInterval in a row. Each prediction bases on the
-% prediction before. The first prediction is made totally of PredictorMat. With
-% each step into the future, one more predicted values is used for the next
-% prediction. MSE(ForecastInterval=1:52)=11.6750 (mean from 1 to 52)
-% For Training, ForecastInterval=1 must be used. For Testing
-% ForecastInterval=52.
-%
-% while n<RangeTest(2)
-%     for ForecastDuration=0:min(ForecastInterval-1, RangeTest(2)-n)
-%         PredictorMatInput=[PredictorMat(n+ForecastDuration,:) PricesPredH(n:n+ForecastDuration-1)' TargetDelayed(n+ForecastDuration,ForecastDuration+1:end)]';%         
-%         PricesPredH(n+ForecastDuration,1)=TrainFun(LSQCoeffs, PredictorMatInput);
-%
-%         PricesPredMatH(ForecastDuration+1,k)=PricesPredH(n+ForecastDuration,1);
-%         PricesRealMatH(ForecastDuration+1,k)=TargetCut(n+ForecastDuration); % Control matrix for comparison with predicted values   
-%	  end
-%     k=k+1;
-%     n=n+min(24,ForecastDuration+1);
-%     waitbar((n-StartTestAt)/(RangeTest(2)-StartTestAt))
-% end
 
-%clearvars opts ForecastDuration k n GetSmardData GetVariables

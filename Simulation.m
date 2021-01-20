@@ -1,9 +1,8 @@
 %% Initialisation
 tic
-NumUsers=80; % size(Users,1)-1
+NumUsers=80;
 SmartCharging=true;
 UseParallel=true;
-%UseParallel=true;
 UseSpotPredictions=true;
 UsePVPredictions=false;
 
@@ -36,7 +35,6 @@ end
 NumUsers=min(NumUsers, size(Users,1)-1);
 ChargingPower=zeros(NumUsers,1);
 EnergyDemandLeft=zeros(NumUsers+1,1);
-% ChargingEfficiency=zeros(NumUsers+1,1);
 delete(findall(0,'type','figure','tag','TMWWaitbar'));
 
 Time.Sim=Users{1}.Time;
@@ -49,9 +47,6 @@ UserNum=2:NumUsers+1;
 if ~exist("TotalCostsIt", "var")
     TotalCostsIt={};
 end
-    
-
-for ResEnPriceFactor=[-1]
     
 for n=UserNum
     Users{n}.Logbook=double(Users{n}.LogbookSource);
@@ -77,10 +72,9 @@ if SmartCharging
                     ];
     TimesOfZeitscheiben=mod(16-hour(Time.Sim.Vec(1))*4 + minute(Time.Sim.Vec(1)),16)+1:4*Time.StepInd:length(Time.Sim.VecInd);
     TimesOfDayAheadMarketPriceRelease=(hour(TimeOfDayAheadMarketPriceRelease)*Time.StepInd + minute(TimeOfDayAheadMarketPriceRelease)/60*Time.StepInd)+1:24*Time.StepInd:length(Time.Sim.VecInd);
-    %TimesOfPreAlgo=sort([(hour(TimeOfPreAlgo(1))*Time.StepInd + minute(TimeOfPreAlgo(1))/60*Time.StepInd)+1:24*Time.StepInd:length(Time.Sim.VecInd)], 'ascend');
+
     InitialisePreAlgo;
     InitialiseLiveAlgo;
-    PreAlgoCounter=0;
     
     if UseSpotPredictions
         if ~exist("SpotmarketPricesPred1", "var")
@@ -128,7 +122,6 @@ for TimeInd=Time.Sim.VecInd(2:end-ControlPeriods)
     for n=UserNum
         
         % Public charging: Only charge at public charging point if it is requiered due to low SoC
-%         if (Users{n}.Logbook(TimeInd+TD.User,1)==1 && Users{n}.Logbook(TimeInd+TD.User-1,9)*100/Users{n}.BatterySize<PublicChargingThreshold) || (TimeInd+TD.User+1<=size(Users{n}.Logbook,1) && Users{n}.Logbook(TimeInd+TD.User,4)>=Users{n}.Logbook(TimeInd+TD.User-1,9))
         if Users{n}.Logbook(TimeInd+TD.User-1,9)-Users{n}.Logbook(TimeInd+TD.User,4) < Users{n}.PublicChargingThreshold_Wh
             
             k=TimeInd+TD.User;
@@ -142,10 +135,8 @@ for TimeInd=Time.Sim.VecInd(2:end-ControlPeriods)
 
             PublicChargerPower=max((rand(1)>=PublicChargerDistribution(find(PublicChargerDistribution>TripDistance/1000,1),:)).*PublicChargerDistribution(1,:)); % [kW]
             ChargingPower(n)=min([max([Users{n}.ACChargingPowerVehicle, Users{n}.DCChargingPowerVehicle]), PublicChargerPower])*Users{n}.ChargingEfficiency; % Actual ChargingPower at public charger in [kW]
-%             ChargingEfficiency(n)=PublicChargerDistribution(end,find(ChargingPower(n)<=PublicChargerDistribution(1,2:end),1)+1)*((1.01-0.91)*randn(1)+0.99);
             
             EnergyDemandLeft(n)=double(min((Users{n}.PublicChargingThreshold*100 + 5+TruncatedGaussian(2,[1 10]-5,1))/100*Users{n}.BatterySize + double(ConsumptionTilNextHomeStop) - Users{n}.Logbook(TimeInd+TD.User-1,9), Users{n}.BatterySize - Users{n}.Logbook(TimeInd+TD.User-1,9)));
-%             EnergyDemandLeft(n)=double(min((double(PublicChargingThreshold)+5+TruncatedGaussian(4,[1 20]-5,1))/100*Users{n}.BatterySize+double(ConsumptionTilNextHomeStop)-Users{n}.Logbook(TimeInd+TD.User-1,9), Users{n}.BatterySize-Users{n}.Logbook(TimeInd+TD.User-1,9)));
             TimeStepIndsNeededForCharging=ceil(EnergyDemandLeft(n)/ChargingPower(n)*60/Time.StepMin); % [Wh/W]
             
             if TimeStepIndsNeededForCharging>0
@@ -154,9 +145,6 @@ for TimeInd=Time.Sim.VecInd(2:end-ControlPeriods)
                     k=k+1;
                 end
                 EndOfShift=min(length(Time.Sim.VecInd), k+TimeStepIndsNeededForCharging-1);
-%                 if EndOfShift>length(Time.Sim.VecInd)
-%                     error(strcat("Logbook would be falsly extended for Users ", num2str(n)))
-%                 end
 
                 Users{n}.Logbook(TimeInd+TD.User:EndOfShift,:)=Users{n}.Logbook(TimeInd+TD.User-TimeStepIndsNeededForCharging:EndOfShift-TimeStepIndsNeededForCharging,:);
                 TimeStepIndsNeededForCharging=min(length(Users{n}.Logbook)-(TimeInd+TD.User-1), TimeStepIndsNeededForCharging);
@@ -169,12 +157,8 @@ for TimeInd=Time.Sim.VecInd(2:end-ControlPeriods)
             EnergyDemandLeft(n)=EnergyDemandLeft(n)-Users{n}.Logbook(TimeInd+TD.User,8); 
         end
         
-        
         Users{n}.Logbook(TimeInd+TD.User,9)=min(Users{n}.BatterySize, Users{n}.Logbook(TimeInd+TD.User-1,9) - Users{n}.Logbook(TimeInd+TD.User,4) + Users{n}.Logbook(TimeInd+TD.User,8));
-    %         if ~(Users{n}.Logbook(TimeInd+TD.User,9)<(Users{n}.Logbook(TimeInd+TD.User-1,9)+sum(Users{n}.Logbook(TimeInd+TD.User,5:8)) - Users{n}.Logbook(TimeInd+TD.User,4))+3 && Users{n}.Logbook(TimeInd+TD.User,9)>(Users{n}.Logbook(TimeInd+TD.User-1,9)+sum(Users{n}.Logbook(TimeInd+TD.User,5:8)) - Users{n}.Logbook(TimeInd+TD.User,4))-3)
-    %             error("Wrong addition")
-    %         end
-        
+
     end
     
     if ~SmartCharging
@@ -229,12 +213,6 @@ for TimeInd=Time.Sim.VecInd(2:end-ControlPeriods)
 
             if  Users{n}.Logbook(TimeInd+TD.User,9)<Users{n}.BatterySize && Users{n}.Logbook(TimeInd+TD.User,1)>=5
                 Users{n}.Logbook(TimeInd+TD.User,9)=Users{n}.Logbook(TimeInd+TD.User,9)+sum(Users{n}.Logbook(TimeInd+TD.User,5:7));
-    %             if Users{n}.Logbook(TimeInd+TD.User, 9)>Users{n}.BatterySize*1.01
-    %                 error("Battery over charged")
-    %             end
-    %             if ~(Users{n}.Logbook(TimeInd+TD.User,9)<(Users{n}.Logbook(TimeInd+TD.User-1,9)+sum(Users{n}.Logbook(TimeInd+TD.User,5:8)) - Users{n}.Logbook(TimeInd+TD.User,4))+3 && Users{n}.Logbook(TimeInd+TD.User,9)>(Users{n}.Logbook(TimeInd+TD.User-1,9)+sum(Users{n}.Logbook(TimeInd+TD.User,5:8)) - Users{n}.Logbook(TimeInd+TD.User,4))-3)
-    %                 error("Wrong addition")
-    %             end
             end
         end
     
@@ -244,63 +222,37 @@ for TimeInd=Time.Sim.VecInd(2:end-ControlPeriods)
         
         if ismember(TimeInd, TimesOfPreAlgo)
             
-            %% Optimise
+            %% Algo 1 optimisation
 
             if ~UseSpotPredictions
                 SpotmarktPricesCP=SpotmarketPrices(TimeInd+TD.User:TimeInd+TD.User+ControlPeriodsIt-1);
             end
         
-            %TimeInd=TimeInd-ControlPeriods+1;
             if ismember(TimeInd, TimesOfPreAlgo(1,:))
                 PreAlgoCounter=PreAlgoCounter+1;
                 
                 if UseSpotPredictions
-%                     SpotmarktPricesCP=[SpotmarketPrices(TimeInd+TD.Main:TimeInd+TD.Main+(24-hour(TimeOfPreAlgo(1)))*Time.StepInd-1); SpotmarketPricesPred1(TimeInd+TD.SpotmarketPricesPred1+(24-hour(TimeOfPreAlgo(1)))*Time.StepInd+1:TimeInd+TD.SpotmarketPricesPred1+ControlPeriodsIt)];
-%                     SpotmarktPricesCP=[SpotmarketPrices(TimeInd+TD.Main:TimeInd+TD.Main + (floor((TimeInd+(24-13)*Time.StepInd-1)/(24*Time.StepInd))+1)*24*Time.StepInd+1-TimeInd)]; % Prices at Day-ahead market are released at ~13:00
-%                     SpotmarktPricesCP=[SpotmarktPricesCP; SpotmarketPricesPred1(TimeInd+ TD.SpotmarketPricesPred1 + (floor((TimeInd+(24-13)*Time.StepInd-1)/(24*Time.StepInd))+1)*24*Time.StepInd+1:length(SpotmarktPricesCP
                     SpotmarktPricesCP=[SpotmarketPrices(TimeInd+TD.User:TimeInd+TD.User + 24*Time.StepInd-mod(TimeInd-1,24*Time.StepInd)-1 + (mod(TimeInd-1,24*Time.StepInd)-13*Time.StepInd > 0)*96); SpotmarketPricesPred1(TimeInd+TD.SpotmarketPricesPred1 + 24*Time.StepInd-mod(TimeInd-1,24*Time.StepInd)-1 + (mod(TimeInd-1,24*Time.StepInd)-13*Time.StepInd > 0)*96+1:TimeInd+TD.SpotmarketPricesPred1+ControlPeriodsIt-1)];
                 end
                 
                 CalcConsOptVars;
                 
             elseif UseSpotPredictions
-                %SpotmarktPricesCP=[SpotmarketPrices(TimeInd+TD.Main:TimeInd+TD.Main+(48-hour(TimeOfPreAlgo(1)))*Time.StepInd-1); SpotmarketPricesPred1(TimeInd+TD.SpotmarketPricesPred1+(48-hour(TimeOfPreAlgo(1)))*Time.StepInd+1:TimeInd+TD.SpotmarketPricesPred1+ControlPeriodsIt)];
-%                 SpotmarktPricesCP=[SpotmarketPrices(TimeInd+TD.Main:TimeInd+TD.Main + (floor((TimeInd+(24-13)*Time.StepInd-1)/(4*Time.StepInd))+1)*4*Time.StepInd+1-TimeInd)];
                 SpotmarktPricesCP=[SpotmarketPrices(TimeInd+TD.User:TimeInd+TD.User + 24*Time.StepInd-mod(TimeInd-1,24*Time.StepInd)-1 + (mod(TimeInd-1,24*Time.StepInd)-13*Time.StepInd > 0)*96); SpotmarketPricesPred2(TimeInd+TD.SpotmarketPricesPred2 + 24*Time.StepInd-mod(TimeInd-1,24*Time.StepInd)-1 + (mod(TimeInd-1,24*Time.StepInd)-13*Time.StepInd > 0)*96+1:TimeInd+TD.SpotmarketPricesPred2+ControlPeriodsIt-1)];
-%                 ; SpotmarketPricesPred1(TimeInd+TD.SpotmarketPricesPred1+(48-hour(TimeOfPreAlgo(1)))*Time.StepInd+1:TimeInd+TD.SpotmarketPricesPred1+ControlPeriodsIt)];
             end
-            
-                
             
             CalcDynOptVars;
             PreAlgo;
-            
-            if ismember(TimeInd, TimesOfPreAlgo(1,:))
-                %C(:,:,PreAlgoCounter)=Costs;
-                %C2(:,:,PreAlgoCounter)=CostsReserveMarket;
-            end
-            
-            
-            %%
-            % Include RL auctions
 
-            for n=UserNum
-                %Users{n}.Logbook(TimeInd+TD.User+find(ismember(Users{n}.Logbook(TimeInd+TD.User:TimeInd+TD.User+ControlPeriods-1,1), 4:5))-1,1)=4;
-%                 AvailableBlocks=[find(ismember(Users{n}.Logbook(TimeInd+TD.User:TimeInd+TD.User+ControlPeriods-1,1),3:5) & ~ismember([0;Users{n}.Logbook(TimeInd+TD.User:TimeInd+TD.User+ControlPeriods-2,1)],3:5)), find(ismember(Users{n}.Logbook(TimeInd+TD.User:TimeInd+TD.User+ControlPeriods-1,1),3:5) & ~ismember([Users{n}.Logbook(TimeInd+TD.User+1:TimeInd+TD.User+ControlPeriods-1,1);0],3:5))];
-%                 ChargingBlocks=any(AvailableBlocks(:,1)'<=find(sum(OptimalChargingEnergies(1:ControlPeriods,:,n==UserNum), 2)>0)-1 & AvailableBlocks(:,2)'>=find(sum(OptimalChargingEnergies(1:ControlPeriods,:,n==UserNum), 2)>0)-1, 1)';
-%                 Users{n}.Logbook(TimeInd+TD.User+AvailableBlocks(ChargingBlocks,1)-1:TimeInd+TD.User+AvailableBlocks(ChargingBlocks,2)-1)=4;
-                %Users{n}.Logbook(TimeInd+TD.User+find(sum(OptimalChargingEnergies(1:ControlPeriods,:,n==UserNum), 2)>0)-1, 1) = 5;
-                
+            for n=UserNum  
                 Users{n}.Logbook(TimeInd+TD.User:TimeInd+TD.User+ControlPeriodsIt-1, [false(1,4), CostCats])=OptimalChargingEnergies(1:ControlPeriodsIt,:,n==UserNum);
-%                 if ismember(TimeInd, TimesOfPreAlgo(2,:))
-%                     PPower2(:,n-1,PreAlgoCounter)=OptimalChargingEnergies(1:ControlPeriodsIt,2,n==UserNum);
-%                 end
             end
 
-            %TimeInd=TimeInd+ControlPeriods-1;
         else
             CalcDynOptVars;
         end
+        
+        %% Algo 2 optimisation
         
         LiveAlgo;
            
@@ -442,18 +394,14 @@ for k=1:size(ChargingMat,1)
     [sum(ChargingType{k}(:,1,:),'all'), sum(ChargingType{k}(:,2,:),'all'), sum(ChargingType{k}(:,3,:),'all')]/sum(ChargingType{k}(:,:,:),'all')
     ChargingSum{k}=sum(ChargingType{k}, 2);
 
-    % Case for k==6 must be fixed. In this case, for Load, ChargingType
-    % must be reshaped in 96-16 length for first dimension
-
-    figure(k)
-    clf;
     Load{k}=mean(reshape(ChargingType{k}',3,length(max(1,24*Time.StepInd-ChargingMat{k,2}+1):24*Time.StepInd-ChargingMat{k,2}+24*Time.StepInd),[]),3)';
-    %Load{k}=circshift(Load{k}, [Users{1}.ShiftInds{k}, 0]);
     x = 1+96-size(Load{k},1):96;
-    %y = circshift(mean(reshape(ChargingSum{k}, 96, []), 2)', [0,Users{1}.ShiftInds{k}]);
     y = mean(reshape(ChargingSum{k}, size(Load{k},1), []), 2)';
     z = zeros(size(x));
     col = (Load{k}./repmat(max(Load{k}, [], 2),1,3))';
+
+    figure(k)
+    clf;
     surface([x;x],[y;y],[z;z],[permute(repmat(col,1,1,2),[3,2,1])], 'facecol','no', 'edgecol','interp', 'linew',2);
     xticks(1:16:96)
     xlim([1 96])
@@ -469,14 +417,10 @@ for k=1:size(ChargingMat,1)
 
 
     hold on
-%         plot(circshift(squeeze(mean(reshape(ChargingType{k}(:,1),96,[],1),2)), Users{1}.ShiftInds{k}), "LineWidth", 1.2, "Color", [1, 0, 0])
-%         plot(circshift(squeeze(mean(reshape(ChargingType{k}(:,2),96,[],1),2)), Users{1}.ShiftInds{k}), "LineWidth", 1.2, "Color", [0, 1, 0])
-%         plot(circshift(squeeze(mean(reshape(ChargingType{k}(:,3),96,[],1),2)), Users{1}.ShiftInds{k}), "LineWidth", 1.2, "Color", [0, 0, 1])
     plot(x,squeeze(mean(reshape(ChargingType{k}(:,1),length(x),[],1),2)), "LineWidth", 1.2, "Color", [1, 0, 0])
     plot(x,squeeze(mean(reshape(ChargingType{k}(:,2),length(x),[],1),2)), "LineWidth", 1.2, "Color", [0, 1, 0])
     plot(x,squeeze(mean(reshape(ChargingType{k}(:,3),length(x),[],1),2)), "LineWidth", 1.2, "Color", [0, 0, 1])
-%         xticks(1:16:96)
-%         xticklabels({datestr(Time.Vec(1:16:96),'HH:MM')})
+
     legend(["All", "Spotmarket", "PV", "Secondary Reserve Energy"])
 
 end
@@ -531,7 +475,7 @@ if ~Users{1}.SmartCharging
             
         end
     end
-    %TotalCostsBase(2,4)=0;
+    
     TotalCostsBase(1:2,6)=sum(TotalCostsBase(1:2,1:4),2);
     TotalCostsBase(3,:)=TotalCostsBase(2,:)./TotalCostsBase(1,:);
     TotalCostsBase(1:2,7)=TotalCostsBase(1:2,6)/(length(Users)-1);
@@ -566,8 +510,7 @@ if Users{1}.SmartCharging
             TotalCostsSmart(2,1:4)=TotalCostsSmart(2,1:4)+sum(Users{n}.FinListSmart, 1);
         end
     end
-    % ResPoOffers. First col in [€/kW], second in [Wh]
-    %TotalCostsSmart(2,4)=0;
+    
     TotalCostsSmart(1,5)=sum(ResPoOffers(:,2,:),'all')/1000*4;
     TotalCostsSmart(2,5)=-sum(ResPoOffers(:,1,:).*ResPoOffers(:,2,:)/1000*4,'all')*100; % [€/kW]*[Wh]
     TotalCostsSmart(3,:)=TotalCostsSmart(2,:)./TotalCostsSmart(1,:);
@@ -590,12 +533,7 @@ if Users{1}.SmartCharging
     
     TotalCostsIt{end+1}=TotalCostsSmart;
 end
-% if isfield(Users{2}, "LogbookBase") && isfield(Users{2}, "LogbookSmart")
 
-
-
-end
-a4=TotalCostsIt;
 
 %% Clean up workspace
  

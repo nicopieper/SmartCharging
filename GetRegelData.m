@@ -132,7 +132,7 @@ if ProcessDataNew.Regel
                 else
                     LoadedDemandDataMonth=strrep(erase(LoadedDemandDataMonth(:,8:9),'.'), ',','.');
                 end
-                %TimeData=datetime(strcat(LoadedDemandDataMonth(:,1), " ", LoadedDemandDataMonth(:,2)),'InputFormat','dd.MM.yyyy HH:mm', 'TimeZone', 'Africa/Tunis');            
+                
                 DSTChangesQH=find(isdst(TimeData(1:end-1))~=isdst(TimeData(2:end))); % List all DST transitions
                 DSTChangesQH=[DSTChangesQH month(TimeData(DSTChangesQH))]; % Add, whether a transitions occurs in October or March            
                 LoadedDemandDataMonth=DeleteDST(str2double(LoadedDemandDataMonth), DSTChangesQH, 4); % the demand data of the complete month, without DST inconsistencies
@@ -196,14 +196,6 @@ if ProcessDataNew.Regel
                 end
                 LoadedOfferListData(:,3)=strrep(LoadedOfferListData(:,3), 'GRID_TO_PROVIDER', '1'); % if one market participant offers a negative energy price, it wont get a minus sign in the list. the sign is indicated by the labels GRID_TO_PROVIDER (equal to a positive price) and PROVIDER_TO_GRID (equal to a negative price). 
                 LoadedOfferListData(:,3)=strrep(LoadedOfferListData(:,3), 'PROVIDER_TO_GRID', '-1'); % this shall be corrected, so replace the labels with numbers indicating the sign
-
-%                 DemandData=[];
-%                           
-%                 StoragePathMonth=strcat(Path.Regel, RegelType, Dl, 'Demand', Dl, Year, Dl, Month); % start to load the corresponding demand data for this month from mat files generated before
-%                 for Date=datetime(LoadedOfferListData(1,1), 'InputFormat', 'dd.MM.yyyy'):caldays(1):datetime(LoadedOfferListData(end,1), 'InputFormat', 'dd.MM.yyyy') % open demand data file for each day of the month
-%                     load(strcat(StoragePathMonth, Dl, 'DemandData_', Year, '-', Month, '-', datestr(Date, 'dd'), '.mat')) % load it to workspace
-%                     DemandData=[DemandData; LoadedDemandData]; % add it to this time series
-%                 end
   
                 StoragePath=strcat(Path.Regel, RegelType, Dl, 'Offers', Dl, Year, Dl, Month, Dl); % make a path where the results can be stored
                 if ~exist(StoragePath, 'dir')

@@ -5,17 +5,11 @@ tic
 CostsSpotmarket=(CostsElectricityBase(end-ControlPeriodsIt+1:end,1,:)/100 + SpotmarktPricesCP/1000)*Users{1}.MwSt;
 CostsReserveMarket=(CostsElectricityBase/100 - ResEnOfferPrices - ResPoOfferPrices/16)*Users{1}.MwSt;
 
-if ismember(TimeInd, TimesOfPreAlgo(1,:))
-%     C1(:,:,PreAlgoCounter)=CostsReserveMarket;
-%     C2(:,PreAlgoCounter)=-ResEnOfferPrices;
-%     C3(:,PreAlgoCounter)=-ResPoOfferPrices/16;
-end
-
 Costs=[CostsSpotmarket, CostsPV(end-ControlPeriodsIt+1:end,1,:), CostsReserveMarket(end-ControlPeriodsIt+1:end,1,:)];
 Costs=Costs(:,CostCats,:);
 
 
-%% Define Cost function, Constraints and DecissionGroups
+%% Define Constraints and DecissionGroups
 
 ConsPowerTSb=PowerTS;
 
@@ -78,33 +72,7 @@ ConsPowerTSb=ConsPowerTSb(:);
 SplitDecissionGroups;
 
 
-%%
-
-% b=[ConsSumPowerTSbIt; ConsMaxEnergyChargableSoCTSbIt; -ConsMinEnergyRequiredTSbIt];
-% A=[ConsSumPowerTSA; ConsEnergyDemandTSAIt; -ConsEnergyDemandTSAIt];
-% 
-% beq=[ConseqMaxEnergyChargableDeadlockCPbIt; ConseqResPoOfferbIt; ConseqMatchLastResPoOffersSucessful4H];
-% Aeq=[ConsEnergyCPAeq; ConseqResPoOfferAIt; ConsMatchLastResPoOffers4HAeq];
-% 
-% lb=zeros(ControlPeriods, NumCostCats, NumUsers);
-% ub=ConsPowerTSb(:);
-% % ub=[];
-% 
-% Costf=Costs;
-
-
-
-
-% A=[ConsSumPowerTSA; ConsEnergyDemandTSAIt; -ConsEnergyDemandTSAIt];
-% b=[ConsSumPowerTSbIt; ConsMaxEnergyChargableSoCTSbIt; -ConsMinEnergyRequiredTSbIt];
-% 
-% beq=[ConseqMaxEnergyChargableDeadlockCPbIt; ConseqResPoOfferbIt; ConseqMatchLastResPoOffersSucessful4H];
-% Aeq=[ConsEnergyCPAeq; ConseqResPoOfferAIt; ConsMatchLastResPoOffers4HAeq];
-
-
-
 %% Calc optimal charging powers
-
 
 if UseParallel
     
@@ -159,6 +127,7 @@ if UseParallel
     x=reshape(x,ControlPeriodsIt,NumCostCats,NumUsers);
     x=x(:,:,BackwardsOrder);
     x=x(:);
+    
 else
 
     b=[ConsSumPowerTSbIt; ConsMaxEnergyChargableSoCTSbIt; -ConsMinEnergyRequiredTSbIt];
@@ -166,12 +135,6 @@ else
     
     beq=[ConseqMaxEnergyChargableDeadlockCPbIt; ConseqResPoOfferbIt; ConseqMatchLastResPoOffers4HbIt];
     Aeq=[ConseqEnergyCPAIt; ConseqResPoOfferAIt; ConseqMatchLastResPoOffers4HAIt];
-    
-%     b=[ConsSumPowerTSbIt; ConsMaxEnergyChargableSoCTSbIt; -ConsMinEnergyRequiredTSbIt];
-%     A=[ConsSumPowerTSAIt; ConsEnergyDemandTSAIt; -ConsEnergyDemandTSAIt];
-%     
-%     beq=[ConseqMaxEnergyChargableDeadlockCPbIt; ConseqResPoOfferbIt; ConseqMatchLastResPoOffers4HbIt];
-%     Aeq=[ConseqEnergyCPAIt; ConseqResPoOfferAIt; ConseqMatchLastResPoOffers4HAIt];
 
     lb=zeros(ControlPeriodsIt, NumCostCats, NumUsers);
     ub=ConsPowerTSb(:);
@@ -179,10 +142,7 @@ else
     Costf=Costs(:);
     
     [x,fval]=linprog(Costf,A,b,Aeq,beq,lb,ub, options);
-    
-    % User 4 macht Probleme, nachdem SumPower aus MinEnergyRequired
-    % genommen wurde.
-    
+      
     if isempty(x) % Resolves the issue that the buffer does not cover the deviation: In this case the underfulfillment must be accepted and as much reserve power as possible will be provided. The deviation from the offer must be satisfied by the other units of the VPP.
         b=[ConsSumPowerTSbIt; ConsMaxEnergyChargableSoCTSbIt; -ConsMinEnergyRequiredTSbIt; ConseqMatchLastResPoOffers4HbIt];
         A=[ConsSumPowerTSAIt; ConsEnergyDemandTSAIt; -ConsEnergyDemandTSAIt; ConseqMatchLastResPoOffers4HAIt];
@@ -201,26 +161,8 @@ else
 end
 
 
-
-% b=[ConsSumPowerTSbIt; ConsMaxEnergyChargableSoCTSbIt; -ConsMinEnergyRequiredTSbIt];
-% A=[ConsSumPowerTSA; ConsEnergyDemandTSAIt; -ConsEnergyDemandTSAIt];
-% 
-% beq=[ConseqMaxEnergyChargableDeadlockCPbIt; ConseqResPoOfferbIt; ConseqMatchLastResPoOffersSucessful4H];
-% Aeq=[ConsEnergyCPAeq; ConseqResPoOfferAIt; ConsMatchLastResPoOffers4HAeq];
-% 
-% lb=zeros(ControlPeriods, NumCostCats, NumUsers);
-% ub=ConsPowerTSb(:);
-% ub=[];
-
-% tic
-% for n=1:4
-%     [x,fval]=linprog(Costf,A,b,Aeq,beq,lb,ub, options);
-%     x(x<0)=0; % Due to the accuracy of the algorithm, sometimes values lower than zero appear. But they are so close to zero (e. g. 1e-12) that it does not influence the result
-% end
-% tc=tc+toc;
-
-
 %% Evaluate result
+
 OptimalChargingEnergies=reshape(x,ControlPeriodsIt, NumCostCats, NumUsers);
 if CostCats(1)
     PostPreAlgo;
@@ -231,7 +173,6 @@ if ismember(TimeInd, TimesOfPreAlgo(1,:))
     ChargingMat{1}(:,:,:,PreAlgoCounter)=OptimalChargingEnergies;
     AvailabilityMat=[AvailabilityMat, Availability(1:96,1,:)];
     
-    %SuccessfulResPoOffers(:,PreAlgoCounter+1)=ResPoOffers(:,1,PreAlgoCounter+1)<=ResPoPricesReal4H(floor((TimeInd+TD.Main)/(4*Time.StepInd))+1:floor((TimeInd+TD.Main)/(4*Time.StepInd))+6,3)/1000; %[€/MW]
     SuccessfulResPoOffers(:,PreAlgoCounter+1)=ResPoOffers(:,1,PreAlgoCounter+1)<=ResPoPricesReal4H(floor((TimeInd+TD.Main)/(4*Time.StepInd))+1+(24-hour(TimeOfPreAlgo(1)))/4:floor((TimeInd+TD.Main)/(4*Time.StepInd))+(24-hour(TimeOfPreAlgo(1)))/4+6,5)/1000; %[€/kW]
     LastResPoOffers(:,PreAlgoCounter+1)=sum(OptimalChargingEnergies(1:ConstantResPoPowerPeriods:end,sum(CostCats(1:3)),:), 3);
     LastResPoOffersSucessful4H(:,PreAlgoCounter+1)=LastResPoOffers(:,PreAlgoCounter+1);
