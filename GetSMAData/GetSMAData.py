@@ -47,7 +47,7 @@ NumPlants=10
 NumPlantsSearch=20
 
 Dl='/'
-DataPath=r"C:/Users/EWEGo/PlantData"
+DataPath=r"C:/Users/YourPath/PlantData"
 DriverPath= "C:/Program Files (x86)/chromedriver.exe"
 
 
