@@ -16,7 +16,15 @@ ResEnOfferPrices=repelem([ResEnOfferPrices; ResEnOffers(1:ControlPeriods/(4*Time
 %RLOfferPrices=RLOfferPrices(1:ControlPeriods);
 %AEOfferPrices=(ResEnPricesRealQH(TimeInd+TD.Main:TimeInd+TD.Main-1+ControlPeriods,7)-AEFactor*abs(ResEnPricesRealQH(TimeInd+TD.Main:TimeInd+TD.Main-1+ControlPeriods,7)))/1000; % [€/kWh]
 
-CostsPV=ones(ControlPeriods, 1, NumUsers)*(Users{1}.PVEEGBonus/100); % 0.097€
+CostsPV=ones(ControlPeriods, 1, NumUsers);
+if UseIndividualEEGBonus
+    for k=UserNum
+        CostsPV(:,1,k-1)=CostsPV(:,1,k-1)*Users{k}.EEGBonus/100;
+    end
+else
+    CostsPV=CostsPV*(Users{1}.EEGBonus/100); % 0.097€
+end
+    
 PVPower=zeros(ControlPeriods, 1,NumUsers);
 VarCounter=0;
 for k=UserNum
