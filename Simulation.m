@@ -4,7 +4,7 @@ NumUsers=80;
 SmartCharging=true;
 UseParallel=true;
 UseSpotPredictions=true;
-UsePVPredictions=false;
+UsePVPredictions=true;
 
 ControlPeriods=96*2;
 UsePV=true;
