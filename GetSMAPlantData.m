@@ -76,6 +76,10 @@ close all hidden
 
 %% Load the data
 
+EEGBonus=readmatrix(strcat(Path.Simulation, "EEGFoerderung.csv"), 'OutputType', 'string');
+EEGDates=datetime(EEGBonus(:,1), 'InputFormat', 'yyyy-MM-dd HH:mm:ss');
+EEGBonus=str2double(EEGBonus(:,2));
+
 h=waitbar(0, 'Lade PV-Profile von lokalem Pfad');    
 for n=1:size(Folders,1) % iterate through the plants
 
@@ -235,6 +239,7 @@ for n=1:size(Folders,1) % iterate through the plants
         end
     end
     
+    
     %% Assign the loaded data to the PVPlants variable
     
     DatesDiffStart=round(days(Time.Start-ExistingDataTimeStart)); % if the range of the loaded data exceeds Time.Vec, throw all values outside Time.Vec. therefore calculate how many exceeding values are there at the beginning
@@ -249,6 +254,8 @@ for n=1:size(Folders,1) % iterate through the plants
         PVPlants{n}.PeakPower=str2double(strrep(erase(extractBefore(Properties{3}, 'kWp'), ' '), ',', '.'));
         PVPlants{n}.ID=Properties{4};
         PVPlants{n}.ProfileQH=uint16(LoadedSMAPlantDataComplete(DatesDiffStart*96+1:end-DatesDiffEnd*96)*1000); % Unit: W not kW! in order to save memory. Cut Vector to Time.Vec range 
+        PVPlants{n}.EEGBonus=EEGBonus(year(PVPlants{n}.ActivationDate) == year(EEGDates) & month(PVPlants{n}.ActivationDate) == month(EEGDates),1);
+        
         
         if isfield(PVPlants{n}, "PredictionH")
 %             if PVPlants{n}.PeakPower>10
@@ -260,8 +267,7 @@ for n=1:size(Folders,1) % iterate through the plants
                 PVPlants{n}.PredictionH=uint16(PVPlants{n}.PredictionH*1000);  % Unit: W not kW! in order to save memory.
                 PVPlants{n}.PredictionQH=uint16(PVPlants{n}.PredictionQH*1000); % Unit: W not kW! in order to save memory.
 %             end
-        end
-        
+        end        
     
         NumberPlantsLoaded=NumberPlantsLoaded+1; % increase the counter
 
