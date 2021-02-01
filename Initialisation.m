@@ -10,19 +10,14 @@ Time.StepMin=minutes(Time.Step);
 
 %% Set data processing options
 
-ProcessDataNew.Smard=0; 
-ProcessDataNew.EC=0;
+ProcessDataNew.Smard=1; 
+ProcessDataNew.EC=1;
 ProcessDataNew.SMAPlant=0;
 ProcessDataNew.Regel=0;
 
 %% Set data paths
 
-Path.Database='C:\Users\nicop\Seafile\SmartCharging4EWEGo\';
-% Path.Database='/home/ma-student/Seafile/SmartChargingDatabase/';
-% Path.SMAPlant='/home/ma-student/Seafile/SMAPlantData/PlantData/';
-%     
-% Path.Database='C:\Users\nicop\Seafile\SmartChargingDatabase\';
-% Path.SMAPlant='C:\Users\nicop\Seafile\SMAPlantData\PlantData\';
+Path.Database='C:\Users\nicop\Seafile\SmartCharging4EWEGo\ABC\';
 
 Path.Base=pwd;
 if ismember('\', pwd)

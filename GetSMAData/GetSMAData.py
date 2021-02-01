@@ -3,7 +3,7 @@
 # After the initialisation of libraries and variables, the plants from the SMA plant list are extracted that are within a certain
 # power range and are located in Germany. Then, all of the found plants that were not considered in a past execution are checked
 # whether it is possible to extract suitable data from them. A plant is suitable if its webiste covers information about its
-# location, is operation start and generation power and if the generation data is available in 15 minutes steps while only one
+# location, its operation start and generation power and if the generation data is available in 15 minutes steps while only one
 # generation power is recorded. The last criterion ensures, that unwanted records of power consumption from connected home energy
 # systems are not falsly treated as PV generation data. For suitable plants, a folder structre and a properties file becomes
 # created and the generation data is downloaded within the given time interval specified by DateStart and DateEnd and stored
@@ -39,16 +39,18 @@ from DataFunctions import *
 from tqdm import *
 
 StartSys=time.time() # measure the script's execution time
-DateStart=datetime(2018,1,1)
-DateEnd=datetime(2020,8,31)
+DateStart=datetime(2020,5,1)
+DateEnd=datetime(2020,7,31)
 MinPower="3"
 MaxPower="15"
-NumPlants=1
+NumPlants=10
 NumPlantsSearch=20
 
 Dl='/'
-DataPath=r"C:/Users/nicop/SMAPlantData/PlantData"
-DriverPath= "C:\Program Files (x86)\chromedriver.exe"
+DataPath=r"C:/Users/EWEGo/PlantData"
+DriverPath= "C:/Program Files (x86)/chromedriver.exe"
+
+
 # option = webdriver.ChromeOptions() # options to avoid the loading of images. Enhances the perfomance but seems to lead to errors with some plants. May be futher investigated
 # chrome_prefs = {}
 # option.experimental_options["prefs"] = chrome_prefs
@@ -69,6 +71,9 @@ SuccessfulWritings=0
 
 PropertiesList=GetPropertiesList(DataPath, Dl) # get the properties of all plants from their properties lists
 ListOfUnsuitablePlants=ReadListOfUnsuitablePlants(DataPath, Dl) # get the IDs of all plants that were classified as unsuitable
+if not ListOfUnsuitablePlants:
+    ListOfUnsuitablePlants=[]
+
 IDList=[PropertiesList[i][0][3] for i in range(len(PropertiesList))]
 IDList.extend(ListOfUnsuitablePlants) # list with all unsuitable plants and those that do already exsist
 
