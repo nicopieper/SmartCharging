@@ -10,8 +10,8 @@ Time.StepMin=minutes(Time.Step);
 
 %% Set data processing options
 
-ProcessDataNew.Smard=1; 
-ProcessDataNew.EC=1;
+ProcessDataNew.Smard=0; 
+ProcessDataNew.EC=0;
 ProcessDataNew.SMAPlant=0;
 ProcessDataNew.Regel=0;
 
