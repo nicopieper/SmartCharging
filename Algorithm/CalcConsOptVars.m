@@ -26,12 +26,14 @@ else
 end
     
 PVPower=zeros(ControlPeriods, 1,NumUsers);
+PVPowerReal=zeros(ControlPeriods, 1,NumUsers);
 VarCounter=0;
 for k=UserNum
     VarCounter=VarCounter+1;
     
     if Users{k}.PVPlantExists==true
         PVPower(:,1,VarCounter)=double(PVPlants{Users{k}.PVPlant}.(PVPlants_Profile_Prediction)(TimeInd+TD.Main:TimeInd+TD.Main-1+ControlPeriods))*Users{n}.ChargingEfficiency;
+        PVPowerReal(:,1,VarCounter)=double(PVPlants{Users{k}.PVPlant}.ProfileQH(TimeInd+TD.Main:TimeInd+TD.Main-1+ControlPeriods))*Users{n}.ChargingEfficiency;
     else
         CostsPV(:,1,VarCounter)=10000*ones(ControlPeriods,1); % Ensure never use PVPlant if there is non. Also ensured by PowerCons as PVPower is constantly zero
     end
