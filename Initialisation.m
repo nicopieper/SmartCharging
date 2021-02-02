@@ -17,7 +17,7 @@ ProcessDataNew.Regel=0;
 
 %% Set data paths
 
-Path.Database='C:\Users\nicop\Seafile\SmartCharging4EWEGo\ABC\';
+Path.Database='C:\Users\YourPath\SmartCharging4EWEGo\';
 
 Path.Base=pwd;
 if ismember('\', pwd)
