@@ -1,6 +1,6 @@
 %% Initialisation
 tic
-NumUsers=80;
+NumUsers=10;
 SmartCharging=true;
 UseParallel=false;
 UseSpotPredictions=true;
@@ -12,6 +12,8 @@ UsePV=true;
 ApplyGridConvenientCharging=true;
 ActivateWaitbar=true;
 SaveResults=false;
+
+% Sensitivitätsanalyse: ResPoPriceFactor, ResEnPriceFactor, ResPoBuffer
 
 rng('default');
 rng(1);
@@ -44,9 +46,8 @@ TD.User=find(ismember(Users{1}.Time.Vec,Time.Sim.Start),1)-1;
 
 UserNum=2:NumUsers+1;
 
-
-if ~exist("TotalCostsIt", "var")
-    TotalCostsIt={};
+if ~isfield(Users{1}, "TotalCostsIt")
+    Users{1}.TotalCostsIt={};
 end
     
 for n=UserNum
@@ -57,7 +58,7 @@ for n=UserNum
         Users{n}.NNEEnergyPrice=Users{n}.NNEEnergyPriceNotGridConvenientCharging;
     end
     
-    Users{n}.EEGBonus=Users{1}.PVEEGBonus;
+    Users{n}.EEGBonus=Users{1}.EEGBonus;
     if UseIndividualEEGBonus && Users{n}.PVPlantExists
         Users{n}.EEGBonus=PVPlants{Users{n}.PVPlant}.EEGBonus;
     end
@@ -118,7 +119,7 @@ SpotmarketPrices=repelem(Smard.DayaheadRealH, Time.StepInd);
 TD.SpotmarketPrices=find(ismember(Time.Vec,Time.Sim.Start),1)-1;
 
 if ActivateWaitbar
-    h=waitbar(0, "Simulate charging processes");
+    h=waitbar(0, "Simulate charging processes: 0%");
 end
 
 %% Start Simulation
@@ -287,7 +288,7 @@ for TimeInd=Time.Sim.VecInd(2:end-ControlPeriods)
     
     
     if ActivateWaitbar %&& mod(TimeInd+TD.User,1000)==0
-        waitbar(TimeInd/length(Time.Sim.Vec));
+        waitbar(TimeInd/length(Time.Sim.Vec), h, strcat("Simulate charging processes: ", num2str(round(TimeInd/length(Time.Sim.Vec)*1000)/10), "%"));
     end
 end
 
@@ -495,7 +496,7 @@ if ~Users{1}.SmartCharging
     TotalCostsBase=table(TotalCostsBase(:,1), TotalCostsBase(:,2), TotalCostsBase(:,3), TotalCostsBase(:,4), TotalCostsBase(:,5), TotalCostsBase(:,6), TotalCostsBase(:,7),TotalCostsBase(:,8), 'RowNames',["Energy charged in kWh"; "Energy Costs in €"; "Energy Costs in ct/kWh"; "."; "NNE Extra Base Price in €"; "NNE Bonus in €"; "IMSYS Installation Costs in €"; "~"; "Total Costs in €"], 'VariableNames',{'Grid','PV','aFRR','Public','ResPoOffered_kW','Total','TotalPerUser', 'TotalPerUserPerYear'});
     TotalCostsBase=[TotalCostsBase; table([0;Users{1}.SmartCharging; Users{1}.ApplyGridConvenientCharging; length(Users)-1;], zeros(4,1),zeros(4,1),zeros(4,1),zeros(4,1),zeros(4,1),zeros(4,1),zeros(4,1), 'RowNames',["/"; "SmartCharging"; "ApplyGridConvenientCharging"; "NumUsers"], 'VariableNames',{'Grid','PV','aFRR','Public','ResPoOffered_kW','Total','TotalPerUser', 'TotalPerUserPerYear'})];
     
-    TotalCostsIt{end+1}=TotalCostsBase;
+    Users{1}.TotalCostsIt{end+1}=TotalCostsBase;
     
     disp(strcat("Costs for base charging the fleet were ", string(table2cell((TotalCostsBase(2,8)))), "€ per user per year"));
 end
@@ -537,7 +538,7 @@ if Users{1}.SmartCharging
     
     disp(strcat("Total costs for smart charging the fleet were ", string(table2cell((TotalCostsSmart(2,8)))), "€ per User per year"));
     
-    TotalCostsIt{end+1}=TotalCostsSmart;
+    Users{1}.TotalCostsIt{end+1}=TotalCostsSmart;
 end
 
 
