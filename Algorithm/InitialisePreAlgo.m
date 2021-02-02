@@ -3,7 +3,7 @@
 ControlPeriods=96*2;
 CostCats=logical([1, 1, 1]);
 NumCostCats=sum(CostCats);
-ConstantResPoPowerPeriods=4*Time.StepInd;
+ConstantResPoPowerPeriods=4;%4*Time.StepInd;
 ResPoPriceFactor=[0.4];
 ResEnPriceFactor=-1;
 options = optimoptions('linprog','Algorithm','dual-simplex');
@@ -11,8 +11,9 @@ options.Display = 'off';
 ResPoBuffer=1;
 PreAlgoCounter=0;
 
-ResPoOffers=[-10000*ones(6,1,1), zeros(6,1,1)];
-ResEnOffers=-10000*ones(6,1,1);
+ConstantResPoPowerPeriodsScaling=4*Time.StepInd/ConstantResPoPowerPeriods;
+ResPoOffers=[-10000*ones(6*ConstantResPoPowerPeriodsScaling,1,1), zeros(6*ConstantResPoPowerPeriodsScaling,1,1)];
+ResEnOffers=-10000*ones(6*ConstantResPoPowerPeriodsScaling,1,1);
 
 SubIndices = @(Vector, ControlPeriods, ControlPeriodsIt, CostCatsNum) (Vector(:,reshape((1:ControlPeriodsIt)'+(0:CostCatsNum-1)*ControlPeriodsIt,1,[]))-((Vector(:,1)-1)/ControlPeriods*(ControlPeriods-ControlPeriodsIt)));
 
@@ -47,7 +48,7 @@ MaxEnergyChargableSoCTS=[];
 MinEnergyRequiredTS=[];
 MaxEnergyChargableDeadlockCP=[];
 DecissionGroups=cell(NumDecissionGroups,1);
-SuccessfulResPoOffers=zeros(6,1);
+SuccessfulResPoOffers=zeros(6*ConstantResPoPowerPeriodsScaling,1);
 
 DemandInds=tril(ones(ControlPeriods,ControlPeriods)).*(1:ControlPeriods);
 DemandInds(:,1)=0;
@@ -72,7 +73,11 @@ x=0:ConstantResPoPowerPeriods-2;
 ResPoOfferEqualiyMat1(x*ConstantResPoPowerPeriods+1)=1;
 ResPoOfferEqualiyMat1(x*ConstantResPoPowerPeriods+1+ConstantResPoPowerPeriods-1)=-1;
 ResPoOfferEqualiyMat2=sparse(kron(eye(ControlPeriods/ConstantResPoPowerPeriods, ControlPeriods/ConstantResPoPowerPeriods), ResPoOfferEqualiyMat1));
+
+
 ConseqResPoOfferA=sparse(repmat([zeros((ConstantResPoPowerPeriods-1)*ControlPeriods/ConstantResPoPowerPeriods,ControlPeriods*sum(CostCats(1:2))), ResPoOfferEqualiyMat2],1,NumUsers/NumDecissionGroups)); % one row represents one time step. within one Zeitscheibe the sum of reserve powers offered by all vehicles must be equal. hence it must be the power in timestep=1 must be the same as in timestep=2. this is represented by  a one followed by a -1 per vehicle
+
+
 
 if TimeOfPreAlgo(1) <= TimeOfReserveMarketOffer
     ConsPeriods=(24*Time.StepInd-ShiftInds)/(4*Time.StepInd);

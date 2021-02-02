@@ -83,7 +83,7 @@
 %% Initialisation
 rng('default');
 rng(1);
-NumUsers=960; % number of users
+NumUsers=5; % number of users
 PVGridConvenientChargingLikelihoodMatrix=[0, 1; 1, 0]; % Matrix that defines with type of users use grid convenient charging (14a) and own a PV plant: [PV&14a, PV&~14a; ~PV&14a, ~PV&~14a]
 
 Users=cell(NumUsers+1,1); % the main cell variable all user data is stored in
@@ -133,7 +133,7 @@ end
 %% Store processing information
 
 Time.Sim.Start=dateshift(max([Range.TestDate(1), Vehicles{1}.Time.Vec(1)]), 'start', 'day');
-Time.Sim.End=min([Range.TestDate(2), Vehicles{1}.Time.Vec(end)]);
+Time.Sim.End=min([Range.TestDate(2), Vehicles{1}.Time.Vec(end)])-days(300);
 Time.Sim.Vec=Time.Sim.Start:Time.Step:Time.Sim.End;
 Time.Sim.VecInd=1:length(Time.Sim.Vec);
 Time.Sim.StepInd=Time.StepInd;

@@ -492,17 +492,17 @@ if ~Users{1}.SmartCharging
     TotalCostsBase(7,6:8)=[IMSYSInstallationCosts / 365*(length(Users{2}.LogbookBase)/(24*Time.StepInd))/10, IMSYSInstallationCosts / 365*(length(Users{2}.LogbookBase)/(24*Time.StepInd))/10 / (length(Users)-1), IMSYSInstallationCosts/(length(Users)-1)/10]/100;
     TotalCostsBase(9,6:8)=TotalCostsBase(2,6:8)+sum(TotalCostsBase([5,7],6:8),1);
     
-    TotalCostsBase=table(TotalCostsBase(:,1), TotalCostsBase(:,2), TotalCostsBase(:,3), TotalCostsBase(:,4), TotalCostsBase(:,5), TotalCostsBase(:,6), TotalCostsBase(:,7),TotalCostsBase(:,8), 'RowNames',["Energy charged in kWh"; "Energy Costs in �"; "Energy Costs in ct/kWh"; "."; "NNE Extra Base Price in �"; "NNE Bonus in �"; "IMSYS Installation Costs in �"; "~"; "Total Costs in �"], 'VariableNames',{'Grid','PV','aFRR','Public','ResPoOffered_kW','Total','TotalPerUser', 'TotalPerUserPerYear'});
+    TotalCostsBase=table(TotalCostsBase(:,1), TotalCostsBase(:,2), TotalCostsBase(:,3), TotalCostsBase(:,4), TotalCostsBase(:,5), TotalCostsBase(:,6), TotalCostsBase(:,7),TotalCostsBase(:,8), 'RowNames',["Energy charged in kWh"; "Energy Costs in EUR"; "Energy Costs in ct/kWh"; "."; "NNE Extra Base Price in EUR"; "NNE Bonus in EUR"; "IMSYS Installation Costs in EUR"; "~"; "Total Costs in EUR"], 'VariableNames',{'Grid','PV','aFRR','Public','ResPoOffered_kW','Total','TotalPerUser', 'TotalPerUserPerYear'});
     TotalCostsBase=[TotalCostsBase; table([0;Users{1}.SmartCharging; Users{1}.ApplyGridConvenientCharging; length(Users)-1;], zeros(4,1),zeros(4,1),zeros(4,1),zeros(4,1),zeros(4,1),zeros(4,1),zeros(4,1), 'RowNames',["/"; "SmartCharging"; "ApplyGridConvenientCharging"; "NumUsers"], 'VariableNames',{'Grid','PV','aFRR','Public','ResPoOffered_kW','Total','TotalPerUser', 'TotalPerUserPerYear'})];
     
     Users{1}.TotalCostsIt{end+1}=TotalCostsBase;
     
-    disp(strcat("Costs for base charging the fleet were ", string(table2cell((TotalCostsBase(2,8)))), "� per user per year"));
+    disp(strcat("Costs for base charging the fleet were ", string(table2cell((TotalCostsBase(2,8)))), "EUR per user per year"));
 end
 
 if Users{1}.SmartCharging
-    TotalCostsSmart=zeros(9,7); % [kWh (6. column kW); �; ct/kWh]
-    ResEnOffersList=repelem(reshape(ResEnOffers(:,1,1:end-1),[],1),4*Time.StepInd);
+    TotalCostsSmart=zeros(9,7); % [kWh (6. column kW); EUR; ct/kWh]
+    ResEnOffersList=repelem(reshape(ResEnOffers(:,1,1:end-1),[],1),4*Time.StepInd/ConstantResPoPowerPeriodsScaling);
     for n=2:length(Users)
         
         if isfield(Users{n}, "LogbookSmart")
@@ -518,7 +518,7 @@ if Users{1}.SmartCharging
     end
     
     TotalCostsSmart(1,5)=sum(ResPoOffers(:,2,:),'all')/1000*4;
-    TotalCostsSmart(2,5)=-sum(ResPoOffers(:,1,:).*ResPoOffers(:,2,:)/1000*4,'all')*100; % [�/kW]*[Wh]
+    TotalCostsSmart(2,5)=-sum(ResPoOffers(:,1,:).*ResPoOffers(:,2,:)/1000*4,'all')*100; % [EUR/kW]*[Wh]
     TotalCostsSmart(3,:)=TotalCostsSmart(2,:)./TotalCostsSmart(1,:);
     TotalCostsSmart(1,6)=sum(TotalCostsSmart(1,1:4));
     TotalCostsSmart(2,6)=sum(TotalCostsSmart(2,1:5),2);
@@ -532,15 +532,13 @@ if Users{1}.SmartCharging
     TotalCostsSmart(7,6:8)=[IMSYSInstallationCosts / 365*(length(Users{2}.LogbookSmart)/(24*Time.StepInd))/10, IMSYSInstallationCosts / 365*(length(Users{2}.LogbookSmart)/(24*Time.StepInd))/10 / (length(Users)-1), IMSYSInstallationCosts/(length(Users)-1)/10]/100;
     TotalCostsSmart(9,6:8)=TotalCostsSmart(2,6:8)+sum(TotalCostsSmart([5,7],6:8),1);
     
-    TotalCostsSmart=table(TotalCostsSmart(:,1), TotalCostsSmart(:,2), TotalCostsSmart(:,3), TotalCostsSmart(:,4), TotalCostsSmart(:,5), TotalCostsSmart(:,6), TotalCostsSmart(:,7),TotalCostsSmart(:,8), 'RowNames',["Energy charged in kWh"; "Energy Costs in �"; "Energy Costs in ct/kWh"; "."; "NNE Extra Base Price in �"; "NNE Bonus in �"; "IMSYS Installation Costs in �"; "~"; "Total Costs in �"], 'VariableNames',{'Grid','PV','aFRR','Public','ResPoOffered_kW','Total','TotalPerUser', 'TotalPerUserPerYear'});
+    TotalCostsSmart=table(TotalCostsSmart(:,1), TotalCostsSmart(:,2), TotalCostsSmart(:,3), TotalCostsSmart(:,4), TotalCostsSmart(:,5), TotalCostsSmart(:,6), TotalCostsSmart(:,7),TotalCostsSmart(:,8), 'RowNames',["Energy charged in kWh"; "Energy Costs in EUR"; "Energy Costs in ct/kWh"; "."; "NNE Extra Base Price in EUR"; "NNE Bonus in EUR"; "IMSYS Installation Costs in EUR"; "~"; "Total Costs in EUR"], 'VariableNames',{'Grid','PV','aFRR','Public','ResPoOffered_kW','Total','TotalPerUser', 'TotalPerUserPerYear'});
     TotalCostsSmart=[TotalCostsSmart; table([0;ResEnVolumenAllocated;ResEnVolumenFulfilled/ResEnVolumenAllocated;ResPoPriceFactor;ResEnPriceFactor;0;Users{1}.SmartCharging; Users{1}.ApplyGridConvenientCharging; length(Users)-1; ], zeros(9,1),zeros(9,1),zeros(9,1),zeros(9,1),zeros(9,1),zeros(9,1),zeros(9,1), 'RowNames',["-"; "Planned Reserve Energy in Opt 5 in kWh"; "Share Activated/Planned Renserve Energy in kWh"; "ResPoPriceFactor"; "ResEnPriceFactor"; "/"; "SmartCharging"; "ApplyGridConvenientCharging"; "NumUsers"], 'VariableNames',{'Grid','PV','aFRR','Public','ResPoOffered_kW','Total','TotalPerUser', 'TotalPerUserPerYear'})];
     
-    disp(strcat("Total costs for smart charging the fleet were ", string(table2cell((TotalCostsSmart(2,8)))), "� per User per year"));
+    disp(strcat("Total costs for smart charging the fleet were ", string(table2cell((TotalCostsSmart(2,8)))), "EUR per User per year"));
     
     Users{1}.TotalCostsIt{end+1}=TotalCostsSmart;
 end
-
-Users{1}.TotalCostsIt=TotalCostsIt;
 
 
 %% Save data
@@ -556,7 +554,7 @@ disp(strcat("Successfully simulated within ", num2str(toc(TSim)), " seconds"))
 
 %% Clean up workspace
  
-clearvars TimeInd+TD.User n ActivateWaitbar Consumption24h ParkingDuration ConsumptionTilNextHomeStop TripDistance
+clearvars TimeInd TD.User n ActivateWaitbar Consumption24h ParkingDuration ConsumptionTilNextHomeStop TripDistance
 clearvars NextHomeStop PublicChargerPower ChargingPower EnergyDemandLeft TimeStepIndsNeededForCharging EndOfShift
 clearvars NumPredMethod TotalIterations NumUsers TimeOfForecast P PlugInTime PThreshold
 clearvars SimulatedUsers PublicChargerDistribution h k UserNum UsePV UsePredictions UseParallel TSim TimeInd temp  

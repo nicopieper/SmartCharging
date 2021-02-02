@@ -79,8 +79,8 @@ PredMethod={1;2};
 TrainModelNew=0;
 Save=true;
 
-DelayIndsLSQ=[1:96];
-DelayIndsNARXNET=[1:24];
+DelayIndsLSQ=[1:168];
+DelayIndsNARXNET=[1:60];
 DelayIndsGLM=[1:8, 9:2:18, 48, 95:97, 2*96-1:2*96+1, 3*96-1:3*96+1];
 DelayIndsGLM=[1:24*4];
 GLMDistribution='binomial';
