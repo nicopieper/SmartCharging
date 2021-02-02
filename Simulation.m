@@ -513,7 +513,8 @@ end
 
 if Users{1}.SmartCharging
     TotalCostsSmart=zeros(9,7); % [kWh (6. column kW); EUR; ct/kWh]
-    ResEnOffersList=repelem(reshape(ResEnOffers(:,1,1:end-1),[],1),4*Time.StepInd);
+    ResEnOffersList=repelem(reshape(ResEnOffers(:,1,1:end-1),[],1),4*Time.StepInd/ConstantResPoPowerPeriodsScaling);
+
     for n=2:length(Users)
         
         if isfield(Users{n}, "LogbookSmart")
@@ -564,7 +565,7 @@ disp(strcat("Successfully simulated within ", num2str(Users{1}.SimDuration), " s
 
 %% Clean up workspace
  
-clearvars TimeInd+TD.User n ActivateWaitbar Consumption24h ParkingDuration ConsumptionTilNextHomeStop TripDistance
+clearvars TimeInd TD.User n ActivateWaitbar Consumption24h ParkingDuration ConsumptionTilNextHomeStop TripDistance
 clearvars NextHomeStop PublicChargerPower ChargingPower EnergyDemandLeft TimeStepIndsNeededForCharging EndOfShift
 clearvars NumPredMethod TotalIterations NumUsers TimeOfForecast P PlugInTime PThreshold
 clearvars SimulatedUsers PublicChargerDistribution h k UserNum UsePV UsePredictions UseParallel TSim TimeInd temp  

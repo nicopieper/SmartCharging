@@ -1,9 +1,7 @@
-tic
-
 %% Update Costs
 
 CostsSpotmarket=(CostsElectricityBase(end-ControlPeriodsIt+1:end,1,:)/100 + SpotmarktPricesCP/1000)*Users{1}.MwSt;
-CostsReserveMarket=(CostsElectricityBase/100 - ResEnOfferPrices - ResPoOfferPrices/16)*Users{1}.MwSt;
+CostsReserveMarket=(CostsElectricityBase/100 - ResEnOfferPrices - ResPoOfferPrices/(4*Time.StepInd))*Users{1}.MwSt;
 
 Costs=[CostsSpotmarket, CostsPV(end-ControlPeriodsIt+1:end,1,:), CostsReserveMarket(end-ControlPeriodsIt+1:end,1,:)];
 Costs=Costs(:,CostCats,:);
@@ -32,7 +30,7 @@ ConseqResPoOfferbIt=zeros((ConstantResPoPowerPeriods-1)*ControlPeriodsIt/Constan
 DelCols2=(1:(ControlPeriods-ControlPeriodsIt))'+(0:NumUsers/NumDecissionGroups*NumCostCats-1)*ControlPeriods;
 DelCols2=DelCols2(:);
 
-ResPoBlockedIndices=(floor(floor(mod(TimeInd-1, 24*Time.StepInd)/Time.StepInd)/4):5)+1 + (mod(TimeInd-1, (24*Time.StepInd))<=32)*6 - 2;
+ResPoBlockedIndices=(floor(floor(mod(TimeInd-1, 24*Time.StepInd)/Time.StepInd)/4):5)+1 + (mod(TimeInd-1, (24*Time.StepInd))<=8*Time.StepInd)*6 - 2;
 if hour(Time.Sim.Vec(TimeInd))+minute(Time.Sim.Vec(TimeInd))>hour(TimeOfPreAlgo(1))
     ResPoBlockedIndices=[ResPoBlockedIndices, 5:10];
 end
@@ -58,8 +56,13 @@ if ControlPeriodsIt<ControlPeriods
     ConseqEnergyCPAIt(:,DelCols)=[];
     
     DelRows2=1:(ControlPeriods-ControlPeriodsIt - (floor((ControlPeriods-ControlPeriodsIt)/(4*Time.StepInd))));
+    DelRows3=1:size(ConseqResPoOfferA,1)/12 * (floor((ControlPeriods-ControlPeriodsIt)/(4*Time.StepInd)));
     
-    ConseqResPoOfferAIt(DelRows2,:)=[];
+%     if DelRows3~=DelRows2
+%         error("Damn")
+%     end
+    
+    ConseqResPoOfferAIt(DelRows3,:)=[];
     ConseqResPoOfferAIt(:,DelCols2)=[];
     
     
@@ -151,7 +154,7 @@ else
         Aeq=[ConseqEnergyCPAIt; ConseqResPoOfferAIt;];
     
         Costf=Costs;
-        Costf(1:length(ResPoBlockedIndices)*Time.StepInd*4,3,:)=-10000; % set costs for reserve power virtually so low that it will be used at its maximum possible
+        Costf(1:length(ResPoBlockedIndices)*Time.StepInd*4/ConstantResPoPowerPeriodsScaling,3,:)=-10000; % set costs for reserve power virtually so low that it will be used at its maximum possible
         Costf=Costf(:);
     
         [x,fval]=linprog(Costf,A,b,Aeq,beq,lb,ub, options);
@@ -171,12 +174,12 @@ end
 
 if ismember(TimeInd, TimesOfPreAlgo(1,:))
     ChargingMat{1}(:,:,:,PreAlgoCounter)=OptimalChargingEnergies;
-    AvailabilityMat=[AvailabilityMat, Availability(1:96,1,:)];
+    AvailabilityMat=[AvailabilityMat, Availability(1:24*Time.StepInd,1,:)];
     
-    SuccessfulResPoOffers(:,PreAlgoCounter+1)=ResPoOffers(:,1,PreAlgoCounter+1)<=ResPoPricesReal4H(floor((TimeInd+TD.Main)/(4*Time.StepInd))+1+(24-hour(TimeOfPreAlgo(1)))/4:floor((TimeInd+TD.Main)/(4*Time.StepInd))+(24-hour(TimeOfPreAlgo(1)))/4+6,5)/1000; %[�/kW]
+    SuccessfulResPoOffers(:,PreAlgoCounter+1)=ResPoOffers(:,1,PreAlgoCounter+1)<=repelem(ResPoPricesReal4H(floor((TimeInd+TD.Main)/(4*Time.StepInd))+1+(24-hour(TimeOfPreAlgo(1)))/4:floor((TimeInd+TD.Main)/(4*Time.StepInd))+(24-hour(TimeOfPreAlgo(1)))/4+6,5)/1000, ConstantResPoPowerPeriodsScaling); %[�/kW]
     LastResPoOffers(:,PreAlgoCounter+1)=sum(OptimalChargingEnergies(1:ConstantResPoPowerPeriods:end,sum(CostCats(1:3)),:), 3);
     LastResPoOffersSucessful4H(:,PreAlgoCounter+1)=LastResPoOffers(:,PreAlgoCounter+1);
-    LastResPoOffersSucessful4H(ConsPeriods+1:ConsPeriods+6,PreAlgoCounter+1)=LastResPoOffersSucessful4H(ConsPeriods+1:ConsPeriods+6,PreAlgoCounter+1).*SuccessfulResPoOffers(:,PreAlgoCounter+1);
+    LastResPoOffersSucessful4H(ConsPeriods*ConstantResPoPowerPeriodsScaling+1:(ConsPeriods+6)*ConstantResPoPowerPeriodsScaling,PreAlgoCounter+1)=LastResPoOffersSucessful4H(ConsPeriods*ConstantResPoPowerPeriodsScaling+1:(ConsPeriods+6)*ConstantResPoPowerPeriodsScaling,PreAlgoCounter+1).*SuccessfulResPoOffers(:,PreAlgoCounter+1);
     
     VarCounter=0;
     for n=UserNum
