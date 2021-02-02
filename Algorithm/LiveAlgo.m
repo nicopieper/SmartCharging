@@ -7,8 +7,8 @@ if ismember(TimeInd, TimesOfZeitscheiben)
     %OfferedResPo=ResPoOffers(floor(mod((TimeInd-1),(24*Time.StepInd))/(4*Time.StepInd))+1, 2, floor((TimeInd-1)/(24*Time.StepInd))+1);
     
     if OfferedResPo>0
-        % ResOfferLists4H are the offers of the competitors fetched from  the regelleistung.net data. columns 2-3 of cell-column 2 contain the offered energy price [€/MWh] and the allocated power [MW] for negative reserve energy.
-        % ResEnOffers are the price offers [€/kWh] of the simulated aggregator.OfferedResPo covers the allocated power [kW] corresponding to the price
+        % ResOfferLists4H are the offers of the competitors fetched from  the regelleistung.net data. columns 2-3 of cell-column 2 contain the offered energy price [ï¿½/MWh] and the allocated power [MW] for negative reserve energy.
+        % ResEnOffers are the price offers [ï¿½/kWh] of the simulated aggregator.OfferedResPo covers the allocated power [kW] corresponding to the price
         ResEnMOL=[ResOfferLists4H{floor((TimeInd+TD.Main)/(4*Time.StepInd))+1,2}(:,2:3) .* [1/1000, 1000]; [ResEnOffers(floor(mod(TimeInd-TimesOfPreAlgo(1,1), 24*Time.StepInd)/(4*Time.StepInd))+1,1,PreAlgoCounter+1-double(ControlPeriodsIt==ControlPeriods)), OfferedResPo]]; % Merit-Order-List for the current Zeitscheibe. Includes offered prices in first column and allocated energy in second column. 
         ResEnMOL=[ResEnMOL, [zeros(size(ResEnMOL,1)-1,1);1]];
         [~, SortedOrder]=sort(ResEnMOL(:,1),1,'ascend');
@@ -69,6 +69,10 @@ if OfferedResPo>0
         %% Dispatch reserve power to fleet
 
         PriorityChargingList=[];
+        
+        if DispatchedResPo(TimeInd)> sum(AvailableDispatchedResPoMax)
+            Exceeds(end+1)=TimeInd;
+        end
 
         if round(DispatchedResPo(TimeInd)*100) < round(sum(AvailableDispatchedResPo)*100) % 25.92%
             % Which cars should be charged at first? 
@@ -105,6 +109,7 @@ if OfferedResPo>0
             % do nothing
             PriorityChargingList=[UserNum', zeros(NumUsers, 1), AvailableDispatchedResPo, AvailableDispatchedResPo];
             PriorityChargingList=PriorityChargingList(PriorityChargingList(:,4)>0,:);
+            
         elseif round(DispatchedResPo(TimeInd)*100) <= round(sum(AvailableDispatchedResPoBuffer)*100) % 4.3% + 0.02% = 4.32%
             % dispatch energy using the buffered energy from those cars that
             % were dispatched for reserve power but not by their full charging
@@ -126,10 +131,10 @@ if OfferedResPo>0
             PriorityChargingList=[PriorityChargingList, [PriorityChargingList(1:MOLPos,3)+PriorityChargingList(1:MOLPos,5); PriorityChargingList(MOLPos+1:end,3)]];
             PriorityChargingList(MOLPos,6)=PriorityChargingList(MOLPos,3) + (DispatchedResPo(TimeInd) - temp(MOLPos)-sum(PriorityChargingList(:,3)));
 
-            if sum(PriorityChargingList(:,end))-0.1 > DispatchedResPo(TimeInd) || sum(PriorityChargingList(:,end))+0.1 < DispatchedResPo(TimeInd)
-                1
-            end
-%             1
+%             if sum(PriorityChargingList(:,end))-0.1 > DispatchedResPo(TimeInd) || sum(PriorityChargingList(:,end))+0.1 < DispatchedResPo(TimeInd)
+%                 warning(strcat("LiveAlgo: ResPo Allocation error at marker 2. TimeInd=", num2str(TimeInd)))
+%             end
+%             
 
         elseif sum(AvailableDispatchedResPoMax)>0 % DispatchedResPo(TimeInd) <= sum(AvailableDispatchedResPoMax) % 0.57% + 0% = 0.57%
             % dispatch energy using all available charging energy even from
@@ -158,9 +163,9 @@ if OfferedResPo>0
             PriorityChargingList=[PriorityChargingList, [PriorityChargingList(1:MOLPos,4)+PriorityChargingList(1:MOLPos,6); PriorityChargingList(MOLPos+1:end,4)]];
             PriorityChargingList(MOLPos,7)=min(PriorityChargingList(MOLPos,5), PriorityChargingList(MOLPos,4) + (DispatchedResPo(TimeInd) - temp(MOLPos)-sum(PriorityChargingList(:,4))));
             
-            if (sum(PriorityChargingList(:,end))-0.1 > DispatchedResPo(TimeInd) || sum(PriorityChargingList(:,end))+0.1 < DispatchedResPo(TimeInd)) && sum(AvailableDispatchedResPoMax)>DispatchedResPo(TimeInd)
-                1
-            end
+%             if (sum(PriorityChargingList(:,end))-0.1 > DispatchedResPo(TimeInd) || sum(PriorityChargingList(:,end))+0.1 < DispatchedResPo(TimeInd)) && sum(AvailableDispatchedResPoMax)>DispatchedResPo(TimeInd)
+%               %  warning(strcat("LiveAlgo: ResPo Allocation error at marker 2. TimeInd=", num2str(TimeInd)))
+%             end
             
         end
         
@@ -192,11 +197,11 @@ end
 % 
 % 
 
-% "Der Regelleistungsistwert einer TE, RE oder RG ergibt sich grundsätzlich
-% aus dem Messwert der Einspeisung (oder des Leistungsbezugs) abzüglich des gemeldeten Arbeitspunkts."
+% "Der Regelleistungsistwert einer TE, RE oder RG ergibt sich grundsï¿½tzlich
+% aus dem Messwert der Einspeisung (oder des Leistungsbezugs) abzï¿½glich des gemeldeten Arbeitspunkts."
 % !Abweichungen von der Prognose sind auszugleichen!
 
-% Ausgebliebene Regelarbeitbezüge können durch Grid-Laden zum nächst besten
+% Ausgebliebene Regelarbeitbezï¿½ge kï¿½nnen durch Grid-Laden zum nï¿½chst besten
 % Zeitpunkt nachgeholt werden, das kann keine Begrenzungen verletzen.
 
 % 

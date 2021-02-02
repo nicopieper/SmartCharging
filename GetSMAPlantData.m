@@ -296,4 +296,4 @@ disp(['PVPlantData successfully imported ' num2str(toc) 's'])
 clearvars Folders h Properties StorageFile StoragePath n k LoadedSMAPlantData LoadedSMAPlantDataComplete DataComplete Delimiter ExistingDates
 clearvars File formatSpec NumberPlantsLoaded NumberPlantsToLoad PlantPath DatesDiffStart DatesDiffEnd ExistingDataTimeStart ExistingDataTime.End
 clearvars Error FieldNames LoadedSMAPlantDataNew UsedTime.VecLogical AddPredictions LoadOnlyPlantsWithPrediction DaysBeforeExistingDataSet
-clearvars DaysAfterExistingDataSet DateVec DateLength Date ExistingDataTime UsedTime PlantDataComplete
+clearvars DaysAfterExistingDataSet DateVec DateLength Date ExistingDataTime UsedTime PlantDataComplete EEGDates EEGBounus

@@ -75,12 +75,13 @@ Target=Smard.DayaheadRealH; % double(PVPlants{1}.Profile); %Smard.DayaheadRealH;
 TargetTitle="DayaheadRealH";  % "DayaheadRealH"; "PVPlants_1"
 Time.Pred=Time.H;%Users{1}.Time.Vec;
 Predictors=[Smard.LoadPredH(1:end), Smard.GenPredH(1:end,:)];% [Smard.GenPredQH(:,4)]; [Smard.LoadPredH, Smard.GenPredH]; [SoC1, Weekday]
-PredMethod={1;2};
+PredMethod={2};
 TrainModelNew=0;
 Save=true;
 
-DelayIndsLSQ=[1:96];
-DelayIndsNARXNET=[1:24];
+DelayIndsLSQ=[1:224];
+%DelayIndsNARXNET=[1:72+24];
+DelayIndsNARXNET=[1:52, 68:76, 92:100, 116:124]; % [1:52, 68:76, 92:100, 116:124]
 DelayIndsGLM=[1:8, 9:2:18, 48, 95:97, 2*96-1:2*96+1, 3*96-1:3*96+1];
 DelayIndsGLM=[1:24*4];
 GLMDistribution='binomial';
@@ -164,11 +165,11 @@ disp('Start Prediction')
 
 for n=1:size(PredMethod,1)  % Fill the Matrix with the Model
     if PredMethod{n,1}==1
-        PredMethod(n,2:3)=[{LSQCoeffs}, {TrainFun}];
+        PredMethod(n,2:4)=[{LSQCoeffs}, {TrainFun}, {NumDelayIndsLSQ+size(PredictorMat,2)}];
     elseif PredMethod{n,1}==2
-        PredMethod(n,2:3)=[{Narxnets}, {Ai}];
+        PredMethod(n,2:4)=[{Narxnets}, {Ai}, {NumDelayIndsNARXNET+size(PredictorMat,2)}];
     elseif PredMethod{n,1}==3
-        PredMethod(n,2:3)=[{GLMCoeffs}, {GLMLinkFunction}];
+        PredMethod(n,2:4)=[{GLMCoeffs}, {GLMLinkFunction}, {NumDelayIndsGLM+size(PredictorMat,2)}];
     end
 end   
 [Prediction, PredictionMat, TargetMat, MAE, mMAPE, RMSE, Accuracy] = TestPred(PredMethod, PredictorMat, TargetDelayedLSQ, TargetDelayedGLM, Target, Time,...

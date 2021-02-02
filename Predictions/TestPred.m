@@ -86,7 +86,7 @@ if Demo
     cla
     title(strcat(TargetTitle, " Prediction vs. Target at ", datestr(Time.Pred(TimeInd),'dd.mm.yyyy HH:MM')),'Interpreter','none')
     xlabel('Time.Pred')
-    ylabel('Price [MWh/€]')
+    ylabel('Price [MWh/ï¿½]')
     grid on   
     hold on    
     
@@ -198,7 +198,7 @@ if Save
         Pred.Range=Range;
         Pred.ForecastIntervalInd=ForecastIntervalPredInd;
         Pred.Time.Stamp=datetime('now');
-        Pred.FileName=strcat(Path.Prediction, TargetTitle, Dl, LegendVec(p), "_", datestr(Pred.Time.Stamp, 'yyyymmdd-HHMM'), "_", Time.IntervalFile, "_", num2str(ForecastIntervalPredInd), "h", "_", num2str(size(PredictorMatInput,2)), "Preds", "_", num2str(Time.HourPred), "hr", ".mat");
+        Pred.FileName=strcat(Path.Prediction, TargetTitle, Dl, LegendVec(p), "_", datestr(Pred.Time.Stamp, 'yyyymmdd-HHMM'), "_", Time.IntervalFile, "_", num2str(ForecastIntervalPredInd), "h", "_", num2str(PredMethod{p,4}), "Preds", "_", num2str(Time.HourPred), "hr", ".mat");
         if ~isfolder(strcat(Path.Prediction, TargetTitle))
             mkdir(strcat(Path.Prediction, TargetTitle))
         end
