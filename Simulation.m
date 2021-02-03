@@ -336,8 +336,8 @@ if SmartCharging
     Users{1}.NumDecissionGroups=NumDecissionGroups;
     Users{1}.TimeOfPreAlgo=TimeOfPreAlgo;
     
-    Users{1}.DispatchedResPo=DispatchedResPo;
-    Users{1}.ProvidedResPo=ProvidedResPo;
+    Users{1}.DispatchedResEn=DispatchedResEn;
+    Users{1}.ProvidedResEn=ProvidedResEn;
     
     disp(strcat(num2str(sum(LastResPoOffersSucessful4H(:,2:end)>0,'all')/sum(LastResPoOffers(:,2:end)>0,'all')*100), "% of all reserve power offers were successful"))
     
@@ -446,8 +446,8 @@ end
 %% Evaluate ResPo Offers
 
 if Users{1}.SmartCharging
-    ResPoRequestsUnderfulfillment=sum(DispatchedResPo(1:length(ProvidedResPo))+0.01<ProvidedResPo | DispatchedResPo(1:length(ProvidedResPo))-0.01>ProvidedResPo);
-    disp(strcat(num2str(sum(DispatchedResPo>0)), " reserve power requests were received from TSO. ", num2str(ResPoRequestsUnderfulfillment), " (", num2str(round(ResPoRequestsUnderfulfillment/sum(DispatchedResPo>0)*10000)/100), "%) of these were not performed properly."))
+    ResPoRequestsUnderfulfillment=sum(DispatchedResEn(1:length(ProvidedResEn))+0.01<ProvidedResEn | DispatchedResEn(1:length(ProvidedResEn))-0.01>ProvidedResEn);
+    disp(strcat(num2str(sum(DispatchedResEn>0)), " reserve power requests were received from TSO. ", num2str(ResPoRequestsUnderfulfillment), " (", num2str(round(ResPoRequestsUnderfulfillment/sum(DispatchedResEn>0)*10000)/100), "%) of these were not performed properly."))
 end
 
 %% Evaluate  electricity costs
@@ -529,8 +529,8 @@ if Users{1}.SmartCharging
         end
     end
     
-    TotalCostsSmart(1,5)=sum(ResPoOffers(:,2,:),'all')/1000*4;
-    TotalCostsSmart(2,5)=-sum(ResPoOffers(:,1,:).*ResPoOffers(:,2,:)/1000*4,'all')*100; % [EUR/kW]*[Wh]
+    TotalCostsSmart(1,5)=sum(ResPoOffers(:,2,:),'all'); % [kW]
+    TotalCostsSmart(2,5)=-sum(ResPoOffers(:,1,:).*ResPoOffers(:,2,:),'all')*100; % [EUR/kW]*[kW]
     TotalCostsSmart(3,:)=TotalCostsSmart(2,:)./TotalCostsSmart(1,:);
     TotalCostsSmart(1,6)=sum(TotalCostsSmart(1,1:4));
     TotalCostsSmart(2,6)=sum(TotalCostsSmart(2,1:5),2);
@@ -545,7 +545,7 @@ if Users{1}.SmartCharging
     TotalCostsSmart(9,6:8)=TotalCostsSmart(2,6:8)+sum(TotalCostsSmart([5,7],6:8),1);
     
     TotalCostsSmart=table(TotalCostsSmart(:,1), TotalCostsSmart(:,2), TotalCostsSmart(:,3), TotalCostsSmart(:,4), TotalCostsSmart(:,5), TotalCostsSmart(:,6), TotalCostsSmart(:,7),TotalCostsSmart(:,8), 'RowNames',["Energy charged in kWh"; "Energy Costs in EUR"; "Energy Costs in ct/kWh"; "."; "NNE Extra Base Price in EUR"; "NNE Bonus in EUR"; "IMSYS Installation Costs in EUR"; "~"; "Total Costs in EUR"], 'VariableNames',{'Grid','PV','aFRR','Public','ResPoOffered_kW','Total','TotalPerUser', 'TotalPerUserPerYear'});
-    TotalCostsSmart=[TotalCostsSmart; table([0;ResEnVolumenAllocated;ResEnVolumenFulfilled/ResEnVolumenAllocated; round(ResPoRequestsUnderfulfillment/sum(DispatchedResPo>0)*10000)/100; ResPoPriceFactor;ResEnPriceFactor;0;Users{1}.SmartCharging; Users{1}.ApplyGridConvenientCharging; length(Users)-1; Users{1}.UseParallel; Users{1}.UseSpotPredictions; Users{1}.UsePVPredictions; Users{1}.UseIndividualEEGBonus; Users{1}.SimDuration/3600;], zeros(15,1),zeros(15,1),zeros(15,1),zeros(15,1),zeros(15,1),zeros(15,1),zeros(15,1), 'RowNames',["-"; "Planned Reserve Energy in Opt 5 in kWh"; "Share Activated/Planned Renserve Energy in kWh"; "ResEn underfulfillment rate in %"; "ResPoPriceFactor"; "ResEnPriceFactor"; "/"; "SmartCharging"; "ApplyGridConvenientCharging"; "NumUsers"; "UseParallel"; "UseSpotPredictions"; "UsePVPreditions"; "UseIndividualEEGBonus"; "SimulationDuration in h"], 'VariableNames',{'Grid','PV','aFRR','Public','ResPoOffered_kW','Total','TotalPerUser', 'TotalPerUserPerYear'})];    
+    TotalCostsSmart=[TotalCostsSmart; table([0;ResEnVolumenAllocated;ResEnVolumenFulfilled/ResEnVolumenAllocated; round(ResPoRequestsUnderfulfillment/sum(DispatchedResEn>0)*10000)/100; ResPoPriceFactor;ResEnPriceFactor;0;Users{1}.SmartCharging; Users{1}.ApplyGridConvenientCharging; length(Users)-1; Users{1}.UseParallel; Users{1}.UseSpotPredictions; Users{1}.UsePVPredictions; Users{1}.UseIndividualEEGBonus; Users{1}.SimDuration/3600;], zeros(15,1),zeros(15,1),zeros(15,1),zeros(15,1),zeros(15,1),zeros(15,1),zeros(15,1), 'RowNames',["-"; "Planned Reserve Energy in Opt 5 in kWh"; "Share Activated/Planned Renserve Energy in kWh"; "ResEn underfulfillment rate in %"; "ResPoPriceFactor"; "ResEnPriceFactor"; "/"; "SmartCharging"; "ApplyGridConvenientCharging"; "NumUsers"; "UseParallel"; "UseSpotPredictions"; "UsePVPreditions"; "UseIndividualEEGBonus"; "SimulationDuration in h"], 'VariableNames',{'Grid','PV','aFRR','Public','ResPoOffered_kW','Total','TotalPerUser', 'TotalPerUserPerYear'})];    
     
     disp(strcat("Total costs for smart charging the fleet were ", string(table2cell((TotalCostsSmart(2,8)))), "EUR per User per year"));
     
