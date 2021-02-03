@@ -1,8 +1,8 @@
 %% Initialisation
 tic
-NumUsers=15000;
+NumUsers=40;
 SmartCharging=true;
-UseParallel=true;
+UseParallel=false;
 UseSpotPredictions=true;
 UsePVPredictions=true;
 UseIndividualEEGBonus=true;
@@ -11,7 +11,7 @@ ControlPeriods=96*2;
 UsePV=true;
 ApplyGridConvenientCharging=true;
 ActivateWaitbar=true;
-SaveResults=true;
+SaveResults=false;
 
 % SensitivitEURtsanalyse: ResPoPriceFactor, ResEnPriceFactor, ResPoBuffer
 
@@ -363,7 +363,7 @@ if SmartCharging
         ResEnVolumenAllocated=ResEnVolumenAllocated+sum(Users{1}.ChargingMatSmart{find(~cellfun(@isempty,ChargingMat(1:5,1)), 1, 'last' )}(96-24*4+1:96-24*4+96,3,n-1,:),'all')/Users{n}.ChargingEfficiency/1000;
     end
 
-    disp(strcat(num2str(ResEnVolumenFulfilled/ResEnVolumenAllocated*100), " % of the succcessfully offered reserve energy was actually charged"))
+    disp(strcat(num2str(ResEnVolumenFulfilled/ResEnVolumenAllocated*100), "% of the succcessfully offered reserve energy was actually charged"))
 else
     Users{1}.ChargingMatBase=cell(1,2);
     Users{1}.ChargingMatBase{1}=zeros(96, 3, NumUsers, ceil(size(Users{UserNum(1)}.Logbook,1)/(24*Time.StepInd)));
@@ -596,10 +596,10 @@ clearvars ConsSumPowerTSA ConsSumPowerTSAIt ConsSumPowerTSbIt ConstantResPoPower
 clearvars ControlPeriods ControlPeriodsIt CostCats CostsElectricityBase CostsPV CostsReserveMarket CostsSpotmarket DecissionGroups DelCols DelCols2
 clearvars DelRows DelRows2 DemandInds EnergyDemand fval HourlyPowerAvailability HourlySpotmarketPowers l lb MaxEnergyChargableDeadlockCP
 clearvars MaxEnergyChargableDeadlockTS MaxEnergyChargableSoCTS MaxPossibleSoCTS MaxPower MinEnergyRequiredTS MOLPos n NumCostCats NumDecissionGroups
-clearvars OfferedResPo OptimalChargingEnergies OptimalChargingEnergiesSpotmarket options OwnOfferMOLPos p PowerTS PreAlgoCounter Pred PriorityChargingList
+clearvars OfferedResPo OptimalChargingEnergies OptimalChargingEnergiesSpotmarket options p PowerTS PreAlgoCounter Pred PriorityChargingList
 clearvars PVPower ResEnMOL ResEnOfferPrices ResEnOffersList ResEnPriceFactor ResEnVolumenAllocated ResEnVolumenFulfilled
 clearvars ResPoBlockedIndices ResPoBuffer ResPoOfferEqualiyMat1 ResPoOfferEqualiyMat2 ResPoOfferPrices ResPoPriceFactor Row ShiftInds
 clearvars SoC SoCNew SortedOrder SpotmarketPrices SpotmarktPricesCP StorageFile StoragePath SubIndices SumPower Temp TimeOfDayAheadMarketPriceRelease
 clearvars TimeOfPreAlgo TimeOfReserveMarketOffer TimesOfDayAheadMarketPriceRelease TimesOfPreAlgo TimesOfZeitscheiben TimeStepIndsNeededForCharging
 clearvars TSOResPoDemand ub VarCounter Costf Costs ChargingVehicle Costsf NNEBonus NNEExtraBasePrice IMSYSInstallationCosts IMSYSInstallationCostsMean
-clearvars UseIndividualEEGBonus UsePVPredictions UseSpotPredictions x1 BackwardsOrder
+clearvars UseIndividualEEGBonus UsePVPredictions UseSpotPredictions x1 BackwardsOrder %OwnOfferMOLPos
