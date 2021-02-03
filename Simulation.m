@@ -1,7 +1,7 @@
 %% Initialisation
 tic
 NumUsers=40;
-SmartCharging=true;
+SmartCharging=false;
 UseParallel=false;
 UseSpotPredictions=true;
 UsePVPredictions=true;
@@ -21,7 +21,7 @@ TSim=tic;
 
 if SmartCharging
     if UseParallel
-        NumDecissionGroups=200;
+        NumDecissionGroups=5;
         gcp
     else
         NumDecissionGroups=1;
@@ -49,7 +49,7 @@ if ~isfield(Users{1}, "TotalCostsIt")
 end
 
 
-for NumDecissionGroups=[375]
+for SmartCharging=[false]
 
     
 for n=UserNum
@@ -324,6 +324,10 @@ Users{1}.SmartCharging=SmartCharging;
 Users{1}.SpotmarketPrices=SpotmarketPrices;
 Users{1}.TD.SpotmarketPrices=TD.SpotmarketPrices;
 Users{1}.ApplyGridConvenientCharging=ApplyGridConvenientCharging;
+Users{1}.UseSpotPredictions=UseSpotPredictions;
+Users{1}.UsePVPredictions=UsePVPredictions;
+Users{1}.UseIndividualEEGBonus=UseIndividualEEGBonus;
+Users{1}.UsePV=UsePV;
 
 if SmartCharging
     Users{1}.ChargingMatSmart=ChargingMat;
@@ -332,11 +336,6 @@ if SmartCharging
     end
 
     Users{1}.UseParallel=UseParallel;
-    Users{1}.UseSpotPredictions=UseSpotPredictions;
-    Users{1}.UsePVPredictions=UsePVPredictions;
-    Users{1}.UseIndividualEEGBonus=UseIndividualEEGBonus;
-    Users{1}.UsePV=UsePV;
-    
     Users{1}.AvailabilityMat=AvailabilityMat;
     Users{1}.NumCostCats=NumCostCats;
     Users{1}.ControlPeriods=ControlPeriods;
