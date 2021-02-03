@@ -3,17 +3,17 @@
 % 1. Allocate the demanded reserve energy to the fleet
 
 if ismember(TimeInd, TimesOfZeitscheiben)
-    OfferedResPo=LastResPoOffersSucessful4H(floor(mod(TimeInd-TimesOfPreAlgo(1,1), 24*Time.StepInd)/(4*Time.StepInd))+1, PreAlgoCounter+1-double(ControlPeriodsIt==ControlPeriods));
+    OfferedResPo=LastResPoOffersSucessful4H(floor(mod(TimeInd-TimesOfPreAlgo(1,1), 24*Time.StepInd)/(4*Time.StepInd))+1, PreAlgoCounter+1-double(ControlPeriodsIt==ControlPeriods))*Time.StepInd/1000; % [kW]
     %OfferedResPo=ResPoOffers(floor(mod((TimeInd-1),(24*Time.StepInd))/(4*Time.StepInd))+1, 2, floor((TimeInd-1)/(24*Time.StepInd))+1);
     
     if OfferedResPo>0
-        % ResOfferLists4H are the offers of the competitors fetched from  the regelleistung.net data. columns 2-3 of cell-column 2 contain the offered energy price [�/MWh] and the allocated power [MW] for negative reserve energy.
-        % ResEnOffers are the price offers [�/kWh] of the simulated aggregator.OfferedResPo covers the allocated power [kW] corresponding to the price
+        % ResOfferLists4H are the offers of the competitors fetched from  the regelleistung.net data. columns 2-3 of cell-column 2 contain the offered energy price [EUR/MWh] and the allocated power [MW] for negative reserve energy.
+        % ResEnOffers are the price offers [EUR/kWh] of the simulated aggregator. OfferedResPo covers the allocated power [kW] corresponding to the price
         ResEnMOL=[ResOfferLists4H{floor((TimeInd+TD.Main)/(4*Time.StepInd))+1,2}(:,2:3) .* [1/1000, 1000]; [ResEnOffers(floor(mod(TimeInd-TimesOfPreAlgo(1,1), 24*Time.StepInd)/(4*Time.StepInd))+1,1,PreAlgoCounter+1-double(ControlPeriodsIt==ControlPeriods)), OfferedResPo]]; % Merit-Order-List for the current Zeitscheibe. Includes offered prices in first column and allocated energy in second column. 
         ResEnMOL=[ResEnMOL, [zeros(size(ResEnMOL,1)-1,1);1]];
         [~, SortedOrder]=sort(ResEnMOL(:,1),1,'ascend');
         ResEnMOL=ResEnMOL(SortedOrder,:);
-        OwnOfferMOLPos=find(ResEnMOL(:,3)==1);
+        OwnOfferMOLPos(end+1)=find(ResEnMOL(:,3)==1);
     end
     
 end
@@ -24,17 +24,20 @@ if OfferedResPo>0
     
     temp=cumsum(ResEnMOL(:,2));
     TSOResPoDemand=ResPoDemRealQH(TimeInd+TD.Main,1)*1000; % Required reserve energy demanded from the TSOs [kW]
-    MOLPos=find(temp>=TSOResPoDemand, 1); % Merit-Order-List Position
-    if MOLPos>OwnOfferMOLPos
+    MOLPos1(end+1)=find(temp>=TSOResPoDemand, 1); % Merit-Order-List Position
+    if MOLPos1(end)>OwnOfferMOLPos(end)
         DispatchedResPo(TimeInd)=OfferedResPo;
-    elseif MOLPos==OwnOfferMOLPos
-        if OwnOfferMOLPos>1
-            DispatchedResPo(TimeInd)=TSOResPoDemand-temp(OwnOfferMOLPos-1);
+        a1(1)=a1(1)+1;
+    elseif MOLPos1(end)==OwnOfferMOLPos(end)
+        if OwnOfferMOLPos(end)>1
+            DispatchedResPo(TimeInd)=TSOResPoDemand-temp(OwnOfferMOLPos(end)-1);
         else
             DispatchedResPo(TimeInd)=TSOResPoDemand;
         end
+        a1(2)=a1(2)+1;
     else
         DispatchedResPo(TimeInd)=0;
+        a1(3)=a1(3)+1;
     end
 
     %a=[a;[OfferedResPo,DispatchedResPo(TimeInd)]];
@@ -178,6 +181,12 @@ if OfferedResPo>0
             end 
         end
 
+    else
+        
+        for n=UserNum
+            Users{n}.Logbook(TimeInd+TD.User,7)=0;
+        end
+        
     end
     
 end
