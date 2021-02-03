@@ -1,8 +1,9 @@
 %% Initialisation
 
-DispatchedResPo=[];
+DispatchedResEn=[];
 OfferedResPo=0;
-ProvidedResPo=[];
+ProvidedResEn=[];
 OwnOfferMOLPos=[];
 MOLPos1=[];
 a1=[0,0,0];
+Exceeds=[];
