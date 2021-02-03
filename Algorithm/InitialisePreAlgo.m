@@ -3,9 +3,9 @@
 ControlPeriods=96*2;
 CostCats=logical([1, 1, 1]);
 NumCostCats=sum(CostCats);
-ConstantResPoPowerPeriods=4;%4*Time.StepInd;
-ResPoPriceFactor=[0.4];
-ResEnPriceFactor=-1;
+ConstantResPoPowerPeriods=4*Time.StepInd;
+ResPoPriceFactor=[0.4]; %0.4
+ResEnPriceFactor=-0.95;
 options = optimoptions('linprog','Algorithm','dual-simplex');
 options.Display = 'off';
 ResPoBuffer=1;
