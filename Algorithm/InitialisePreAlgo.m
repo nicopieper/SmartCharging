@@ -4,16 +4,16 @@ ControlPeriods=96*2;
 CostCats=logical([1, 1, 1]);
 NumCostCats=sum(CostCats);
 ConstantResPoPowerPeriods=4*Time.StepInd;
-ResPoPriceFactor=[0.4]; %0.4
-ResEnPriceFactor=0.15;
+ResPoPriceFactor=single([0.4]); %0.4
+ResEnPriceFactor=single(0.15);
 options = optimoptions('linprog','Algorithm','dual-simplex');
 options.Display = 'off';
-ResPoBuffer=1;
-PreAlgoCounter=0;
+ResPoBuffer=single(1);
+%PreAlgoCounter=0;
 
 ConstantResPoPowerPeriodsScaling=4*Time.StepInd/ConstantResPoPowerPeriods;
-ResPoOffers=[-10000*ones(6*ConstantResPoPowerPeriodsScaling,1,1), zeros(6*ConstantResPoPowerPeriodsScaling,1,1)];
-ResEnOffers=-10000*ones(6*ConstantResPoPowerPeriodsScaling,1,1);
+ResPoOffers=[-10000*ones(6*ConstantResPoPowerPeriodsScaling,1,1, 'single'), zeros(6*ConstantResPoPowerPeriodsScaling,1,1, 'single')];
+ResEnOffers=-10000*ones(6*ConstantResPoPowerPeriodsScaling,1,1, 'single');
 
 SubIndices = @(Vector, ControlPeriods, ControlPeriodsIt, CostCatsNum) (Vector(:,reshape((1:ControlPeriodsIt)'+(0:CostCatsNum-1)*ControlPeriodsIt,1,[]))-((Vector(:,1)-1)/ControlPeriods*(ControlPeriods-ControlPeriodsIt)));
 
@@ -25,36 +25,36 @@ for n=UserNum
         Users{n}.GridConvenientChargingAvailabilityControlPeriod=circshift(Users{n}.GridConvenientChargingAvailabilityControlPeriod, -ShiftInds);
         Users{n}.GridConvenientChargingAvailabilityControlPeriod=Users{n}.GridConvenientChargingAvailabilityControlPeriod(1:ControlPeriods);
     else
-        Users{n}.GridConvenientChargingAvailabilityControlPeriod=ones(ControlPeriods,1);
+        Users{n}.GridConvenientChargingAvailabilityControlPeriod=ones(ControlPeriods,1, 'single');
     end
 end
 
 %% Initialise Optimisation Variables
 
-MaxPower=[];
+MaxPower=single([]);
 VarCounter=1;
 for n=UserNum
-    MaxPower(1,1,VarCounter)=double(Users{n}.ACChargingPowerHomeCharging);
+    MaxPower(1,1,VarCounter)=Users{n}.ACChargingPowerHomeCharging;
     VarCounter=VarCounter+1;
 end
 
-Availability=[];
-EnergyDemand=[];
+Availability=single([]);
+EnergyDemand=single([]);
 ChargingMat=cell(size(TimesOfPreAlgo,1)+1,1);
-ChargingVehicle=[];
-ChargingType=[];
-AvailabilityMat=[];
-MaxEnergyChargableSoCTS=[];
-MinEnergyRequiredTS=[];
-MaxEnergyChargableDeadlockCP=[];
+ChargingVehicle=single([]);
+ChargingType=single([]);
+AvailabilityMat=single([]);
+MaxEnergyChargableSoCTS=single([]);
+MinEnergyRequiredTS=single([]);
+MaxEnergyChargableDeadlockCP=single([]);
 DecissionGroups=cell(NumDecissionGroups,1);
-SuccessfulResPoOffers=zeros(6*ConstantResPoPowerPeriodsScaling,1);
+SuccessfulResPoOffers=zeros(6*ConstantResPoPowerPeriodsScaling,1, 'single');
 
-DemandInds=tril(ones(ControlPeriods,ControlPeriods)).*(1:ControlPeriods);
-DemandInds(:,1)=0;
-DemandInds(DemandInds==0)=ControlPeriods+1;
+% DemandInds=tril(ones(ControlPeriods,ControlPeriods)).*(1:ControlPeriods);
+% DemandInds(:,1)=0;
+% DemandInds(DemandInds==0)=ControlPeriods+1;
 
-CostsElectricityBase=zeros(ControlPeriods, 1, NumUsers);
+CostsElectricityBase=zeros(ControlPeriods, 1, NumUsers, 'single');
 VarCounter=0;
 for k=UserNum
     VarCounter=VarCounter+1;
@@ -88,13 +88,13 @@ end
 ConseqMatchLastResPoOffers4HA=repmat([zeros(ControlPeriods/ConstantResPoPowerPeriods,ControlPeriods*sum(CostCats(1:2))), kron(eye(ControlPeriods/(4*Time.StepInd)),kron(eye(4*Time.StepInd/ConstantResPoPowerPeriods),[zeros(1,ConstantResPoPowerPeriods-1),ones(1,1)]))], 1, NumUsers/NumDecissionGroups);
 ConseqMatchLastResPoOffers4HA=sparse(ConseqMatchLastResPoOffers4HA(1:ceil(ControlPeriods/(ConstantResPoPowerPeriods)),:));
 
-LastResPoOffers=zeros(ceil(ControlPeriods/(ConstantResPoPowerPeriods)),1);
-LastResPoOffersSucessful4H=zeros(ceil(ControlPeriods/(ConstantResPoPowerPeriods)),1);
+LastResPoOffers=zeros(ceil(ControlPeriods/(ConstantResPoPowerPeriods)),1, 'single');
+LastResPoOffersSucessful4H=zeros(ceil(ControlPeriods/(ConstantResPoPowerPeriods)),1, 'single');
 
 
 A=[ConsSumPowerTSA; ConsEnergyDemandTSA; -ConsEnergyDemandTSA];
 Aeq=[ConseqEnergyCPA; ConseqResPoOfferA; ConseqMatchLastResPoOffers4HA];
-lb=zeros(ControlPeriods, NumCostCats, NumUsers);
+lb=zeros(ControlPeriods, NumCostCats, NumUsers, 'single');
 lb=lb(:);
 
 

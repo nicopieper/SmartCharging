@@ -13,6 +13,7 @@ ApplyGridConvenientCharging=true;
 ActivateWaitbar=true;
 SaveResults=true;
 
+
 % SensitivitEURtsanalyse: ResPoPriceFactor, ResEnPriceFactor, ResPoBuffer
 
 rng('default');
@@ -30,12 +31,12 @@ end
 
 
 if ~exist('PublicChargerDistribution', 'var')
-    PublicChargerDistribution=readmatrix(strcat(Path.Simulation, "PublicChargerProbability.xlsx"));
+    PublicChargerDistribution=single(readmatrix(strcat(Path.Simulation, "PublicChargerProbability.xlsx")));
 end
 
 NumUsers=min(NumUsers, size(Users,1)-1);
-ChargingPower=zeros(NumUsers,1);
-EnergyDemandLeft=zeros(NumUsers+1,1);
+ChargingPower=zeros(NumUsers,1, 'single');
+EnergyDemandLeft=zeros(NumUsers+1,1, 'single');
 delete(findall(0,'type','figure','tag','TMWWaitbar'));
 
 Time.Sim=Users{1}.Time;
@@ -50,7 +51,7 @@ end
 
    
 for n=UserNum
-    Users{n}.Logbook=single(Users{n}.Logbook);
+    %Users{n}.Logbook=single(Users{n}.Logbook);
     %Users{n}=rmfield(Users{n}, "LogbookSource");
     if ApplyGridConvenientCharging
         Users{n}.NNEEnergyPrice=Users{n}.NNEEnergyPriceGridConvenientCharging;
@@ -91,7 +92,7 @@ if SmartCharging
             StoragePath=strcat(strcat(Path.Prediction, "DayaheadRealH", Dl));
             load(strcat(StoragePath, StorageFile))
             if Pred.Time.StepPredInd~=Time.StepInd
-                SpotmarketPricesPred1=repelem(Pred.Data, Time.StepInd/Pred.Time.StepPredInd);
+                SpotmarketPricesPred1=single(repelem(Pred.Data, Time.StepInd/Pred.Time.StepPredInd));
             end
             TD.SpotmarketPricesPred1=find(ismember(Pred.Time.Vec,Time.Sim.Start),1)-1;
         end
@@ -102,14 +103,14 @@ if SmartCharging
             StoragePath=strcat(strcat(Path.Prediction, "DayaheadRealH", Dl));
             load(strcat(StoragePath, StorageFile))
             if Pred.Time.StepPredInd~=Time.StepInd
-                SpotmarketPricesPred2=repelem(Pred.Data, Time.StepInd/Pred.Time.StepPredInd);
+                SpotmarketPricesPred2=single(repelem(Pred.Data, Time.StepInd/Pred.Time.StepPredInd));
             end
             TD.SpotmarketPricesPred2=find(ismember(Pred.Time.Vec,Time.Sim.Start),1)-1;
         end
     else
-        SpotmarketPricesPred1=repelem(Smard.DayaheadRealH, Time.StepInd);
+        SpotmarketPricesPred1=single(repelem(Smard.DayaheadRealH, Time.StepInd));
         TD.SpotmarketPricesPred1=find(ismember(Time.Vec,Time.Sim.Start),1)-1;
-        SpotmarketPricesPred2=repelem(Smard.DayaheadRealH, Time.StepInd);
+        SpotmarketPricesPred2=single(repelem(Smard.DayaheadRealH, Time.StepInd));
         TD.SpotmarketPricesPred2=find(ismember(Time.Vec,Time.Sim.Start),1)-1;
     end
 end
@@ -120,7 +121,7 @@ else
     PVPlants_Profile_Prediction="ProfileQH";
 end
 
-SpotmarketPrices=repelem(Smard.DayaheadRealH, Time.StepInd);
+SpotmarketPrices=single(repelem(Smard.DayaheadRealH, Time.StepInd));
 TD.SpotmarketPrices=find(ismember(Time.Vec,Time.Sim.Start),1)-1;
 
 if ActivateWaitbar
@@ -145,15 +146,15 @@ for TimeInd=Time.Sim.VecInd(2:end-ControlPeriods)
             ConsumptionTilNextHomeStop=sum(Users{n}.Logbook(TimeInd+TD.User:NextHomeStop,4)); % [Wh]
             TripDistance=sum(Users{n}.Logbook(TimeInd+TD.User:NextHomeStop,3)); % [Wh]
 
-            PublicChargerPower=max((rand(1)>=PublicChargerDistribution(find(PublicChargerDistribution>TripDistance/1000,1),:)).*PublicChargerDistribution(1,:)); % [kW]
+            PublicChargerPower=max((rand(1, 'single')>=PublicChargerDistribution(find(PublicChargerDistribution>TripDistance/1000,1),:)).*PublicChargerDistribution(1,:)); % [kW]
             ChargingPower(n)=min([max([Users{n}.ACChargingPowerVehicle, Users{n}.DCChargingPowerVehicle]), PublicChargerPower])*Users{n}.ChargingEfficiency; % Actual ChargingPower at public charger in [kW]
             
-            EnergyDemandLeft(n)=double(min((Users{n}.PublicChargingThreshold*100 + 5+TruncatedGaussian(2,[1 10]-5,1))/100*Users{n}.BatterySize + double(ConsumptionTilNextHomeStop) - Users{n}.Logbook(TimeInd+TD.User-1,9), Users{n}.BatterySize - Users{n}.Logbook(TimeInd+TD.User-1,9)));
-            TimeStepIndsNeededForCharging=ceil(EnergyDemandLeft(n)/ChargingPower(n)*60/Time.StepMin); % [Wh/W]
+            EnergyDemandLeft(n)=single(min((Users{n}.PublicChargingThreshold*100 + 5+TruncatedGaussian(2,[1 10]-5,1))/100*Users{n}.BatterySize + ConsumptionTilNextHomeStop - Users{n}.Logbook(TimeInd+TD.User-1,9), Users{n}.BatterySize - Users{n}.Logbook(TimeInd+TD.User-1,9)));
+            TimeStepIndsNeededForCharging=double(ceil(EnergyDemandLeft(n)/ChargingPower(n)*60/Time.StepMin)); % [Wh/W]
             
             if TimeStepIndsNeededForCharging>0
                 k=TimeInd+TD.User;
-                while k < length(Time.Sim.VecInd)-TimeStepIndsNeededForCharging && ~isequal(Users{n}.Logbook(k:k+TimeStepIndsNeededForCharging-1,3),zeros(TimeStepIndsNeededForCharging,1))
+                while k < length(Time.Sim.VecInd)-TimeStepIndsNeededForCharging && ~isequal(Users{n}.Logbook(k:k+TimeStepIndsNeededForCharging-1,3),zeros(TimeStepIndsNeededForCharging,1, 'single'))
                     k=k+1;
                 end
                 EndOfShift=min(length(Time.Sim.VecInd), k+TimeStepIndsNeededForCharging-1);

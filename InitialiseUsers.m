@@ -84,21 +84,21 @@
 rng('default');
 rng(1);
 NumUsers=100; % number of users
-PVGridConvenientChargingLikelihoodMatrix=[0, 1; 1, 0]; % Matrix that defines with type of users use grid convenient charging (14a) and own a PV plant: [PV&14a, PV&~14a; ~PV&14a, ~PV&~14a]
+PVGridConvenientChargingLikelihoodMatrix=single([0, 1; 1, 0]); % Matrix that defines with type of users use grid convenient charging (14a) and own a PV plant: [PV&14a, PV&~14a; ~PV&14a, ~PV&~14a]
 
 Users=cell(NumUsers+1,1); % the main cell variable all user data is stored in
-Users{1}.MwSt=1.19; % The VAT rate
-Users{1}.EEGBonus=9.17; %[ct/kWh] Bonus paid by the DSO to PV plant owner for supplying energy to the grid
+Users{1}.MwSt=single(1.19); % The VAT rate
+Users{1}.EEGBonus=single(9.17); %[ct/kWh] Bonus paid by the DSO to PV plant owner for supplying energy to the grid
 AddPV=true; % determines wheter PV plants shall be assigned to the users. In general true, only false for test purposes
-MeanPrivateElectricityPrice=30.43/1.19 - 3.7513 - 7.06; % [ct/kWh] average German electricity price in 2019 according to Strom-Report without VAT (19%), electricity production price (avg. Dayahead price was 3.7513 ct/kWh in 2019) and NNE energy price (avg. was 7.06 ct/kWh in 2019)
-PublicACChargingPrices=[29, 39]; % [ct/kWh]
-PublicDCChargingPrices=[39, 49]; % [ct/kWh]
-IMSYSInstallationCostsMean=80000; % [ct] The costs for the installation of the IMSYS have to be paid by the wallbox owner.
+MeanPrivateElectricityPrice=single(30.43/1.19 - 3.7513 - 7.06); % [ct/kWh] average German electricity price in 2019 according to Strom-Report without VAT (19%), electricity production price (avg. Dayahead price was 3.7513 ct/kWh in 2019) and NNE energy price (avg. was 7.06 ct/kWh in 2019)
+PublicACChargingPrices=single([29, 39]); % [ct/kWh]
+PublicDCChargingPrices=single([39, 49]); % [ct/kWh]
+IMSYSInstallationCostsMean=single(80000); % [ct] The costs for the installation of the IMSYS have to be paid by the wallbox owner.
 
-PrivateChargingThresholdMean=1.4;
-PublicChargingThresholdMean=0.33;
-VCity=14; % [m/s] lower velocities indicate driving within the city, hence low consumption
-VHighway=27; % [m/s] higher velocities indicate driving on a highway, hence high consumption
+PrivateChargingThresholdMean=single(1.4);
+PublicChargingThresholdMean=single(0.33);
+VCity=single(14); % [m/s] lower velocities indicate driving within the city, hence low consumption
+VHighway=single(27); % [m/s] higher velocities indicate driving on a highway, hence high consumption
 
 PVPlantPointer=1;
 PVGridConvenientChargingLikelihoodMatrix=cumsum(PVGridConvenientChargingLikelihoodMatrix(:)/sum(PVGridConvenientChargingLikelihoodMatrix,'all'));
@@ -127,7 +127,7 @@ if ~exist('VehicleProperties', 'var')
 end
 if ~exist('GridConvenienChargingDistribution', 'var')
     GridConvenienChargingDistribution=readmatrix(strcat(Path.Simulation, 'GridConvenientCharging_Distribution.csv'), 'NumHeaderLines', 1, 'OutputType', 'string');
-    GridConvenienChargingDistribution=str2double(GridConvenienChargingDistribution(:,2:end));
+    GridConvenienChargingDistribution=single(str2double(GridConvenienChargingDistribution(:,2:end)));
 end
 
 %% Store processing information
@@ -159,18 +159,18 @@ for n=2:NumUsers+1
     Model=max((RandomNumbers(1)>=str2double(VehicleProperties(:,2))).*(1:size(VehicleProperties,1))'); % with respect to market share of the cars, pick one of them. a(1) is uniformly distributed between 0 and 1. find the first vehicle whichs cumulated market share value (in decimal) is large than a(1). the cumulated market share value of the first car is 0, the one of the next car represents the market share of the first vehicle. the number of the second car represents the cumulated share of the first two vehicles and so on
     Users{n}.ModelName=VehicleProperties(Model, 1); % the car name, e. g. "BMW i3s"
     Users{n}.ModelSize=VehicleProperties(Model, 3); % small, medium, large
-    Users{n}.BatterySize=str2double(VehicleProperties(Model, 4))*1000; % [Wh] Wh is used to keep accuracy while using only integers
-    Users{n}.Consumption=reshape(str2double(VehicleProperties(Model, 5:8)), 2, 2); % [Wh/m == kWh/km] Cold City, Mild City; Cold Highway, Mild Highway
+    Users{n}.BatterySize=single(str2double(VehicleProperties(Model, 4))*1000); % [Wh] Wh is used to keep accuracy while using only integers
+    Users{n}.Consumption=single(reshape(str2double(VehicleProperties(Model, 5:8)), 2, 2)); % [Wh/m == kWh/km] Cold City, Mild City; Cold Highway, Mild Highway
     
     % Determine charging properties
-    Users{n}.ChargingEfficiency=str2double(VehicleProperties(Model, 9)); % consider a charging loss factor
-    Users{n}.DCChargingPowerVehicle=str2double(VehicleProperties(Model, 10))*1000; % [Wh/m] max DC charging power of car
-    Users{n}.ACChargingPowerVehicle=str2double(VehicleProperties(Model, 11))*1000; % [W] max ac power chrging power of car
-    Users{n}.AChargingPowerHomeCharger=max((RandomNumbers(2)>=str2double(VehicleProperties(Model,12:17))).*[2.3 3.7 3.7 7.3 11 22]*1000); % [W] with respect to the guessed distribution of chargers for this car, pick one ac charging power for the private charging point. selection mechanism equals the on described for the Model
-    Users{n}.ACChargingPowerHomeCharging=uint32(min(Users{n}.AChargingPowerHomeCharger, Users{n}.ACChargingPowerVehicle)*Users{n}.ChargingEfficiency); % [W] the charging power at the private charging point is determined by the minimum of the cars and the charging points power
-    Users{n}.PrivateElectricityPrice=MeanPrivateElectricityPrice+randn(1);
-    Users{n}.PublicACChargingPrices=max((RandomNumbers(4)>=[0, 0.5]).*PublicACChargingPrices);
-    Users{n}.PublicDCChargingPrices=max((RandomNumbers(5)>=[0, 0.5]).*PublicDCChargingPrices);
+    Users{n}.ChargingEfficiency=single(str2double(VehicleProperties(Model, 9))); % consider a charging loss factor
+    Users{n}.DCChargingPowerVehicle=single(str2double(VehicleProperties(Model, 10))*1000); % [Wh/m] max DC charging power of car
+    Users{n}.ACChargingPowerVehicle=single(str2double(VehicleProperties(Model, 11))*1000); % [W] max ac power chrging power of car
+    Users{n}.AChargingPowerHomeCharger=single(max((RandomNumbers(2)>=str2double(VehicleProperties(Model,12:17))).*[2.3 3.7 3.7 7.3 11 22]*1000)); % [W] with respect to the guessed distribution of chargers for this car, pick one ac charging power for the private charging point. selection mechanism equals the on described for the Model
+    Users{n}.ACChargingPowerHomeCharging=single(min(Users{n}.AChargingPowerHomeCharger, Users{n}.ACChargingPowerVehicle)*Users{n}.ChargingEfficiency); % [W] the charging power at the private charging point is determined by the minimum of the cars and the charging points power
+    Users{n}.PrivateElectricityPrice=single(MeanPrivateElectricityPrice+randn(1));
+    Users{n}.PublicACChargingPrices=single(max((RandomNumbers(4)>=[0, 0.5]).*PublicACChargingPrices));
+    Users{n}.PublicDCChargingPrices=single(max((RandomNumbers(5)>=[0, 0.5]).*PublicDCChargingPrices));
     
     % Add a PV plant
     %if RandomNumbers(6)<=LikelihoodPV && AddPV 
@@ -187,13 +187,13 @@ for n=2:NumUsers+1
     if Users{n}.ChargingStrategy==1 % this one is primitive
         Users{n}.MinimumPluginTime=minutes(randi([30 90], 1,1));
     elseif Users{n}.ChargingStrategy==2 % only use this strategy which will be explained in Simulation
-        Users{n}.PrivateChargingThreshold=PrivateChargingThresholdMean+TruncatedGaussian(0.2,[PrivateChargingThresholdMean*0.6 PrivateChargingThresholdMean*1.3]-PrivateChargingThresholdMean,1); % Mean=1.4, stdw=0.2, range(0.7, 2)
+        Users{n}.PrivateChargingThreshold=single(PrivateChargingThresholdMean+TruncatedGaussian(0.2,[PrivateChargingThresholdMean*0.6 PrivateChargingThresholdMean*1.3]-PrivateChargingThresholdMean,1)); % Mean=1.4, stdw=0.2, range(0.7, 2)
     end
-    Users{n}.PublicChargingThreshold=PublicChargingThresholdMean+TruncatedGaussian(0.03,[PublicChargingThresholdMean*0.75 PublicChargingThresholdMean*1.4]-PublicChargingThresholdMean,1); % Mean=1.4, stdw=0.2, range(0.7, 2)
+    Users{n}.PublicChargingThreshold=single(PublicChargingThresholdMean+TruncatedGaussian(0.03,[PublicChargingThresholdMean*0.75 PublicChargingThresholdMean*1.4]-PublicChargingThresholdMean,1)); % Mean=1.4, stdw=0.2, range(0.7, 2)
     Users{n}.PublicChargingThreshold_Wh=Users{n}.BatterySize*Users{n}.PublicChargingThreshold;
     
     % Selection of a grid convenient charging profile
-    GridConvenientChargingProfile=max(double(RandomNumbers(8)>=(0:1/size(GridConvenienChargingDistribution,2):1-1/size(GridConvenienChargingDistribution,2))).*(1:size(GridConvenienChargingDistribution,2)));
+    GridConvenientChargingProfile=max(single(RandomNumbers(8)>=(0:1/size(GridConvenienChargingDistribution,2):1-1/size(GridConvenienChargingDistribution,2))).*(1:size(GridConvenienChargingDistribution,2)));
 %     if RandomNumbers(8)<=LikelihoodGridConvenientCharging
     Users{n}.NNEEnergyPriceGridConvenientCharging=GridConvenienChargingDistribution(3,GridConvenientChargingProfile); % [ct/kWh] netto (without VAT). reduced NNE energy price due to the allowance for the DSO to manage the charging
     Users{n}.NNEEnergyPriceNotGridConvenientCharging=GridConvenienChargingDistribution(1,GridConvenientChargingProfile); % [ct/kWh] netto (without VAT). normal NNE prices
@@ -202,14 +202,14 @@ for n=2:NumUsers+1
         Users{n}.GridConvenientChargingAvailability=GridConvenienChargingDistribution(5:end,GridConvenientChargingProfile);
         Users{n}.NNEExtraBasePrice=GridConvenienChargingDistribution(2,GridConvenientChargingProfile)*100; % [ct/a] netto (without VAT) due to the extra electricity meter
         Users{n}.NNEBonus=GridConvenienChargingDistribution(4,GridConvenientChargingProfile)*100; % [ct] a single bonus paid by the DSO
-        Users{n}.IMSYSInstallationCosts=IMSYSInstallationCostsMean*(1+TruncatedGaussian(0.1,[0.5 1.5]-1,1));
+        Users{n}.IMSYSInstallationCosts=single(IMSYSInstallationCostsMean*(1+TruncatedGaussian(0.1,[0.5 1.5]-1,1)));
         Users{n}.NNEEnergyPrice=Users{n}.NNEEnergyPriceGridConvenientCharging;
     else
         Users{n}.GridConvenientCharging=false;
-        Users{n}.GridConvenientChargingAvailability=ones(24*Time.StepInd,1);
-        Users{n}.NNEExtraBasePrice=0; % not extra electricity meter required
-        Users{n}.NNEBonus=0; % no extra Bonus
-        Users{n}.IMSYSInstallationCosts=0;
+        Users{n}.GridConvenientChargingAvailability=ones(24*Time.StepInd,1, 'single');
+        Users{n}.NNEExtraBasePrice=single(0); % not extra electricity meter required
+        Users{n}.NNEBonus=single(0); % no extra Bonus
+        Users{n}.IMSYSInstallationCosts=single(0);
         Users{n}.NNEEnergyPrice=Users{n}.NNEEnergyPriceNotGridConvenientCharging;
     end
     
@@ -229,11 +229,11 @@ for n=2:NumUsers+1
     Users{n}.DistanceCompanyToHome=Vehicles{VehicleDatabase{SizeNum}(VehiclePointer(SizeNum))}.DistanceCompanyToHome;
     Users{n}.VehicleUtilisation=Vehicles{VehicleDatabase{SizeNum}(VehiclePointer(SizeNum))}.VehicleUtilisation;
     Users{n}.AvgHomeParkingTime=Vehicles{VehicleDatabase{SizeNum}(VehiclePointer(SizeNum))}.AvgHomeParkingTime;
-    Users{n}.Logbook=Vehicles{VehicleDatabase{SizeNum}(VehiclePointer(SizeNum))}.Logbook(UsersTimeVecLogical, :);
+    Users{n}.Logbook=single(Vehicles{VehicleDatabase{SizeNum}(VehiclePointer(SizeNum))}.Logbook(UsersTimeVecLogical, :));
     Users{n}.Logbook=[Users{n}.Logbook, zeros(length(Users{n}.Logbook), 9-size(Users{n}.Logbook,2))]; % [State, DrivingTime [min], Distance [m], Energy consumed [Wh], Energy charged private Spotmarket [Wh], Energy charged private PV plant [Wh], Energy charged private reserve energy [Wh], Energy charged public [Wh], SoC [Wh]]
         
     % Calc energy consumption in Logbook by using consumption data from model
-    Velocities=double(Users{n}.Logbook(:,3))./double(Users{n}.Logbook(:,2))/60; % [m/s] depending on the velocity of each trip and the temperature indicator of its month, determine the energy consumption of the trip
+    Velocities=Users{n}.Logbook(:,3)./Users{n}.Logbook(:,2)/60; % [m/s] depending on the velocity of each trip and the temperature indicator of its month, determine the energy consumption of the trip
     Velocities(Velocities<VCity)=1; % all trips with velocities smaller VCity m/s have the city consumption value
     Velocities(Velocities>=VCity & Velocities<=VHighway)=(Velocities(Velocities>=VCity & Velocities<=VHighway)-VCity)/(VHighway-VCity)+1; % in between the consumption value is interpolated
     Velocities(Velocities>VHighway)=2; % all above VHighway m/s the highway consumption value
@@ -241,12 +241,12 @@ for n=2:NumUsers+1
     Consumption=Users{n}.Consumption(1,1).*(2-Velocities).*(2-TemperatureTimeVec)+Users{n}.Consumption(2,1)*(Velocities-1).*(2-TemperatureTimeVec)+Users{n}.Consumption(1,2)*(2-Velocities).*(TemperatureTimeVec-1)+Users{n}.Consumption(2,2)*(Velocities-1).*(TemperatureTimeVec-1); % calculate the consumption of all trips depending of velocity and temperature
     
     % Initialisation of LogbookBase
-    Users{n}.Logbook(:,4)=uint32(double(Users{n}.Logbook(:,3)).*Consumption); % add consumption to logbook
-    Users{n}.Logbook(1,9)=uint32(double(Users{n}.BatterySize)*0.7+TruncatedGaussian(0.1,[0.4 1]-0.7,1)); % Initial SoC between 0.4 and 1 of BatterySize. Distribution is normal
+    Users{n}.Logbook(:,4)=single(uint32(double(Users{n}.Logbook(:,3)).*Consumption)); % add consumption to logbook
+    Users{n}.Logbook(1,9)=single(uint32(double(Users{n}.BatterySize)*0.7+TruncatedGaussian(0.1,[0.4 1]-0.7,1))); % Initial SoC between 0.4 and 1 of BatterySize. Distribution is normal
     
     % Evaluation of User properties
-    Users{n}.AverageMileageDay_m=uint32(sum(Users{n}.Logbook(:,3))/days(Time.Sim.Vec(end)-Time.Sim.Vec(1))); %[m]
-    Users{n}.AverageMileageYear_km=uint32(sum(Users{n}.Logbook(:,3))/days(Time.Sim.Vec(end)-Time.Sim.Vec(1))*365.25/1000); %[km]
+    Users{n}.AverageMileageDay_m=single(sum(Users{n}.Logbook(:,3))/days(Time.Sim.Vec(end)-Time.Sim.Vec(1))); %[m]
+    Users{n}.AverageMileageYear_km=single(sum(Users{n}.Logbook(:,3))/days(Time.Sim.Vec(end)-Time.Sim.Vec(1))*365.25/1000); %[km]
 end
 
 disp(strcat("Users successfully initialised ", num2str(toc)))

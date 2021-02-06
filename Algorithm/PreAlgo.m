@@ -25,7 +25,7 @@ ConsEnergyDemandTSAIt=ConsEnergyDemandTSA;
 ConseqEnergyCPAIt=ConseqEnergyCPA;
 ConseqResPoOfferAIt=ConseqResPoOfferA;
 
-ConseqResPoOfferbIt=zeros((ConstantResPoPowerPeriods-1)*ControlPeriodsIt/ConstantResPoPowerPeriods,1);
+ConseqResPoOfferbIt=zeros((ConstantResPoPowerPeriods-1)*ControlPeriodsIt/ConstantResPoPowerPeriods,1 , 'single');
 
 DelCols2=(1:(ControlPeriods-ControlPeriodsIt))'+(0:NumUsers/NumDecissionGroups*NumCostCats-1)*ControlPeriods;
 DelCols2=DelCols2(:);
@@ -147,6 +147,12 @@ else
     
     beq=double([ConseqMaxEnergyChargableDeadlockCPbIt; ConseqResPoOfferbIt; ConseqMatchLastResPoOffers4HbIt]);
     Aeq=[ConseqEnergyCPAIt; ConseqResPoOfferAIt; ConseqMatchLastResPoOffers4HAIt];
+    
+%     b=double([ConsSumPowerTSbIt; ConsMaxEnergyChargableSoCTSbIt; -ConsMinEnergyRequiredTSbIt]);
+%     A=[ConsSumPowerTSAIt; ConsEnergyDemandTSAIt; -ConsEnergyDemandTSAIt];
+%     
+%     beq=double([ConseqMaxEnergyChargableDeadlockCPbIt; ConseqResPoOfferbIt; ConseqMatchLastResPoOffers4HbIt]);
+%     Aeq=[ConseqEnergyCPAIt; ConseqResPoOfferAIt; ConseqMatchLastResPoOffers4HAIt];
 
     lb=zeros(ControlPeriodsIt, NumCostCats, NumUsers);
     ub=double(ConsPowerTSb(:));
@@ -154,6 +160,8 @@ else
     Costf=double(Costs(:));
     
     [x,fval]=linprog(Costf,A,b,Aeq,beq,lb,ub, options);
+    
+    size(x)
       
     if isempty(x) % Resolves the issue that the buffer does not cover the deviation: In this case the underfulfillment must be accepted and as much reserve power as possible will be provided. The deviation from the offer must be satisfied by the other units of the VPP.
         b=double([ConsSumPowerTSbIt; ConsMaxEnergyChargableSoCTSbIt; -ConsMinEnergyRequiredTSbIt; ConseqMatchLastResPoOffers4HbIt]);

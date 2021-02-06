@@ -1,17 +1,17 @@
 %% Availability, EnergyDemand and Prices
 
 VarCounter=0;
-Availability=zeros(ControlPeriodsIt,1,NumUsers);
-SumPower=zeros(ControlPeriodsIt,1,NumUsers);
-MaxEnergyChargableSoCTS=zeros(ControlPeriodsIt,1,NumUsers);
-MaxEnergyChargableDeadlockCP=zeros(1,1,NumUsers);
-MinEnergyRequiredTS=zeros(ControlPeriodsIt,1,NumUsers);
-MaxPossibleSoCTS=zeros(ControlPeriodsIt,1,NumUsers);
+Availability=zeros(ControlPeriodsIt,1,NumUsers, 'single');
+SumPower=zeros(ControlPeriodsIt,1,NumUsers, 'single');
+MaxEnergyChargableSoCTS=zeros(ControlPeriodsIt,1,NumUsers, 'single');
+MaxEnergyChargableDeadlockCP=zeros(1,1,NumUsers, 'single');
+MinEnergyRequiredTS=zeros(ControlPeriodsIt,1,NumUsers, 'single');
+MaxPossibleSoCTS=zeros(ControlPeriodsIt,1,NumUsers, 'single');
 
 for k=UserNum
     VarCounter=VarCounter+1;
     
-    Availability(:,1,VarCounter)=(max(0, double(ismember(Users{k}.Logbook(TimeInd+TD.User:TimeInd+TD.User-1+ControlPeriodsIt,1), 3:5)) - Users{k}.Logbook(TimeInd+TD.User:TimeInd+TD.User-1+ControlPeriodsIt,2)/Time.StepMin)) .* Users{k}.GridConvenientChargingAvailabilityControlPeriod(end-ControlPeriodsIt+1:end);
+    Availability(:,1,VarCounter)=(max(0, single(ismember(Users{k}.Logbook(TimeInd+TD.User:TimeInd+TD.User-1+ControlPeriodsIt,1), 3:5)) - Users{k}.Logbook(TimeInd+TD.User:TimeInd+TD.User-1+ControlPeriodsIt,2)/Time.StepMin)) .* Users{k}.GridConvenientChargingAvailabilityControlPeriod(end-ControlPeriodsIt+1:end);
     
     SumPower(:,1,VarCounter)=MaxPower(:,1,VarCounter)/4.*Availability(:,1,VarCounter);
     
@@ -32,7 +32,7 @@ for k=UserNum
     % such that the battery is as full as possible at the end of the
     % ControlPeriod
     
-    MaxEnergyChargableDeadlockTS=zeros(ControlPeriodsIt,1);
+    MaxEnergyChargableDeadlockTS=zeros(ControlPeriodsIt,1,'single');
     ChargingInds=find(Availability(:,1,VarCounter)>0);
     
     if ~isempty(ChargingInds)
