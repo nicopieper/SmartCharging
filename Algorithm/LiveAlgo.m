@@ -2,9 +2,9 @@
 
 % 1. Allocate the demanded reserve energy to the fleet
 
-if ismember(TimeInd, TimesOfZeitscheiben)
+if ismember(TimeInd, TimesOfResPoEval)
     %OfferedResPo=LastResPoOffersSucessful4H(floor(mod(TimeInd-TimesOfPreAlgo(1,1), 24*Time.StepInd)/(4*Time.StepInd))+1, PreAlgoCounter+1-double(ControlPeriodsIt==ControlPeriods))*Time.StepInd/1000 % [kW]  wrong indexing at 8:00
-    OfferedResPo=LastResPoOffersSucessful4H((24*Time.StepInd-TimesOfPreAlgo(1,1)+1)/(4*Time.StepInd) + floor(mod(TimeInd-1,96)/16) + 1, floor((TimeInd-1)/(24*Time.StepInd))+1)*Time.StepInd/1000;  % [kW]
+    OfferedResPo=LastResPoOffersSucessful4H((24*Time.StepInd-TimesOfPreAlgo(1,1)+1)/ConstantResPoPowerPeriods + floor(mod(TimeInd-1,24*Time.StepInd)/ConstantResPoPowerPeriods) + 1, floor((TimeInd-1)/(24*Time.StepInd))+1)*Time.StepInd/1000;  % [kW]
     %OfferedResPo=ResPoOffers(floor(mod((TimeInd-1),(24*Time.StepInd))/(4*Time.StepInd))+1, 2, floor((TimeInd-1)/(24*Time.StepInd))+1); this is a good approach but it considers Charging losses. That would be difficult to calculate with. For fleet allocation they are not important
     
     if OfferedResPo>0
@@ -193,9 +193,7 @@ if OfferedResPo>0
     
 else
     for n=UserNum
-        if Users{n}.Logbook(TimeInd+TD.User,7)>0
-            error("No ResPo offer but Logbook contains ResPo charging")
-        end
+        Users{n}.Logbook(TimeInd+TD.User,7)=0;
     end
 end
 
