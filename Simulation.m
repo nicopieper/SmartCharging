@@ -1,8 +1,8 @@
 %% Initialisation
 tic
-NumUsers=10;
+NumUsers=10000;
 SmartCharging=true;
-UseParallel=false;
+UseParallel=true;
 UseSpotPredictions=true;
 UsePVPredictions=true;
 UseIndividualEEGBonus=true;
