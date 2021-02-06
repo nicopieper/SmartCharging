@@ -83,7 +83,7 @@
 %% Initialisation
 rng('default');
 rng(1);
-NumUsers=8000; % number of users
+NumUsers=100; % number of users
 PVGridConvenientChargingLikelihoodMatrix=[0, 1; 1, 0]; % Matrix that defines with type of users use grid convenient charging (14a) and own a PV plant: [PV&14a, PV&~14a; ~PV&14a, ~PV&~14a]
 
 Users=cell(NumUsers+1,1); % the main cell variable all user data is stored in
@@ -193,7 +193,7 @@ for n=2:NumUsers+1
     Users{n}.PublicChargingThreshold_Wh=Users{n}.BatterySize*Users{n}.PublicChargingThreshold;
     
     % Selection of a grid convenient charging profile
-    GridConvenientChargingProfile=max(RandomNumbers(8)>=(0:1/size(GridConvenienChargingDistribution,2):1-1/size(GridConvenienChargingDistribution,2))).*(1:size(GridConvenienChargingDistribution,2));
+    GridConvenientChargingProfile=max(double(RandomNumbers(8)>=(0:1/size(GridConvenienChargingDistribution,2):1-1/size(GridConvenienChargingDistribution,2))).*(1:size(GridConvenienChargingDistribution,2)));
 %     if RandomNumbers(8)<=LikelihoodGridConvenientCharging
     Users{n}.NNEEnergyPriceGridConvenientCharging=GridConvenienChargingDistribution(3,GridConvenientChargingProfile); % [ct/kWh] netto (without VAT). reduced NNE energy price due to the allowance for the DSO to manage the charging
     Users{n}.NNEEnergyPriceNotGridConvenientCharging=GridConvenienChargingDistribution(1,GridConvenientChargingProfile); % [ct/kWh] netto (without VAT). normal NNE prices
@@ -233,7 +233,7 @@ for n=2:NumUsers+1
     Users{n}.Logbook=[Users{n}.Logbook, zeros(length(Users{n}.Logbook), 9-size(Users{n}.Logbook,2))]; % [State, DrivingTime [min], Distance [m], Energy consumed [Wh], Energy charged private Spotmarket [Wh], Energy charged private PV plant [Wh], Energy charged private reserve energy [Wh], Energy charged public [Wh], SoC [Wh]]
         
     % Calc energy consumption in Logbook by using consumption data from model
-    Velocities=Users{n}.Logbook(:,3)./Users{n}.Logbook(:,2)/60; % [m/s] depending on the velocity of each trip and the temperature indicator of its month, determine the energy consumption of the trip
+    Velocities=single(Users{n}.Logbook(:,3)./Users{n}.Logbook(:,2))/60; % [m/s] depending on the velocity of each trip and the temperature indicator of its month, determine the energy consumption of the trip
     Velocities(Velocities<VCity)=1; % all trips with velocities smaller VCity m/s have the city consumption value
     Velocities(Velocities>=VCity & Velocities<=VHighway)=(Velocities(Velocities>=VCity & Velocities<=VHighway)-VCity)/(VHighway-VCity)+1; % in between the consumption value is interpolated
     Velocities(Velocities>VHighway)=2; % all above VHighway m/s the highway consumption value
@@ -241,7 +241,7 @@ for n=2:NumUsers+1
     Consumption=Users{n}.Consumption(1,1).*(2-Velocities).*(2-TemperatureTimeVec)+Users{n}.Consumption(2,1)*(Velocities-1).*(2-TemperatureTimeVec)+Users{n}.Consumption(1,2)*(2-Velocities).*(TemperatureTimeVec-1)+Users{n}.Consumption(2,2)*(Velocities-1).*(TemperatureTimeVec-1); % calculate the consumption of all trips depending of velocity and temperature
     
     % Initialisation of LogbookBase
-    Users{n}.Logbook(:,4)=Users{n}.Logbook(:,3).*Consumption; % add consumption to logbook
+    Users{n}.Logbook(~isnan(Consumption),4)=Users{n}.Logbook(~isnan(Consumption),3).*Consumption(~isnan(Consumption)); % add consumption to logbook
     Users{n}.Logbook(1,9)=Users{n}.BatterySize*0.7+TruncatedGaussian(0.1,[0.4 1]-0.7,1); % Initial SoC between 0.4 and 1 of BatterySize. Distribution is normal
     
     % Evaluation of User properties
