@@ -1,8 +1,8 @@
 %% Initialisation
 tic
-NumUsers=40;
-SmartCharging=false;
-UseParallel=false;
+NumUsers=8000;
+SmartCharging=true;
+UseParallel=true;
 UseSpotPredictions=true;
 UsePVPredictions=true;
 UseIndividualEEGBonus=true;
@@ -11,7 +11,7 @@ ControlPeriods=96*2;
 UsePV=true;
 ApplyGridConvenientCharging=true;
 ActivateWaitbar=true;
-SaveResults=false;
+SaveResults=true;
 
 % SensitivitEURtsanalyse: ResPoPriceFactor, ResEnPriceFactor, ResPoBuffer
 
@@ -21,7 +21,7 @@ TSim=tic;
 
 if SmartCharging
     if UseParallel
-        NumDecissionGroups=5;
+        NumDecissionGroups=250;
         gcp
     else
         NumDecissionGroups=1;
@@ -48,12 +48,10 @@ if ~isfield(Users{1}, "TotalCostsIt")
     Users{1}.TotalCostsIt={};
 end
 
-
-for SmartCharging=[false]
-
-    
+   
 for n=UserNum
     Users{n}.Logbook=double(Users{n}.LogbookSource);
+    Users{n}=rmfield(Users{n}, "LogbookSource");
     if ApplyGridConvenientCharging
         Users{n}.NNEEnergyPrice=Users{n}.NNEEnergyPriceGridConvenientCharging;
     else
@@ -79,11 +77,12 @@ if SmartCharging
                     (hour(TimeOfPreAlgo(5))*Time.StepInd + minute(TimeOfPreAlgo(5))/60*Time.StepInd)+1:24*Time.StepInd:length(Time.Sim.VecInd);...
                     (hour(TimeOfPreAlgo(6))*Time.StepInd + minute(TimeOfPreAlgo(6))/60*Time.StepInd)+1:24*Time.StepInd:length(Time.Sim.VecInd);...
                     ];
-    TimesOfZeitscheiben=mod(16-hour(Time.Sim.Vec(1))*4 + minute(Time.Sim.Vec(1)),16)+1:4*Time.StepInd:length(Time.Sim.VecInd);
     TimesOfDayAheadMarketPriceRelease=(hour(TimeOfDayAheadMarketPriceRelease)*Time.StepInd + minute(TimeOfDayAheadMarketPriceRelease)/60*Time.StepInd)+1:24*Time.StepInd:length(Time.Sim.VecInd);
 
     InitialisePreAlgo;
     InitialiseLiveAlgo;
+    
+    TimesOfResPoEval=mod(16-hour(Time.Sim.Vec(1))*4 + minute(Time.Sim.Vec(1)),16)+1:ConstantResPoPowerPeriods:length(Time.Sim.VecInd);
     
     if UseSpotPredictions
         if ~exist("SpotmarketPricesPred1", "var")
@@ -292,6 +291,15 @@ for TimeInd=Time.Sim.VecInd(2:end-ControlPeriods)
         
     end
     
+    if mod(TimeInd, 96*10)==0
+        Users{1}.Time.Stamp=datetime('now');
+        Users{1}.FileName=strcat(Path.Simulation, "Users_", datestr(Users{1}.Time.Stamp, "yyyymmdd-HHMM"), "_", Time.IntervalFile, "_", num2str(length(Users)-1), "_", num2str(isfield(Users{1}, 'ChargingMatSmart')), "_", num2str(isfield(Users{1}, 'ChargingMatBase')), ".mat");
+
+        if SaveResults
+            save(Users{1}.FileName, "Users", "-v7.3");
+        end
+    end
+    
     
     if ActivateWaitbar %&& mod(TimeInd+TD.User,1000)==0
         waitbar(TimeInd/length(Time.Sim.Vec), h, strcat("Simulate charging processes: ", num2str(round(TimeInd/length(Time.Sim.Vec)*1000)/10),"%"));
@@ -315,6 +323,7 @@ end
 
 for n=UserNum
     Users{n}.Logbook=Users{n}.Logbook(1:TimeInd,:);
+    Users{n}.AverageConsumptionBaseYear_kWh=sum(double(Users{n}.Logbook(:,5:8))/Users{n}.ChargingEfficiency, 'all')/1000/days(Time.End-Time.Start)*365.25;
 end
 
 %% Store Simulation Information
@@ -470,11 +479,6 @@ end
 
 %% Evaluate  electricity costs
 
-for n=2:length(Users)
-	Users{n}.AverageConsumptionBaseYear_kWh=sum(double(Users{n}.LogbookSource(:,5:8))/Users{n}.ChargingEfficiency, 'all')/1000/days(Time.End-Time.Start)*365.25;
-end
-
-
 NNEExtraBasePrice=0;
 NNEBonus=0;
 IMSYSInstallationCosts=0;
@@ -563,7 +567,7 @@ if Users{1}.SmartCharging
     TotalCostsSmart(9,6:8)=TotalCostsSmart(2,6:8)+sum(TotalCostsSmart([5,7],6:8),1);
     
     TotalCostsSmart=table(TotalCostsSmart(:,1), TotalCostsSmart(:,2), TotalCostsSmart(:,3), TotalCostsSmart(:,4), TotalCostsSmart(:,5), TotalCostsSmart(:,6), TotalCostsSmart(:,7),TotalCostsSmart(:,8), 'RowNames',["Energy charged in kWh"; "Energy Costs in EUR"; "Energy Costs in ct/kWh"; "."; "NNE Extra Base Price in EUR"; "NNE Bonus in EUR"; "IMSYS Installation Costs in EUR"; "~"; "Total Costs in EUR"], 'VariableNames',{'Grid','PV','aFRR','Public','ResPoOffered_kW','Total','TotalPerUser', 'TotalPerUserPerYear'});
-    TotalCostsSmart=[TotalCostsSmart; table([0;ResEnVolumenAllocated;ResEnVolumenFulfilled/ResEnVolumenAllocated; round(ResPoRequestsUnderfulfillment/sum(DispatchedResPo>0)*10000)/100; ResPoPriceFactor;ResEnPriceFactor;0;Users{1}.SmartCharging; Users{1}.ApplyGridConvenientCharging; length(Users)-1; Users{1}.UseParallel; Users{1}.NumDecissionGroups; Users{1}.UseSpotPredictions; Users{1}.UsePVPredictions; Users{1}.UseIndividualEEGBonus; Users{1}.SimDuration/3600;], zeros(16,1),zeros(16,1),zeros(16,1),zeros(16,1),zeros(16,1),zeros(16,1),zeros(16,1), 'RowNames',["-"; "Planned Reserve Energy in Opt 5 in kWh"; "Share Activated/Planned Renserve Energy in kWh"; "ResEn underfulfillment rate in %"; "ResPoPriceFactor"; "ResEnPriceFactor"; "/"; "SmartCharging"; "ApplyGridConvenientCharging"; "NumUsers"; "UseParallel"; "NumDecissionGroups"; "UseSpotPredictions"; "UsePVPreditions"; "UseIndividualEEGBonus"; "SimulationDuration in h"], 'VariableNames',{'Grid','PV','aFRR','Public','ResPoOffered_kW','Total','TotalPerUser', 'TotalPerUserPerYear'})];    
+    TotalCostsSmart=[TotalCostsSmart; table([0;ResEnVolumenAllocated;ResEnVolumenFulfilled/ResEnVolumenAllocated; round(ResPoRequestsUnderfulfillment/sum(DispatchedResEn>0)*10000)/100; ResPoPriceFactor;ResEnPriceFactor;0;Users{1}.SmartCharging; Users{1}.ApplyGridConvenientCharging; length(Users)-1; Users{1}.UseParallel; Users{1}.NumDecissionGroups; Users{1}.UseSpotPredictions; Users{1}.UsePVPredictions; Users{1}.UseIndividualEEGBonus; Users{1}.SimDuration/3600;], zeros(16,1),zeros(16,1),zeros(16,1),zeros(16,1),zeros(16,1),zeros(16,1),zeros(16,1), 'RowNames',["-"; "Planned Reserve Energy in Opt 5 in kWh"; "Share Activated/Planned Renserve Energy in kWh"; "ResEn underfulfillment rate in %"; "ResPoPriceFactor"; "ResEnPriceFactor"; "/"; "SmartCharging"; "ApplyGridConvenientCharging"; "NumUsers"; "UseParallel"; "NumDecissionGroups"; "UseSpotPredictions"; "UsePVPreditions"; "UseIndividualEEGBonus"; "SimulationDuration in h"], 'VariableNames',{'Grid','PV','aFRR','Public','ResPoOffered_kW','Total','TotalPerUser', 'TotalPerUserPerYear'})];    
     
     disp(strcat("Total costs for smart charging the fleet were ", string(table2cell((TotalCostsSmart(2,8)))), "EUR per User per year"));
     
@@ -580,7 +584,6 @@ if SaveResults
 end
 disp(strcat("Successfully simulated within ", num2str(Users{1}.SimDuration), " seconds"))
 
-end
 
 
 %% Clean up workspace
@@ -594,7 +597,7 @@ clearvars SmartCharging SaveResults ResEnVolumen
 
 clearvars x y z Load ChargingBlocks ChargingSum ChargingType AvailableBlocks col
 
-clearvars A Aeq Availability AvailabilityOrder AvailableDispatchedResPo AvailableDispatchedResPoBuffer AvailableDispatchedResPoMax
+clearvars A Aeq Availability AvailabilityOrder AvailableDispatchedResEn AvailableDispatchedResEnBuffer AvailableDispatchedResEnMax
 clearvars b beq ChargedEnergy ChargingInds ConnectionDurations24h ConsEnergyDemandTSA ConsEnergyDemandTSAIt ConseqEnergyCPA ConseqEnergyCPAIt ConseqMatchLastResPoOffers4HA
 clearvars ConseqMatchLastResPoOffers4HAIt ConseqMatchLastResPoOffers4HbIt ConseqMaxEnergyChargableDeadlockCPbIt ConseqResPoOfferA
 clearvars ConseqResPoOfferAIt ConseqResPoOfferbIt ConsMaxEnergyChargableSoCTSbIt ConsMinEnergyRequiredTSbIt ConsPeriods ConsPowerTSb
@@ -606,6 +609,6 @@ clearvars OfferedResPo OptimalChargingEnergies OptimalChargingEnergiesSpotmarket
 clearvars PVPower ResEnMOL ResEnOfferPrices ResEnOffersList ResEnPriceFactor ResEnVolumenAllocated ResEnVolumenFulfilled
 clearvars ResPoBlockedIndices ResPoBuffer ResPoOfferEqualiyMat1 ResPoOfferEqualiyMat2 ResPoOfferPrices ResPoPriceFactor Row ShiftInds
 clearvars SoC SoCNew SortedOrder SpotmarketPrices SpotmarktPricesCP StorageFile StoragePath SubIndices SumPower Temp TimeOfDayAheadMarketPriceRelease
-clearvars TimeOfPreAlgo TimeOfReserveMarketOffer TimesOfDayAheadMarketPriceRelease TimesOfPreAlgo TimesOfZeitscheiben TimeStepIndsNeededForCharging
+clearvars TimeOfPreAlgo TimeOfReserveMarketOffer TimesOfDayAheadMarketPriceRelease TimesOfPreAlgo TimesOfResPoEval TimeStepIndsNeededForCharging
 clearvars TSOResPoDemand ub VarCounter Costf Costs ChargingVehicle Costsf NNEBonus NNEExtraBasePrice IMSYSInstallationCosts IMSYSInstallationCostsMean
 clearvars UseIndividualEEGBonus UsePVPredictions UseSpotPredictions x1 BackwardsOrder %OwnOfferMOLPos
