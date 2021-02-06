@@ -16,7 +16,7 @@ ResEnOfferPrices=repelem([ResEnOfferPrices; ResEnOffers(1:ControlPeriods/(4*Time
 %RLOfferPrices=RLOfferPrices(1:ControlPeriods);
 %AEOfferPrices=(ResEnPricesRealQH(TimeInd+TD.Main:TimeInd+TD.Main-1+ControlPeriods,7)-AEFactor*abs(ResEnPricesRealQH(TimeInd+TD.Main:TimeInd+TD.Main-1+ControlPeriods,7)))/1000; % [EUR/kWh]
 
-CostsPV=ones(ControlPeriods, 1, NumUsers, 'single');
+CostsPV=ones(ControlPeriodsIt, 1, NumUsers, 'single');
 if UseIndividualEEGBonus
     for k=1:NumUsers
         CostsPV(:,1,k)=CostsPV(:,1,k)*Users{UserNum(k)}.EEGBonus/100;
@@ -25,15 +25,15 @@ else
     CostsPV=CostsPV*(Users{1}.EEGBonus/100); % 0.097EUR
 end
     
-PVPower=zeros(ControlPeriods, 1,NumUsers, 'single');
-PVPowerReal=zeros(ControlPeriods, 1,NumUsers, 'single');
+PVPower=zeros(ControlPeriodsIt, 1,NumUsers, 'single');
+PVPowerReal=zeros(ControlPeriodsIt, 1,NumUsers, 'single');
 VarCounter=0;
 for k=UserNum
     VarCounter=VarCounter+1;
     
     if Users{k}.PVPlantExists==true
-        PVPower(:,1,VarCounter)=single(PVPlants{Users{k}.PVPlant}.(PVPlants_Profile_Prediction)(TimeInd+TD.Main:TimeInd+TD.Main-1+ControlPeriods))*Users{n}.ChargingEfficiency;
-        PVPowerReal(:,1,VarCounter)=single(PVPlants{Users{k}.PVPlant}.ProfileQH(TimeInd+TD.Main:TimeInd+TD.Main-1+ControlPeriods))*Users{n}.ChargingEfficiency;
+        PVPower(:,1,VarCounter)=single(PVPlants{Users{k}.PVPlant}.(PVPlants_Profile_Prediction)(TimeInd+TD.Main:TimeInd+TD.Main-1+ControlPeriodsIt))*Users{n}.ChargingEfficiency;
+        PVPowerReal(:,1,VarCounter)=single(PVPlants{Users{k}.PVPlant}.ProfileQH(TimeInd+TD.Main:TimeInd+TD.Main-1+ControlPeriodsIt))*Users{n}.ChargingEfficiency;
     else
         CostsPV(:,1,VarCounter)=10000*ones(ControlPeriods,1, 'single'); % Ensure never use PVPlant if there is non. Also ensured by PowerCons as PVPower is constantly zero
     end

@@ -13,6 +13,8 @@ ApplyGridConvenientCharging=true;
 ActivateWaitbar=true;
 SaveResults=true;
 
+Debugging=0;
+
 
 % SensitivitEURtsanalyse: ResPoPriceFactor, ResEnPriceFactor, ResPoBuffer
 

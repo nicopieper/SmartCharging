@@ -76,3 +76,4 @@ PowerTS(1,2,:)=min(MaxPower/4, PVPowerReal(ControlPeriods-ControlPeriodsIt+1,1,:
 ConsPowerTSb=PowerTS;
 MinEnergyRequiredTS=min(min([MinEnergyRequiredTS, MaxEnergyChargableSoCTS], [], 2), MaxEnergyChargableDeadlockCP);
 
+MinEnergyRequiredTS=MinEnergyRequiredTS-0.1;

@@ -1,7 +1,7 @@
-
+Debugging=1;
 x111=[];
 NumUsers=1;
-for y=2:4
+for y=2:5
     UserNum=y:y+NumUsers-1;
     InitialisePreAlgo;
     CalcConsOptVars;
