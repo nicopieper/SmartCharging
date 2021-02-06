@@ -241,8 +241,10 @@ for n=2:NumUsers+1
     Consumption=Users{n}.Consumption(1,1).*(2-Velocities).*(2-TemperatureTimeVec)+Users{n}.Consumption(2,1)*(Velocities-1).*(2-TemperatureTimeVec)+Users{n}.Consumption(1,2)*(2-Velocities).*(TemperatureTimeVec-1)+Users{n}.Consumption(2,2)*(Velocities-1).*(TemperatureTimeVec-1); % calculate the consumption of all trips depending of velocity and temperature
     
     % Initialisation of LogbookBase
-    Users{n}.Logbook(~isnan(Consumption),4)=Users{n}.Logbook(~isnan(Consumption),3).*Consumption(~isnan(Consumption)); % add consumption to logbook
-    Users{n}.Logbook(1,9)=Users{n}.BatterySize*0.7+TruncatedGaussian(0.1,[0.4 1]-0.7,1); % Initial SoC between 0.4 and 1 of BatterySize. Distribution is normal
+%     Users{n}.Logbook(~isnan(Consumption),4)=Users{n}.Logbook(~isnan(Consumption),3).*Consumption(~isnan(Consumption)); % add consumption to logbook
+%     Users{n}.Logbook(1,9)=Users{n}.BatterySize*0.7+TruncatedGaussian(0.1,[0.4 1]-0.7,1); % Initial SoC between 0.4 and 1 of BatterySize. Distribution is normal
+    Users{n}.Logbook(:,4)=uint32(double(Users{n}.Logbook(:,3)).*Consumption); % add consumption to logbook
+    Users{n}.Logbook(1,9)=uint32(double(Users{n}.BatterySize)*0.7+TruncatedGaussian(0.1,[0.4 1]-0.7,1)); % Initial SoC between 0.4 and 1 of BatterySize. Distribution is normal
     
     % Evaluation of User properties
     Users{n}.AverageMileageDay_m=sum(Users{n}.Logbook(:,3))/days(Time.Sim.Vec(end)-Time.Sim.Vec(1)); %[m]
