@@ -388,19 +388,26 @@ for n=2:length(Users)
 end
 
 
-%% Evaluate Load Curves
+%% Calculate Load Curves
 
 if Users{1}.SmartCharging
     for n=Users{1}.UserNum
         Users{1}.ChargingMatSmart{end,1}(:,:,n,:)=permute(reshape(Users{n}.LogbookSmart(:,5:7),24*Time.StepInd,[],3), [1, 3, 2]);
     end
     Users{1}.ChargingMatSmart{end,2}=96;
-    ChargingMat=Users{1}.ChargingMatSmart;
 else
     for n=Users{1}.UserNum
         Users{1}.ChargingMatBase{end,1}(:,:,n,:)=permute(reshape(Users{n}.LogbookBase(:,5:7),24*Time.StepInd,[],3), [1, 3, 2]);
     end
     Users{1}.ChargingMatBase{end,2}=96;
+end
+
+
+%% Evaluate Load Curves
+
+if Users{1}.SmartCharging
+    ChargingMat=Users{1}.ChargingMatSmart;
+else
     ChargingMat=Users{1}.ChargingMatBase;
 end
 
