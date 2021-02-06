@@ -1,6 +1,6 @@
 %% Initialisation
 tic
-NumUsers=4;
+NumUsers=10;
 SmartCharging=true;
 UseParallel=false;
 UseSpotPredictions=true;
@@ -94,7 +94,7 @@ if SmartCharging
             StoragePath=strcat(strcat(Path.Prediction, "DayaheadRealH", Dl));
             load(strcat(StoragePath, StorageFile))
             if Pred.Time.StepPredInd~=Time.StepInd
-                SpotmarketPricesPred1=single(repelem(Pred.Data, Time.StepInd/Pred.Time.StepPredInd));
+                SpotmarketPricesPred1=repelem(Pred.Data, Time.StepInd/Pred.Time.StepPredInd);
             end
             TD.SpotmarketPricesPred1=find(ismember(Pred.Time.Vec,Time.Sim.Start),1)-1;
         end
@@ -105,14 +105,14 @@ if SmartCharging
             StoragePath=strcat(strcat(Path.Prediction, "DayaheadRealH", Dl));
             load(strcat(StoragePath, StorageFile))
             if Pred.Time.StepPredInd~=Time.StepInd
-                SpotmarketPricesPred2=single(repelem(Pred.Data, Time.StepInd/Pred.Time.StepPredInd));
+                SpotmarketPricesPred2=repelem(Pred.Data, Time.StepInd/Pred.Time.StepPredInd);
             end
             TD.SpotmarketPricesPred2=find(ismember(Pred.Time.Vec,Time.Sim.Start),1)-1;
         end
     else
-        SpotmarketPricesPred1=single(repelem(Smard.DayaheadRealH, Time.StepInd));
+        SpotmarketPricesPred1=repelem(Smard.DayaheadRealH, Time.StepInd);
         TD.SpotmarketPricesPred1=find(ismember(Time.Vec,Time.Sim.Start),1)-1;
-        SpotmarketPricesPred2=single(repelem(Smard.DayaheadRealH, Time.StepInd));
+        SpotmarketPricesPred2=repelem(Smard.DayaheadRealH, Time.StepInd);
         TD.SpotmarketPricesPred2=find(ismember(Time.Vec,Time.Sim.Start),1)-1;
     end
 end
@@ -123,14 +123,14 @@ else
     PVPlants_Profile_Prediction="ProfileQH";
 end
 
-SpotmarketPrices=single(repelem(Smard.DayaheadRealH, Time.StepInd));
+SpotmarketPrices=repelem(Smard.DayaheadRealH, Time.StepInd);
 TD.SpotmarketPrices=find(ismember(Time.Vec,Time.Sim.Start),1)-1;
 
 if ActivateWaitbar
     h=waitbar(0, "Simulate charging processes: 0%");
 end
 
-PreAlgoCounter=0
+PreAlgoCounter=0;
 
 %% Start Simulation
 

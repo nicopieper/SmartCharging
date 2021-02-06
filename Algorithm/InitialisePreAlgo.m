@@ -4,15 +4,15 @@ ControlPeriods=96*2;
 CostCats=logical([1, 1, 1]);
 NumCostCats=sum(CostCats);
 ConstantResPoPowerPeriods=4*Time.StepInd;
-ResPoPriceFactor=single([0.4]); %0.4
-ResEnPriceFactor=single(0.15);
+ResPoPriceFactor=[0.4]; %0.4
+ResEnPriceFactor=0.15;
 options = optimoptions('linprog','Algorithm','dual-simplex');
 options.Display = 'off';
-ResPoBuffer=single(1);
+ResPoBuffer=1;
 
 ConstantResPoPowerPeriodsScaling=4*Time.StepInd/ConstantResPoPowerPeriods;
-ResPoOffers=[-10000*ones(6*ConstantResPoPowerPeriodsScaling,1,1, 'single'), zeros(6*ConstantResPoPowerPeriodsScaling,1,1, 'single')];
-ResEnOffers=-10000*ones(6*ConstantResPoPowerPeriodsScaling,1,1, 'single');
+ResPoOffers=[-10000*ones(6*ConstantResPoPowerPeriodsScaling,1,1), zeros(6*ConstantResPoPowerPeriodsScaling,1,1)];
+ResEnOffers=-10000*ones(6*ConstantResPoPowerPeriodsScaling,1,1);
 
 SubIndices = @(Vector, ControlPeriods, ControlPeriodsIt, CostCatsNum) (Vector(:,reshape((1:ControlPeriodsIt)'+(0:CostCatsNum-1)*ControlPeriodsIt,1,[]))-((Vector(:,1)-1)/ControlPeriods*(ControlPeriods-ControlPeriodsIt)));
 
@@ -24,40 +24,35 @@ for n=UserNum
         Users{n}.GridConvenientChargingAvailabilityControlPeriod=circshift(Users{n}.GridConvenientChargingAvailabilityControlPeriod, -ShiftInds);
         Users{n}.GridConvenientChargingAvailabilityControlPeriod=Users{n}.GridConvenientChargingAvailabilityControlPeriod(1:ControlPeriods);
     else
-        Users{n}.GridConvenientChargingAvailabilityControlPeriod=ones(ControlPeriods,1, 'single');
+        Users{n}.GridConvenientChargingAvailabilityControlPeriod=ones(ControlPeriods,1);
     end
 end
 
 %% Initialise Optimisation Variables
 
-MaxPower=single([]);
+MaxPower=[];
 VarCounter=1;
 for n=UserNum
     MaxPower(1,1,VarCounter)=Users{n}.ACChargingPowerHomeCharging;
     VarCounter=VarCounter+1;
 end
 
-Availability=single([]);
-EnergyDemand=single([]);
 ChargingMat=cell(size(TimesOfPreAlgo,1)+1,1);
-ChargingVehicle=single([]);
-ChargingType=single([]);
-AvailabilityMat=single([]);
-MaxEnergyChargableSoCTS=single([]);
-MinEnergyRequiredTS=single([]);
-MaxEnergyChargableDeadlockCP=single([]);
+ChargingVehicle=[];
+ChargingType=[];
+AvailabilityMat=[];
 DecissionGroups=cell(NumDecissionGroups,1);
-SuccessfulResPoOffers=zeros(6*ConstantResPoPowerPeriodsScaling,1, 'single');
+SuccessfulResPoOffers=zeros(6*ConstantResPoPowerPeriodsScaling,1);
 
 % DemandInds=tril(ones(ControlPeriods,ControlPeriods)).*(1:ControlPeriods);
 % DemandInds(:,1)=0;
 % DemandInds(DemandInds==0)=ControlPeriods+1;
 
-CostsElectricityBase=zeros(ControlPeriods, 1, NumUsers, 'single');
+CostsElectricityBase=zeros(ControlPeriods, 1, NumUsers);
 VarCounter=0;
 for k=UserNum
     VarCounter=VarCounter+1;
-    CostsElectricityBase(1:ControlPeriods, 1, VarCounter)=Users{k}.PrivateElectricityPrice + Users{k}.NNEEnergyPrice;
+    CostsElectricityBase(1:ControlPeriods, 1, VarCounter)=double(Users{k}.PrivateElectricityPrice + Users{k}.NNEEnergyPrice);
 end
 
 %% Initialise Constraints
@@ -88,13 +83,13 @@ ConseqMatchLastResPoOffers4HA=repmat([zeros(ControlPeriods/ConstantResPoPowerPer
 ConseqMatchLastResPoOffers4HA=sparse(ConseqMatchLastResPoOffers4HA(1:ceil(ControlPeriods/(ConstantResPoPowerPeriods)),:));
 
 if ~Debugging
-    LastResPoOffers=zeros(ceil(ControlPeriods/(ConstantResPoPowerPeriods)),1, 'single');
-    LastResPoOffersSucessful4H=zeros(ceil(ControlPeriods/(ConstantResPoPowerPeriods)),1, 'single');
+    LastResPoOffers=zeros(ceil(ControlPeriods/(ConstantResPoPowerPeriods)),1);
+    LastResPoOffersSucessful4H=zeros(ceil(ControlPeriods/(ConstantResPoPowerPeriods)),1);
 end
 
 A=[ConsSumPowerTSA; ConsEnergyDemandTSA; -ConsEnergyDemandTSA];
 Aeq=[ConseqEnergyCPA; ConseqResPoOfferA; ConseqMatchLastResPoOffers4HA];
-lb=zeros(ControlPeriods, NumCostCats, NumUsers, 'single');
+lb=zeros(ControlPeriods, NumCostCats, NumUsers);
 lb=lb(:);
 
 
