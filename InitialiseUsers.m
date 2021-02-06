@@ -167,7 +167,7 @@ for n=2:NumUsers+1
     Users{n}.DCChargingPowerVehicle=str2double(VehicleProperties(Model, 10))*1000; % [Wh/m] max DC charging power of car
     Users{n}.ACChargingPowerVehicle=str2double(VehicleProperties(Model, 11))*1000; % [W] max ac power chrging power of car
     Users{n}.AChargingPowerHomeCharger=max((RandomNumbers(2)>=str2double(VehicleProperties(Model,12:17))).*[2.3 3.7 3.7 7.3 11 22]*1000); % [W] with respect to the guessed distribution of chargers for this car, pick one ac charging power for the private charging point. selection mechanism equals the on described for the Model
-    Users{n}.ACChargingPowerHomeCharging=uint32(min(Users{n}.AChargingPowerHomeCharger, Users{n}.ACChargingPowerVehicle)*Users{n}.ChargingEfficiency); % [W] the charging power at the private charging point is determined by the minimum of the cars and the charging points power
+    Users{n}.ACChargingPowerHomeCharging=min(Users{n}.AChargingPowerHomeCharger, Users{n}.ACChargingPowerVehicle)*Users{n}.ChargingEfficiency; % [W] the charging power at the private charging point is determined by the minimum of the cars and the charging points power
     Users{n}.PrivateElectricityPrice=MeanPrivateElectricityPrice+randn(1);
     Users{n}.PublicACChargingPrices=max((RandomNumbers(4)>=[0, 0.5]).*PublicACChargingPrices);
     Users{n}.PublicDCChargingPrices=max((RandomNumbers(5)>=[0, 0.5]).*PublicDCChargingPrices);
@@ -175,7 +175,7 @@ for n=2:NumUsers+1
     % Add a PV plant
     %if RandomNumbers(6)<=LikelihoodPV && AddPV 
     if RandomNumbers(6)<=PVGridConvenientChargingLikelihoodMatrix(2) && AddPV 
-        Users{n}.PVPlant=uint8(PVPlantPointer); % save the assigned PV plant number
+        Users{n}.PVPlant=PVPlantPointer; % save the assigned PV plant number
         Users{n}.PVPlantExists=true; % and set this variable to true to indicate that this user owns a PV plant
         PVPlantPointer=mod(PVPlantPointer,length(PVPlants))+1; % increase pointer
     else
@@ -183,7 +183,7 @@ for n=2:NumUsers+1
     end
     
     % Selection of a charging strategy
-    Users{n}.ChargingStrategy=uint8((RandomNumbers(7,1)>=0.0)+1); % pick a charging strategy
+    Users{n}.ChargingStrategy=(RandomNumbers(7,1)>=0.0)+1; % pick a charging strategy
     if Users{n}.ChargingStrategy==1 % this one is primitive
         Users{n}.MinimumPluginTime=minutes(randi([30 90], 1,1));
     elseif Users{n}.ChargingStrategy==2 % only use this strategy which will be explained in Simulation
@@ -193,7 +193,7 @@ for n=2:NumUsers+1
     Users{n}.PublicChargingThreshold_Wh=Users{n}.BatterySize*Users{n}.PublicChargingThreshold;
     
     % Selection of a grid convenient charging profile
-    GridConvenientChargingProfile=max(double(RandomNumbers(8)>=(0:1/size(GridConvenienChargingDistribution,2):1-1/size(GridConvenienChargingDistribution,2))).*(1:size(GridConvenienChargingDistribution,2)));
+    GridConvenientChargingProfile=max(RandomNumbers(8)>=(0:1/size(GridConvenienChargingDistribution,2):1-1/size(GridConvenienChargingDistribution,2))).*(1:size(GridConvenienChargingDistribution,2));
 %     if RandomNumbers(8)<=LikelihoodGridConvenientCharging
     Users{n}.NNEEnergyPriceGridConvenientCharging=GridConvenienChargingDistribution(3,GridConvenientChargingProfile); % [ct/kWh] netto (without VAT). reduced NNE energy price due to the allowance for the DSO to manage the charging
     Users{n}.NNEEnergyPriceNotGridConvenientCharging=GridConvenienChargingDistribution(1,GridConvenientChargingProfile); % [ct/kWh] netto (without VAT). normal NNE prices
@@ -229,11 +229,11 @@ for n=2:NumUsers+1
     Users{n}.DistanceCompanyToHome=Vehicles{VehicleDatabase{SizeNum}(VehiclePointer(SizeNum))}.DistanceCompanyToHome;
     Users{n}.VehicleUtilisation=Vehicles{VehicleDatabase{SizeNum}(VehiclePointer(SizeNum))}.VehicleUtilisation;
     Users{n}.AvgHomeParkingTime=Vehicles{VehicleDatabase{SizeNum}(VehiclePointer(SizeNum))}.AvgHomeParkingTime;
-    Users{n}.LogbookSource=Vehicles{VehicleDatabase{SizeNum}(VehiclePointer(SizeNum))}.Logbook(UsersTimeVecLogical, :);
-    Users{n}.LogbookSource=[Users{n}.LogbookSource, zeros(length(Users{n}.LogbookSource), 9-size(Users{n}.LogbookSource,2))]; % [State, DrivingTime [min], Distance [m], Energy consumed [Wh], Energy charged private Spotmarket [Wh], Energy charged private PV plant [Wh], Energy charged private reserve energy [Wh], Energy charged public [Wh], SoC [Wh]]
+    Users{n}.Logbook=single(Vehicles{VehicleDatabase{SizeNum}(VehiclePointer(SizeNum))}.Logbook(UsersTimeVecLogical, :));
+    Users{n}.Logbook=[Users{n}.Logbook, zeros(length(Users{n}.Logbook), 9-size(Users{n}.Logbook,2))]; % [State, DrivingTime [min], Distance [m], Energy consumed [Wh], Energy charged private Spotmarket [Wh], Energy charged private PV plant [Wh], Energy charged private reserve energy [Wh], Energy charged public [Wh], SoC [Wh]]
         
     % Calc energy consumption in Logbook by using consumption data from model
-    Velocities=double(Users{n}.LogbookSource(:,3))./double(Users{n}.LogbookSource(:,2))/60; % [m/s] depending on the velocity of each trip and the temperature indicator of its month, determine the energy consumption of the trip
+    Velocities=Users{n}.Logbook(:,3)./Users{n}.Logbook(:,2)/60; % [m/s] depending on the velocity of each trip and the temperature indicator of its month, determine the energy consumption of the trip
     Velocities(Velocities<VCity)=1; % all trips with velocities smaller VCity m/s have the city consumption value
     Velocities(Velocities>=VCity & Velocities<=VHighway)=(Velocities(Velocities>=VCity & Velocities<=VHighway)-VCity)/(VHighway-VCity)+1; % in between the consumption value is interpolated
     Velocities(Velocities>VHighway)=2; % all above VHighway m/s the highway consumption value
@@ -241,12 +241,12 @@ for n=2:NumUsers+1
     Consumption=Users{n}.Consumption(1,1).*(2-Velocities).*(2-TemperatureTimeVec)+Users{n}.Consumption(2,1)*(Velocities-1).*(2-TemperatureTimeVec)+Users{n}.Consumption(1,2)*(2-Velocities).*(TemperatureTimeVec-1)+Users{n}.Consumption(2,2)*(Velocities-1).*(TemperatureTimeVec-1); % calculate the consumption of all trips depending of velocity and temperature
     
     % Initialisation of LogbookBase
-    Users{n}.LogbookSource(:,4)=uint32(double(Users{n}.LogbookSource(:,3)).*Consumption); % add consumption to logbook
-    Users{n}.LogbookSource(1,9)=uint32(double(Users{n}.BatterySize)*0.7+TruncatedGaussian(0.1,[0.4 1]-0.7,1)); % Initial SoC between 0.4 and 1 of BatterySize. Distribution is normal
+    Users{n}.Logbook(:,4)=Users{n}.Logbook(:,3).*Consumption; % add consumption to logbook
+    Users{n}.Logbook(1,9)=Users{n}.BatterySize*0.7+TruncatedGaussian(0.1,[0.4 1]-0.7,1); % Initial SoC between 0.4 and 1 of BatterySize. Distribution is normal
     
     % Evaluation of User properties
-    Users{n}.AverageMileageDay_m=uint32(sum(Users{n}.LogbookSource(:,3))/days(Time.Sim.Vec(end)-Time.Sim.Vec(1))); %[m]
-    Users{n}.AverageMileageYear_km=uint32(sum(Users{n}.LogbookSource(:,3))/days(Time.Sim.Vec(end)-Time.Sim.Vec(1))*365.25/1000); %[km]
+    Users{n}.AverageMileageDay_m=sum(Users{n}.Logbook(:,3))/days(Time.Sim.Vec(end)-Time.Sim.Vec(1)); %[m]
+    Users{n}.AverageMileageYear_km=sum(Users{n}.Logbook(:,3))/days(Time.Sim.Vec(end)-Time.Sim.Vec(1))*365.25/1000; %[km]
 end
 
 disp(strcat("Users successfully initialised ", num2str(toc)))
