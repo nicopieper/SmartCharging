@@ -9,7 +9,6 @@ ResEnPriceFactor=single(0.15);
 options = optimoptions('linprog','Algorithm','dual-simplex');
 options.Display = 'off';
 ResPoBuffer=single(1);
-%PreAlgoCounter=0;
 
 ConstantResPoPowerPeriodsScaling=4*Time.StepInd/ConstantResPoPowerPeriods;
 ResPoOffers=[-10000*ones(6*ConstantResPoPowerPeriodsScaling,1,1, 'single'), zeros(6*ConstantResPoPowerPeriodsScaling,1,1, 'single')];

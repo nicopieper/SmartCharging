@@ -63,7 +63,7 @@ Range.TestInd=[find(Range.TestDate(1)==Time.Vec,1) find(dateshift(Range.TestDate
 
 %% Load electricity industry data
 GetSmardData;
-GetEnergyChartsData;
+%GetEnergyChartsData;
 GetSMAPlantData;
 GetRegelData;
 

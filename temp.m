@@ -1,7 +1,7 @@
 
 x111=[];
 NumUsers=1;
-for y=2:100
+for y=2:4
     UserNum=y:y+NumUsers-1;
     InitialisePreAlgo;
     CalcConsOptVars;

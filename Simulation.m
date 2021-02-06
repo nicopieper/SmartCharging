@@ -1,6 +1,6 @@
 %% Initialisation
 tic
-NumUsers=100;
+NumUsers=4;
 SmartCharging=true;
 UseParallel=false;
 UseSpotPredictions=true;
@@ -127,6 +127,8 @@ TD.SpotmarketPrices=find(ismember(Time.Vec,Time.Sim.Start),1)-1;
 if ActivateWaitbar
     h=waitbar(0, "Simulate charging processes: 0%");
 end
+
+PreAlgoCounter=0
 
 %% Start Simulation
 
