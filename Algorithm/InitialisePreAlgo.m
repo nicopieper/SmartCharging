@@ -37,10 +37,8 @@ for n=UserNum
     VarCounter=VarCounter+1;
 end
 
-ChargingMat=cell(size(TimesOfPreAlgo,1)+1,1);
-ChargingVehicle=[];
-ChargingType=[];
-AvailabilityMat=single([]);
+Users{1}.ChargingMat=cell(size(TimesOfPreAlgo,1)+1,1);
+Users{1}.AvailabilityMat=single([]);
 DecissionGroups=cell(NumDecissionGroups,1);
 SuccessfulResPoOffers=zeros(6*ConstantResPoPowerPeriodsScaling,1);
 

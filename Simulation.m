@@ -1,8 +1,10 @@
 %% Initialisation
 tic
-NumUsers=300;
+NumUsers=3;
+InitialiseUsers;
+clearvars Vehicles
 SmartCharging=true;
-UseParallel=true;
+UseParallel=false;
 UseSpotPredictions=true;
 UsePVPredictions=true;
 UseIndividualEEGBonus=true;
@@ -15,6 +17,7 @@ SaveResults=true;
 
 Debugging=0;
 FinishSimulation=0;
+CleanUpWorkspace=0;
 
 
 % SensitivitEURtsanalyse: ResPoPriceFactor, ResEnPriceFactor, ResPoBuffer
@@ -299,7 +302,7 @@ for TimeInd=Time.Sim.VecInd(2:end-ControlPeriods)
     
     if mod(TimeInd, 96*10)==0
         Users{1}.Time.Stamp=datetime('now');
-        Users{1}.FileName=strcat(Path.Simulation, "Users_", datestr(Users{1}.Time.Stamp, "yyyymmdd-HHMM"), "_", Time.IntervalFile, "_", num2str(length(Users)-1), "_", num2str(isfield(Users{1}, 'ChargingMatSmart')), "_", num2str(isfield(Users{1}, 'ChargingMatBase')), ".mat");
+        Users{1}.FileName=strcat(Path.Simulation, "Users_", datestr(Users{1}.Time.Stamp, "yyyymmdd-HHMM"), "_", Time.IntervalFile, "_", num2str(length(Users)-1), "_", num2str(isfield(Users{1}, 'Users{1}.ChargingMat')), "_", num2str(isfield(Users{1}, 'ChargingMatBase')), ".mat");
 
         if SaveResults
             save(Users{1}.FileName, "Users", "-v7.3");
@@ -327,8 +330,10 @@ if ActivateWaitbar
 end
 
 if SaveResults
-            save(Users{1}.FileName, "Users", "-v7.3");
-        end
+    save(Users{1}.FileName, "Users", "-v7.3");
+end
+
+clearvars A ConsEnergyDemandTSA ConsEnergyDemandTSAIt Aeq b beq ConsSumPowerTSA ConseqEnergyCPA ConsSumPowerTSAIt ConseqEnergyCPAIt ConseqResPoOffer ConseqResPoOfferAIt ConseqMatchLastResPoOffers4HA ConseqMatchLastResPoOffers4HAIt Costf Costs OptimalChargingEnergies lb ub ConsPowerTSb PowerTS
 
 if FinishSimulation
 
@@ -350,13 +355,12 @@ Users{1}.UseIndividualEEGBonus=UseIndividualEEGBonus;
 Users{1}.UsePV=UsePV;
 
 if SmartCharging
-    Users{1}.ChargingMatSmart=ChargingMat;
-    for k=1:size(ChargingMat,1)-1
-        Users{1}.ChargingMatSmart{k,2}=mod(TimesOfPreAlgo(k,1)-1,ControlPeriods) + 96*(TimeOfPreAlgo(k)<TimeOfPreAlgo(1));
+    %Users{1}.ChargingMat=ChargingMat;
+    for k=1:size(Users{1}.ChargingMat,1)-1
+        Users{1}.ChargingMat{k,2}=mod(TimesOfPreAlgo(k,1)-1,ControlPeriods) + 96*(TimeOfPreAlgo(k)<TimeOfPreAlgo(1));
     end
 
     Users{1}.UseParallel=UseParallel;
-    Users{1}.AvailabilityMat=AvailabilityMat;
     Users{1}.NumCostCats=NumCostCats;
     Users{1}.ControlPeriods=ControlPeriods;
     Users{1}.ShiftInds=ShiftInds;
@@ -379,70 +383,63 @@ if SmartCharging
     
     ResEnVolumenAllocated=0;
     for n=Users{1}.UserNum
-        ResEnVolumenAllocated=ResEnVolumenAllocated+sum(Users{1}.ChargingMatSmart{find(~cellfun(@isempty,ChargingMat(1:5,1)), 1, 'last' )}(96-24*4+1:96-24*4+96,3,n-1,:),'all')/Users{n}.ChargingEfficiency/1000;
+        ResEnVolumenAllocated=ResEnVolumenAllocated+sum(Users{1}.ChargingMat{find(~cellfun(@isempty,Users{1}.ChargingMat(1:5,1)), 1, 'last' )}(96-24*4+1:96-24*4+96,3,n-1,:),'all')/Users{n}.ChargingEfficiency/1000;
     end
 
     disp(strcat(num2str(ResEnVolumenFulfilled/ResEnVolumenAllocated*100), "% of the succcessfully offered reserve energy was actually charged"))
 else
-    Users{1}.ChargingMatBase=cell(1,2);
-    Users{1}.ChargingMatBase{1}=zeros(96, 3, NumUsers, ceil(size(Users{UserNum(1)}.Logbook,1)/(24*Time.StepInd)));
+    Users{1}.ChargingMat=cell(1,2);
+    Users{1}.ChargingMat{1}=zeros(96, 3, NumUsers, ceil(size(Users{UserNum(1)}.Logbook,1)/(24*Time.StepInd)));
 end
 
 
 %% Delete not simulated users
 
-SimulatedUsers=@(User) (isfield(User, 'Time') || (isfield(User,"Logbook") && User.Logbook(2,9)>0) || (isfield(User,"LogbookSmart") && User.LogbookSmart(2,9)>0) || (isfield(User,"LogbookBase") && User.LogbookBase(2,9)>0));
+SimulatedUsers=@(User) (isfield(User, 'Time') || (isfield(User,"Logbook") && User.Logbook(2,9)>0) || (isfield(User,"Logbook") && User.Logbook(2,9)>0) || (isfield(User,"Logbook") && User.Logbook(2,9)>0));
 Users=Users(cellfun(SimulatedUsers, Users));
 Users{1}.Time.Stamp=datetime('now');
 Users{1}.SimDuration=toc(TSim);
 
-for n=2:length(Users)
-    if isfield(Users{n}, 'Logbook')
-        if ~SmartCharging
-            Users{n}.LogbookBase=Users{n}.Logbook;
-        else 
-            Users{n}.LogbookSmart=Users{n}.Logbook;
-        end
-        Users{n}=rmfield(Users{n}, 'Logbook');
-    end
-end
+% for n=2:length(Users)
+%     if isfield(Users{n}, 'Logbook')
+%         if ~SmartCharging
+%             Users{n}.Logbook=Users{n}.Logbook;
+%         else 
+%             Users{n}.Logbook=Users{n}.Logbook;
+%         end
+%         Users{n}=rmfield(Users{n}, 'Logbook');
+%     end
+% end
 
 
 %% Calculate Load Curves
 
-if Users{1}.SmartCharging
-    for n=Users{1}.UserNum
-        Users{1}.ChargingMatSmart{end,1}(:,:,n,:)=permute(reshape(Users{n}.LogbookSmart(:,5:7),24*Time.StepInd,[],3), [1, 3, 2]);
-    end
-    Users{1}.ChargingMatSmart{end,2}=96;
-else
-    for n=Users{1}.UserNum
-        Users{1}.ChargingMatBase{end,1}(:,:,n,:)=permute(reshape(Users{n}.LogbookBase(:,5:7),24*Time.StepInd,[],3), [1, 3, 2]);
-    end
-    Users{1}.ChargingMatBase{end,2}=96;
-end
 
+for n=Users{1}.UserNum
+    Users{1}.ChargingMat{end,1}(:,:,n,:)=permute(reshape(Users{n}.Logbook(:,5:7),24*Time.StepInd,[],3), [1, 3, 2]);
+end
+Users{1}.ChargingMat{end,2}=96;
 
 %% Evaluate Load Curves
 
-if Users{1}.SmartCharging
-    ChargingMat=Users{1}.ChargingMatSmart;
-else
-    ChargingMat=Users{1}.ChargingMatBase;
-end
+% if Users{1}.SmartCharging
+%     ChargingMat=Users{1}.ChargingMat;
+% else
+%     ChargingMat=Users{1}.ChargingMatBase;
+% end
 
-ChargingType=cell(size(ChargingMat,1),1);
-ChargingSum=cell(size(ChargingMat,1),1);
-Load=cell(size(ChargingMat,1),1);
+ChargingType=cell(size(Users{1}.ChargingMat,1),1);
+ChargingSum=cell(size(Users{1}.ChargingMat,1),1);
+Load=cell(size(Users{1}.ChargingMat,1),1);
 
-for k=find(~cellfun(@isempty,ChargingMat(:,1)))'
+for k=find(~cellfun(@isempty,Users{1}.ChargingMat(:,1)))'
 
-    ChargingType{k}=reshape(permute(squeeze(sum(ChargingMat{k,1}(max(1,24*Time.StepInd-ChargingMat{k,2}+1):24*Time.StepInd-ChargingMat{k,2}+24*Time.StepInd,:,:,:),3)), [1,3,2]), [], size(ChargingMat{k,1},2))/1000*4;
+    ChargingType{k}=reshape(permute(squeeze(sum(Users{1}.ChargingMat{k,1}(max(1,24*Time.StepInd-Users{1}.ChargingMat{k,2}+1):24*Time.StepInd-Users{1}.ChargingMat{k,2}+24*Time.StepInd,:,:,:),3)), [1,3,2]), [], size(Users{1}.ChargingMat{k,1},2))/1000*4;
 
     [sum(ChargingType{k}(:,1,:),'all'), sum(ChargingType{k}(:,2,:),'all'), sum(ChargingType{k}(:,3,:),'all')]/sum(ChargingType{k}(:,:,:),'all');
     ChargingSum{k}=sum(ChargingType{k}, 2);
 
-    Load{k}=mean(reshape(ChargingType{k}',3,length(max(1,24*Time.StepInd-ChargingMat{k,2}+1):24*Time.StepInd-ChargingMat{k,2}+24*Time.StepInd),[]),3)';
+    Load{k}=mean(reshape(ChargingType{k}',3,length(max(1,24*Time.StepInd-Users{1}.ChargingMat{k,2}+1):24*Time.StepInd-Users{1}.ChargingMat{k,2}+24*Time.StepInd),[]),3)';
     x = 1+96-size(Load{k},1):96;
     y = mean(reshape(ChargingSum{k}, size(Load{k},1), []), 2)';
     z = zeros(size(x));
@@ -456,7 +453,7 @@ for k=find(~cellfun(@isempty,ChargingMat(:,1)))'
     xticklabels({datestr(Time.Vec(1:16:96),'HH:MM')})
     ylabel("Charging power in kW")
     xlabel("Time")
-    if k<size(ChargingMat,1)
+    if k<size(Users{1}.ChargingMat,1)
         title(strcat("Optimal charging energies for optimisation at ", datestr(Users{1}.TimeOfPreAlgo(k), "hh:MM")))
     else
         title(strcat("Optimal charging energies for optimisation in total"))
@@ -512,15 +509,15 @@ if ~Users{1}.SmartCharging
     
     for n=2:length(Users)
         
-        if isfield(Users{n}, "LogbookBase")
+        if isfield(Users{n}, "Logbook")
         
-            TotalCostsBase(1,1:4)=TotalCostsBase(1,1:4)+sum(Users{n}.LogbookBase(:,5:8)/1000/Users{n}.ChargingEfficiency, 1);
+            TotalCostsBase(1,1:4)=TotalCostsBase(1,1:4)+sum(Users{n}.Logbook(:,5:8)/1000/Users{n}.ChargingEfficiency, 1);
 
-            Users{n}.FinListBase=zeros(length(Users{n}.LogbookBase),4);
-            Users{n}.FinListBase(:,1)=(Users{n}.LogbookBase(:,5)/1000/Users{n}.ChargingEfficiency .* (Users{n}.PrivateElectricityPrice + Users{1}.SpotmarketPrices(Time.Sim.VecInd(1:length(Users{n}.LogbookBase(:,5)))+Users{1}.TD.SpotmarketPrices)/10 + Users{n}.NNEEnergyPrice)*Users{1}.MwSt); % [ct] total electricity costs equal base price of user + realtime current production costs + NNE energy price. VAT applies to the end price
-            Users{n}.FinListBase(:,2)=(Users{n}.LogbookBase(:,6)/1000/Users{n}.ChargingEfficiency .* Users{n}.EEGBonus); % [ct] costs for not selling the PV power to the DSO
-            Users{n}.FinListBase(:,3)=zeros(length(Users{n}.LogbookBase(:,7)),1);
-            Users{n}.FinListBase(:,4)=(Users{n}.LogbookBase(:,8)/1000/Users{n}.ChargingEfficiency .* Users{n}.PublicACChargingPrices.*double(Users{n}.LogbookBase(:,1)==6) + double(Users{n}.LogbookBase(:,8))/1000/Users{n}.ChargingEfficiency .* Users{n}.PublicDCChargingPrices.*double(Users{n}.LogbookBase(:,1)==7)); % [ct] fixed price for public AC and DC charging
+            Users{n}.FinListBase=zeros(length(Users{n}.Logbook),4);
+            Users{n}.FinListBase(:,1)=(Users{n}.Logbook(:,5)/1000/Users{n}.ChargingEfficiency .* (Users{n}.PrivateElectricityPrice + Users{1}.SpotmarketPrices(Time.Sim.VecInd(1:length(Users{n}.Logbook(:,5)))+Users{1}.TD.SpotmarketPrices)/10 + Users{n}.NNEEnergyPrice)*Users{1}.MwSt); % [ct] total electricity costs equal base price of user + realtime current production costs + NNE energy price. VAT applies to the end price
+            Users{n}.FinListBase(:,2)=(Users{n}.Logbook(:,6)/1000/Users{n}.ChargingEfficiency .* Users{n}.EEGBonus); % [ct] costs for not selling the PV power to the DSO
+            Users{n}.FinListBase(:,3)=zeros(length(Users{n}.Logbook(:,7)),1);
+            Users{n}.FinListBase(:,4)=(Users{n}.Logbook(:,8)/1000/Users{n}.ChargingEfficiency .* Users{n}.PublicACChargingPrices.*double(Users{n}.Logbook(:,1)==6) + double(Users{n}.Logbook(:,8))/1000/Users{n}.ChargingEfficiency .* Users{n}.PublicDCChargingPrices.*double(Users{n}.Logbook(:,1)==7)); % [ct] fixed price for public AC and DC charging
             TotalCostsBase(2,1:4)=TotalCostsBase(2,1:4)+sum(Users{n}.FinListBase, 1);
             
         end
@@ -529,11 +526,11 @@ if ~Users{1}.SmartCharging
     TotalCostsBase(1:2,6)=sum(TotalCostsBase(1:2,1:4),2);
     TotalCostsBase(3,:)=TotalCostsBase(2,:)./TotalCostsBase(1,:);
     TotalCostsBase(1:2,7)=TotalCostsBase(1:2,6)/(length(Users)-1);
-    TotalCostsBase(1:2,8)=TotalCostsBase(1:2,6)/(length(Users)-1)/(length(Users{2}.LogbookBase)/(24*Time.StepInd))*365;
+    TotalCostsBase(1:2,8)=TotalCostsBase(1:2,6)/(length(Users)-1)/(length(Users{2}.Logbook)/(24*Time.StepInd))*365;
     TotalCostsBase(2,:)=TotalCostsBase(2,:)/100;
-    TotalCostsBase(5,6:8)=[NNEExtraBasePrice / 365*(length(Users{2}.LogbookBase)/(24*Time.StepInd)), NNEExtraBasePrice/(length(Users)-1), NNEExtraBasePrice/(length(Users)-1)]/100;
-    TotalCostsBase(6,6:8)=[NNEBonus / 365*(length(Users{2}.LogbookBase)/(24*Time.StepInd))/10, NNEBonus / 365*(length(Users{2}.LogbookBase)/(24*Time.StepInd))/10 / (length(Users)-1), NNEBonus/(length(Users)-1)/10]/100;
-    TotalCostsBase(7,6:8)=[IMSYSInstallationCosts / 365*(length(Users{2}.LogbookBase)/(24*Time.StepInd))/10, IMSYSInstallationCosts / 365*(length(Users{2}.LogbookBase)/(24*Time.StepInd))/10 / (length(Users)-1), IMSYSInstallationCosts/(length(Users)-1)/10]/100;
+    TotalCostsBase(5,6:8)=[NNEExtraBasePrice / 365*(length(Users{2}.Logbook)/(24*Time.StepInd)), NNEExtraBasePrice/(length(Users)-1), NNEExtraBasePrice/(length(Users)-1)]/100;
+    TotalCostsBase(6,6:8)=[NNEBonus / 365*(length(Users{2}.Logbook)/(24*Time.StepInd))/10, NNEBonus / 365*(length(Users{2}.Logbook)/(24*Time.StepInd))/10 / (length(Users)-1), NNEBonus/(length(Users)-1)/10]/100;
+    TotalCostsBase(7,6:8)=[IMSYSInstallationCosts / 365*(length(Users{2}.Logbook)/(24*Time.StepInd))/10, IMSYSInstallationCosts / 365*(length(Users{2}.Logbook)/(24*Time.StepInd))/10 / (length(Users)-1), IMSYSInstallationCosts/(length(Users)-1)/10]/100;
     TotalCostsBase(9,6:8)=TotalCostsBase(2,6:8)+sum(TotalCostsBase([5,7],6:8),1);
     
     TotalCostsBase=table(TotalCostsBase(:,1), TotalCostsBase(:,2), TotalCostsBase(:,3), TotalCostsBase(:,4), TotalCostsBase(:,5), TotalCostsBase(:,6), TotalCostsBase(:,7),TotalCostsBase(:,8), 'RowNames',["Energy charged in kWh"; "Energy Costs in EUR"; "Energy Costs in ct/kWh"; "."; "NNE Extra Base Price in EUR"; "NNE Bonus in EUR"; "IMSYS Installation Costs in EUR"; "~"; "Total Costs in EUR"], 'VariableNames',{'Grid','PV','aFRR','Public','ResPoOffered_kW','Total','TotalPerUser', 'TotalPerUserPerYear'});
@@ -550,14 +547,14 @@ if Users{1}.SmartCharging
 
     for n=2:length(Users)
         
-        if isfield(Users{n}, "LogbookSmart")
-            TotalCostsSmart(1,1:4)=TotalCostsSmart(1,1:4)+sum(Users{n}.LogbookSmart(:,5:8)/1000/Users{n}.ChargingEfficiency, 1);
+        if isfield(Users{n}, "Logbook")
+            TotalCostsSmart(1,1:4)=TotalCostsSmart(1,1:4)+sum(Users{n}.Logbook(:,5:8)/1000/Users{n}.ChargingEfficiency, 1);
 
-            Users{n}.FinListSmart=zeros(length(Users{n}.LogbookSmart),4);
-            Users{n}.FinListSmart(:,1)=(Users{n}.LogbookSmart(:,5)/1000/Users{n}.ChargingEfficiency .* (Users{n}.PrivateElectricityPrice + Users{1}.SpotmarketPrices(Time.Sim.VecInd(1:length(Users{n}.LogbookSmart(:,5)))+Users{1}.TD.SpotmarketPrices)/10 + Users{n}.NNEEnergyPrice)*Users{1}.MwSt); % [ct] total electricity costs equal base price of user + realtime current production costs + NNE energy price. VAT applies to the end price
-            Users{n}.FinListSmart(:,2)=(Users{n}.LogbookSmart(:,6)/1000/Users{n}.ChargingEfficiency .* Users{n}.EEGBonus); % [ct] costs for not selling the PV power to the DSO
-            Users{n}.FinListSmart(:,3)=(Users{n}.LogbookSmart(:,7)/1000/Users{n}.ChargingEfficiency .* (Users{n}.PrivateElectricityPrice + ResEnOffersList/100 + Users{n}.NNEEnergyPrice)*Users{1}.MwSt); % [ct] total electricity costs equal base price of user + realtime current production costs + NNE energy price. VAT applies to the end price
-            Users{n}.FinListSmart(:,4)=(Users{n}.LogbookSmart(:,8)/1000/Users{n}.ChargingEfficiency .* Users{n}.PublicACChargingPrices.*double(Users{n}.LogbookSmart(:,1)==6) + double(Users{n}.LogbookSmart(:,8))/1000/Users{n}.ChargingEfficiency .* Users{n}.PublicDCChargingPrices.*double(Users{n}.LogbookSmart(:,1)==7)); % [ct] fixed price for public AC and DC charging
+            Users{n}.FinListSmart=zeros(length(Users{n}.Logbook),4);
+            Users{n}.FinListSmart(:,1)=(Users{n}.Logbook(:,5)/1000/Users{n}.ChargingEfficiency .* (Users{n}.PrivateElectricityPrice + Users{1}.SpotmarketPrices(Time.Sim.VecInd(1:length(Users{n}.Logbook(:,5)))+Users{1}.TD.SpotmarketPrices)/10 + Users{n}.NNEEnergyPrice)*Users{1}.MwSt); % [ct] total electricity costs equal base price of user + realtime current production costs + NNE energy price. VAT applies to the end price
+            Users{n}.FinListSmart(:,2)=(Users{n}.Logbook(:,6)/1000/Users{n}.ChargingEfficiency .* Users{n}.EEGBonus); % [ct] costs for not selling the PV power to the DSO
+            Users{n}.FinListSmart(:,3)=(Users{n}.Logbook(:,7)/1000/Users{n}.ChargingEfficiency .* (Users{n}.PrivateElectricityPrice + ResEnOffersList/100 + Users{n}.NNEEnergyPrice)*Users{1}.MwSt); % [ct] total electricity costs equal base price of user + realtime current production costs + NNE energy price. VAT applies to the end price
+            Users{n}.FinListSmart(:,4)=(Users{n}.Logbook(:,8)/1000/Users{n}.ChargingEfficiency .* Users{n}.PublicACChargingPrices.*double(Users{n}.Logbook(:,1)==6) + double(Users{n}.Logbook(:,8))/1000/Users{n}.ChargingEfficiency .* Users{n}.PublicDCChargingPrices.*double(Users{n}.Logbook(:,1)==7)); % [ct] fixed price for public AC and DC charging
             TotalCostsSmart(2,1:4)=TotalCostsSmart(2,1:4)+sum(Users{n}.FinListSmart, 1);
         end
     end
@@ -569,12 +566,12 @@ if Users{1}.SmartCharging
     TotalCostsSmart(2,6)=sum(TotalCostsSmart(2,1:5),2);
     TotalCostsSmart(3,6)=TotalCostsSmart(2,6)/TotalCostsSmart(1,6);
     TotalCostsSmart(1:2,7)=TotalCostsSmart(1:2,6)/(length(Users)-1);
-    TotalCostsSmart(1:2,8)=TotalCostsSmart(1:2,6)/(length(Users)-1)/(length(Users{2}.LogbookSmart)/(24*Time.StepInd))*365;
+    TotalCostsSmart(1:2,8)=TotalCostsSmart(1:2,6)/(length(Users)-1)/(length(Users{2}.Logbook)/(24*Time.StepInd))*365;
     TotalCostsSmart(3,7:8)=TotalCostsSmart(3,6);
     TotalCostsSmart(2,:)=TotalCostsSmart(2,:)/100;
-    TotalCostsSmart(5,6:8)=[NNEExtraBasePrice / 365*(length(Users{2}.LogbookSmart)/(24*Time.StepInd)), NNEExtraBasePrice/(length(Users)-1), NNEExtraBasePrice/(length(Users)-1)]/100;
-    TotalCostsSmart(6,6:8)=-[NNEBonus / 365*(length(Users{2}.LogbookSmart)/(24*Time.StepInd))/10, NNEBonus / 365*(length(Users{2}.LogbookSmart)/(24*Time.StepInd))/10 / (length(Users)-1), NNEBonus/(length(Users)-1)/10]/100;
-    TotalCostsSmart(7,6:8)=[IMSYSInstallationCosts / 365*(length(Users{2}.LogbookSmart)/(24*Time.StepInd))/10, IMSYSInstallationCosts / 365*(length(Users{2}.LogbookSmart)/(24*Time.StepInd))/10 / (length(Users)-1), IMSYSInstallationCosts/(length(Users)-1)/10]/100;
+    TotalCostsSmart(5,6:8)=[NNEExtraBasePrice / 365*(length(Users{2}.Logbook)/(24*Time.StepInd)), NNEExtraBasePrice/(length(Users)-1), NNEExtraBasePrice/(length(Users)-1)]/100;
+    TotalCostsSmart(6,6:8)=-[NNEBonus / 365*(length(Users{2}.Logbook)/(24*Time.StepInd))/10, NNEBonus / 365*(length(Users{2}.Logbook)/(24*Time.StepInd))/10 / (length(Users)-1), NNEBonus/(length(Users)-1)/10]/100;
+    TotalCostsSmart(7,6:8)=[IMSYSInstallationCosts / 365*(length(Users{2}.Logbook)/(24*Time.StepInd))/10, IMSYSInstallationCosts / 365*(length(Users{2}.Logbook)/(24*Time.StepInd))/10 / (length(Users)-1), IMSYSInstallationCosts/(length(Users)-1)/10]/100;
     TotalCostsSmart(9,6:8)=TotalCostsSmart(2,6:8)+sum(TotalCostsSmart([5,7],6:8),1);
     
     TotalCostsSmart=table(TotalCostsSmart(:,1), TotalCostsSmart(:,2), TotalCostsSmart(:,3), TotalCostsSmart(:,4), TotalCostsSmart(:,5), TotalCostsSmart(:,6), TotalCostsSmart(:,7),TotalCostsSmart(:,8), 'RowNames',["Energy charged in kWh"; "Energy Costs in EUR"; "Energy Costs in ct/kWh"; "."; "NNE Extra Base Price in EUR"; "NNE Bonus in EUR"; "IMSYS Installation Costs in EUR"; "~"; "Total Costs in EUR"], 'VariableNames',{'Grid','PV','aFRR','Public','ResPoOffered_kW','Total','TotalPerUser', 'TotalPerUserPerYear'});
@@ -588,14 +585,16 @@ end
 
 %% Save data
 
-Users{1}.FileName=strcat(Path.Simulation, "Users_", datestr(Users{1}.Time.Stamp, "yyyymmdd-HHMM"), "_", Time.IntervalFile, "_", num2str(length(Users)-1), "_", num2str(isfield(Users{1}, 'ChargingMatSmart')), "_", num2str(isfield(Users{1}, 'ChargingMatBase')), ".mat");
+Users{1}.FileName=strcat(Path.Simulation, "Users_", datestr(Users{1}.Time.Stamp, "yyyymmdd-HHMM"), "_", Time.IntervalFile, "_", num2str(length(Users)-1), "_", num2str(Users{1}.SmartCharging), "_", ".mat");
 
 if SaveResults
     save(Users{1}.FileName, "Users", "-v7.3");
 end
 disp(strcat("Successfully simulated within ", num2str(Users{1}.SimDuration), " seconds"))
 
+end
 
+if CleanUpWorkspace
 
 %% Clean up workspace
  
@@ -622,6 +621,8 @@ clearvars ResPoBlockedIndices ResPoBuffer ResPoOfferEqualiyMat1 ResPoOfferEquali
 clearvars SoC SoCNew SortedOrder SpotmarketPrices SpotmarktPricesCP StorageFile StoragePath SubIndices SumPower Temp TimeOfDayAheadMarketPriceRelease
 clearvars TimeOfPreAlgo TimeOfReserveMarketOffer TimesOfDayAheadMarketPriceRelease TimesOfPreAlgo TimesOfResPoEval TimeStepIndsNeededForCharging
 clearvars TSOResPoDemand ub VarCounter Costf Costs ChargingVehicle Costsf NNEBonus NNEExtraBasePrice IMSYSInstallationCosts IMSYSInstallationCostsMean
-clearvars UseIndividualEEGBonus UsePVPredictions UseSpotPredictions x1 BackwardsOrder %OwnOfferMOLPos
+clearvars UseIndividualEEGBonus UsePVPredictions UseSpotPredictions x1 BackwardsOrder FinishSimulation CleanUpWorkspace %OwnOfferMOLPos 
 
 end
+
+
