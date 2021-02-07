@@ -87,7 +87,7 @@ NumUsers=300; % number of users
 PVGridConvenientChargingLikelihoodMatrix=single([0, 1; 1, 0]); % Matrix that defines with type of users use grid convenient charging (14a) and own a PV plant: [PV&14a, PV&~14a; ~PV&14a, ~PV&~14a]
 
 Users=cell(NumUsers+1,1); % the main cell variable all user data is stored in
-Users{1}.MwSt=single(1.19); % The VAT rate
+Users{1}.MwSt=1.19; % The VAT rate
 Users{1}.EEGBonus=single(9.17); %[ct/kWh] Bonus paid by the DSO to PV plant owner for supplying energy to the grid
 AddPV=true; % determines wheter PV plants shall be assigned to the users. In general true, only false for test purposes
 MeanPrivateElectricityPrice=single(30.43/1.19 - 3.7513 - 7.06); % [ct/kWh] average German electricity price in 2019 according to Strom-Report without VAT (19%), electricity production price (avg. Dayahead price was 3.7513 ct/kWh in 2019) and NNE energy price (avg. was 7.06 ct/kWh in 2019)
