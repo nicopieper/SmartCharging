@@ -40,7 +40,7 @@ end
 ChargingMat=cell(size(TimesOfPreAlgo,1)+1,1);
 ChargingVehicle=[];
 ChargingType=[];
-AvailabilityMat=[];
+AvailabilityMat=single([]);
 DecissionGroups=cell(NumDecissionGroups,1);
 SuccessfulResPoOffers=zeros(6*ConstantResPoPowerPeriodsScaling,1);
 

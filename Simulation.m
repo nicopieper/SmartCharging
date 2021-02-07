@@ -1,6 +1,6 @@
 %% Initialisation
 tic
-NumUsers=10;
+NumUsers=300;
 SmartCharging=true;
 UseParallel=false;
 UseSpotPredictions=true;
