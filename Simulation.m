@@ -14,6 +14,7 @@ ActivateWaitbar=true;
 SaveResults=true;
 
 Debugging=0;
+FinishSimulation=0;
 
 
 % SensitivitEURtsanalyse: ResPoPriceFactor, ResEnPriceFactor, ResPoBuffer
@@ -325,6 +326,11 @@ if ActivateWaitbar
     close(h);
 end
 
+if SaveResults
+            save(Users{1}.FileName, "Users", "-v7.3");
+        end
+
+if FinishSimulation
 
 for n=UserNum
     Users{n}.Logbook=Users{n}.Logbook(1:TimeInd,:);
@@ -617,3 +623,5 @@ clearvars SoC SoCNew SortedOrder SpotmarketPrices SpotmarktPricesCP StorageFile 
 clearvars TimeOfPreAlgo TimeOfReserveMarketOffer TimesOfDayAheadMarketPriceRelease TimesOfPreAlgo TimesOfResPoEval TimeStepIndsNeededForCharging
 clearvars TSOResPoDemand ub VarCounter Costf Costs ChargingVehicle Costsf NNEBonus NNEExtraBasePrice IMSYSInstallationCosts IMSYSInstallationCostsMean
 clearvars UseIndividualEEGBonus UsePVPredictions UseSpotPredictions x1 BackwardsOrder %OwnOfferMOLPos
+
+end
