@@ -85,7 +85,7 @@ rng('default');
 rng(1);
 %NumUsers=10000; % number of users
 if Users{1}.SmartCharging
-    PVGridConvenientChargingLikelihoodMatrix=single([0, 0.5, 0.5, 0]); % Matrix that defines with type of users use grid convenient charging (14a) and own a PV plant: [PV&14a, PV&~14a, ~PV&14a, ~PV&~14a]
+    PVGridConvenientChargingLikelihoodMatrix=single([0, 0.5, 0.35, 0.15]); % Matrix that defines with type of users use grid convenient charging (14a) and own a PV plant: [PV&14a, PV&~14a, ~PV&14a, ~PV&~14a]
 else
     PVGridConvenientChargingLikelihoodMatrix=single([0, 0.5, 0.01, 0.49]); % Matrix that defines with type of users use grid convenient charging (14a) and own a PV plant: [PV&14a, PV&~14a, ~PV&14a, ~PV&~14a]
 end
@@ -136,7 +136,7 @@ end
 %% Store processing information
 
 Time.Sim.Start=dateshift(max([Range.TestDate(1), Vehicles{1}.Time.Vec(1)]), 'start', 'day');
-Time.Sim.End=min([Range.TestDate(2), Vehicles{1}.Time.Vec(end)]);
+Time.Sim.End=min([Range.TestDate(2), Vehicles{1}.Time.Vec(end)])-days(360);
 Time.Sim.Vec=Time.Sim.Start:Time.Step:Time.Sim.End;
 Time.Sim.VecInd=1:length(Time.Sim.Vec);
 Time.Sim.StepInd=Time.StepInd;

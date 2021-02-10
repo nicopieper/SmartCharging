@@ -1,6 +1,6 @@
 %% Initialisation
 tic
-NumUsers=15000;
+NumUsers=20000;
 Users=cell(NumUsers+1,1); % the main cell variable all user data is stored in
 Users{1}.SmartCharging=true;
 UseParallel=true;
@@ -23,7 +23,7 @@ TSim=tic;
 
 if Users{1}.SmartCharging
     if UseParallel
-        NumDecissionGroups=300;
+        NumDecissionGroups=400;
         gcp
     else
         NumDecissionGroups=1;
@@ -361,10 +361,10 @@ if Users{1}.SmartCharging
     %Users{1}.ChargingMat=ChargingMat;
     
     for n=1:size(Users{1}.ChargingMat,1)-1
-        Users{1}.ChargingMat=Users{1}.ChargingMat(:,:,PreAlgoCounter);
+        Users{1}.ChargingMat{n,1}=Users{1}.ChargingMat{n,1}(:,:,1:PreAlgoCounter);
     end
-    ResPoOffers=ResPoOffers(:,:,PreAlgoCounter+1);
-    ResEnOffers=ResEnOffers(:,:,PreAlgoCounter+1);
+    ResPoOffers=ResPoOffers(:,:,1:PreAlgoCounter+1);
+    ResEnOffers=ResEnOffers(:,:,1:PreAlgoCounter+1);
     ProvidedResEn=ProvidedResEn(1:TimeInd);
     DispatchedResEn=DispatchedResEn(1:TimeInd);
 
@@ -403,7 +403,7 @@ if Users{1}.SmartCharging
     Users{1}.ResEnVolumenAllocated=sum(Users{1}.ChargingMat{find(~cellfun(@isempty,Users{1}.ChargingMat(1:5,1)), 1, 'last' )}(96-24*4+1:96-24*4+96,3,:,:),'all')/1000;
 
 
-    disp(strcat(num2str(ResEnVolumenFulfilled/ResEnVolumenAllocated*100), "% of the succcessfully offered reserve energy was actually charged"))
+    disp(strcat(num2str(Users{1}.ResEnVolumenFulfilled/RUsers{1}.esEnVolumenAllocated*100), "% of the succcessfully offered reserve energy was actually charged"))
 else
     Users{1}.ChargingMat=cell(1,2);
     Users{1}.ChargingMat{1}=zeros(96, 3, ceil(size(Users{UserNum(1)}.Logbook,1)/(24*Time.StepInd)));
