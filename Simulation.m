@@ -226,7 +226,7 @@ for TimeInd=Time.Sim.VecInd(2:end-ControlPeriods)
                 Users{n}.Logbook(TimeInd+TD.User,1)=5;
                 ChargingEnergy=min((Time.StepMin-Users{n}.Logbook(TimeInd+TD.User,2))*Users{n}.ACChargingPowerHomeCharging/60, Users{n}.BatterySize-Users{n}.Logbook(TimeInd+TD.User-1,9)); %[Wh]
                 if UsePV && Users{n}.PVPlantExists
-                    Users{n}.Logbook(TimeInd+TD.User,6)=min(uint32(PVPlants{Users{n}.PVPlant}.(PVPlants_Profile_Prediction)(TimeInd+TD.Main)/Users{n}.ChargingEfficiency), ChargingEnergy);
+                    Users{n}.Logbook(TimeInd+TD.User,6)=min(single(PVPlants{Users{n}.PVPlant}.(PVPlants_Profile_Prediction)(TimeInd+TD.Main))/Users{n}.ChargingEfficiency, ChargingEnergy);
                 end
                 Users{n}.Logbook(TimeInd+TD.User,5)=ChargingEnergy-Users{n}.Logbook(TimeInd+TD.User,6);
             end
@@ -315,15 +315,17 @@ for TimeInd=Time.Sim.VecInd(2:end-ControlPeriods)
     end
 end
 
+%%
 for n=UserNum
+    Users{n}.Logbook(any(Users{n}.Logbook(:,5:7)>0,2),1)=5;
     AvailableBlocks=[find(ismember(Users{n}.Logbook(1:end,1),3:5) & ~ismember([0;Users{n}.Logbook(1:end-1,1)],3:5)), find(ismember(Users{n}.Logbook(1:end,1),3:5) & ~ismember([Users{n}.Logbook(2:end,1);0],3:5))];
     ChargingBlocks=any(AvailableBlocks(:,1)'<=find(Users{n}.Logbook(1:end,1)==5) & AvailableBlocks(:,2)'>=find(Users{n}.Logbook(1:end,1)==5))';
     for k=find(ChargingBlocks)'
-        Users{n}.Logbook(AvailableBlocks(k,1)-1:AvailableBlocks(k,2)-1,1)=4;
+        Users{n}.Logbook(AvailableBlocks(k,1):AvailableBlocks(k,2),1)=4;
     end
     Users{n}.Logbook(any(Users{n}.Logbook(:,5:7)>0,2),1)=5;
 end
-
+%%
 
 if ActivateWaitbar
     close(h);
@@ -356,9 +358,14 @@ Users{1}.UsePV=UsePV;
 
 if SmartCharging
     %Users{1}.ChargingMat=ChargingMat;
-    for k=1:size(Users{1}.ChargingMat,1)-1
-        Users{1}.ChargingMat{k,2}=mod(TimesOfPreAlgo(k,1)-1,ControlPeriods) + 96*(TimeOfPreAlgo(k)<TimeOfPreAlgo(1));
+    
+    for n=1:size(Users{1}.ChargingMat,1)-1
+        Users{1}.ChargingMat=Users{1}.ChargingMat(:,:,PreAlgoCounter);
     end
+    ResPoOffers=ResPoOffers(:,:,PreAlgoCounter+1);
+    ResEnOffers=ResEnOffers(:,:,PreAlgoCounter+1);
+    ProvidedResEn=ProvidedResEn(1:TimeInd);
+    DispatchedResEn=DispatchedResEn(1:TimeInd);
 
     Users{1}.UseParallel=UseParallel;
     Users{1}.NumCostCats=NumCostCats;

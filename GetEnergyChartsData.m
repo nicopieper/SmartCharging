@@ -182,6 +182,7 @@ end
 
 EC.DayaheadReal1H=FillMissingValues(ECData.DayAheadAuctionH.Values,1); % assign variables from container and exchange NaN values by interpolation
 EC.DayaheadReal1QH=interp1(TimeECH,EC.DayaheadReal1H, Time.Vec); % get quater hourly dayahead values by interpolation
+EC.IntradayAuctionQH=FillMissingValues(ECData.IntradayAuction15minutecallQH.Values,1); % assign variables from container and exchange NaN values by interpolation
 if size(ECData.IntradayContinuousIndexPriceH.Values,1)==size(ECData.IntradayContinuousID3PriceH.Values,1) && size(ECData.IntradayContinuousID3PriceH.Values,1)==size(ECData.IntradayContinuousID1PriceH.Values,1)
     EC.IntradayRealH=FillMissingValues([ECData.IntradayContinuousIndexPriceH.Values, ECData.IntradayContinuousID3PriceH.Values, ECData.IntradayContinuousID1PriceH.Values],1);
     EC.IntradayRealQH=FillMissingValues([ECData.IntradayContinuous15minutesIndexPriceQH.Values, ECData.IntradayContinuous15minutesID3PriceQH.Values, ECData.IntradayContinuous15minutesID1PriceQH.Values],4);

@@ -29,17 +29,14 @@ if OfferedResPo>0
     MOLPos1(end+1)=find(temp>=TSOResPoDemand, 1); % Merit-Order-List Position
     if MOLPos1(end)>OwnOfferMOLPos(end)
         DispatchedResEn(TimeInd)=OfferedResPo*1000/Time.StepInd; % [Wh]
-        a1(1)=a1(1)+1;
     elseif MOLPos1(end)==OwnOfferMOLPos(end)
         if OwnOfferMOLPos(end)>1
             DispatchedResEn(TimeInd)=(TSOResPoDemand-temp(OwnOfferMOLPos(end)-1))*1000/Time.StepInd; % [Wh]
         else
             DispatchedResEn(TimeInd)=TSOResPoDemand*1000/Time.StepInd; % [Wh]
         end
-        a1(2)=a1(2)+1;
     else
         DispatchedResEn(TimeInd)=0;
-        a1(3)=a1(3)+1;
     end
 
     %a=[a;[OfferedResPo,DispatchedResEn(TimeInd)]];

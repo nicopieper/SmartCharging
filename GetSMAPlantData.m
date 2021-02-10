@@ -105,6 +105,14 @@ for n=1:size(Folders,1) % iterate through the plants
         continue
     end
     
+    if isfile(strcat(PlantPath, Dl, 'AzimutSlope.csv'))
+        File=fopen(strcat(PlantPath, Dl, 'AzimutSlope.csv'), 'r'); % begin to read the plant's properties from the csv file. includes location, start of plant's operation date, Peakpower, ID, SMA link, some other processing indicators and all dates data exists for
+        AzimutSlope = fscanf(File,formatSpec);
+        Delimiter1=strfind(AzimutSlope, ':');
+        Delimiter2=strfind(AzimutSlope, '°');
+        [~]=fclose(File); 
+    end
+    
     %% Load data from mat files
     
     if ProcessDataNew.SMAPlant==false % load data from local mat files instead of processing it newly
@@ -256,6 +264,10 @@ for n=1:size(Folders,1) % iterate through the plants
         PVPlants{n}.ProfileQH=uint16(LoadedSMAPlantDataComplete(DatesDiffStart*96+1:end-DatesDiffEnd*96)*1000); % Unit: W not kW! in order to save memory. Cut Vector to Time.Vec range 
         PVPlants{n}.EEGBonus=EEGBonus(year(PVPlants{n}.ActivationDate) == year(EEGDates) & month(PVPlants{n}.ActivationDate) == month(EEGDates),1);
         
+        if isfile(strcat(PlantPath, Dl, 'AzimutSlope.csv'))
+            PVPlants{n}.Azimut=str2double(AzimutSlope(Delimiter1(1)+1:Delimiter2(1)-1));
+            PVPlants{n}.Slope=str2double(AzimutSlope(Delimiter1(2)+1:Delimiter2(2)-1));
+        end
         
         if isfield(PVPlants{n}, "PredictionH")
 %             if PVPlants{n}.PeakPower>10
@@ -296,4 +308,4 @@ disp(['PVPlantData successfully imported ' num2str(toc) 's'])
 clearvars Folders h Properties StorageFile StoragePath n k LoadedSMAPlantData LoadedSMAPlantDataComplete DataComplete Delimiter ExistingDates
 clearvars File formatSpec NumberPlantsLoaded NumberPlantsToLoad PlantPath DatesDiffStart DatesDiffEnd ExistingDataTimeStart ExistingDataTime.End
 clearvars Error FieldNames LoadedSMAPlantDataNew UsedTime.VecLogical AddPredictions LoadOnlyPlantsWithPrediction DaysBeforeExistingDataSet
-clearvars DaysAfterExistingDataSet DateVec DateLength Date ExistingDataTime UsedTime PlantDataComplete EEGDates EEGBounus
+clearvars DaysAfterExistingDataSet DateVec DateLength Date ExistingDataTime UsedTime PlantDataComplete EEGDates EEGBounus Delimiter1 Delimiter2 AzimutSlope

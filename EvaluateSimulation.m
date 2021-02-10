@@ -6,19 +6,19 @@ if ~exist("Users", "var")
     load(strcat(Path.Simulation, Dl, StorageFiles(StorageInd).name))
 end
 
-Logbook="LogbookBase";
+Logbook="Logbook";
 
-% Targets=["small"; "medium"; "large"; "transporter"];
-Targets=["one user"; "only one user"; "several users"; "undefined"];
-Targets=["company car"; "fleet vehicle"; "undefined"];
+ Targets=["small"; "medium"; "large"; "transporter"];
+%Targets=["one user"; "only one user"; "several users"; "undefined"];
+%Targets=["company car"; "fleet vehicle"; "undefined"];
 % Targets=[0.5; 1; 3; 1000];
 % Targets=[hours(10); hours(12); hours(14); hours(24)];
 
 TargetGroups=cell(length(Targets),1);
 for n=2:length(Users)
-%     TargetNum=find(strcmp(Users{n}.VehicleSize,Targets),1);
+     TargetNum=find(strcmp(Users{n}.VehicleSize,Targets),1);
 %     TargetNum=find(strcmp(Users{n}.NumUsers,Targets),1);
-     TargetNum=find(strcmp(Users{n}.VehicleUtilisation,Targets),1);
+%     TargetNum=find(strcmp(Users{n}.VehicleUtilisation,Targets),1);
 %     TargetNum=find(Users{n}.DistanceCompanyToHome<Targets,1);
 %     TargetNum=find(Users{n}.AvgHomeParkingTime<Targets,1);
 

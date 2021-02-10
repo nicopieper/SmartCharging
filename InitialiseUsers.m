@@ -83,14 +83,14 @@
 %% Initialisation
 rng('default');
 rng(1);
-%NumUsers=3; % number of users
+%NumUsers=400; % number of users
 PVGridConvenientChargingLikelihoodMatrix=single([0, 1; 1, 0]); % Matrix that defines with type of users use grid convenient charging (14a) and own a PV plant: [PV&14a, PV&~14a; ~PV&14a, ~PV&~14a]
 
 Users=cell(NumUsers+1,1); % the main cell variable all user data is stored in
 Users{1}.MwSt=1.19; % The VAT rate
 Users{1}.EEGBonus=single(9.17); %[ct/kWh] Bonus paid by the DSO to PV plant owner for supplying energy to the grid
 AddPV=true; % determines wheter PV plants shall be assigned to the users. In general true, only false for test purposes
-MeanPrivateElectricityPrice=single(30.43/1.19 - 3.7513 - 7.06); % [ct/kWh] average German electricity price in 2019 according to Strom-Report without VAT (19%), electricity production price (avg. Dayahead price was 3.7513 ct/kWh in 2019) and NNE energy price (avg. was 7.06 ct/kWh in 2019)
+MeanPrivateElectricityPrice=single(31.81/Users{1}.MwSt - 2.92767 - 6.364); % [ct/kWh] average German electricity price in 2020 according to Strom-Report without VAT (19%), electricity production price (avg. Dayahead price was 3.7513 ct/kWh in 2019) and NNE energy price (avg. was 7.06 ct/kWh in 2019)
 PublicACChargingPrices=single([29, 39]); % [ct/kWh]
 PublicDCChargingPrices=single([39, 49]); % [ct/kWh]
 IMSYSInstallationCostsMean=single(80000); % [ct] The costs for the installation of the IMSYS have to be paid by the wallbox owner.
@@ -133,7 +133,7 @@ end
 %% Store processing information
 
 Time.Sim.Start=dateshift(max([Range.TestDate(1), Vehicles{1}.Time.Vec(1)]), 'start', 'day');
-Time.Sim.End=min([Range.TestDate(2), Vehicles{1}.Time.Vec(end)])-days(350);
+Time.Sim.End=min([Range.TestDate(2), Vehicles{1}.Time.Vec(end)])-days(300);
 Time.Sim.Vec=Time.Sim.Start:Time.Step:Time.Sim.End;
 Time.Sim.VecInd=1:length(Time.Sim.Vec);
 Time.Sim.StepInd=Time.StepInd;
