@@ -83,10 +83,13 @@
 %% Initialisation
 rng('default');
 rng(1);
-%NumUsers=400; % number of users
-PVGridConvenientChargingLikelihoodMatrix=single([0, 1; 1, 0]); % Matrix that defines with type of users use grid convenient charging (14a) and own a PV plant: [PV&14a, PV&~14a; ~PV&14a, ~PV&~14a]
+%NumUsers=10000; % number of users
+if Users{1}.SmartCharging
+    PVGridConvenientChargingLikelihoodMatrix=single([0, 0.5, 0.5, 0]); % Matrix that defines with type of users use grid convenient charging (14a) and own a PV plant: [PV&14a, PV&~14a, ~PV&14a, ~PV&~14a]
+else
+    PVGridConvenientChargingLikelihoodMatrix=single([0, 0.5, 0.01, 0.49]); % Matrix that defines with type of users use grid convenient charging (14a) and own a PV plant: [PV&14a, PV&~14a, ~PV&14a, ~PV&~14a]
+end
 
-Users=cell(NumUsers+1,1); % the main cell variable all user data is stored in
 Users{1}.MwSt=1.19; % The VAT rate
 Users{1}.EEGBonus=single(9.17); %[ct/kWh] Bonus paid by the DSO to PV plant owner for supplying energy to the grid
 AddPV=true; % determines wheter PV plants shall be assigned to the users. In general true, only false for test purposes
@@ -133,7 +136,7 @@ end
 %% Store processing information
 
 Time.Sim.Start=dateshift(max([Range.TestDate(1), Vehicles{1}.Time.Vec(1)]), 'start', 'day');
-Time.Sim.End=min([Range.TestDate(2), Vehicles{1}.Time.Vec(end)])-days(300);
+Time.Sim.End=min([Range.TestDate(2), Vehicles{1}.Time.Vec(end)]);
 Time.Sim.Vec=Time.Sim.Start:Time.Step:Time.Sim.End;
 Time.Sim.VecInd=1:length(Time.Sim.Vec);
 Time.Sim.StepInd=Time.StepInd;
@@ -258,3 +261,4 @@ clearvars RandomNumbers n Model VehicleSizes MeanPrivateElectricityPrice NumTrip
 clearvars TimeNoiseStdFac UsersTime VehicleProperties GridConvenientChargingProfile UsersTimeVecLogical VCity VHighway PublicChargingThresholdMean
 clearvars PrivateChargingThresholdMean LikelihoodGridConvenientCharging GridConvenienChargingDistribution PVGridConvenientChargingLikelihoodMatrix
 clearvars VehicleUtilisation
+clearvars Vehicles
