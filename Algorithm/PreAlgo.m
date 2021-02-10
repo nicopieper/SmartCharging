@@ -1,9 +1,9 @@
 %% Update Costs
 
-CostsSpotmarket=(CostsElectricityBase(end-ControlPeriodsIt+1:end,1,:)/100 + SpotmarktPricesCP/1000)*Users{1}.MwSt;
-CostsReserveMarket=(CostsElectricityBase/100 - ResEnOfferPrices - ResPoOfferPrices/(4*Time.StepInd))*Users{1}.MwSt;
+CostsSpotmarket=(CostsElectricityBase/100 + SpotmarktPricesCP/1000)*Users{1}.MwSt; % [EUR/kWh]
+CostsReserveMarket=(CostsElectricityBase/100 - ResEnOfferPrices - ResPoOfferPrices/(4*Time.StepInd))*Users{1}.MwSt; % [EUR/kWh]
 
-Costs=[CostsSpotmarket, CostsPV(end-ControlPeriodsIt+1:end,1,:), CostsReserveMarket(end-ControlPeriodsIt+1:end,1,:)];
+Costs=[CostsSpotmarket, CostsPV(end-ControlPeriodsIt+1:end,1,:), CostsReserveMarket(end-ControlPeriodsIt+1:end,1,:)]; % [EUR/kWh]
 Costs=Costs(:,CostCats,:);
 
 
