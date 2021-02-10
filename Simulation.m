@@ -1,9 +1,9 @@
 %% Initialisation
 tic
-NumUsers=20000;
+NumUsers=2;
 Users=cell(NumUsers+1,1); % the main cell variable all user data is stored in
 Users{1}.SmartCharging=true;
-UseParallel=true;
+UseParallel=false;
 UseSpotPredictions=true;
 UsePVPredictions=true;
 UseIndividualEEGBonus=true;
@@ -298,14 +298,10 @@ for TimeInd=Time.Sim.VecInd(2:end-ControlPeriods)
         
     end
     
-    if mod(TimeInd, 96*10)==0
+    if SaveResults && mod(TimeInd, 96*10)==0 
         Users{1}.Time.Stamp=datetime('now');
-        Users{1}.FileName=strcat(Path.Simulation, "Users_", datestr(Users{1}.Time.Stamp, "yyyymmdd-HHMM"), "_", Time.IntervalFile, "_", num2str(length(Users)-1), "_", num2str(Users{1}.SmartCharging), "_", ".mat");
-
-        if SaveResults
-            Users{1}.Time.Stamp=datetime('now');
-            Users{1}.FileName=strcat(Path.Simulation, "Users_", datestr(Users{1}.Time.Stamp, "yyyymmdd-HHMM"), "_", Time.IntervalFile, "_", num2str(length(Users)-1), "_", num2str(Users{1}.SmartCharging), "_", ".mat");
-        end
+        FileName=strcat(Path.Simulation, "Workspace", datestr(Users{1}.Time.Stamp, "yyyymmdd-HHMM"), "_", Time.IntervalFile, "_", num2str(length(Users)-1), "_", num2str(Users{1}.SmartCharging), "_", ".mat");
+        save(FileName, "-v7.3");
     end
     
     
@@ -381,6 +377,7 @@ if Users{1}.SmartCharging
     Users{1}.ResEnOffers=ResEnOffers;
     Users{1}.ResPoPriceFactor=ResPoPriceFactor;
     Users{1}.ResEnPriceFactor=ResEnPriceFactor;
+    Users{1}.ConstantResPoPowerPeriodsScaling=ConstantResPoPowerPeriodsScaling;
     
     disp(strcat(num2str(sum(LastResPoOffersSucessful4H(:,2:end)>0,'all')/sum(LastResPoOffers(:,2:end)>0,'all')*100), "% of all reserve power offers were successful"))
     
@@ -403,7 +400,7 @@ if Users{1}.SmartCharging
     Users{1}.ResEnVolumenAllocated=sum(Users{1}.ChargingMat{find(~cellfun(@isempty,Users{1}.ChargingMat(1:5,1)), 1, 'last' )}(96-24*4+1:96-24*4+96,3,:,:),'all')/1000;
 
 
-    disp(strcat(num2str(Users{1}.ResEnVolumenFulfilled/RUsers{1}.esEnVolumenAllocated*100), "% of the succcessfully offered reserve energy was actually charged"))
+    disp(strcat(num2str(Users{1}.ResEnVolumenFulfilled/Users{1}.ResEnVolumenAllocated*100), "% of the succcessfully offered reserve energy was actually charged"))
 else
     Users{1}.ChargingMat=cell(1,2);
     Users{1}.ChargingMat{1}=zeros(96, 3, ceil(size(Users{UserNum(1)}.Logbook,1)/(24*Time.StepInd)));
@@ -431,7 +428,7 @@ Users{1}.SimDuration=toc(TSim);
 
 %% Calculate Load Curves
 
-Users{1}.ChargingMat{end,1}=zeros([24*Time.StepInd, size(Users{1}.ChargingMat{1,1}, 2:3)], 'single');
+Users{1}.ChargingMat{end,1}=zeros([24*Time.StepInd, size(Users{1}.ChargingMat{1,1}, 2),size(Users{1}.ChargingMat{1,1}, 3)], 'single');
 for n=Users{1}.UserNum
     Users{1}.ChargingMat{end,1}=Users{1}.ChargingMat{end,1}+permute(reshape(Users{n}.Logbook(:,5:7),24*Time.StepInd,[],3), [1, 3, 2]);
 end
