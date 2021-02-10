@@ -136,7 +136,7 @@ end
 %% Store processing information
 
 Time.Sim.Start=dateshift(max([Range.TestDate(1), Vehicles{1}.Time.Vec(1)]), 'start', 'day');
-Time.Sim.End=min([Range.TestDate(2), Vehicles{1}.Time.Vec(end)])-days(35s0);
+Time.Sim.End=min([Range.TestDate(2), Vehicles{1}.Time.Vec(end)])-days(350);
 Time.Sim.Vec=Time.Sim.Start:Time.Step:Time.Sim.End;
 Time.Sim.VecInd=1:length(Time.Sim.Vec);
 Time.Sim.StepInd=Time.StepInd;

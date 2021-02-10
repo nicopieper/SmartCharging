@@ -38,9 +38,12 @@ for n=UserNum
 end
 
 Users{1}.ChargingMat=cell(size(TimesOfPreAlgo,1)+1,1);
+Users{1}.ChargingMatDemoUsers=cell(size(TimesOfPreAlgo,1)+1,1);
 for k=1:size(Users{1}.ChargingMat,1)-1
     Users{1}.ChargingMat{k,2}=mod(TimesOfPreAlgo(k,1)-1,ControlPeriods) + 96*(TimeOfPreAlgo(k)<TimeOfPreAlgo(1));
     Users{1}.ChargingMat{k,1}=zeros(ControlPeriods-4*Time.StepInd*(k-1), NumCostCats, ceil(length(Time.Sim.Vec)/(Time.StepInd*24)), 'single');
+    Users{1}.ChargingMatDemoUsers{k,2}=mod(TimesOfPreAlgo(k,1)-1,ControlPeriods) + 96*(TimeOfPreAlgo(k)<TimeOfPreAlgo(1));
+    Users{1}.ChargingMatDemoUsers{k,1}=zeros(ControlPeriods-4*Time.StepInd*(k-1), NumCostCats, numel(DemoUsers), ceil(length(Time.Sim.Vec)/(Time.StepInd*24)), 'single');
 end
 
 Users{1}.AvailabilityMat=single(zeros(24*Time.StepInd, ceil(length(Time.Sim.Vec)/(Time.StepInd*24)), NumUsers));

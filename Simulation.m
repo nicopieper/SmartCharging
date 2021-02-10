@@ -1,12 +1,13 @@
 %% Initialisation
 tic
-NumUsers=2;
+NumUsers=4;
 Users=cell(NumUsers+1,1); % the main cell variable all user data is stored in
 Users{1}.SmartCharging=true;
 UseParallel=false;
 UseSpotPredictions=true;
 UsePVPredictions=true;
 UseIndividualEEGBonus=true;
+DemoUsers=[2:3];
 
 InitialiseUsers;
 ControlPeriods=96*2;
