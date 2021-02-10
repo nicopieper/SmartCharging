@@ -193,6 +193,7 @@ end
 
 [Row, ~]=find(TimeInd==TimesOfPreAlgo);
 Users{1}.ChargingMat{Row,1}(:,:,PreAlgoCounter)=single(sum(OptimalChargingEnergies,3));
+Users{1}.ChargingMatDemoUsers{Row,1}(:,:,DemoUsers-1,PreAlgoCounter)=single(OptimalChargingEnergies(:,:,DemoUsers-1));
 
 if ismember(TimeInd, TimesOfPreAlgo(1,:))
     Users{1}.AvailabilityMat(:,PreAlgoCounter,:)=single(Availability(1:24*Time.StepInd,1,:));

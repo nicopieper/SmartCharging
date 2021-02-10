@@ -21,7 +21,7 @@ k=1;
 DemoPlots{n}.Data{k}=repelem(Smard.DayaheadRealH, 4);
 DemoPlots{n}.Time.Vec{k}=Time.Vec;
 DemoPlots{n}.Label{k}="Price";
-DemoPlots{n}.YLabel{k}="Price in €/MWh";
+DemoPlots{n}.YLabel{k}="Price in ï¿½/MWh";
 DemoPlots{n}.YMin{k}='dynamic';
 DemoPlots{n}.YMax{k}='dynamic';
 DemoPlots{n}.YAxis{k}=1;
@@ -29,7 +29,7 @@ DemoPlots{n}.PlotColor{k}=k;
 
 k=2;
 DemoPlots{n}.Label{k}="Prediction LSQ";
-DemoPlots{n}.YLabel{k}="Price in €/MWh";
+DemoPlots{n}.YLabel{k}="Price in ï¿½/MWh";
 if size(DemoPlots{n}.Data)<=1
     StoragePath=strcat(Path.Prediction, "DayaheadRealH", Dl);
     %[StorageFile, StoragePath]=uigetfile(StoragePath, strcat("Select ", DemoPlots{n}.Title, " ", DemoPlots{n}.Label{k}));
@@ -46,7 +46,7 @@ DemoPlots{n}.PlotColor{k}=k;
 
 k=3;
 DemoPlots{n}.Label{k}="Prediction NARXNET";
-DemoPlots{n}.YLabel{k}="Price in €/MWh";
+DemoPlots{n}.YLabel{k}="Price in ï¿½/MWh";
 if length(DemoPlots{n}.Data)<=2
     StoragePath=strcat(Path.Prediction, "DayaheadRealH", Dl);
     %[StorageFile, StoragePath]=uigetfile(StoragePath, strcat("Select ", DemoPlots{n}.Title, " ", DemoPlots{n}.Label{k}));
@@ -80,7 +80,7 @@ if ~exist("Users", "var")
 end
 
 DemoUser=2;
-while Users{DemoUser}.AverageMileageYear_km<22000 || Users{DemoUser}.ACChargingPowerHomeCharging<4000 || Users{DemoUser}.AverageMileageYear_km>50000 || sum(Users{DemoUser}.LogbookSmart(:,8)>0)/length(Users{DemoUser}.LogbookSource(:,4))>0.05 || sum(Users{DemoUser}.LogbookSmart(:,8)>0)/length(Users{DemoUser}.LogbookSource(:,4))<0.005  || ~Users{DemoUser}.PVPlantExists
+while Users{DemoUser}.AverageMileageYear_km<22000 || Users{DemoUser}.AverageMileageYear_km>50000 || Users{DemoUser}.ACChargingPowerHomeCharging<4000 || sum(Users{DemoUser}.LogbookSmart(:,8)>0)/length(Users{DemoUser}.LogbookSource(:,4))>0.05 || sum(Users{DemoUser}.LogbookSmart(:,8)>0)/length(Users{DemoUser}.LogbookSource(:,4))<0.005  || ~Users{DemoUser}.PVPlantExists
     DemoUser=DemoUser+1;
 end
 
