@@ -192,7 +192,7 @@ if CostCats(1)
 end
 
 if ismember(TimeInd, TimesOfPreAlgo(1,:))
-    Users{1}.ChargingMat{1}(:,:,:,PreAlgoCounter)=single(OptimalChargingEnergies);
+    Users{1}.ChargingMat{1}(:,:,PreAlgoCounter)=single(squeeze(sum(OptimalChargingEnergies,3)));
     Users{1}.AvailabilityMat=single([Users{1}.AvailabilityMat, Availability(1:24*Time.StepInd,1,:)]);
     
     SuccessfulResPoOffers(:,PreAlgoCounter+1)=ResPoOffers(:,1,PreAlgoCounter+1)<=repelem(ResPoPricesReal4H(floor((TimeInd+TD.Main)/(4*Time.StepInd))+1+(24-hour(TimeOfPreAlgo(1)))/4:floor((TimeInd+TD.Main)/(4*Time.StepInd))+(24-hour(TimeOfPreAlgo(1)))/4+6,5)/1000, ConstantResPoPowerPeriodsScaling); %[EUR/kW]
@@ -209,7 +209,7 @@ if ismember(TimeInd, TimesOfPreAlgo(1,:))
     
 else
     [Row, ~]=find(TimeInd==TimesOfPreAlgo);
-    Users{1}.ChargingMat{Row}(:,:,:,PreAlgoCounter)=single(OptimalChargingEnergies);
+    Users{1}.ChargingMat{Row}(:,:,PreAlgoCounter)=single(squeeze(sum(OptimalChargingEnergies,3)));
 end
 
 %%
