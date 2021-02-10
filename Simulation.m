@@ -1,9 +1,9 @@
 %% Initialisation
 tic
-NumUsers=10000;
+NumUsers=15000;
 Users=cell(NumUsers+1,1); % the main cell variable all user data is stored in
-Users{1}.SmartCharging=false;
-UseParallel=false;
+Users{1}.SmartCharging=true;
+UseParallel=true;
 UseSpotPredictions=true;
 UsePVPredictions=true;
 UseIndividualEEGBonus=true;
@@ -19,14 +19,11 @@ Debugging=0;
 FinishSimulation=1;
 CleanUpWorkspace=0;
 
-
-% SensitivitEURtsanalyse: ResPoPriceFactor, ResEnPriceFactor, ResPoBuffer
-
 TSim=tic;
 
 if Users{1}.SmartCharging
     if UseParallel
-        NumDecissionGroups=250;
+        NumDecissionGroups=300;
         gcp
     else
         NumDecissionGroups=1;
