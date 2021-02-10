@@ -51,11 +51,11 @@ SuccessfulResPoOffers=zeros(6*ConstantResPoPowerPeriodsScaling,1);
 % DemandInds(:,1)=0;
 % DemandInds(DemandInds==0)=ControlPeriods+1;
 
-CostsElectricityBase=zeros(ControlPeriods, 1, NumUsers);
+CostsElectricityBase=zeros(1, 1, NumUsers);
 VarCounter=0;
 for k=UserNum
     VarCounter=VarCounter+1;
-    CostsElectricityBase(1:ControlPeriods, 1, VarCounter)=double(Users{k}.PrivateElectricityPrice + Users{k}.NNEEnergyPrice);
+    CostsElectricityBase(1, 1, VarCounter)=double(Users{k}.PrivateElectricityPrice + Users{k}.NNEEnergyPrice);
 end
 
 %% Initialise Constraints
