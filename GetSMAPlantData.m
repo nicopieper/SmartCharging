@@ -109,7 +109,7 @@ for n=1:size(Folders,1) % iterate through the plants
         File=fopen(strcat(PlantPath, Dl, 'AzimutSlope.csv'), 'r'); % begin to read the plant's properties from the csv file. includes location, start of plant's operation date, Peakpower, ID, SMA link, some other processing indicators and all dates data exists for
         AzimutSlope = fscanf(File,formatSpec);
         Delimiter1=strfind(AzimutSlope, ':');
-        Delimiter2=strfind(AzimutSlope, '°');
+        Delimiter2=strfind(AzimutSlope, 'ï¿½');
         [~]=fclose(File); 
     end
     

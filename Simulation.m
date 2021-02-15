@@ -2,7 +2,7 @@
 
 NumUsers=20000;
 Users=cell(NumUsers+1,1); % the main cell variable all user data is stored in
-Users{1}.SmartCharging=true;
+Users{1}.SmartCharging=false;
 UseParallel=true;
 UseSpotPredictions=true;
 UsePVPredictions=true;
@@ -21,6 +21,7 @@ FinishSimulation=1;
 CleanUpWorkspace=0;
 
 TSim=tic;
+datetime('now')
 
 if Users{1}.SmartCharging
     if UseParallel
@@ -131,6 +132,10 @@ if ActivateWaitbar
 end
 
 PreAlgoCounter=0;
+
+MatlabRAM{1}=whos;
+disp(strcat("Matlab RAM: ", num2str(sum([MatlabRAM{end}.bytes])/1024/1024/1024)))
+save("MatlabRAM.mat", "MatlabRAM", '-v7.3')
 
 %% Start Simulation
 
@@ -247,6 +252,16 @@ for TimeInd=Time.Sim.VecInd(2:end-ControlPeriods)
             end
         
             if ismember(TimeInd, TimesOfPreAlgo(1,:))
+                MatlabRAM{end+1}=whos;
+                save("MatlabRAM.mat", "MatlabRAM", '-v7.3')
+                disp(strcat("Matlab RAM: ", num2str(sum([MatlabRAM{end}.bytes])/1024/1024/1024)))
+                CheckRAM;
+                if isa(RAM,'double') && RAM(2)/1024/1024<2
+                    disp("Simulation stopped to prevent running out of memory")
+                    FinishSimulation=0;
+                    break;
+                end
+
                 PreAlgoCounter=PreAlgoCounter+1;
                 
                 if UseSpotPredictions
@@ -261,6 +276,7 @@ for TimeInd=Time.Sim.VecInd(2:end-ControlPeriods)
             
             CalcDynOptVars;
             PreAlgo;
+            whos('Users')
 
             for n=UserNum  
                 Users{n}.Logbook(TimeInd+TD.User:TimeInd+TD.User+ControlPeriodsIt-1, [false(1,4), CostCats])=OptimalChargingEnergies(1:ControlPeriodsIt,:,n==UserNum);
@@ -299,7 +315,10 @@ for TimeInd=Time.Sim.VecInd(2:end-ControlPeriods)
         
     end
     
-    if SaveResults && mod(TimeInd, 96*10)==0 
+    if Users{1}.SmartCharging && SaveResults && mod(TimeInd, 96*10)==0 
+        if isa(RAM,'double')
+            disp(strcat(num2str(RAM(2)/1024/1024), "GB RAM left"))
+        end
         Users{1}.Time.Stamp=datetime('now');
         FileName=strcat(Path.Simulation, "Workspace", datestr(Users{1}.Time.Stamp, "yyyymmdd-HHMM"), "_", Time.IntervalFile, "_", num2str(length(Users)-1), "_", num2str(Users{1}.SmartCharging), "_", ".mat");
         save(FileName, "-v7.3");
@@ -309,7 +328,11 @@ for TimeInd=Time.Sim.VecInd(2:end-ControlPeriods)
     if ActivateWaitbar %&& mod(TimeInd+TD.User,1000)==0
         waitbar(TimeInd/length(Time.Sim.Vec), h, strcat("Simulate charging processes: ", num2str(round(TimeInd/length(Time.Sim.Vec)*1000)/10),"%"));
     end
+    
 end
+
+
+if FinishSimulation
 
 %%
 for n=UserNum
@@ -328,7 +351,7 @@ if ActivateWaitbar
     close(h);
 end
 
-if SaveResults
+if Users{1}.SmartCharging && SaveResults
     Users{1}.Time.Stamp=datetime('now');
     Users{1}.FileName=strcat(Path.Simulation, "Users_", datestr(Users{1}.Time.Stamp, "yyyymmdd-HHMM"), "_", Time.IntervalFile, "_", num2str(length(Users)-1), "_", num2str(Users{1}.SmartCharging), "_", ".mat");
     save(Users{1}.FileName, "Users", "-v7.3");
@@ -336,7 +359,7 @@ end
 
 clearvars A ConsEnergyDemandTSA ConsEnergyDemandTSAIt Aeq b beq ConsSumPowerTSA ConseqEnergyCPA ConsSumPowerTSAIt ConseqEnergyCPAIt ConseqResPoOffer ConseqResPoOfferAIt ConseqMatchLastResPoOffers4HA ConseqMatchLastResPoOffers4HAIt Costf Costs OptimalChargingEnergies lb ub ConsPowerTSb PowerTS
 
-if FinishSimulation
+
 
 for n=UserNum
     Users{n}.Logbook=Users{n}.Logbook(1:TimeInd,:);
