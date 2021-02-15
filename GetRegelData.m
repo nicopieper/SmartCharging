@@ -75,10 +75,10 @@
 %% Initialisation
 
 tic
-OnlyAddNewLists=true;
+OnlyAddNewLists=false;
 ProcessDataNewRegelDemand=false;
-ProcessDataNewRegelResOfferLists4H=true;
-ProcessDataNewRegelPrices=false;
+ProcessDataNewRegelResOfferLists4H=false;
+ProcessDataNewRegelPrices=true;
 Time.StartRegelOffers=datetime(2019,08,10,0,0,0,'TimeZone', 'Africa/Tunis');
 RegelTypeLoad="aFRR";
 
@@ -309,6 +309,12 @@ if ProcessDataNew.Regel
                 LoadedResEnPrices(:,4)=LoadedResEnPrices(:,2)./LoadedDemandData(:,2)*4; % Mean Price for Positive Energy [€/MWh]
                 LoadedResEnPrices(:,9:10)=reshape(ones(16,1).*min(reshape(LoadedResEnPrices(:,5:6), 16, [], 2), [], 1), [], 2); % Min marginal price per 4h Zeitscheibe [€/MWh]
                 
+                for Col=1:2
+                    for Row=1:size(LoadedOfferLists,1)
+                        LoadedResEnPrices((Row-1)*16+1:Row*16,10+Col)=repelem(sum(LoadedOfferLists{Row,Col+1}(:,2).*LoadedOfferLists{Row,Col+1}(:,3))./sum(LoadedOfferLists{Row,Col+1}(:,3)), 16,1);
+                    end
+                end
+                
                 % now the real paid resevere power prices are calculated,
                 % which is much more easy, as they are fixed and given in
                 % the ResOfferLists4H. Just multiply all allocated power
@@ -344,7 +350,7 @@ end
 
 ResPoDemRealQH=NaN(round(days(Time.End-Time.Start))*96,2); % ReservePowerDemandRealMeasuredQuaterHourly
 ResOfferLists4H=cell(6*round(days(Time.End-Time.Start)),3);
-ResEnPricesRealQH=NaN(round(days(Time.End-Time.Start))*96,10); % ReserveEnergyPricesQuaterHourly
+ResEnPricesRealQH=NaN(round(days(Time.End-Time.Start))*96,12); % ReserveEnergyPricesQuaterHourly
 ResPoPricesReal4H=NaN(round(days(Time.End-Time.Start))*6,8); % ReservePowerPrices4hInterval
 
 h=waitbar(0, 'Lade Regelleistungsmarktdaten von lokalem Pfad');
@@ -360,7 +366,7 @@ for Date=DateVec % iterate through the days between Time.Start and Time.End
         load(strcat(Path.Regel, RegelTypeLoad, Dl, 'Offers', Dl, Year, Dl, Month, Dl, 'ResOfferLists4H_', Year, '-', Month, '-', datestr(Date, 'dd'), '.mat')); % same mechanism as above
         ResOfferLists4H(DateCounter*6+1:(DateCounter+1)*6,:)=LoadedOfferLists; % [Time, Neg. ResOfferLists4H, Pos. ResOfferLists4H]
         load(strcat(Path.Regel, RegelTypeLoad, Dl, 'Prices', Dl, Year, Dl, Month, Dl, 'ResEnPricesData', Year, '-', Month, '-', datestr(Date,'dd')));
-        ResEnPricesRealQH(DateCounter*96+1:(DateCounter+1)*96,:)=LoadedResEnPrices; % [Total Amount Payed for Energy Neg [€],  Total Amount Payed for Energy Pos [€], Mean Price Energy Neg [€/MWh], Mean Price Energy Pos [€/MWh], Marginal Price Energy Neg [€/MWh], Marginal Price Energy Pos [€/MWh], Min Price Energy Neg [€/MWh], Min Price Energy Pos [€/MWh]]
+        ResEnPricesRealQH(DateCounter*96+1:(DateCounter+1)*96,:)=LoadedResEnPrices; % [Total Amount Payed for Energy Neg [€],  Total Amount Payed for Energy Pos [€], Mean Price Energy Neg [€/MWh], Mean Price Energy Pos [€/MWh], Marginal Price Energy Neg [€/MWh], Marginal Price Energy Pos [€/MWh], Min Price Energy Offered Neg [€/MWh], Min Price Energy Offered Pos [€/MWh], Min marginal price per Zeitscheibe Neg [€/MWh], Min marginal price per Zeitscheibe Pos [€/MWh], Avg. Offered Energy Neg [€/MWh], Avg. Offered Energy Pos [€/MWh]]
         load(strcat(Path.Regel, RegelTypeLoad, Dl, 'Prices', Dl, Year, Dl, Month, Dl, 'ResPoPricesData', Year, '-', Month, '-', datestr(Date,'dd')));
         ResPoPricesReal4H(DateCounter*6+1:(DateCounter+1)*6,:)=LoadedResPoPrices; % [Total Amount Payed for Neg Power [€],  Total Amount Payed for Pos Power [€], Neg. average price [€/MW], Pos. average price [€/MW], Neg. marginal price [€/MW], Pos. marginal price [€/MW], Neg. minimum prices [€/MW], Pos. minimum price [€/MW]]
     end
