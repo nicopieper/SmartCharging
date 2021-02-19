@@ -1,13 +1,13 @@
 % [StorageFile, StoragePath]=uigetfile(Path.Simualtion), 'Select the Simulation');
 StoragePath=Path.Simulation;
-StorageFile="Users_20210203-0409_20190801-20200831_15000_1_0.mat";
+StorageFile="Users_20210214-1050_20190801-20200831_20000_1_";
 if ~exist("Users", 'var')
     load(strcat(StoragePath, StorageFile))
 end
 
 TD.Main=find(ismember(Time.Vec,Users{1}.Time.Start),1)-1;
-ResPoOffers=[Users{1}.ResPoOffers(:,1,:)*1000, Users{1}.ResPoOffers(:,2,:)/1000]; % [€/MW, MW]
-ResEnOffers=Users{1}.ResEnOffers(:,1,:)*1000;  % [€/MWh]
+ResPoOffers=[Users{1}.ResPoOffers(:,1,:)*1000, Users{1}.ResPoOffers(:,2,:)/1000]; % [ï¿½/MW, MW]
+ResEnOffers=Users{1}.ResEnOffers(:,1,:)*1000;  % [ï¿½/MWh]
 
 ResPoCosts=[];
 ResEnCosts=[];
@@ -81,4 +81,4 @@ for AddOwnOffers=[2,1]
         
     end
 end
-            
+ResEnActivated(ResEnActivated(:,2)<0.001,:)=0;

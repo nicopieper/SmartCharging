@@ -133,10 +133,11 @@ if UseParallel
         x1{k}=x11;
     end
     
-    x=[];
+    x=zeros(length(x1)*size(x1{1},1),1);
     BackwardsOrder=[];
     for k=1:NumDecissionGroups
-        x=[x; x1{k}];
+%         x=[x; x1{k}];
+        x((k-1)*size(x1{1},1)+1:(k)*size(x1{1},1),1)=x1{k};
         BackwardsOrder=[BackwardsOrder; DecissionGroups{k,1}];
     end
     [~, BackwardsOrder]=sort(BackwardsOrder, 'ascend');
@@ -193,7 +194,7 @@ end
 
 [Row, ~]=find(TimeInd==TimesOfPreAlgo);
 Users{1}.ChargingMat{Row,1}(:,:,PreAlgoCounter)=single(sum(OptimalChargingEnergies,3));
-Users{1}.ChargingMatDemoUsers{Row,1}(:,:,DemoUsers-1,PreAlgoCounter)=single(OptimalChargingEnergies(:,:,DemoUsers-1));
+%Users{1}.ChargingMatDemoUsers{Row,1}(:,:,1:numel(DemoUsers),PreAlgoCounter)=single(OptimalChargingEnergies(:,:,DemoUsers-1));
 
 if ismember(TimeInd, TimesOfPreAlgo(1,:))
     Users{1}.AvailabilityMat(:,PreAlgoCounter,:)=single(Availability(1:24*Time.StepInd,1,:));

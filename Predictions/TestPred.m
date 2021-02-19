@@ -182,32 +182,6 @@ if ActivateWaitbar
     close(h)
 end
 
-if Save
-    PredcitionTemp=Prediction;
-    PredictionMatTemp=PredictionMat;
-    PredMethodTemp=PredMethod;
-    for p=1:NumPredMethod
-        Prediction=PredcitionTemp(:,p);
-        PredictionMat=PredictionMatTemp(:,:,p);
-        PredMethod=PredMethodTemp(p,:);
-        Pred.Data=Prediction;
-        Pred.DataMat=PredictionMat;
-        Pred.Method=PredMethod;
-        Pred.Target=Target;
-        Pred.Time=Time;
-        Pred.Range=Range;
-        Pred.ForecastIntervalInd=ForecastIntervalPredInd;
-        Pred.Time.Stamp=datetime('now');
-        Pred.FileName=strcat(Path.Prediction, TargetTitle, Dl, LegendVec(p), "_", datestr(Pred.Time.Stamp, 'yyyymmdd-HHMM'), "_", Time.IntervalFile, "_", num2str(ForecastIntervalPredInd), "h", "_", num2str(PredMethod{p,4}), "Preds", "_", num2str(Time.HourPred), "hr", ".mat");
-        if ~isfolder(strcat(Path.Prediction, TargetTitle))
-            mkdir(strcat(Path.Prediction, TargetTitle))
-        end
-        save(Pred.FileName, "Pred", "-v7.3");
-    end
-Prediction=PredcitionTemp;
-PredictionMat=PredictionMatTemp;
-PredMethod=PredMethodTemp;
-end
 
 %% Evaluation
 for p=1:NumPredMethod
@@ -245,6 +219,33 @@ MAESTDConst=round(MAEConst./STDConst,3);
 Results=splitvars(table({'MAE'; 'mMAPE'; 'MAE/STD'; 'RMSE'; 'MEAN_ABS'; 'STD'},...
     [MAEConst; mMAPEConst; MAESTDConst; RMSEConst; MEANConst; STDConst]));
 Results.Properties.VariableNames=["Metric", LegendVec] % Print the MAE results in a Table. Each column represents one Model
+
+if Save
+    PredcitionTemp=Prediction;
+    PredictionMatTemp=PredictionMat;
+    PredMethodTemp=PredMethod;
+    for p=1:NumPredMethod
+        Prediction=PredcitionTemp(:,p);
+        PredictionMat=PredictionMatTemp(:,:,p);
+        PredMethod=PredMethodTemp(p,:);
+        Pred.Data=Prediction;
+        Pred.DataMat=PredictionMat;
+        Pred.Target=Target;
+        Pred.Time=Time;
+        Pred.Range=Range;
+        Pred.ForecastIntervalInd=ForecastIntervalPredInd;
+        Pred.Time.Stamp=datetime('now');
+        Pred.Results=table(Results.Metric, Results.(LegendVec(p)), 'VariableNames', ["Metric", LegendVec(p)]);
+        Pred.FileName=strcat(Path.Prediction, TargetTitle, Dl, LegendVec(p), "_", datestr(Pred.Time.Stamp, 'yyyymmdd-HHMM'), "_", Time.IntervalFile, "_", num2str(ForecastIntervalPredInd), "h", "_", num2str(PredMethod{1,4}), "Preds", "_", num2str(Time.HourPred), "hr", ".mat");
+        if ~isfolder(strcat(Path.Prediction, TargetTitle))
+            mkdir(strcat(Path.Prediction, TargetTitle))
+        end
+        save(Pred.FileName, "Pred", "-v7.3");
+    end
+Prediction=PredcitionTemp;
+PredictionMat=PredictionMatTemp;
+PredMethod=PredMethodTemp;
+end
 
 figure(11)
 subplot(2,1,1)

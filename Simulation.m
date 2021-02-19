@@ -1,8 +1,8 @@
 %% Initialisation
 
-NumUsers=20000;
+NumUsers=100000;
 Users=cell(NumUsers+1,1); % the main cell variable all user data is stored in
-Users{1}.SmartCharging=false;
+Users{1}.SmartCharging=true;
 UseParallel=true;
 UseSpotPredictions=true;
 UsePVPredictions=true;
@@ -20,12 +20,9 @@ Debugging=0;
 FinishSimulation=1;
 CleanUpWorkspace=0;
 
-TSim=tic;
-datetime('now')
-
 if Users{1}.SmartCharging
     if UseParallel
-        NumDecissionGroups=400;
+        NumDecissionGroups=2000;
         gcp
     else
         NumDecissionGroups=1;
@@ -133,14 +130,25 @@ end
 
 PreAlgoCounter=0;
 
-MatlabRAM{1}=whos;
-disp(strcat("Matlab RAM: ", num2str(sum([MatlabRAM{end}.bytes])/1024/1024/1024)))
+MatlabRAM{1,1}=whos;
+if strcmp(Dl, '/')
+    CheckRAM;
+    MatlabRAM{end,2}=RAM;
+    MatlabRAM{end,3}=0;
+end
+disp(strcat("Matlab RAM: ", num2str(sum([MatlabRAM{end,1}.bytes])/1024/1024/1024)))
 save("MatlabRAM.mat", "MatlabRAM", '-v7.3')
 
 %% Start Simulation
 
-%for TimeInd=Time.Sim.VecInd(2:end-ControlPeriods)
+TSim=tic;
+datetime('now')
+TimeIndVec=zeros(Time.Sim.VecInd(end-ControlPeriods),10);
+
 for TimeInd=Time.Sim.VecInd(2:end-ControlPeriods)
+    
+    TimeIndVec(TimeInd,1)=1;
+    save("TimeIndVec.mat", "TimeIndVec", "-v7.3")
           
     for n=UserNum
         
@@ -183,6 +191,9 @@ for TimeInd=Time.Sim.VecInd(2:end-ControlPeriods)
         Users{n}.Logbook(TimeInd+TD.User,9)=min(Users{n}.BatterySize, Users{n}.Logbook(TimeInd+TD.User-1,9) - Users{n}.Logbook(TimeInd+TD.User,4) + Users{n}.Logbook(TimeInd+TD.User,8));
 
     end
+    
+    TimeIndVec(TimeInd,2)=1;
+    save("TimeIndVec.mat", "TimeIndVec", "-v7.3")
     
     if ~Users{1}.SmartCharging
         
@@ -250,17 +261,11 @@ for TimeInd=Time.Sim.VecInd(2:end-ControlPeriods)
             if ~UseSpotPredictions
                 SpotmarktPricesCP=SpotmarketPrices(TimeInd+TD.User:TimeInd+TD.User+ControlPeriodsIt-1);
             end
+            
+            TimeIndVec(TimeInd,3)=1;
+            save("TimeIndVec.mat", "TimeIndVec", "-v7.3")
         
             if ismember(TimeInd, TimesOfPreAlgo(1,:))
-                MatlabRAM{end+1}=whos;
-                save("MatlabRAM.mat", "MatlabRAM", '-v7.3')
-                disp(strcat("Matlab RAM: ", num2str(sum([MatlabRAM{end}.bytes])/1024/1024/1024)))
-                CheckRAM;
-                if isa(RAM,'double') && RAM(2)/1024/1024<2
-                    disp("Simulation stopped to prevent running out of memory")
-                    FinishSimulation=0;
-                    break;
-                end
 
                 PreAlgoCounter=PreAlgoCounter+1;
                 
@@ -274,8 +279,32 @@ for TimeInd=Time.Sim.VecInd(2:end-ControlPeriods)
                 SpotmarktPricesCP=[SpotmarketPrices(TimeInd+TD.User:TimeInd+TD.User + 24*Time.StepInd-mod(TimeInd-1,24*Time.StepInd)-1 + (mod(TimeInd-1,24*Time.StepInd)-13*Time.StepInd > 0)*96); SpotmarketPricesPred2(TimeInd+TD.SpotmarketPricesPred2 + 24*Time.StepInd-mod(TimeInd-1,24*Time.StepInd)-1 + (mod(TimeInd-1,24*Time.StepInd)-13*Time.StepInd > 0)*96+1:TimeInd+TD.SpotmarketPricesPred2+ControlPeriodsIt-1)];
             end
             
+            TimeIndVec(TimeInd,4)=1;
+            save("TimeIndVec.mat", "TimeIndVec", "-v7.3")
+            
+            MatlabRAM{end+1,1}=whos;
+            disp(strcat("Matlab RAM: ", num2str(sum([MatlabRAM{end,1}.bytes])/1024/1024/1024)))
+            if strcmp(Dl, '/')
+                CheckRAM;
+                MatlabRAM{end,2}=RAM;
+                MatlabRAM{end,3}=TimeInd;
+                save("MatlabRAM.mat", "MatlabRAM", '-v7.3')
+                if isa(RAM,'double') && sum(RAM(1:2,2))/1024/1024<10
+                    disp(strcat("Simulation stopped to prevent running out of memory: ", num2str(RAM(1:2,2)'/1024/1024)))
+                    FinishSimulation=0;
+                    break;
+                end
+            end
+            
+            TimeIndVec(TimeInd,5)=1;
+            save("TimeIndVec.mat", "TimeIndVec", "-v7.3")
+            
             CalcDynOptVars;
+            TimeIndVec(TimeInd,6)=1;
+            save("TimeIndVec.mat", "TimeIndVec", "-v7.3")
             PreAlgo;
+            TimeIndVec(TimeInd,7)=1;
+            save("TimeIndVec.mat", "TimeIndVec", "-v7.3")
             whos('Users')
 
             for n=UserNum  
@@ -287,8 +316,11 @@ for TimeInd=Time.Sim.VecInd(2:end-ControlPeriods)
         end
         
         %% Algo 2 optimisation
-        
+        TimeIndVec(TimeInd,8)=1;
+        save("TimeIndVec.mat", "TimeIndVec", "-v7.3")
         LiveAlgo;
+        TimeIndVec(TimeInd,9)=1;
+        save("TimeIndVec.mat", "TimeIndVec", "-v7.3")
         
         %%
            
@@ -314,6 +346,9 @@ for TimeInd=Time.Sim.VecInd(2:end-ControlPeriods)
         end
         
     end
+    
+    TimeIndVec(TimeInd,9)=1;
+    save("TimeIndVec.mat", "TimeIndVec", "-v7.3")
     
     if Users{1}.SmartCharging && SaveResults && mod(TimeInd, 96*10)==0 
         if isa(RAM,'double')
