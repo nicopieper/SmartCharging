@@ -14,7 +14,7 @@ Time.StepMin=minutes(Time.Step);
 ProcessDataNew.Smard=0; 
 ProcessDataNew.EC=0;
 ProcessDataNew.SMAPlant=0;
-ProcessDataNew.Regel=1;
+ProcessDataNew.Regel=0;
 
 %% Set data paths
 
@@ -67,6 +67,3 @@ GetSmardData;
 %GetEnergyChartsData;
 GetSMAPlantData;
 GetRegelData;
-
-
-

@@ -1,17 +1,15 @@
 %% Availability, EnergyDemand and Prices
 
-VarCounter=0;
-Availability=zeros(ControlPeriodsIt,1,NumUsers);
 SumPower=zeros(ControlPeriodsIt,1,NumUsers);
 MaxEnergyChargableSoCTS=zeros(ControlPeriodsIt,1,NumUsers);
 MaxEnergyChargableDeadlockCP=zeros(1,1,NumUsers);
 MinEnergyRequiredTS=zeros(ControlPeriodsIt,1,NumUsers);
 MaxPossibleSoCTS=zeros(ControlPeriodsIt,1,NumUsers);
+CalcAvailability;
 
+VarCounter=0;
 for k=UserNum
     VarCounter=VarCounter+1;
-    
-    Availability(:,1,VarCounter)=max(0, ismember(double(Users{k}.Logbook(TimeInd+TD.User:TimeInd+TD.User-1+ControlPeriodsIt,1)), 3:5) - double(Users{k}.Logbook(TimeInd+TD.User:TimeInd+TD.User-1+ControlPeriodsIt,2))/Time.StepMin) .* double(Users{k}.GridConvenientChargingAvailabilityControlPeriod(end-ControlPeriodsIt+1:end));
     
     SumPower(:,1,VarCounter)=MaxPower(:,1,VarCounter)/4.*Availability(:,1,VarCounter);
     
@@ -58,6 +56,10 @@ for k=UserNum
         MaxPossibleSoCTS(p)=min(double(Users{k}.BatterySize), MaxPossibleSoCTS(p-1)-Consumed(p-1)+SumPower(p,1,VarCounter));
     end
     
+    w=MaxPossibleSoCTS-SoC';
+    if ~isequal(round(w(end)), round(MaxEnergyChargableDeadlockCP(1,1,VarCounter))) && ismember(TimeInd, TimesOfPreAlgo)
+        disp("inequal")
+    end
     
     % Wie viel Energie muss ich mindestens laden, damit mein SoC nicht
     % unter den PublicCharging-Schwellwert fallen wird?
@@ -74,4 +76,9 @@ PowerTS=repelem(MaxPower/4,ControlPeriodsIt,NumCostCats,1);
 PowerTS(:,2,:)=min([PowerTS(:,2,:), PVPower(end-ControlPeriodsIt+1:end,:,:)/4], [], 2);
 PowerTS(1,2,:)=min(MaxPower/4, PVPowerReal(ControlPeriods-ControlPeriodsIt+1,1,:)/4);
 ConsPowerTSb=PowerTS;
-MinEnergyRequiredTS=min(min([MinEnergyRequiredTS, MaxEnergyChargableSoCTS], [], 2), MaxEnergyChargableDeadlockCP);
+%MinEnergyRequiredTS=min(min([MinEnergyRequiredTS, MaxEnergyChargableSoCTS], [], 2), MaxEnergyChargableDeadlockCP);
+%MinEnergyRequiredTS1=min([MinEnergyRequiredTS, MaxEnergyChargableSoCTS], [], 2);
+% if ~isequal(MinEnergyRequiredTS1, MinEnergyRequiredTS)
+%     disp(num2str(TimeInd))
+% end
+MinEnergyRequiredTS=min(MinEnergyRequiredTS,MaxEnergyChargableDeadlockCP);

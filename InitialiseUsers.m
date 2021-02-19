@@ -94,6 +94,7 @@ Users{1}.MwSt=1.19; % The VAT rate
 Users{1}.EEGBonus=single(9.17); %[ct/kWh] Bonus paid by the DSO to PV plant owner for supplying energy to the grid
 AddPV=true; % determines wheter PV plants shall be assigned to the users. In general true, only false for test purposes
 MeanPrivateElectricityPrice=single(31.81/Users{1}.MwSt - 2.92767 - 6.364); % [ct/kWh] average German electricity price in 2020 according to Strom-Report without VAT (19%), electricity production price (avg. Dayahead price was 3.7513 ct/kWh in 2019) and NNE energy price (avg. was 7.06 ct/kWh in 2019)
+%MeanPrivateElectricityPrice=single(31.81/Users{1}.MwSt - 7.75 - 2.92767); % [ct/kWh] average German electricity price in 2020 according to BDEW without VAT (19%), NNE price (base + energy avg. was 7.75 ct/kWh in 2020 excl. VAT) and electricity production price (avg. Dayahead price was 2.92767 ct/kWh in simulation interval)
 PublicACChargingPrices=single([29, 39]); % [ct/kWh]
 PublicDCChargingPrices=single([39, 49]); % [ct/kWh]
 IMSYSInstallationCostsMean=single(80000); % [ct] The costs for the installation of the IMSYS have to be paid by the wallbox owner.
@@ -128,9 +129,9 @@ end
 if ~exist('VehicleProperties', 'var')
     VehicleProperties=readmatrix(strcat(Path.Simulation, 'Vehicle_Properties.xlsx'), 'NumHeaderLines', 1, 'OutputType', 'string'); % load the real car properties. Model Name, Fleet Share cum., Battery Capacity [kWh], Consumption [kWh/km], Share Charging Point Power
 end
-if ~exist('GridConvenienChargingDistribution', 'var')
-    GridConvenienChargingDistribution=readmatrix(strcat(Path.Simulation, 'GridConvenientCharging_Distribution.csv'), 'NumHeaderLines', 1, 'OutputType', 'string');
-    GridConvenienChargingDistribution=single(str2double(GridConvenienChargingDistribution(:,2:end)));
+if ~exist('DSOContractData', 'var')
+    DSOContractData=readmatrix(strcat(Path.Simulation, 'DSOContractData.csv'), 'NumHeaderLines', 1, 'OutputType', 'string');
+    DSOContractData=single(str2double(DSOContractData(:,2:end)));
 end
 
 %% Store processing information
@@ -196,15 +197,15 @@ for n=2:NumUsers+1
     Users{n}.PublicChargingThreshold_Wh=Users{n}.BatterySize*Users{n}.PublicChargingThreshold;
     
     % Selection of a grid convenient charging profile
-    GridConvenientChargingProfile=max(single(RandomNumbers(8)>=(0:1/size(GridConvenienChargingDistribution,2):1-1/size(GridConvenienChargingDistribution,2))).*(1:size(GridConvenienChargingDistribution,2)));
+    GridConvenientChargingProfile=max(single(RandomNumbers(8)>=(0:1/size(DSOContractData,2):1-1/size(DSOContractData,2))).*(1:size(DSOContractData,2)));
 %     if RandomNumbers(8)<=LikelihoodGridConvenientCharging
-    Users{n}.NNEEnergyPriceGridConvenientCharging=GridConvenienChargingDistribution(3,GridConvenientChargingProfile); % [ct/kWh] netto (without VAT). reduced NNE energy price due to the allowance for the DSO to manage the charging
-    Users{n}.NNEEnergyPriceNotGridConvenientCharging=GridConvenienChargingDistribution(1,GridConvenientChargingProfile); % [ct/kWh] netto (without VAT). normal NNE prices
+    Users{n}.NNEEnergyPriceGridConvenientCharging=DSOContractData(5,GridConvenientChargingProfile); % [ct/kWh] netto (without VAT). reduced NNE energy price due to the allowance for the DSO to manage the charging
+    Users{n}.NNEEnergyPriceNotGridConvenientCharging=DSOContractData(3,GridConvenientChargingProfile); % [ct/kWh] netto (without VAT). normal NNE prices
     if RandomNumbers(6)<=PVGridConvenientChargingLikelihoodMatrix(1) || (RandomNumbers(6)>PVGridConvenientChargingLikelihoodMatrix(2) & RandomNumbers(6)<=PVGridConvenientChargingLikelihoodMatrix(3))
         Users{n}.GridConvenientCharging=true;
-        Users{n}.GridConvenientChargingAvailability=GridConvenienChargingDistribution(5:end,GridConvenientChargingProfile);
-        Users{n}.NNEExtraBasePrice=GridConvenienChargingDistribution(2,GridConvenientChargingProfile)*100; % [ct/a] netto (without VAT) due to the extra electricity meter
-        Users{n}.NNEBonus=GridConvenienChargingDistribution(4,GridConvenientChargingProfile)*100; % [ct] a single bonus paid by the DSO
+        Users{n}.GridConvenientChargingAvailability=DSOContractData(7:end,GridConvenientChargingProfile);
+        Users{n}.NNEExtraBasePrice=DSOContractData(4,GridConvenientChargingProfile)*100; % [ct/a] netto (without VAT) due to the extra electricity meter
+        Users{n}.NNEBonus=DSOContractData(6,GridConvenientChargingProfile)*100; % [ct] a single bonus paid by the DSO
         Users{n}.IMSYSInstallationCosts=single(IMSYSInstallationCostsMean*(1+TruncatedGaussian(0.1,[0.5 1.5]-1,1)));
         Users{n}.NNEEnergyPrice=Users{n}.NNEEnergyPriceGridConvenientCharging;
     else
@@ -260,6 +261,6 @@ disp(strcat("Users successfully initialised ", num2str(toc)))
 clearvars LikelihoodPV PVPlantPointer Consumption Velocities SizeNum VehiclePointer VehicleDatabase AddPV TemperatureMonths TemperatureTimeVec
 clearvars RandomNumbers n Model VehicleSizes MeanPrivateElectricityPrice NumTripDays PublicACChargingPrices PublicDCChargingPrices StorageFiles StorageInd
 clearvars TimeNoiseStdFac UsersTime VehicleProperties GridConvenientChargingProfile UsersTimeVecLogical VCity VHighway PublicChargingThresholdMean
-clearvars PrivateChargingThresholdMean LikelihoodGridConvenientCharging GridConvenienChargingDistribution PVGridConvenientChargingLikelihoodMatrix
+clearvars PrivateChargingThresholdMean LikelihoodGridConvenientCharging DSOContractData PVGridConvenientChargingLikelihoodMatrix
 clearvars VehicleUtilisation
 clearvars Vehicles
