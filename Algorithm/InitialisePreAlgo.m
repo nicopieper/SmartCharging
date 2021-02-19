@@ -20,14 +20,42 @@ SubIndices = @(Vector, ControlPeriods, ControlPeriodsIt, CostCatsNum) (Vector(:,
 
 GridConvenientChargingAvailabilityControlPeriod=zeros(ControlPeriods, 1, NumUsers);
 VarCounter=0;
-for n=UserNum
-    VarCounter=VarCounter+1;
-    if ApplyGridConvenientCharging
-        Users{n}.GridConvenientChargingAvailabilityControlPeriod=repmat(Users{n}.GridConvenientChargingAvailability,2,1);
-        Users{n}.GridConvenientChargingAvailabilityControlPeriod=circshift(Users{n}.GridConvenientChargingAvailabilityControlPeriod, -ShiftInds);
-        Users{n}.GridConvenientChargingAvailabilityControlPeriod=Users{n}.GridConvenientChargingAvailabilityControlPeriod(1:ControlPeriods);
-    else
-        Users{n}.GridConvenientChargingAvailabilityControlPeriod=ones(ControlPeriods,1);
+if UseParallelAvailability
+    
+    for n=UserNum
+        VarCounter=VarCounter+1;
+        if ApplyGridConvenientCharging
+            GridConvenientChargingAvailabilityControlPeriod(:,1,VarCounter)=repmat(Users{n}.GridConvenientChargingAvailability,2,1);
+            GridConvenientChargingAvailabilityControlPeriod(:,1,VarCounter)=circshift(GridConvenientChargingAvailabilityControlPeriod(:,1,VarCounter), -ShiftInds);
+        else
+            GridConvenientChargingAvailabilityControlPeriod(:,1,VarCounter)=ones(ControlPeriods,1);
+        end
+    end
+    
+else
+
+    VarCounter=0;
+    for n=UserNum
+        VarCounter=VarCounter+1;
+        if ApplyGridConvenientCharging
+            Users{n}.GridConvenientChargingAvailabilityControlPeriod=repmat(Users{n}.GridConvenientChargingAvailability,2,1);
+            Users{n}.GridConvenientChargingAvailabilityControlPeriod=circshift(Users{n}.GridConvenientChargingAvailabilityControlPeriod, -ShiftInds);
+            Users{n}.GridConvenientChargingAvailabilityControlPeriod=Users{n}.GridConvenientChargingAvailabilityControlPeriod(1:ControlPeriods);
+        else
+            Users{n}.GridConvenientChargingAvailabilityControlPeriod=ones(ControlPeriods,1);
+        end
+    end
+    
+end
+    
+if UseParallelDynOptVars
+    BatterySizes=zeros(1, 1, NumUsers);
+    PublicChargingThresholds_Wh=zeros(ControlPeriods, 1, NumUsers);
+    VarCounter=0;
+    for n=UserNum
+        VarCounter=VarCounter+1;
+        BatterySizes(1,1,VarCounter)=double(Users{n}.BatterySize);
+        PublicChargingThresholds_Wh(:,1,VarCounter)=ones(ControlPeriods, 1, 1) .* round(double(Users{n}.PublicChargingThreshold_Wh)*1.8);
     end
 end
 
