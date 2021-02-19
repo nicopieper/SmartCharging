@@ -18,7 +18,10 @@ SubIndices = @(Vector, ControlPeriods, ControlPeriodsIt, CostCatsNum) (Vector(:,
 
 %% Prepare Users
 
+GridConvenientChargingAvailabilityControlPeriod=zeros(ControlPeriods, 1, NumUsers);
+VarCounter=0;
 for n=UserNum
+    VarCounter=VarCounter+1;
     if ApplyGridConvenientCharging
         Users{n}.GridConvenientChargingAvailabilityControlPeriod=repmat(Users{n}.GridConvenientChargingAvailability,2,1);
         Users{n}.GridConvenientChargingAvailabilityControlPeriod=circshift(Users{n}.GridConvenientChargingAvailabilityControlPeriod, -ShiftInds);
