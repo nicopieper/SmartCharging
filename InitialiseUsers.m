@@ -137,7 +137,7 @@ end
 %% Store processing information
 
 Time.Sim.Start=dateshift(max([Range.TestDate(1), Vehicles{1}.Time.Vec(1)]), 'start', 'day');
-Time.Sim.End=min([Range.TestDate(2), Vehicles{1}.Time.Vec(end)]);
+Time.Sim.End=min([Range.TestDate(2), Vehicles{1}.Time.Vec(end)])-days(340);
 Time.Sim.Vec=Time.Sim.Start:Time.Step:Time.Sim.End;
 Time.Sim.VecInd=1:length(Time.Sim.Vec);
 Time.Sim.StepInd=Time.StepInd;
@@ -253,6 +253,7 @@ for n=2:NumUsers+1
     Users{n}.AverageMileageYear_km=single(sum(Users{n}.Logbook(:,3))/days(Time.Sim.Vec(end)-Time.Sim.Vec(1))*365.25/1000); %[km]
 end
 
+save(strcat(Path.Simulation, "InitialisedUsers", Dl, "Users", num2str(NumUsers), ".mat"), "Users", "-v7.3");
 disp(strcat("Users successfully initialised ", num2str(toc)))
 
 %% Clean up Workspace
