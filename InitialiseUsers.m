@@ -252,6 +252,7 @@ for n=2:NumUsers+1
     Users{n}.AverageMileageYear_km=single(sum(Users{n}.Logbook(:,3))/days(Time.Sim.Vec(end)-Time.Sim.Vec(1))*365.25/1000); %[km]
 end
 
+save(strcat(Path.Simulation, "InitialisedUsers", Dl, "Users", num2str(NumUsers), ".mat"), "Users", "-v7.3");
 disp(strcat("Users successfully initialised ", num2str(toc)))
 
 %% Clean up Workspace
