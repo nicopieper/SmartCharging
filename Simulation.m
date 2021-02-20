@@ -4,13 +4,11 @@ NumUsers=100000;
 Users=cell(NumUsers+1,1); % 5the main cell variable all user data is stored in
 Users{1}.SmartCharging=true;
 UseParallel=true;
-UseParallelDynOptVars=true;
 UseParallelAvailability=false;
 UseSpotPredictions=true;
 UsePVPredictions=true;
 UseIndividualEEGBonus=true;
 %DemoUsers=[9]%;,22,36,46,66,74,82,83,94,122,124,164,165,167,171,181,187,193,197,241,242,259,286,295,349,352,359,363,365,379,390,392,405,413,430,436,473,490,493,497,535,575,578,610,628,650,665,701,704,723,727,756,778,785,820,851,867,880,884,910,936,956,983,985,987,1002,1011,1019,1021,1045,1062,1075,1080,1083,1093,1113,1167,1168,1174,1182,1186,1190,1194,1198,1215,1217,1226,1232,1244,1284,1292,1298,1301,1319,1383,1390,1423,1426,1430,1436,14,68,92,100,119,130,218,246,270,315,317,408,438,442,451,460,563,568,580,588,589,595,608,614,656,661,667,673,693,703,738,742,744,767,777,807,819,869,878,924,937,943,972,1005,1025,1043,1064,1105,1124,1165,1178,1191,1192,1199,1216,1218,1270,1273,1305,1317,1331,1352,1370,1408,1427,1460,1463,1478,1481,1504,7,9,22,36,46,66,74,82,83,94,122,124,164,165,167,171,181,187,193,195,197,222,241,242,259,286,289,295,308,349];
-TAvail1=0;
 
 
 if isfile(strcat(Path.Simulation, "InitialisedUsers", Dl, "Users", num2str(NumUsers), ".mat"))
@@ -30,7 +28,7 @@ CleanUpWorkspace=0;
 
 if Users{1}.SmartCharging
     if UseParallel
-        NumDecissionGroups=2000;
+        NumDecissionGroups=1;
         gcp
     else
         NumDecissionGroups=1;
@@ -153,8 +151,7 @@ TSim=tic;
 datetime('now')
 TimeIndVec=zeros(Time.Sim.VecInd(end-ControlPeriods),10);
 
-%for TimeInd=Time.Sim.VecInd(2:end-ControlPeriods)
-for TimeInd=2:1000
+for TimeInd=Time.Sim.VecInd(2:end-ControlPeriods)
     
     TimeIndVec(TimeInd,1)=1;
     save("TimeIndVec.mat", "TimeIndVec", "-v7.3")
