@@ -1,84 +1,60 @@
 %% Availability, EnergyDemand and Prices
 
-SumPower=zeros(ControlPeriodsIt,1,NumUsers);
+CalcAvailability;
+
 MaxEnergyChargableSoCTS=zeros(ControlPeriodsIt,1,NumUsers);
 MaxEnergyChargableDeadlockCP=zeros(1,1,NumUsers);
 MinEnergyRequiredTS=zeros(ControlPeriodsIt,1,NumUsers);
-MaxPossibleSoCTS=zeros(ControlPeriodsIt,1,NumUsers);
-CalcAvailability;
+SumPower=MaxPower/4.*Availability;
 
+if ~UseParallelAvailability
+    CalcLogbooks12;
+end
+    
+Logbooks4=zeros(ControlPeriodsIt,1,NumUsers);
+SoCInit=zeros(1,1,NumUsers);
 VarCounter=0;
 for k=UserNum
     VarCounter=VarCounter+1;
-    
-    SumPower(:,1,VarCounter)=MaxPower(:,1,VarCounter)/4.*Availability(:,1,VarCounter);
-    
-    Consumed=double(Users{k}.Logbook(TimeInd+TD.User+1:TimeInd+TD.User+ControlPeriodsIt-1,4));
-    
-    SoC=double(Users{k}.Logbook(TimeInd+TD.User,9)) - [0;cumsum(Consumed)]; % in Wh
-    if ~ismember(TimeInd, TimesOfPreAlgo)
-        SoC=SoC + cumsum(sum(double(Users{k}.Logbook(TimeInd+TD.User:TimeInd+TD.User+ControlPeriodsIt-1,[false(1,4), CostCats])),2)); % in Wh
-    end
-    
-    % The maximal energy that is charagble without exceeding the battery
-    % limit in every time step
-    
-    MaxEnergyChargableSoCTS(:,1,VarCounter)=double(Users{k}.BatterySize) - SoC ;
-        
-       
-    % The maximal energy that is chargable without exceeding the battery
-    % such that the battery is as full as possible at the end of the
-    % ControlPeriod
-    
-    MaxEnergyChargableDeadlockTS=zeros(ControlPeriodsIt,1);
-    ChargingInds=find(Availability(:,1,VarCounter)>0);
-    
-    if ~isempty(ChargingInds)
-        SoCNew=SoC;
-        l=0;
-        while l<length(ChargingInds) && max(SoCNew(ChargingInds(end-l):end))<double(Users{k}.BatterySize)
-            MaxEnergyChargableDeadlockTS(ChargingInds(end-l),1)=min(Availability(ChargingInds(end-l),1,VarCounter)*MaxPower(1,1,VarCounter)/4, double(Users{k}.BatterySize)-max(SoCNew(ChargingInds(end-l):end)));
-            SoCNew=SoC+[0;cumsum(MaxEnergyChargableDeadlockTS(2:end,1))];
-            l=l+1;
-        end
-        
-        MaxEnergyChargableDeadlockCP(1,1,VarCounter)=sum(MaxEnergyChargableDeadlockTS);
-    else % Availability completly zero
-        MaxEnergyChargableDeadlockCP(1,1,VarCounter)=0;
-    end
-    
-    
-    % Wie viel Energie kann maximal in der Batterie sein zu jedem
-    % Zeitpunkt?
-    
-    MaxPossibleSoCTS=min(double(Users{k}.BatterySize), SoC(1)+SumPower(1,1,VarCounter));
+    Logbooks4(:,1,VarCounter)=double(Users{k}.Logbook(TimeInd+TD.User:TimeInd+TD.User-1+ControlPeriodsIt,4));
+    SoCInit(1,1,VarCounter)=double(Users{k}.Logbook(TimeInd+TD.User,9));
+end
+
+SoC=SoCInit - cumsum([zeros(1,1,NumUsers);Logbooks4(1+1:end,1,:)],1);
+
+% The maximal energy that is charagble without exceeding the battery
+% limit in every time step
+
+MaxEnergyChargableSoCTS=BatterySizes - SoC;
+
+% Wie viel Energie kann maximal in der Batterie sein zu jedem
+% Zeitpunkt?
+
+MaxPossibleSoCTS=zeros(ControlPeriodsIt,1,NumUsers);
+MaxPossibleSoCTS(1,1,:)=min(BatterySizes, SoC(1,1,:)+SumPower(1,1,:));
+tic
+for VarCounter=1:NumUsers
     for p=2:ControlPeriodsIt
-        MaxPossibleSoCTS(p)=min(double(Users{k}.BatterySize), MaxPossibleSoCTS(p-1)-Consumed(p-1)+SumPower(p,1,VarCounter));
+        MaxPossibleSoCTS(p,1,VarCounter)=min(BatterySizes(1,1,VarCounter), MaxPossibleSoCTS(p-1,1,VarCounter) - Logbooks4(p,1,VarCounter) + SumPower(p,1,VarCounter));
     end
-    
-    w=MaxPossibleSoCTS-SoC';
-    if ~isequal(round(w(end)), round(MaxEnergyChargableDeadlockCP(1,1,VarCounter))) && ismember(TimeInd, TimesOfPreAlgo)
-        disp("inequal")
-    end
-    
-    % Wie viel Energie muss ich mindestens laden, damit mein SoC nicht
-    % unter den PublicCharging-Schwellwert fallen wird?
-    % Wird nach der Schleife noch verkleinert!
-   
-    %MinEnergyRequiredTS(:,1,VarCounter)=round(Users{k}.PublicChargingThreshold_Wh*0.3) - SoC;
-    MinEnergyRequiredTS(:,1,VarCounter)=min(round(double(Users{k}.PublicChargingThreshold_Wh)*1.8), MaxPossibleSoCTS') - SoC;
-    
 end
 
 
+% Wie viel Energie muss ich mindestens laden, damit mein SoC nicht
+% unter den PublicCharging-Schwellwert fallen wird?
+% Wird nach der Schleife noch verkleinert!
+
+MinEnergyRequiredTS=min([PublicChargingThresholds_Wh(1:ControlPeriodsIt,:,:), MaxPossibleSoCTS], [], 2) - SoC;
+
+% The maximal energy that is chargable without exceeding the battery
+% such that the battery is as full as possible at the end of the
+% ControlPeriod
+
+MaxEnergyChargableDeadlockCP=MaxPossibleSoCTS(end,1,:) - SoC(end,1,:);
+    
 
 PowerTS=repelem(MaxPower/4,ControlPeriodsIt,NumCostCats,1);
 PowerTS(:,2,:)=min([PowerTS(:,2,:), PVPower(end-ControlPeriodsIt+1:end,:,:)/4], [], 2);
 PowerTS(1,2,:)=min(MaxPower/4, PVPowerReal(ControlPeriods-ControlPeriodsIt+1,1,:)/4);
 ConsPowerTSb=PowerTS;
-%MinEnergyRequiredTS=min(min([MinEnergyRequiredTS, MaxEnergyChargableSoCTS], [], 2), MaxEnergyChargableDeadlockCP);
-%MinEnergyRequiredTS1=min([MinEnergyRequiredTS, MaxEnergyChargableSoCTS], [], 2);
-% if ~isequal(MinEnergyRequiredTS1, MinEnergyRequiredTS)
-%     disp(num2str(TimeInd))
-% end
 MinEnergyRequiredTS=min(MinEnergyRequiredTS,MaxEnergyChargableDeadlockCP);

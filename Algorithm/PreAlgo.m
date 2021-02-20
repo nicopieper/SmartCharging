@@ -97,6 +97,8 @@ if UseParallel
     ub=double(ConsPowerTSb(SubIndices(DecissionGroups{k,3}, ControlPeriods, ControlPeriodsIt, 3))');
 
     Costf=double(Costsf(SubIndices(DecissionGroups{k,3}, ControlPeriods, ControlPeriodsIt, 3))');
+    
+    ticBytes(gcp);
 
     parfor k=1:NumDecissionGroups
         b=double([reshape(ConsSumPowerTSbIt(SubIndices(DecissionGroups{k,2}, ControlPeriods, ControlPeriodsIt, 1)'),[],1); reshape(ConsMaxEnergyChargableSoCTSbIt(SubIndices(DecissionGroups{k,2}, ControlPeriods, ControlPeriodsIt, 1)'),[],1); reshape(-ConsMinEnergyRequiredTSbIt(SubIndices(DecissionGroups{k,2}, ControlPeriods, ControlPeriodsIt, 1)'),[],1)]);
@@ -144,6 +146,8 @@ if UseParallel
     x=reshape(x,ControlPeriodsIt,NumCostCats,NumUsers);
     x=x(:,:,BackwardsOrder);
     x=x(:);
+    
+    tocBytes(gcp)
     
 else
 
