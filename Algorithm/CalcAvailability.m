@@ -11,9 +11,9 @@ else
     CalcLogbooks12;
     GridConvenientChargingAvailabilityControlPeriodIt=GridConvenientChargingAvailabilityControlPeriod(end-ControlPeriodsIt+1:end,1,:);
 
-    Availability1=zeros(ControlPeriodsIt,1,NumUsers);
+    Availability=zeros(ControlPeriodsIt,1,NumUsers);
     parfor VarCounter=1:NumUsers
-        Availability1(:,1,VarCounter)=max(0, ismember(Logbooks1(:,1,VarCounter), 3:5) - Logbooks2(:,1,VarCounter)/Time.StepMin) .* GridConvenientChargingAvailabilityControlPeriodIt(:,VarCounter);
+        Availability(:,1,VarCounter)=max(0, ismember(Logbooks1(:,1,VarCounter), 3:5) - Logbooks2(:,1,VarCounter)/Time.StepMin) .* GridConvenientChargingAvailabilityControlPeriodIt(:,VarCounter);
     end
     
 end

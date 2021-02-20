@@ -110,6 +110,9 @@ for n=1:size(Folders,1) % iterate through the plants
         AzimutSlope = fscanf(File,formatSpec);
         Delimiter1=strfind(AzimutSlope, ':');
         Delimiter2=strfind(AzimutSlope, char(176));
+        if isempty(Delimiter2)
+            Delimiter2=strfind(AzimutSlope, char(65533));
+        end
         [~]=fclose(File); 
     end
     

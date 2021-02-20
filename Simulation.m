@@ -1,6 +1,6 @@
 %% Initialisation
 
-NumUsers=20;
+NumUsers=100000;
 Users=cell(NumUsers+1,1); % 5the main cell variable all user data is stored in
 Users{1}.SmartCharging=true;
 UseParallel=true;
@@ -20,7 +20,7 @@ ControlPeriods=96*2;
 UsePV=true;
 ApplyGridConvenientCharging=true;
 ActivateWaitbar=true;
-SaveResults=false;
+SaveResults=true;
 
 Debugging=0;
 FinishSimulation=1;
@@ -28,7 +28,7 @@ CleanUpWorkspace=0;
 
 if Users{1}.SmartCharging
     if UseParallel
-        NumDecissionGroups=1;
+        NumDecissionGroups=2000;
         gcp
     else
         NumDecissionGroups=1;

@@ -99,24 +99,25 @@ if UseParallel
     
     for k=1:NumDecissionGroups
         b{k,1}=double([reshape(ConsSumPowerTSbIt(SubIndices(DecissionGroups{k,2}, ControlPeriods, ControlPeriodsIt, 1)'),[],1); reshape(ConsMaxEnergyChargableSoCTSbIt(SubIndices(DecissionGroups{k,2}, ControlPeriods, ControlPeriodsIt, 1)'),[],1); reshape(-ConsMinEnergyRequiredTSbIt(SubIndices(DecissionGroups{k,2}, ControlPeriods, ControlPeriodsIt, 1)'),[],1)]);
-        
-        beq{k,1}=double([ConseqMaxEnergyChargableDeadlockCPbIt(DecissionGroups{k,1})'; ConseqResPoOfferbIt; DecissionGroups{k,4}]);
-        
+        beq{k,1}=double([ConseqMaxEnergyChargableDeadlockCPbIt(DecissionGroups{k,1})'; ConseqResPoOfferbIt; DecissionGroups{k,4}]);        
         ub{k,1}=double(ConsPowerTSb(SubIndices(DecissionGroups{k,3}, ControlPeriods, ControlPeriodsIt, 3))');
-        
         Costf{k,1}=double(Costsf(SubIndices(DecissionGroups{k,3}, ControlPeriods, ControlPeriodsIt, 3))');
     end
     
-    
+    ticBytes(gcp)
     parfor k=1:NumDecissionGroups
         [x11,fval]=linprog(Costf{k,1},A,b{k,1},Aeq,beq{k,1},lb,ub{k,1}, options);
         x11(x11<0.01)=0;
         x1{k}=x11; 
     end
+    tocBytes(gcp)
 
     Costf1=double(Costs);
     Costf1(1:length(ResPoBlockedIndices)*Time.StepInd*4,3,:)=-10000;
     Costf1=Costf1(:);
+    A=[ConsSumPowerTSAIt; ConsEnergyDemandTSAIt; -ConsEnergyDemandTSAIt; ConseqMatchLastResPoOffers4HAIt];
+    Aeq=[ConseqEnergyCPAIt; ConseqResPoOfferAIt];
+    
     A=[ConsSumPowerTSAIt; ConsEnergyDemandTSAIt; -ConsEnergyDemandTSAIt; ConseqMatchLastResPoOffers4HAIt];
     Aeq=[ConseqEnergyCPAIt; ConseqResPoOfferAIt];
     
@@ -131,26 +132,22 @@ if UseParallel
         x11(x11<0.01)=0;
         x1{k}=x11; 
     end
-        
-%     x=zeros(length(x1)*size(x1{1},1),1);
-%     for k=1:NumDecissionGroups
-%         x((k-1)*size(x1{1},1)+1:(k)*size(x1{1},1),1)=x1{k};
-%     end
-
-    x=reshape([x1{:,1}], [], 1);
+    
+    x10=zeros(length(x1)*size(x1{1},1),1);
+    BackwardsOrder1=[];
+    for k=1:NumDecissionGroups
+%         x=[x; x1{k}];
+        x10((k-1)*size(x1{1},1)+1:(k)*size(x1{1},1),1)=x1{k};
+        BackwardsOrder1=[BackwardsOrder1; DecissionGroups{k,1}];
+    end
     BackwardsOrder=reshape([DecissionGroups{:,1}], [], 1);
+    x=reshape([x1{:,1}], [], 1);
+    
     [~, BackwardsOrder]=sort(BackwardsOrder, 'ascend');
     x=reshape(x,ControlPeriodsIt,NumCostCats,NumUsers);
     x=x(:,:,BackwardsOrder);
     x=x(:);
-    
-    
-    
-    
-    
-    
-    
-    
+   
 
 %     parfor k=1:NumDecissionGroups
 %         b=double([reshape(ConsSumPowerTSbIt(SubIndices(DecissionGroups{k,2}, ControlPeriods, ControlPeriodsIt, 1)'),[],1); reshape(ConsMaxEnergyChargableSoCTSbIt(SubIndices(DecissionGroups{k,2}, ControlPeriods, ControlPeriodsIt, 1)'),[],1); reshape(-ConsMinEnergyRequiredTSbIt(SubIndices(DecissionGroups{k,2}, ControlPeriods, ControlPeriodsIt, 1)'),[],1)]);
@@ -186,8 +183,6 @@ if UseParallel
 %         x11(x11<0)=0;
 %         x1{k}=x11;
 %     end
-    
-
     
 else
 
