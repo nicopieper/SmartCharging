@@ -90,18 +90,18 @@ if UseParallel
     lb=zeros(ControlPeriodsIt, NumCostCats, NumUsers/NumDecissionGroups);
     
     b=cell(NumDecissionGroups,1);
-    A=cell(NumDecissionGroups,1);
     beq=cell(NumDecissionGroups,1);
-    Aeq=cell(NumDecissionGroups,1);
     ub=cell(NumDecissionGroups,1);
     Costf=cell(NumDecissionGroups,1);
     
+    A=[ConsSumPowerTSAIt; ConsEnergyDemandTSAIt; -ConsEnergyDemandTSAIt];
+    Aeq=[ConseqEnergyCPAIt; ConseqResPoOfferAIt; ConseqMatchLastResPoOffers4HAIt];
+    
     for k=1:NumDecissionGroups
         b{k,1}=double([reshape(ConsSumPowerTSbIt(SubIndices(DecissionGroups{k,2}, ControlPeriods, ControlPeriodsIt, 1)'),[],1); reshape(ConsMaxEnergyChargableSoCTSbIt(SubIndices(DecissionGroups{k,2}, ControlPeriods, ControlPeriodsIt, 1)'),[],1); reshape(-ConsMinEnergyRequiredTSbIt(SubIndices(DecissionGroups{k,2}, ControlPeriods, ControlPeriodsIt, 1)'),[],1)]);
-        A{k,1}=[ConsSumPowerTSAIt; ConsEnergyDemandTSAIt; -ConsEnergyDemandTSAIt];
+        
         
         beq{k,1}=double([ConseqMaxEnergyChargableDeadlockCPbIt(DecissionGroups{k,1})'; ConseqResPoOfferbIt; DecissionGroups{k,4}]);
-        Aeq{k,1}=[ConseqEnergyCPAIt; ConseqResPoOfferAIt; ConseqMatchLastResPoOffers4HAIt];
         
         ub{k,1}=double(ConsPowerTSb(SubIndices(DecissionGroups{k,3}, ControlPeriods, ControlPeriodsIt, 3))');
         
@@ -110,7 +110,7 @@ if UseParallel
     
     ticBytes(gcp)
     parfor k=1:NumDecissionGroups
-        [x11,fval]=linprog(Costf{k,1},A{k,1},b{k,1},Aeq{k,1},beq{k,1},lb,ub{k,1}, options);
+        [x11,fval]=linprog(Costf{k,1},A,b{k,1},Aeq,beq{k,1},lb,ub{k,1}, options);
         x11(x11<0)=0;
         x1{k}=x11; 
     end
@@ -120,19 +120,20 @@ if UseParallel
     Costf1(1:length(ResPoBlockedIndices)*Time.StepInd*4,3,:)=-10000;
     Costf1=Costf1(:);
     
+    A=[ConsSumPowerTSAIt; ConsEnergyDemandTSAIt; -ConsEnergyDemandTSAIt; ConseqMatchLastResPoOffers4HAIt];
+    Aeq=[ConseqEnergyCPAIt; ConseqResPoOfferAIt];
+    
     for k=find(cellfun(@isempty,x1)') % Resolves the issue that the buffer does not cover the deviation: In this case the underfullfilment must be accepted and as much reserve power as possible will be provided. The deviation from the offer must be satisfied by the other units of the VPP.
         b{k,1}=double([reshape(ConsSumPowerTSbIt(SubIndices(DecissionGroups{k,2}, ControlPeriods, ControlPeriodsIt, 1)'),[],1); reshape(ConsMaxEnergyChargableSoCTSbIt(SubIndices(DecissionGroups{k,2}, ControlPeriods, ControlPeriodsIt, 1)'),[],1); reshape(-ConsMinEnergyRequiredTSbIt(SubIndices(DecissionGroups{k,2}, ControlPeriods, ControlPeriodsIt, 1)'),[],1); DecissionGroups{k,4}]);
-        A{k,1}=[ConsSumPowerTSAIt; ConsEnergyDemandTSAIt; -ConsEnergyDemandTSAIt; ConseqMatchLastResPoOffers4HAIt];
 
         beq{k,1}=double([ConseqMaxEnergyChargableDeadlockCPbIt(DecissionGroups{k,1})'; ConseqResPoOfferbIt]);
-        Aeq{k,1}=[ConseqEnergyCPAIt; ConseqResPoOfferAIt];
 
         Costf{k,1}=Costf1(SubIndices(DecissionGroups{k,3}, ControlPeriods, ControlPeriodsIt, 3))';
     end
     
     ticBytes(gcp)
 	parfor k=find(cellfun(@isempty,x1)')
-        [x11,fval]=linprog(Costf{k,1},A{k,1},b{k,1},Aeq{k,1},beq{k,1},lb,ub{k,1}, options);
+        [x11,fval]=linprog(Costf{k,1},A,b{k,1},Aeq,beq{k,1},lb,ub{k,1}, options);
         x11(x11<0)=0;
         x1{k}=x11; 
     end

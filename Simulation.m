@@ -28,7 +28,7 @@ CleanUpWorkspace=0;
 
 if Users{1}.SmartCharging
     if UseParallel
-        NumDecissionGroups=1;
+        NumDecissionGroups=2000;
         gcp
     else
         NumDecissionGroups=1;
