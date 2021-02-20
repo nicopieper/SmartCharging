@@ -48,16 +48,15 @@ else
     
 end
     
-if UseParallelDynOptVars
-    BatterySizes=zeros(1, 1, NumUsers);
-    PublicChargingThresholds_Wh=zeros(ControlPeriods, 1, NumUsers);
-    VarCounter=0;
-    for n=UserNum
-        VarCounter=VarCounter+1;
-        BatterySizes(1,1,VarCounter)=double(Users{n}.BatterySize);
-        PublicChargingThresholds_Wh(:,1,VarCounter)=ones(ControlPeriods, 1, 1) .* round(double(Users{n}.PublicChargingThreshold_Wh)*1.8);
-    end
+BatterySizes=zeros(1, 1, NumUsers);
+PublicChargingThresholds_Wh=zeros(ControlPeriods, 1, NumUsers);
+VarCounter=0;
+for n=UserNum
+    VarCounter=VarCounter+1;
+    BatterySizes(1,1,VarCounter)=double(Users{n}.BatterySize);
+    PublicChargingThresholds_Wh(:,1,VarCounter)=ones(ControlPeriods, 1, 1) .* round(double(Users{n}.PublicChargingThreshold_Wh)*1.8);
 end
+
 
 %% Initialise Optimisation Variables
 
@@ -73,8 +72,8 @@ Users{1}.ChargingMat=cell(size(TimesOfPreAlgo,1)+1,1);
 for k=1:size(Users{1}.ChargingMat,1)-1
     Users{1}.ChargingMat{k,2}=mod(TimesOfPreAlgo(k,1)-1,ControlPeriods) + 96*(TimeOfPreAlgo(k)<TimeOfPreAlgo(1));
     Users{1}.ChargingMat{k,1}=zeros(ControlPeriods-4*Time.StepInd*(k-1), NumCostCats, ceil(length(Time.Sim.Vec)/(Time.StepInd*24)), 'single');
-    Users{1}.ChargingMatDemoUsers{k,2}=mod(TimesOfPreAlgo(k,1)-1,ControlPeriods) + 96*(TimeOfPreAlgo(k)<TimeOfPreAlgo(1));
-    Users{1}.ChargingMatDemoUsers{k,1}=zeros(ControlPeriods-4*Time.StepInd*(k-1), NumCostCats, numel(DemoUsers), ceil(length(Time.Sim.Vec)/(Time.StepInd*24)), 'single');
+%    Users{1}.ChargingMatDemoUsers{k,2}=mod(TimesOfPreAlgo(k,1)-1,ControlPeriods) + 96*(TimeOfPreAlgo(k)<TimeOfPreAlgo(1));
+%    Users{1}.ChargingMatDemoUsers{k,1}=zeros(ControlPeriods-4*Time.StepInd*(k-1), NumCostCats, numel(DemoUsers), ceil(length(Time.Sim.Vec)/(Time.StepInd*24)), 'single');
 end
 
 Users{1}.AvailabilityMat=single(zeros(24*Time.StepInd, ceil(length(Time.Sim.Vec)/(Time.StepInd*24)), NumUsers));

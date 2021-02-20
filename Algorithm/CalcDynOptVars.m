@@ -30,24 +30,13 @@ MaxEnergyChargableSoCTS=BatterySizes - SoC;
 % Wie viel Energie kann maximal in der Batterie sein zu jedem
 % Zeitpunkt?
 
-MaxPossibleSoCTS1=zeros(ControlPeriodsIt,1,NumUsers);
-MaxPossibleSoCTS1(1,1,:)=min(BatterySizes, SoC(1,1,:)+SumPower(1,1,:));
-
-tic
-for p=2:ControlPeriodsIt
-    MaxPossibleSoCTS1(p,1,:)=min([BatterySizes(1,1,:), MaxPossibleSoCTS1(p-1,1,:)- Logbooks4(p,1,:) + SumPower(p,1,:)], [], 2);
-end
-toc
-
 MaxPossibleSoCTS=zeros(ControlPeriodsIt,1,NumUsers);
 MaxPossibleSoCTS(1,1,:)=min(BatterySizes, SoC(1,1,:)+SumPower(1,1,:));
-tic
 for VarCounter=1:NumUsers
     for p=2:ControlPeriodsIt
         MaxPossibleSoCTS(p,1,VarCounter)=min(BatterySizes(1,1,VarCounter), MaxPossibleSoCTS(p-1,1,VarCounter) - Logbooks4(p,1,VarCounter) + SumPower(p,1,VarCounter));
     end
 end
-toc
 
 
 % Wie viel Energie muss ich mindestens laden, damit mein SoC nicht

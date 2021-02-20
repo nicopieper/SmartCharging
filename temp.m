@@ -1,6 +1,70 @@
-a=eval(string(system("timeout 1s top", '-echo')));
-system("q");
-1
+Subs=cell(4,1);
+for n=1:4
+    Subs{n,1}=n:4:100000/4;
+end
+for n=1:4
+    Subs{n,1}=(n-1)*96000/4/4 + (1:96000/4/4);
+end
+a=rand((96000+n)/4,4);
+b=cell(4,1);
+
+c=cell(4,1);
+for n=1:4
+    c{n,1}=a(Subs{n,1},:);
+end
+
+ticBytes(gcp);
+parfor n=1:4
+    b{n,1}=c{n,1};
+end
+tocBytes(gcp)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+% Subs={};
+% for k=1:NumDecissionGroups
+%     Subs{k}=SubIndices(DecissionGroups{k,2}, ControlPeriods, ControlPeriodsIt, 1);
+% end
+% 
+% a=cell(NumDecissionGroups,1);
+% parfor k=1:NumDecissionGroups
+%     a{k,1}=ConsSumPowerTSbIt(Subs{k});
+% end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 % Availability=[];
