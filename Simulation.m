@@ -1,9 +1,9 @@
 %% Initialisation
 
-NumUsers=100000;
+NumUsers=20;
 Users=cell(NumUsers+1,1); % 5the main cell variable all user data is stored in
 Users{1}.SmartCharging=true;
-UseParallel=true;
+UseParallel=false;
 UseParallelAvailability=false;
 UseSpotPredictions=true;
 UsePVPredictions=true;
@@ -28,7 +28,7 @@ CleanUpWorkspace=0;
 
 if Users{1}.SmartCharging
     if UseParallel
-        NumDecissionGroups=2000;
+        NumDecissionGroups=4;
         gcp
     else
         NumDecissionGroups=1;
@@ -353,7 +353,7 @@ for TimeInd=Time.Sim.VecInd(2:end-ControlPeriods)
     TimeIndVec(TimeInd,9)=1;
     save("TimeIndVec.mat", "TimeIndVec", "-v7.3")
     
-    if Users{1}.SmartCharging && SaveResults && mod(TimeInd, 96*10)==0 
+    if Users{1}.SmartCharging && SaveResults && mod(TimeInd, 96*10)==0 && strcmp(Dl, '/')
         if isa(RAM,'double')
             disp(strcat(num2str(RAM(2)/1024/1024), "GB RAM left"))
         end
