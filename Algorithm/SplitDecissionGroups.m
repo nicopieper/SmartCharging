@@ -4,7 +4,7 @@ AvailabilityOrder=squeeze(AvailabilityOrder);
 
 
 for k=1:NumDecissionGroups
-%     DecissionGroups{k,1}=AvailabilityOrder((k-1)*NumUsers/NumDecisionGroups+1:k*NumUsers/NumDecisionGroups);
+%    DecissionGroups{k,1}=AvailabilityOrder((k-1)*NumUsers/NumDecissionGroups+1:k*NumUsers/NumDecissionGroups);
     DecissionGroups{k,1}=UserNum((k-1)*NumUsers/NumDecissionGroups+1:k*NumUsers/NumDecissionGroups)'-1;
     DecissionGroups{k,2}=(DecissionGroups{k,1}-1)*ControlPeriods+(1:ControlPeriods);
     DecissionGroups{k,3}=(DecissionGroups{k,1}-1)*ControlPeriods*NumCostCats+(1:ControlPeriods*NumCostCats);

@@ -1,6 +1,6 @@
 %% Initialisation
 
-NumUsers=100000;
+NumUsers=1000;
 Users=cell(NumUsers+1,1); % 5the main cell variable all user data is stored in
 Users{1}.SmartCharging=true;
 UseParallel=true;
@@ -28,7 +28,7 @@ CleanUpWorkspace=0;
 
 if Users{1}.SmartCharging
     if UseParallel
-        NumDecissionGroups=2000;
+        NumDecissionGroups=20;
         gcp
     else
         NumDecissionGroups=1;
@@ -39,6 +39,8 @@ end
 if ~exist('PublicChargerDistribution', 'var')
     PublicChargerDistribution=single(readmatrix(strcat(Path.Simulation, "PublicChargerProbability.xlsx")));
 end
+
+PublicChargerDist=[];
 
 NumUsers=min(NumUsers, size(Users,1)-1);
 ChargingPower=zeros(NumUsers,1, 'single');
@@ -171,6 +173,7 @@ for TimeInd=Time.Sim.VecInd(2:end-ControlPeriods)
             TripDistance=sum(Users{n}.Logbook(TimeInd+TD.User:NextHomeStop,3)); % [Wh]
 
             PublicChargerPower=max((rand(1, 'single')>=PublicChargerDistribution(find(PublicChargerDistribution>TripDistance/1000,1),:)).*PublicChargerDistribution(1,:)); % [kW]
+            PublicChargerDist(end+1)=PublicChargerPower;
             ChargingPower(n)=min([max([Users{n}.ACChargingPowerVehicle, Users{n}.DCChargingPowerVehicle]), PublicChargerPower])*Users{n}.ChargingEfficiency; % Actual ChargingPower at public charger in [kW]
             
             EnergyDemandLeft(n)=single(min((Users{n}.PublicChargingThreshold*100 + 5+TruncatedGaussian(2,[1 10]-5,1))/100*Users{n}.BatterySize + ConsumptionTilNextHomeStop - Users{n}.Logbook(TimeInd+TD.User-1,9), Users{n}.BatterySize - Users{n}.Logbook(TimeInd+TD.User-1,9)));
@@ -311,7 +314,6 @@ for TimeInd=Time.Sim.VecInd(2:end-ControlPeriods)
             PreAlgo;
             TimeIndVec(TimeInd,7)=1;
             save("TimeIndVec.mat", "TimeIndVec", "-v7.3")
-            whos('Users')
 
             for n=UserNum  
                 Users{n}.Logbook(TimeInd+TD.User:TimeInd+TD.User+ControlPeriodsIt-1, [false(1,4), CostCats])=OptimalChargingEnergies(1:ControlPeriodsIt,:,n==UserNum);
@@ -510,7 +512,7 @@ Load=cell(size(Users{1}.ChargingMat,1),1);
 
 for k=find(~cellfun(@isempty,Users{1}.ChargingMat(:,1)))'
 
-    ChargingType{k}=reshape(permute(Users{1}.ChargingMat{k,1}(max(1,24*Time.StepInd-Users{1}.ChargingMat{k,2}+1):24*Time.StepInd-Users{1}.ChargingMat{k,2}+24*Time.StepInd,:,:,:), [1,3,2]), [], size(Users{1}.ChargingMat{k,1},2))/1000*4;
+    ChargingType{k}=reshape(permute(Users{1}.ChargingMat{k,1}(max(1,24*Time.StepInd-Users{1}.ChargingMat{k,2}+1):24*Time.StepInd-Users{1}.ChargingMat{k,2}+24*Time.StepInd,:,:,:), [1,3,2]), [], size(Users{1}.ChargingMat{k,1},2))/1000*4; %[kw]
 
     [sum(ChargingType{k}(:,1,:),'all'), sum(ChargingType{k}(:,2,:),'all'), sum(ChargingType{k}(:,3,:),'all')]/sum(ChargingType{k}(:,:,:),'all')
     ChargingSum{k}=sum(ChargingType{k}, 2);

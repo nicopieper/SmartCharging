@@ -104,13 +104,13 @@ if UseParallel
         Costf{k,1}=double(Costsf(SubIndices(DecissionGroups{k,3}, ControlPeriods, ControlPeriodsIt, 3))');
     end
     
-    ticBytes(gcp)
+    %ticBytes(gcp)
     parfor k=1:NumDecissionGroups
         [x11,fval]=linprog(Costf{k,1},A,b{k,1},Aeq,beq{k,1},lb,ub{k,1}, options);
         x11(x11<0.01)=0;
         x1{k}=x11; 
     end
-    tocBytes(gcp)
+    %tocBytes(gcp)
 
     Costf1=double(Costs);
     Costf1(1:length(ResPoBlockedIndices)*Time.StepInd*4,3,:)=-10000;
@@ -127,19 +127,15 @@ if UseParallel
         Costf{k,1}=Costf1(SubIndices(DecissionGroups{k,3}, ControlPeriods, ControlPeriodsIt, 3))';
     end
     
-	parfor k=find(cellfun(@isempty,x1)')
-        [x11,fval]=linprog(Costf{k,1},A,b{k,1},Aeq,beq{k,1},lb,ub{k,1}, options);
-        x11(x11<0.01)=0;
-        x1{k}=x11; 
+	UnsolvedProblems=find(cellfun(@isempty,x1)');
+	parfor k=1:NumDecissionGroups
+        if ismember(k,UnsolvedProblems)
+            [x11,fval]=linprog(Costf{k,1},A,b{k,1},Aeq,beq{k,1},lb,ub{k,1}, options);
+            x11(x11<0.01)=0;
+            x1{k}=x11; 
+        end
     end
     
-    x10=zeros(length(x1)*size(x1{1},1),1);
-    BackwardsOrder1=[];
-    for k=1:NumDecissionGroups
-%         x=[x; x1{k}];
-        x10((k-1)*size(x1{1},1)+1:(k)*size(x1{1},1),1)=x1{k};
-        BackwardsOrder1=[BackwardsOrder1; DecissionGroups{k,1}];
-    end
     BackwardsOrder=reshape([DecissionGroups{:,1}], [], 1);
     x=reshape([x1{:,1}], [], 1);
     
