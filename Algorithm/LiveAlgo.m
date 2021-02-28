@@ -86,6 +86,8 @@ if OfferedResPo>0
 
             % Those with the lowest remaining energy / SoC? Yes, in order to
             % avoid public charging and thus schedule shifts
+            
+            LiveAlgoCases(1,1)=LiveAlgoCases(1,1)+1;
 
             VarCounter=0;
             for n=UserNum
@@ -111,6 +113,8 @@ if OfferedResPo>0
 
         elseif DispatchedResEn(TimeInd)+0.5 >= sum(AvailableDispatchedResEn) && DispatchedResEn(TimeInd)-0.5 <= sum(AvailableDispatchedResEn) % 69.18%
             % do nothing
+            LiveAlgoCases(1,2)=LiveAlgoCases(1,2)+1;
+            
             PriorityChargingList=[UserNum', zeros(NumUsers, 1), AvailableDispatchedResEn, AvailableDispatchedResEn];
             PriorityChargingList=PriorityChargingList(PriorityChargingList(:,4)>0,:);
             
@@ -118,6 +122,8 @@ if OfferedResPo>0
             % dispatch energy using the buffered energy from those cars that
             % were dispatched for reserve power but not by their full charging
             % capacity
+            
+            LiveAlgoCases(1,3)=LiveAlgoCases(1,3)+1;
 
             VarCounter=0;
             for n=UserNum
@@ -147,6 +153,8 @@ if OfferedResPo>0
 
             % if the demand is still not chargable, the remaining energy has to
             % be fulfilled by the VPP
+            
+            LiveAlgoCases(1,)=LiveAlgoCases(1,1)+1;
             
             VarCounter=0;
             for n=UserNum

@@ -27,10 +27,10 @@ end
 ExistingTargets=find(cellfun('length', TargetGroups)>0)';
 % ExistingTargets=[1,2, 3,4];
 NumExistingTargets=numel(ExistingTargets);
-ShowTargets=true;
+ShowTargets=false;
 ShowAll=true;
 ShowELaad=true;
-ClearWorkspace=true;
+ClearWorkspace=false;
 
 DataTable=table(Targets(ExistingTargets));
 Location=["Home"; "Other"];
@@ -199,7 +199,7 @@ for col=1:2
     hold on
     l=legend;
     if ShowAll
-        [counts, edges]=histcounts(cat(1, ArrivalTimes{:,col}), DayVecHourly);
+        [counts, edges]=histcounts(cat(1, ArrivalTimes{:,col}), DayVecQuaterly);
         centers=edges(1:end-1)+(edges(2)-edges(1))/2;
         plot(centers, counts./sum(counts))
         legappend(l, "Simulation");
