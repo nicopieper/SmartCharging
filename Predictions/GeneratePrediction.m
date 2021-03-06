@@ -71,17 +71,18 @@ if ~exist('Smard', 'var') || ~exist('ResPoPricesReal4H', 'var')
     disp('Successfully initialised')
 end
 
-Target=ResEnPricesRealQH(:,3); % double(PVPlants{1}.Profile); %Smard.DayaheadRealH; Availability1 ResEnPricesRealQH(:,7)
-TargetTitle="ResEnPricesRealQH_NegMean";  % "DayaheadRealH"; "PVPlants_1"
-Time.Pred=Time.QH;%Users{1}.Time.Vec;
-Predictors=[Smard.LoadPredQH, Smard.GenPredQH];%[Smard.LoadPredH(1:4:end), Smard.GenPredH(1:4:end,:)];% [Smard.GenPredQH(:,4)]; [Smard.LoadPredH, Smard.GenPredH]; [SoC1, Weekday]
+Target=Smard.DayaheadRealH; % double(PVPlants{1}.Profile); %Smard.DayaheadRealH; Availability1 ResEnPricesRealQH(:,7)
+TargetTitle="DayaheadRealH";  % "DayaheadRealH"; "PVPlants_1"
+Time.Pred=Time.H;%Users{1}.Time.Vec;
+Predictors=[Smard.LoadPredH, Smard.GenPredH];%[Smard.LoadPredH(1:4:end), Smard.GenPredH(1:4:end,:)];% [Smard.GenPredQH(:,4)]; [Smard.LoadPredH, Smard.GenPredH]; [SoC1, Weekday]
 PredMethod={2};
 TrainModelNew=0;
-Save=true;
+Save=false;
+ClearWorkspace=false;
 
-DelayIndsLSQ=[1:96*3];
+DelayIndsLSQ=[1:224];
 %DelayIndsNARXNET=[1:72+24];
-DelayIndsNARXNET=[1:96*1]; % [1:52, 68:76, 92:100, 116:124]
+DelayIndsNARXNET=a-8;%[1:79]; % [1:52, 68:76, 92:100, 116:124]
 DelayIndsGLM=[1:8, 9:2:18, 48, 95:97, 2*96-1:2*96+1, 3*96-1:3*96+1];
 DelayIndsGLM=[1:24*4];
 GLMDistribution='binomial';
@@ -175,8 +176,9 @@ end
 [Prediction, PredictionMat, TargetMat, MAE, mMAPE, RMSE, Accuracy] = TestPred(PredMethod, PredictorMat, TargetDelayedLSQ, TargetDelayedGLM, Target, Time,...
     Range, MaxDelayIndLSQ, MaxDelayIndNARXNET, ForecastIntervalPredInd, Demo, TargetTitle, ActivateWaitbar, Path, Dl, Save); % The actual Prediction
 
-clearvars StorageFileNarxnet Demo TargetTitle ActivateWaitbar PredMethod TrainFun LSQCoeffs Ai StorageFileLSQ ForecastIntervalPredInd
-
+if ClearWorkspace
+    clearvars StorageFileNarxnet Demo TargetTitle ActivateWaitbar PredMethod TrainFun LSQCoeffs Ai StorageFileLSQ ForecastIntervalPredInd ClearWorkspace
+end
 
 toc
 
