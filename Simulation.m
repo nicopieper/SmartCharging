@@ -511,7 +511,7 @@ Load=cell(size(Users{1}.ChargingMat,1),1);
 
 for k=find(~cellfun(@isempty,Users{1}.ChargingMat(:,1)))'
 
-    ChargingType{k}=reshape(permute(Users{1}.ChargingMat{k,1}(max(1,24*Time.StepInd-Users{1}.ChargingMat{k,2}+1):24*Time.StepInd-Users{1}.ChargingMat{k,2}+24*Time.StepInd,:,:,:), [1,3,2]), [], size(Users{1}.ChargingMat{k,1},2))/1000*4; %[kw]
+    ChargingType{k}=reshape(permute(Users{1}.ChargingMat{k,1}(max(1,24*Time.StepInd-Users{1}.ChargingMat{k,2}+1):24*Time.StepInd-Users{1}.ChargingMat{k,2}+24*Time.StepInd,:,c(1:end-2)), [1,3,2]), [], size(Users{1}.ChargingMat{k,1},2))/1000*4; %[kw]
 
     [sum(ChargingType{k}(:,1,:),'all'), sum(ChargingType{k}(:,2,:),'all'), sum(ChargingType{k}(:,3,:),'all')]/sum(ChargingType{k}(:,:,:),'all')
     ChargingSum{k}=sum(ChargingType{k}, 2);
@@ -549,7 +549,7 @@ end
 
 if Users{1}.SmartCharging
     figure(k+1)
-    plot(datetime(1,1,1,0,0,0, 'TimeZone', 'Africa/Tunis'):minutes(Time.StepMin):datetime(1,1,1,23,45,0, 'TimeZone', 'Africa/Tunis'), circshift(mean(sum(Users{1}.AvailabilityMat,3),2), Users{1}.ShiftInds))
+    plot(datetime(1,1,1,0,0,0, 'TimeZone', 'Africa/Tunis'):minutes(Time.StepMin):datetime(1,1,1,23,45,0, 'TimeZone', 'Africa/Tunis'), circshift(mean(sum(Users{1}.AvailabilityMat,3),2), Users{1}.ShiftInds)/numel(Users{1}.UserNum))
     xticks(datetime(1,1,1,0,0,0, 'TimeZone', 'Africa/Tunis'):hours(4):datetime(1,1,2,0,0,0, 'TimeZone', 'Africa/Tunis'))
     xticklabels(datestr(datetime(1,1,1,0,0,0, 'TimeZone', 'Africa/Tunis'):hours(4):datetime(1,1,2,0,0,0, 'TimeZone', 'Africa/Tunis'), "HH:MM"))
 end
