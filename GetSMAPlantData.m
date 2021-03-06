@@ -155,7 +155,7 @@ for n=1:size(Folders,1) % iterate through the plants
             load(strcat(PlantPath, Dl, "PredictionData", Dl, "PlantDataComplete_2018-01-01_2020-08-31", ".mat")); % if that is the case, load it
             if length(PlantDataComplete)==23376 % the number of quater hours from 01.01.2018 until 31.08.2020. check whether the loaded data matches this size
                 PVPlants{n}.PredictionH=PlantDataComplete(UsedTime.VecLogical); % assign prediction data to plant
-                PVPlants{n}.PredictionQH=[interp1(1:length(PVPlants{n}.PredictionH),PVPlants{n}.PredictionH, 1:0.25:length(PVPlants{n}.PredictionH))'; ones(3,1).*PVPlants{n}.PredictionH(end)]; % interpolate hourly values to quater hourly values
+                PVPlants{n}.PredictionQH=[interp1(1:length(PVPlants{n}.PredictionH),PVPlants{n}.PredictionH, 1:0.25:length(PVPlants{n}.PredictionH), 'linear')'; ones(3,1).*PVPlants{n}.PredictionH(end)]; % interpolate hourly values to quater hourly values
             elseif LoadOnlyPlantsWithPrediction
                 continue
             end
