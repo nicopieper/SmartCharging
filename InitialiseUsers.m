@@ -81,14 +81,20 @@
 %                       Vehicles are deleted from the logbooks.
 
 %% Initialisation
+
+NumUsers=40;
+Users=cell(NumUsers+1,1); % 5the main cell variable all user data is stored in
+Users{1}.SmartCharging=true;
+
+
 rng('default');
 rng(1);
 %NumUsers=10000; % number of users
-if Users{1}.SmartCharging
+%if Users{1}.SmartCharging
     PVGridConvenientChargingLikelihoodMatrix=single([0, 0.5, 0.35, 0.15]); % Matrix that defines with type of users use grid convenient charging (14a) and own a PV plant: [PV&14a, PV&~14a, ~PV&14a, ~PV&~14a]
-else
-    PVGridConvenientChargingLikelihoodMatrix=single([0, 0.5, 0.01, 0.49]); % Matrix that defines with type of users use grid convenient charging (14a) and own a PV plant: [PV&14a, PV&~14a, ~PV&14a, ~PV&~14a]
-end
+%else
+%    PVGridConvenientChargingLikelihoodMatrix=single([0, 0.5, 0.01, 0.49]); % Matrix that defines with type of users use grid convenient charging (14a) and own a PV plant: [PV&14a, PV&~14a, ~PV&14a, ~PV&~14a]
+%end
 
 Users{1}.MwSt=1.19; % The VAT rate
 Users{1}.EEGBonus=single(9.17); %[ct/kWh] Bonus paid by the DSO to PV plant owner for supplying energy to the grid
@@ -137,7 +143,7 @@ end
 %% Store processing information
 
 Time.Sim.Start=dateshift(max([Range.TestDate(1), Vehicles{1}.Time.Vec(1)]), 'start', 'day');
-Time.Sim.End=min([Range.TestDate(2), Vehicles{1}.Time.Vec(end)])-days(200);
+Time.Sim.End=min([Range.TestDate(2), Vehicles{1}.Time.Vec(end)])-days(350);
 Time.Sim.Vec=Time.Sim.Start:Time.Step:Time.Sim.End;
 Time.Sim.VecInd=1:length(Time.Sim.Vec);
 Time.Sim.StepInd=Time.StepInd;
@@ -156,11 +162,19 @@ TemperatureTimeVec=TemperatureMonths(month(Users{1}.Time.Vec), 2);
 
 %% Initialise the users
 
+RandomNumbers=rand(9,NumUsers);
+PrivateElectricityPriceRandomDeviation=rand(1,NumUsers);
+PrivateChargingThresholdRandomDeviation=TruncatedGaussian(0.2,[PrivateChargingThresholdMean*0.6 PrivateChargingThresholdMean*1.3]-PrivateChargingThresholdMean,[1,NumUsers]);
+PublicChargingThresholdRandomDeviation=TruncatedGaussian(0.03,[PublicChargingThresholdMean*0.75 PublicChargingThresholdMean*1.4]-PublicChargingThresholdMean,[1,NumUsers]);
+IMSYSInstallationCostsRandomDeviation=TruncatedGaussian(0.1,[0.5 1.5]-1,[1,NumUsers]);
+InitialSoCRandomDeviation=TruncatedGaussian(0.1,[0.4 1]-0.7,[1,NumUsers]);
+
 for n=2:NumUsers+1
     
     % Selection of a car model
-    RandomNumbers=rand(9,1); % get some random numbers that will be used during the initialsation of this user
-    Model=max((RandomNumbers(1)>=str2double(VehicleProperties(:,2))).*(1:size(VehicleProperties,1))'); % with respect to market share of the cars, pick one of them. a(1) is uniformly distributed between 0 and 1. find the first vehicle whichs cumulated market share value (in decimal) is large than a(1). the cumulated market share value of the first car is 0, the one of the next car represents the market share of the first vehicle. the number of the second car represents the cumulated share of the first two vehicles and so on
+    %RandomNumbers=rand(9,1); % get some random numbers that will be used during the initialsation of this user
+    %a(1:9,n-1)=RandomNumbers;
+    Model=max((RandomNumbers(1,n-1)>=str2double(VehicleProperties(:,2))).*(1:size(VehicleProperties,1))'); % with respect to market share of the cars, pick one of them. a(1) is uniformly distributed between 0 and 1. find the first vehicle whichs cumulated market share value (in decimal) is large than a(1). the cumulated market share value of the first car is 0, the one of the next car represents the market share of the first vehicle. the number of the second car represents the cumulated share of the first two vehicles and so on
     Users{n}.ModelName=VehicleProperties(Model, 1); % the car name, e. g. "BMW i3s"
     Users{n}.ModelSize=VehicleProperties(Model, 3); % small, medium, large
     Users{n}.BatterySize=single(str2double(VehicleProperties(Model, 4))*1000); % [Wh] Wh is used to keep accuracy while using only integers
@@ -170,15 +184,15 @@ for n=2:NumUsers+1
     Users{n}.ChargingEfficiency=single(str2double(VehicleProperties(Model, 9))); % consider a charging loss factor
     Users{n}.DCChargingPowerVehicle=single(str2double(VehicleProperties(Model, 10))*1000); % [Wh/m] max DC charging power of car
     Users{n}.ACChargingPowerVehicle=single(str2double(VehicleProperties(Model, 11))*1000); % [W] max ac power chrging power of car
-    Users{n}.AChargingPowerHomeCharger=single(max((RandomNumbers(2)>=str2double(VehicleProperties(Model,12:17))).*[2.3 3.7 3.7 7.3 11 22]*1000)); % [W] with respect to the guessed distribution of chargers for this car, pick one ac charging power for the private charging point. selection mechanism equals the on described for the Model
+    Users{n}.AChargingPowerHomeCharger=single(max((RandomNumbers(2,n-1)>=str2double(VehicleProperties(Model,12:17))).*[2.3 3.7 3.7 7.3 11 22]*1000)); % [W] with respect to the guessed distribution of chargers for this car, pick one ac charging power for the private charging point. selection mechanism equals the on described for the Model
     Users{n}.ACChargingPowerHomeCharging=single(min(Users{n}.AChargingPowerHomeCharger, Users{n}.ACChargingPowerVehicle)*Users{n}.ChargingEfficiency); % [W] the charging power at the private charging point is determined by the minimum of the cars and the charging points power
-    Users{n}.PrivateElectricityPrice=single(MeanPrivateElectricityPrice+randn(1));
-    Users{n}.PublicACChargingPrices=single(max((RandomNumbers(4)>=[0, 0.5]).*PublicACChargingPrices));
-    Users{n}.PublicDCChargingPrices=single(max((RandomNumbers(5)>=[0, 0.5]).*PublicDCChargingPrices));
+    Users{n}.PrivateElectricityPrice=single(MeanPrivateElectricityPrice+PrivateElectricityPriceRandomDeviation(1,n-1));
+    Users{n}.PublicACChargingPrices=single(max((RandomNumbers(4,n-1)>=[0, 0.5]).*PublicACChargingPrices));
+    Users{n}.PublicDCChargingPrices=single(max((RandomNumbers(5,n-1)>=[0, 0.5]).*PublicDCChargingPrices));
     
     % Add a PV plant
-    %if RandomNumbers(6)<=LikelihoodPV && AddPV 
-    if RandomNumbers(6)<=PVGridConvenientChargingLikelihoodMatrix(2) && AddPV 
+    %if RandomNumbers(6,n-1)<=LikelihoodPV && AddPV 
+    if RandomNumbers(6,n-1)<=PVGridConvenientChargingLikelihoodMatrix(2) && AddPV 
         Users{n}.PVPlant=uint8(PVPlantPointer); % save the assigned PV plant number
         Users{n}.PVPlantExists=true; % and set this variable to true to indicate that this user owns a PV plant
         PVPlantPointer=mod(PVPlantPointer,length(PVPlants))+1; % increase pointer
@@ -187,26 +201,26 @@ for n=2:NumUsers+1
     end
     
     % Selection of a charging strategy
-    Users{n}.ChargingStrategy=uint8((RandomNumbers(7,1)>=0.0)+1); % pick a charging strategy
+    Users{n}.ChargingStrategy=uint8((RandomNumbers(7,n-1)>=0.0)+1); % pick a charging strategy
     if Users{n}.ChargingStrategy==1 % this one is primitive
         Users{n}.MinimumPluginTime=minutes(randi([30 90], 1,1));
     elseif Users{n}.ChargingStrategy==2 % only use this strategy which will be explained in Simulation
-        Users{n}.PrivateChargingThreshold=single(PrivateChargingThresholdMean+TruncatedGaussian(0.2,[PrivateChargingThresholdMean*0.6 PrivateChargingThresholdMean*1.3]-PrivateChargingThresholdMean,1)); % Mean=1.4, stdw=0.2, range(0.7, 2)
+        Users{n}.PrivateChargingThreshold=single(PrivateChargingThresholdMean+PrivateChargingThresholdRandomDeviation(1,n-1)); % Mean=1.4, stdw=0.2, range(0.7, 2)
     end
-    Users{n}.PublicChargingThreshold=single(PublicChargingThresholdMean+TruncatedGaussian(0.03,[PublicChargingThresholdMean*0.75 PublicChargingThresholdMean*1.4]-PublicChargingThresholdMean,1)); % Mean=1.4, stdw=0.2, range(0.7, 2)
+    Users{n}.PublicChargingThreshold=single(PublicChargingThresholdMean+PublicChargingThresholdRandomDeviation(1,n-1)); % Mean=1.4, stdw=0.2, range(0.7, 2)
     Users{n}.PublicChargingThreshold_Wh=Users{n}.BatterySize*Users{n}.PublicChargingThreshold;
     
     % Selection of a grid convenient charging profile
-    GridConvenientChargingProfile=max(single(RandomNumbers(8)>=(0:1/size(DSOContractData,2):1-1/size(DSOContractData,2))).*(1:size(DSOContractData,2)));
-%     if RandomNumbers(8)<=LikelihoodGridConvenientCharging
+    GridConvenientChargingProfile=max(single(RandomNumbers(8,n-1)>=(0:1/size(DSOContractData,2):1-1/size(DSOContractData,2))).*(1:size(DSOContractData,2)));
+%     if RandomNumbers(8,n-1)<=LikelihoodGridConvenientCharging
     Users{n}.NNEEnergyPriceGridConvenientCharging=DSOContractData(5,GridConvenientChargingProfile); % [ct/kWh] netto (without VAT). reduced NNE energy price due to the allowance for the DSO to manage the charging
     Users{n}.NNEEnergyPriceNotGridConvenientCharging=DSOContractData(3,GridConvenientChargingProfile); % [ct/kWh] netto (without VAT). normal NNE prices
-    if RandomNumbers(6)<=PVGridConvenientChargingLikelihoodMatrix(1) || (RandomNumbers(6)>PVGridConvenientChargingLikelihoodMatrix(2) & RandomNumbers(6)<=PVGridConvenientChargingLikelihoodMatrix(3))
+    if RandomNumbers(6,n-1)<=PVGridConvenientChargingLikelihoodMatrix(1) || (RandomNumbers(6,n-1)>PVGridConvenientChargingLikelihoodMatrix(2) & RandomNumbers(6,n-1)<=PVGridConvenientChargingLikelihoodMatrix(3))
         Users{n}.GridConvenientCharging=true;
         Users{n}.GridConvenientChargingAvailability=DSOContractData(7:end,GridConvenientChargingProfile);
         Users{n}.NNEExtraBasePrice=DSOContractData(4,GridConvenientChargingProfile)*100; % [ct/a] netto (without VAT) due to the extra electricity meter
         Users{n}.NNEBonus=DSOContractData(6,GridConvenientChargingProfile)*100; % [ct] a single bonus paid by the DSO
-        Users{n}.IMSYSInstallationCosts=single(IMSYSInstallationCostsMean*(1+TruncatedGaussian(0.1,[0.5 1.5]-1,1)));
+        Users{n}.IMSYSInstallationCosts=single(IMSYSInstallationCostsMean*(1+IMSYSInstallationCostsRandomDeviation(1,n-1)));
         Users{n}.NNEEnergyPrice=Users{n}.NNEEnergyPriceGridConvenientCharging;
     else
         Users{n}.GridConvenientCharging=false;
@@ -246,7 +260,7 @@ for n=2:NumUsers+1
     
     % Initialisation of LogbookBase
     Users{n}.Logbook(:,4)=single(uint32(double(Users{n}.Logbook(:,3)).*Consumption)); % add consumption to logbook
-    Users{n}.Logbook(1,9)=single(uint32(double(Users{n}.BatterySize)*0.7+TruncatedGaussian(0.1,[0.4 1]-0.7,1))); % Initial SoC between 0.4 and 1 of BatterySize. Distribution is normal
+    Users{n}.Logbook(1,9)=single(uint32(double(Users{n}.BatterySize)*0.7+InitialSoCRandomDeviation(1,n-1))); % Initial SoC between 0.4 and 1 of BatterySize. Distribution is normal
     
     % Evaluation of User properties
     Users{n}.AverageMileageDay_m=single(sum(Users{n}.Logbook(:,3))/days(Time.Sim.Vec(end)-Time.Sim.Vec(1))); %[m]
@@ -262,5 +276,7 @@ clearvars LikelihoodPV PVPlantPointer Consumption Velocities SizeNum VehiclePoin
 clearvars RandomNumbers n Model VehicleSizes MeanPrivateElectricityPrice NumTripDays PublicACChargingPrices PublicDCChargingPrices StorageFiles StorageInd
 clearvars TimeNoiseStdFac UsersTime VehicleProperties GridConvenientChargingProfile UsersTimeVecLogical VCity VHighway PublicChargingThresholdMean
 clearvars PrivateChargingThresholdMean LikelihoodGridConvenientCharging DSOContractData PVGridConvenientChargingLikelihoodMatrix
-clearvars VehicleUtilisation
+clearvars VehicleUtilisation PrivateElectricityPriceRandomDeviation PublicChargingThresholdRandomDeviation IMSYSInstallationCostsRandomDeviation
+clearvars InitialSoCRandomDeviation
 clearvars Vehicles
+
