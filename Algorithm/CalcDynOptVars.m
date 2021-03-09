@@ -56,4 +56,6 @@ PowerTS=repelem(MaxPower/4,ControlPeriodsIt,NumCostCats,1);
 PowerTS(:,2,:)=min([PowerTS(:,2,:), PVPower(end-ControlPeriodsIt+1:end,:,:)/4], [], 2);
 PowerTS(1,2,:)=min(MaxPower/4, PVPowerReal(ControlPeriods-ControlPeriodsIt+1,1,:)/4);
 ConsPowerTSb=PowerTS;
-MinEnergyRequiredTS=min(MinEnergyRequiredTS,MaxEnergyChargableDeadlockCP);
+
+%MinEnergyRequiredTS=min(MinEnergyRequiredTS,MaxEnergyChargableDeadlockCP);
+

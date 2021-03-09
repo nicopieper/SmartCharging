@@ -1,8 +1,7 @@
 %% Initialisation
-
 NumUsers=1000;
 Users=cell(NumUsers+1,1); % 5the main cell variable all user data is stored in
-Users{1}.SmartCharging=false;
+Users{1}.SmartCharging=true;
 UseParallel=true;
 UseParallelAvailability=false;
 UseSpotPredictions=true;
@@ -29,7 +28,7 @@ CleanUpWorkspace=0;
 
 if Users{1}.SmartCharging
     if UseParallel
-        NumDecissionGroups=20;
+        NumDecissionGroups=4;
         gcp
     else
         NumDecissionGroups=1;
@@ -343,6 +342,7 @@ for TimeInd=Time.Sim.VecInd(2:end-ControlPeriods)
 %         FileName=strcat(Path.Simulation, "Workspace", datestr(Users{1}.Time.Stamp, "yyyymmdd-HHMM"), "_", Time.IntervalFile, "_", num2str(length(Users)-1), "_", num2str(Users{1}.SmartCharging), "_", ".mat");
 %         save(FileName, "-v7.3");
 %     end
+
     
     
     if ActivateWaitbar %&& mod(TimeInd+TD.User,1000)==0

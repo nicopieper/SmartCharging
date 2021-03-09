@@ -127,7 +127,7 @@ if UseParallel
         Costf{k,1}=Costf1(SubIndices(DecissionGroups{k,3}, ControlPeriods, ControlPeriodsIt, 3))';
     end
     
-	UnsolvedProblems=find(cellfun(@isempty,x1)');
+    UnsolvedProblems=find(cellfun(@isempty,x1)');
 	parfor k=1:NumDecissionGroups
         if ismember(k,UnsolvedProblems)
             [x11,fval]=linprog(Costf{k,1},A,b{k,1},Aeq,beq{k,1},lb,ub{k,1}, options);
