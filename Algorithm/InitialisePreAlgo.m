@@ -3,7 +3,7 @@
 ControlPeriods=96*2;
 CostCats=logical([1, 1, 1]);
 NumCostCats=sum(CostCats);
-ConstantResPoPowerPeriods=4*Time.StepInd;
+% ConstantResPoPowerPeriods=4*Time.StepInd;
 ResPoPriceFactor=[0.4]; %0.4
 ResEnPriceFactor=0.15;
 options = optimoptions('linprog','Algorithm','dual-simplex');
@@ -50,11 +50,13 @@ end
     
 BatterySizes=zeros(1, 1, NumUsers);
 PublicChargingThresholds_Wh=zeros(ControlPeriods, 1, NumUsers);
+ChargingEfficiencies=zeros(1, 1, NumUsers);
 VarCounter=0;
 for n=UserNum
     VarCounter=VarCounter+1;
     BatterySizes(1,1,VarCounter)=double(Users{n}.BatterySize);
     PublicChargingThresholds_Wh(:,1,VarCounter)=ones(ControlPeriods, 1, 1) .* round(double(Users{n}.PublicChargingThreshold_Wh)*1.8);
+    ChargingEfficiencies(:,1,VarCounter)=double(Users{n}.ChargingEfficiency);
 end
 
 

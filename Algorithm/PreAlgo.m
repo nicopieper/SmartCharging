@@ -239,12 +239,7 @@ if ismember(TimeInd, TimesOfPreAlgo(1,:))
     LastResPoOffersSucessful4H(:,PreAlgoCounter+1)=LastResPoOffers(:,PreAlgoCounter+1); % [Wh]
     LastResPoOffersSucessful4H(ConsPeriods*ConstantResPoPowerPeriodsScaling+1:(ConsPeriods+6)*ConstantResPoPowerPeriodsScaling,PreAlgoCounter+1)=LastResPoOffersSucessful4H(ConsPeriods*ConstantResPoPowerPeriodsScaling+1:(ConsPeriods+6)*ConstantResPoPowerPeriodsScaling,PreAlgoCounter+1).*SuccessfulResPoOffers(:,PreAlgoCounter+1);
     
-    VarCounter=0;
-    for n=UserNum
-        VarCounter=VarCounter+1;
-        ResPoOffers(:,2,PreAlgoCounter+1)=ResPoOffers(:,2,PreAlgoCounter+1)+OptimalChargingEnergies((24-hour(TimeOfPreAlgo(1)))*Time.StepInd+1:ConstantResPoPowerPeriods:(24-hour(TimeOfPreAlgo(1))+24)*Time.StepInd,sum(CostCats(1:3)),VarCounter)/Users{n}.ChargingEfficiency/1000*4; %[kW]
-    end
-    ResPoOffers(:,2,PreAlgoCounter+1)=ResPoOffers(:,2,PreAlgoCounter+1).*SuccessfulResPoOffers(:,PreAlgoCounter+1);
+    ResPoOffers(:,2,PreAlgoCounter+1)=sum(OptimalChargingEnergies((24-hour(TimeOfPreAlgo(1)))*Time.StepInd+1:ConstantResPoPowerPeriods:(24-hour(TimeOfPreAlgo(1))+24)*Time.StepInd,sum(CostCats(1:3)),:)./ChargingEfficiencies, 3)/1000*4.*SuccessfulResPoOffers(:,PreAlgoCounter+1);
 end
 
 %%

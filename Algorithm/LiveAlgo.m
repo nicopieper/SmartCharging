@@ -154,7 +154,7 @@ if OfferedResPo>0
             % if the demand is still not chargable, the remaining energy has to
             % be fulfilled by the VPP
             
-            LiveAlgoCases(1,)=LiveAlgoCases(1,1)+1;
+            LiveAlgoCases(1,1)=LiveAlgoCases(1,1)+1;
             
             VarCounter=0;
             for n=UserNum
