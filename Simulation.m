@@ -1,6 +1,4 @@
 %% Initialisation
-<<<<<<< HEAD
-
 SC=[true; true; false];
 PVGridConvenientChargingLikelihoodMatrix1=single([0, 0.5, 0, 0.5; 0, 0, 0, 1; 0, 0, 0, 1]); % Matrix that defines with type of users use grid convenient charging (14a) and own a PV plant: [PV&14a, PV&~14a, ~PV&14a, ~PV&~14a]
 ResPoPriceFactor1=[0.4; 100000; 100000];
