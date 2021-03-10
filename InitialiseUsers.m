@@ -82,16 +82,12 @@
 
 %% Initialisation
 
-NumUsers=40;
-Users=cell(NumUsers+1,1); % 5the main cell variable all user data is stored in
-Users{1}.SmartCharging=true;
-
-
 rng('default');
 rng(1);
 %NumUsers=10000; % number of users
 %if Users{1}.SmartCharging
-    PVGridConvenientChargingLikelihoodMatrix=single([0, 0.5, 0.35, 0.15]); % Matrix that defines with type of users use grid convenient charging (14a) and own a PV plant: [PV&14a, PV&~14a, ~PV&14a, ~PV&~14a]
+    %PVGridConvenientChargingLikelihoodMatrix=single([0, 0.5, 0.35, 0.15]); % Matrix that defines with type of users use grid convenient charging (14a) and own a PV plant: [PV&14a, PV&~14a, ~PV&14a, ~PV&~14a]
+    %PVGridConvenientChargingLikelihoodMatrix=single([0.25, 0.25, 0.25, 0.25]); % Matrix that defines with type of users use grid convenient charging (14a) and own a PV plant: [PV&14a, PV&~14a, ~PV&14a, ~PV&~14a]
 %else
 %    PVGridConvenientChargingLikelihoodMatrix=single([0, 0.5, 0.01, 0.49]); % Matrix that defines with type of users use grid convenient charging (14a) and own a PV plant: [PV&14a, PV&~14a, ~PV&14a, ~PV&~14a]
 %end

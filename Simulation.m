@@ -1,7 +1,18 @@
 %% Initialisation
+
+SC=[true; true; false];
+PVGridConvenientChargingLikelihoodMatrix1=single([0, 0.5, 0, 0.5; 0, 0, 0, 1; 0, 0, 0, 1]); % Matrix that defines with type of users use grid convenient charging (14a) and own a PV plant: [PV&14a, PV&~14a, ~PV&14a, ~PV&~14a]
+ResPoPriceFactor1=[0.4; 100000; 100000];
+
+for it=1:3
+    
+PVGridConvenientChargingLikelihoodMatrix=PVGridConvenientChargingLikelihoodMatrix1(it,:);
+ResPoPriceFactor=ResPoPriceFactor1(it);
+
 NumUsers=1000;
 Users=cell(NumUsers+1,1); % 5the main cell variable all user data is stored in
-Users{1}.SmartCharging=true;
+Users{1}.SmartCharging=SC(it);
+%Users{1}.SmartCharging=true;
 UseParallel=true;
 UseParallelAvailability=false;
 UseSpotPredictions=true;
@@ -28,7 +39,7 @@ CleanUpWorkspace=0;
 
 if Users{1}.SmartCharging
     if UseParallel
-        NumDecissionGroups=4;
+        NumDecissionGroups=20;
         gcp
     else
         NumDecissionGroups=1;
@@ -383,7 +394,8 @@ clearvars A ConsEnergyDemandTSA ConsEnergyDemandTSAIt Aeq b beq ConsSumPowerTSA 
 
 for n=UserNum
     Users{n}.Logbook=Users{n}.Logbook(1:TimeInd,:);
-    Users{n}.AverageConsumptionBaseYear_kWh=sum(double(Users{n}.Logbook(:,5:8))/Users{n}.ChargingEfficiency, 'all')/1000/days(Time.End-Time.Start)*365.25;
+    Users{n}.ConsumptionTotalYear_kWh=sum(double(Users{n}.Logbook(:,5:8))/Users{n}.ChargingEfficiency, 'all')/1000/(length(Users{n}.Logbook)/(24*Time.StepInd))*365.25;
+    Users{n}.ConsumptionPrivateYear_kWh=sum(double(Users{n}.Logbook(:,5:7))/Users{n}.ChargingEfficiency, 'all')/1000/(length(Users{n}.Logbook)/(24*Time.StepInd))*365.25;
 end
 
 %% Store Simulation Information
@@ -396,6 +408,7 @@ Users{1}.UseSpotPredictions=UseSpotPredictions;
 Users{1}.UsePVPredictions=UsePVPredictions;
 Users{1}.UseIndividualEEGBonus=UseIndividualEEGBonus;
 Users{1}.UsePV=UsePV;
+
 
 if Users{1}.SmartCharging
     %Users{1}.ChargingMat=ChargingMat;
@@ -422,6 +435,7 @@ if Users{1}.SmartCharging
     Users{1}.ResPoPriceFactor=ResPoPriceFactor;
     Users{1}.ResEnPriceFactor=ResEnPriceFactor;
     Users{1}.ConstantResPoPowerPeriodsScaling=ConstantResPoPowerPeriodsScaling;
+    Users{1}.ConstantResPoPowerPeriods=ConstantResPoPowerPeriods;
     
     disp(strcat(num2str(sum(LastResPoOffersSucessful4H(:,2:end)>0,'all')/sum(LastResPoOffers(:,2:end)>0,'all')*100), "% of all reserve power offers were successful"))
     
@@ -554,7 +568,7 @@ if Users{1}.ApplyGridConvenientCharging
     IMSYSPrices=readmatrix(strcat(Path.Simulation, "IMSYS_Prices.csv"), 'NumHeaderLines', 1);
     for n=2:length(Users)
         if Users{n}.NNEExtraBasePrice==-100
-            Users{n}.NNEExtraBasePrice=IMSYSPrices(Users{n}.AverageConsumptionBaseYear_kWh>=IMSYSPrices(:,1) & Users{n}.AverageConsumptionBaseYear_kWh<IMSYSPrices(:,2),3)*100;
+            Users{n}.NNEExtraBasePrice=IMSYSPrices(Users{n}.ConsumptionPrivateYear_kWh>=IMSYSPrices(:,1) & Users{n}.ConsumptionPrivateYear_kWh<IMSYSPrices(:,2),4)*100;
         end
         
         NNEExtraBasePrice=NNEExtraBasePrice+Users{n}.NNEExtraBasePrice;
@@ -573,11 +587,11 @@ if ~Users{1}.SmartCharging
         
             TotalCostsBase(1,1:4)=TotalCostsBase(1,1:4)+sum(Users{n}.Logbook(:,5:8)/1000/Users{n}.ChargingEfficiency, 1);
 
-            Users{n}.FinListBase=zeros(length(Users{n}.Logbook),4);
-            Users{n}.FinListBase(:,1)=(Users{n}.Logbook(:,5)/1000/Users{n}.ChargingEfficiency .* (Users{n}.PrivateElectricityPrice + Users{1}.SpotmarketPrices(Time.Sim.VecInd(1:length(Users{n}.Logbook(:,5)))+Users{1}.TD.SpotmarketPrices)/10 + Users{n}.NNEEnergyPrice)*Users{1}.MwSt); % [ct] total electricity costs equal base price of user + realtime current production costs + NNE energy price. VAT applies to the end price
-            Users{n}.FinListBase(:,2)=(Users{n}.Logbook(:,6)/1000/Users{n}.ChargingEfficiency .* Users{n}.EEGBonus); % [ct] costs for not selling the PV power to the DSO
-            Users{n}.FinListBase(:,3)=zeros(length(Users{n}.Logbook(:,7)),1);
-            Users{n}.FinListBase(:,4)=(Users{n}.Logbook(:,8)/1000/Users{n}.ChargingEfficiency .* Users{n}.PublicACChargingPrices.*double(Users{n}.Logbook(:,1)==6) + double(Users{n}.Logbook(:,8))/1000/Users{n}.ChargingEfficiency .* Users{n}.PublicDCChargingPrices.*double(Users{n}.Logbook(:,1)==7)); % [ct] fixed price for public AC and DC charging
+            Users{n}.FinListBase=zeros(length(Users{n}.Logbook),4, 'single');
+            Users{n}.FinListBase(:,1)=single(Users{n}.Logbook(:,5)/1000/Users{n}.ChargingEfficiency .* (Users{n}.PrivateElectricityPrice + Users{1}.SpotmarketPrices(Time.Sim.VecInd(1:length(Users{n}.Logbook(:,5)))+Users{1}.TD.SpotmarketPrices)/10 + Users{n}.NNEEnergyPrice)*Users{1}.MwSt); % [ct] total electricity costs equal base price of user + realtime current production costs + NNE energy price. VAT applies to the end price
+            Users{n}.FinListBase(:,2)=single(Users{n}.Logbook(:,6)/1000/Users{n}.ChargingEfficiency .* Users{n}.EEGBonus); % [ct] costs for not selling the PV power to the DSO
+            Users{n}.FinListBase(:,3)=zeros(length(Users{n}.Logbook(:,7)),1, 'single');
+            Users{n}.FinListBase(:,4)=single(Users{n}.Logbook(:,8)/1000/Users{n}.ChargingEfficiency .* Users{n}.PublicACChargingPrices.*double(Users{n}.Logbook(:,1)==6) + double(Users{n}.Logbook(:,8))/1000/Users{n}.ChargingEfficiency .* Users{n}.PublicDCChargingPrices.*double(Users{n}.Logbook(:,1)==7)); % [ct] fixed price for public AC and DC charging
             TotalCostsBase(2,1:4)=TotalCostsBase(2,1:4)+sum(Users{n}.FinListBase, 1);
             
         end
@@ -610,17 +624,17 @@ if Users{1}.SmartCharging
         if isfield(Users{n}, "Logbook")
             TotalCostsSmart(1,1:4)=TotalCostsSmart(1,1:4)+sum(Users{n}.Logbook(:,5:8)/1000/Users{n}.ChargingEfficiency, 1);
 
-            Users{n}.FinListSmart=zeros(length(Users{n}.Logbook),4);
-            Users{n}.FinListSmart(:,1)=(Users{n}.Logbook(:,5)/1000/Users{n}.ChargingEfficiency .* (Users{n}.PrivateElectricityPrice + Users{1}.SpotmarketPrices(Users{1}.Time.VecInd(1:length(Users{n}.Logbook(:,5)))+Users{1}.TD.SpotmarketPrices)/10 + Users{n}.NNEEnergyPrice)*Users{1}.MwSt); % [ct] total electricity costs equal base price of user + realtime current production costs + NNE energy price. VAT applies to the end price
-            Users{n}.FinListSmart(:,2)=(Users{n}.Logbook(:,6)/1000/Users{n}.ChargingEfficiency .* Users{n}.EEGBonus); % [ct] costs for not selling the PV power to the DSO
-            Users{n}.FinListSmart(:,3)=(Users{n}.Logbook(:,7)/1000/Users{n}.ChargingEfficiency .* (Users{n}.PrivateElectricityPrice + Users{1}.ResEnOffersList/100 + Users{n}.NNEEnergyPrice)*Users{1}.MwSt); % [ct] total electricity costs equal base price of user + realtime current production costs + NNE energy price. VAT applies to the end price
-            Users{n}.FinListSmart(:,4)=(Users{n}.Logbook(:,8)/1000/Users{n}.ChargingEfficiency .* Users{n}.PublicACChargingPrices.*double(Users{n}.Logbook(:,1)==6) + double(Users{n}.Logbook(:,8))/1000/Users{n}.ChargingEfficiency .* Users{n}.PublicDCChargingPrices.*double(Users{n}.Logbook(:,1)==7)); % [ct] fixed price for public AC and DC charging
+            Users{n}.FinListSmart=zeros(length(Users{n}.Logbook),4, 'single');
+            Users{n}.FinListSmart(:,1)=single(Users{n}.Logbook(:,5)/1000/Users{n}.ChargingEfficiency .* (Users{n}.PrivateElectricityPrice + Users{1}.SpotmarketPrices(Users{1}.Time.VecInd(1:length(Users{n}.Logbook(:,5)))+Users{1}.TD.SpotmarketPrices)/10 + Users{n}.NNEEnergyPrice)*Users{1}.MwSt); % [ct] total electricity costs equal base price of user + realtime current production costs + NNE energy price. VAT applies to the end price
+            Users{n}.FinListSmart(:,2)=single(Users{n}.Logbook(:,6)/1000/Users{n}.ChargingEfficiency .* Users{n}.EEGBonus); % [ct] costs for not selling the PV power to the DSO
+            Users{n}.FinListSmart(:,3)=single(Users{n}.Logbook(:,7)/1000/Users{n}.ChargingEfficiency .* (Users{n}.PrivateElectricityPrice + Users{1}.ResEnOffersList/100 + Users{n}.NNEEnergyPrice)*Users{1}.MwSt); % [ct] total electricity costs equal base price of user + realtime current production costs + NNE energy price. VAT applies to the end price
+            Users{n}.FinListSmart(:,4)=single(Users{n}.Logbook(:,8)/1000/Users{n}.ChargingEfficiency .* Users{n}.PublicACChargingPrices.*double(Users{n}.Logbook(:,1)==6) + double(Users{n}.Logbook(:,8))/1000/Users{n}.ChargingEfficiency .* Users{n}.PublicDCChargingPrices.*double(Users{n}.Logbook(:,1)==7)); % [ct] fixed price for public AC and DC charging
             TotalCostsSmart(2,1:4)=TotalCostsSmart(2,1:4)+sum(Users{n}.FinListSmart, 1);
         end
     end
     
-    TotalCostsSmart(1,5)=sum(Users{1}.ResPoOffers(:,2,:),'all'); % [kW]
-    TotalCostsSmart(2,5)=-sum(Users{1}.ResPoOffers(:,1,:).*Users{1}.ResPoOffers(:,2,:),'all')*100; % [EUR/kW]*[kW]
+    TotalCostsSmart(1,5)=sum(Users{1}.ResPoOffers(:,2,:),'all') / (4*Time.StepInd) * ConstantResPoPowerPeriods; % [kW]
+    TotalCostsSmart(2,5)=-sum(Users{1}.ResPoOffers(:,1,:).*Users{1}.ResPoOffers(:,2,:),'all') / (4*Time.StepInd) * ConstantResPoPowerPeriods * 100; % [EUR/kW]*[kW]
     TotalCostsSmart(3,:)=TotalCostsSmart(2,:)./TotalCostsSmart(1,:);
     TotalCostsSmart(1,6)=sum(TotalCostsSmart(1,1:4));
     TotalCostsSmart(2,6)=sum(TotalCostsSmart(2,1:5),2);
@@ -686,3 +700,4 @@ clearvars UseIndividualEEGBonus UsePVPredictions UseSpotPredictions x1 Backwards
 end
 
 
+end
