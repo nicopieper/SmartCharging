@@ -5,7 +5,7 @@ CalcAvailability;
 MaxEnergyChargableSoCTS=zeros(ControlPeriodsIt,1,NumUsers);
 MaxEnergyChargableDeadlockCP=zeros(1,1,NumUsers);
 MinEnergyRequiredTS=zeros(ControlPeriodsIt,1,NumUsers);
-SumPower=MaxPower/4.*Availability;
+SumPower=max(0, MaxPower/4.*Availability-1);
 
 if ~UseParallelAvailability
     CalcLogbooks12;
@@ -56,7 +56,7 @@ PowerTS=repelem(MaxPower/4,ControlPeriodsIt,length(CostCats),1);
 PowerTS(:,2,:)=min([PowerTS(:,2,:), PVPower(end-ControlPeriodsIt+1:end,:,:)/4], [], 2);
 PowerTS(1,2,:)=min(MaxPower/4, PVPowerReal(ControlPeriods-ControlPeriodsIt+1,1,:)/4);
 
-PowerTS=PowerTS.*CostCats;
+PowerTS=PowerTS.*double(CostCats);
 
 %MinEnergyRequiredTS=min(MinEnergyRequiredTS,MaxEnergyChargableDeadlockCP);
 

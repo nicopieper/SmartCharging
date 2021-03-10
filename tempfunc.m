@@ -2,12 +2,16 @@ CostN14NPV=[];
 Cost14NPV=[];
 CostN14PV=[];
 Cost14PV=[];
+CostN14NPV50=[];
+Cost14NPV50=[];
+CostN14PV50=[];
+Cost14PV50=[];
 for n=2:1001
     if ~Users{n}.PVPlantExists && ~Users{n}.GridConvenientCharging
         CostN14NPV(end+1,1)=n;
         CostN14NPV(end,2:5)=sum(Users{n}.Logbook(:,5:8),1)/Users{n}.ChargingEfficiency;
         CostN14NPV(end,6)=sum(CostN14NPV(end,2:5));
-        CostN14NPV(end,7:10)=sum(Users{n}.FinListBase(:,:),1)/100;
+        CostN14NPV(end,7:10)=sum(Users{n}.FinListSmart(:,:),1)/100;
         CostN14NPV(end,11)=sum(CostN14NPV(end,7:10))+Users{n}.NNEExtraBasePrice/100;
         %CostN14NPV(end,11)=sum(CostN14NPV(end,7:10));
         CostN14NPV(end,12)=Users{n}.NNEEnergyPrice;
@@ -15,15 +19,23 @@ for n=2:1001
         Cost14NPV(end+1,1)=n;
         Cost14NPV(end,2:5)=sum(Users{n}.Logbook(:,5:8),1)/Users{n}.ChargingEfficiency;
         Cost14NPV(end,6)=sum(Cost14NPV(end,2:5));
-        Cost14NPV(end,7:10)=sum(Users{n}.FinListBase(:,:),1)/100;
+        Cost14NPV(end,7:10)=sum(Users{n}.FinListSmart(:,:),1)/100;
         Cost14NPV(end,11)=sum(Cost14NPV(end,7:10))+Users{n}.NNEExtraBasePrice/100;
         %Cost14NPV(end,11)=sum(Cost14NPV(end,7:10));
         Cost14NPV(end,12)=Users{n}.NNEEnergyPrice;
+        
+        Cost14NPV50(end+1,1)=n;
+        Cost14NPV50(end,2:5)=sum(Smart50{n}.Logbook(:,5:8),1)/Smart50{n}.ChargingEfficiency;
+        Cost14NPV50(end,6)=sum(Cost14NPV50(end,2:5));
+        Cost14NPV50(end,7:10)=sum(Smart50{n}.FinListSmart(:,:),1)/100;
+        Cost14NPV50(end,11)=sum(Cost14NPV50(end,7:10))+Users{n}.NNEExtraBasePrice/100;
+        %Cost14NPV(end,11)=sum(Cost14NPV(end,7:10));
+        Cost14NPV50(end,12)=Smart50{n}.NNEEnergyPrice;
     elseif Users{n}.PVPlantExists && ~Users{n}.GridConvenientCharging
         CostN14PV(end+1,1)=n;
         CostN14PV(end,2:5)=sum(Users{n}.Logbook(:,5:8),1)/Users{n}.ChargingEfficiency;
         CostN14PV(end,6)=sum(CostN14PV(end,2:5));
-        CostN14PV(end,7:10)=sum(Users{n}.FinListBase(:,:),1)/100;
+        CostN14PV(end,7:10)=sum(Users{n}.FinListSmart(:,:),1)/100;
         CostN14PV(end,11)=sum(CostN14PV(end,7:10))+Users{n}.NNEExtraBasePrice/100;
         %CostN14PV(end,11)=sum(CostN14PV(end,7:10));
         CostN14PV(end,12)=Users{n}.NNEEnergyPrice;
@@ -31,10 +43,19 @@ for n=2:1001
         Cost14PV(end+1,1)=n;
         Cost14PV(end,2:5)=sum(Users{n}.Logbook(:,5:8),1)/Users{n}.ChargingEfficiency;
         Cost14PV(end,6)=sum(Cost14PV(end,2:5));
-        Cost14PV(end,7:10)=sum(Users{n}.FinListBase(:,:),1)/100;
+        Cost14PV(end,7:10)=sum(Users{n}.FinListSmart(:,:),1)/100;
         Cost14PV(end,11)=sum(Cost14PV(end,7:10))+Users{n}.NNEExtraBasePrice/100;
         %Cost14PV(end,11)=sum(Cost14PV(end,7:10));
         Cost14PV(end,12)=Users{n}.NNEEnergyPrice;
+        Cost14PV(end,13)=sum(PVPlants{Users{n}.PVPlant}.ProfileQH(end-366*24*4:end-96));
+        
+        Cost14PV50(end+1,1)=n;
+        Cost14PV50(end,2:5)=sum(Smart50{n}.Logbook(:,5:8),1)/Smart50{n}.ChargingEfficiency;
+        Cost14PV50(end,6)=sum(Cost14PV50(end,2:5));
+        Cost14PV50(end,7:10)=sum(Smart50{n}.FinListSmart(:,:),1)/100;
+        Cost14PV50(end,11)=sum(Cost14PV50(end,7:10))+Users{n}.NNEExtraBasePrice/100;
+        %Cost14NPV(end,11)=sum(Cost14NPV(end,7:10));
+        Cost14PV50(end,12)=Smart50{n}.NNEEnergyPrice;
     end
 end
 
