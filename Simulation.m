@@ -1,22 +1,23 @@
 %% Initialisation
-NumUsers=20;
+NumUsers=3;
 Users=cell(NumUsers+1,1); % 5the main cell variable all user data is stored in
-Users{1}.SmartCharging=true;
+Users{1}.SmartCharging=false;
 UseParallel=false;
 UseParallelAvailability=false;
 UseSpotPredictions=true;
 UsePVPredictions=true;
 UseIndividualEEGBonus=true;
+InitialiseUserNew=true;
 %DemoUsers=[9]%;,22,36,46,66,74,82,83,94,122,124,164,165,167,171,181,187,193,197,241,242,259,286,295,349,352,359,363,365,379,390,392,405,413,430,436,473,490,493,497,535,575,578,610,628,650,665,701,704,723,727,756,778,785,820,851,867,880,884,910,936,956,983,985,987,1002,1011,1019,1021,1045,1062,1075,1080,1083,1093,1113,1167,1168,1174,1182,1186,1190,1194,1198,1215,1217,1226,1232,1244,1284,1292,1298,1301,1319,1383,1390,1423,1426,1430,1436,14,68,92,100,119,130,218,246,270,315,317,408,438,442,451,460,563,568,580,588,589,595,608,614,656,661,667,673,693,703,738,742,744,767,777,807,819,869,878,924,937,943,972,1005,1025,1043,1064,1105,1124,1165,1178,1191,1192,1199,1216,1218,1270,1273,1305,1317,1331,1352,1370,1408,1427,1460,1463,1478,1481,1504,7,9,22,36,46,66,74,82,83,94,122,124,164,165,167,171,181,187,193,195,197,222,241,242,259,286,289,295,308,349];
 
 
-if isfile(strcat(Path.Simulation, "InitialisedUsers", Dl, "Users", num2str(NumUsers), ".mat"))
+if ~InitialiseUserNew && isfile(strcat(Path.Simulation, "InitialisedUsers", Dl, "Users", num2str(NumUsers), ".mat"))
     load(strcat(Path.Simulation, "InitialisedUsers", Dl, "Users", num2str(NumUsers), ".mat"))
 else    
     InitialiseUsers;
 end
 ControlPeriods=96*2;
-UsePV=true;
+UsePV=false;
 ApplyGridConvenientCharging=true;
 ActivateWaitbar=true;
 SaveResults=true;
@@ -137,14 +138,14 @@ end
 
 PreAlgoCounter=0;
 
-MatlabRAM{1,1}=whos;
-if strcmp(Dl, '/')
-    CheckRAM;
-    MatlabRAM{end,2}=RAM;
-    MatlabRAM{end,3}=0;
-end
-disp(strcat("Matlab RAM: ", num2str(sum([MatlabRAM{end,1}.bytes])/1024/1024/1024)))
-save("MatlabRAM.mat", "MatlabRAM", '-v7.3')
+% MatlabRAM{1,1}=whos;
+% if strcmp(Dl, '/')
+%     CheckRAM;
+%     MatlabRAM{end,2}=RAM;
+%     MatlabRAM{end,3}=0;
+% end
+% disp(strcat("Matlab RAM: ", num2str(sum([MatlabRAM{end,1}.bytes])/1024/1024/1024)))
+% save("MatlabRAM.mat", "MatlabRAM", '-v7.3')
 
 %% Start Simulation
 
@@ -287,44 +288,31 @@ for TimeInd=Time.Sim.VecInd(2:end-ControlPeriods)
                 SpotmarktPricesCP=[SpotmarketPrices(TimeInd+TD.User:TimeInd+TD.User + 24*Time.StepInd-mod(TimeInd-1,24*Time.StepInd)-1 + (mod(TimeInd-1,24*Time.StepInd)-13*Time.StepInd > 0)*96); SpotmarketPricesPred2(TimeInd+TD.SpotmarketPricesPred2 + 24*Time.StepInd-mod(TimeInd-1,24*Time.StepInd)-1 + (mod(TimeInd-1,24*Time.StepInd)-13*Time.StepInd > 0)*96+1:TimeInd+TD.SpotmarketPricesPred2+ControlPeriodsIt-1)];
             end
             
-            TimeIndVec(TimeInd,4)=1;
-            save("TimeIndVec.mat", "TimeIndVec", "-v7.3")
-            
-            MatlabRAM{end+1,1}=whos;
-            disp(strcat("Matlab RAM: ", num2str(sum([MatlabRAM{end,1}.bytes])/1024/1024/1024)))
-            if strcmp(Dl, '/')
-                CheckRAM;
-                MatlabRAM{end,2}=RAM;
-                MatlabRAM{end,3}=TimeInd;
-                save("MatlabRAM.mat", "MatlabRAM", '-v7.3')
-                if isa(RAM,'double') && sum(RAM(1:2,2))/1024/1024<10
-                    disp(strcat("Simulation stopped to prevent running out of memory: ", num2str(RAM(1:2,2)'/1024/1024)))
-                    FinishSimulation=0;
-                    break;
-                end
-            end
-            
-            TimeIndVec(TimeInd,5)=1;
-            save("TimeIndVec.mat", "TimeIndVec", "-v7.3")
+%             MatlabRAM{end+1,1}=whos;
+%             disp(strcat("Matlab RAM: ", num2str(sum([MatlabRAM{end,1}.bytes])/1024/1024/1024)))
+%             if strcmp(Dl, '/')
+%                 CheckRAM;
+%                 MatlabRAM{end,2}=RAM;
+%                 MatlabRAM{end,3}=TimeInd;
+%                 save("MatlabRAM.mat", "MatlabRAM", '-v7.3')
+%                 if isa(RAM,'double') && sum(RAM(1:2,2))/1024/1024<10
+%                     disp(strcat("Simulation stopped to prevent running out of memory: ", num2str(RAM(1:2,2)'/1024/1024)))
+%                     FinishSimulation=0;
+%                     break;
+%                 end
+%             end
             
             CalcDynOptVars;
-            TimeIndVec(TimeInd,6)=1;
-            save("TimeIndVec.mat", "TimeIndVec", "-v7.3")
             PreAlgo;
-            TimeIndVec(TimeInd,7)=1;
-            save("TimeIndVec.mat", "TimeIndVec", "-v7.3")
 
             for n=UserNum  
-                Users{n}.Logbook(TimeInd+TD.User:TimeInd+TD.User+ControlPeriodsIt-1, [false(1,4), CostCats])=OptimalChargingEnergies(1:ControlPeriodsIt,:,n==UserNum);
+                Users{n}.Logbook(TimeInd+TD.User:TimeInd+TD.User+ControlPeriodsIt-1, [false(1,4), true(1,length(CostCats))])=OptimalChargingEnergies(1:ControlPeriodsIt,:,n==UserNum);
             end
         end
         
         %% Algo 2 optimisation
-        TimeIndVec(TimeInd,8)=1;
-        save("TimeIndVec.mat", "TimeIndVec", "-v7.3")
+
         LiveAlgo;
-        TimeIndVec(TimeInd,9)=1;
-        save("TimeIndVec.mat", "TimeIndVec", "-v7.3")
         
         %%
            
@@ -402,7 +390,7 @@ clearvars A ConsEnergyDemandTSA ConsEnergyDemandTSAIt Aeq b beq ConsSumPowerTSA 
 
 for n=UserNum
     Users{n}.Logbook=Users{n}.Logbook(1:TimeInd,:);
-    Users{n}.AverageConsumptionBaseYear_kWh=sum(double(Users{n}.Logbook(:,5:8))/Users{n}.ChargingEfficiency, 'all')/1000/days(Time.End-Time.Start)*365.25;
+    Users{n}.AverageConsumptionBaseYear_kWh=sum(double(Users{n}.Logbook(:,5:8))/Users{n}.ChargingEfficiency, 'all')/1000/(length(Users{n}.Logbook)/(24*Time.StepInd))*365.25;
 end
 
 %% Store Simulation Information
@@ -511,7 +499,7 @@ Load=cell(size(Users{1}.ChargingMat,1),1);
 
 for k=find(~cellfun(@isempty,Users{1}.ChargingMat(:,1)))'
 
-    ChargingType{k}=reshape(permute(Users{1}.ChargingMat{k,1}(max(1,24*Time.StepInd-Users{1}.ChargingMat{k,2}+1):24*Time.StepInd-Users{1}.ChargingMat{k,2}+24*Time.StepInd,:,c(1:end-2)), [1,3,2]), [], size(Users{1}.ChargingMat{k,1},2))/1000*4; %[kw]
+    ChargingType{k}=reshape(permute(Users{1}.ChargingMat{k,1}(max(1,24*Time.StepInd-Users{1}.ChargingMat{k,2}+1):24*Time.StepInd-Users{1}.ChargingMat{k,2}+24*Time.StepInd,:,:), [1,3,2]), [], size(Users{1}.ChargingMat{k,1},2))/1000*4; %[kw]
 
     [sum(ChargingType{k}(:,1,:),'all'), sum(ChargingType{k}(:,2,:),'all'), sum(ChargingType{k}(:,3,:),'all')]/sum(ChargingType{k}(:,:,:),'all')
     ChargingSum{k}=sum(ChargingType{k}, 2);
@@ -700,7 +688,7 @@ clearvars ResPoBlockedIndices ResPoBuffer ResPoOfferEqualiyMat1 ResPoOfferEquali
 clearvars SoC SoCNew SortedOrder SpotmarketPrices SpotmarktPricesCP StorageFile StoragePath SubIndices SumPower Temp TimeOfDayAheadMarketPriceRelease
 clearvars TimeOfPreAlgo TimeOfReserveMarketOffer TimesOfDayAheadMarketPriceRelease TimesOfPreAlgo TimesOfResPoEval TimeStepIndsNeededForCharging
 clearvars TSOResPoDemand ub VarCounter Costf Costs ChargingVehicle Costsf NNEBonus NNEExtraBasePrice IMSYSInstallationCosts IMSYSInstallationCostsMean
-clearvars UseIndividualEEGBonus UsePVPredictions UseSpotPredictions x1 BackwardsOrder FinishSimulation CleanUpWorkspace %OwnOfferMOLPos 
+clearvars UseIndividualEEGBonus UsePVPredictions UseSpotPredictions x1 BackwardsOrder FinishSimulation CleanUpWorkspace InitialiseUserNew %OwnOfferMOLPos 
 
 end
 

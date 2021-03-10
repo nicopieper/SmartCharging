@@ -52,10 +52,11 @@ MinEnergyRequiredTS=min([PublicChargingThresholds_Wh(1:ControlPeriodsIt,:,:), Ma
 MaxEnergyChargableDeadlockCP=MaxPossibleSoCTS(end,1,:) - SoC(end,1,:);
     
 
-PowerTS=repelem(MaxPower/4,ControlPeriodsIt,NumCostCats,1);
+PowerTS=repelem(MaxPower/4,ControlPeriodsIt,length(CostCats),1);
 PowerTS(:,2,:)=min([PowerTS(:,2,:), PVPower(end-ControlPeriodsIt+1:end,:,:)/4], [], 2);
 PowerTS(1,2,:)=min(MaxPower/4, PVPowerReal(ControlPeriods-ControlPeriodsIt+1,1,:)/4);
-ConsPowerTSb=PowerTS;
+
+PowerTS=PowerTS.*CostCats;
 
 %MinEnergyRequiredTS=min(MinEnergyRequiredTS,MaxEnergyChargableDeadlockCP);
 
