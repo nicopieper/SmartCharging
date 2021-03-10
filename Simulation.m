@@ -1,4 +1,5 @@
 %% Initialisation
+<<<<<<< HEAD
 
 SC=[true; true; false];
 PVGridConvenientChargingLikelihoodMatrix1=single([0, 0.5, 0, 0.5; 0, 0, 0, 1; 0, 0, 0, 1]); % Matrix that defines with type of users use grid convenient charging (14a) and own a PV plant: [PV&14a, PV&~14a, ~PV&14a, ~PV&~14a]
@@ -303,22 +304,19 @@ for TimeInd=Time.Sim.VecInd(2:end-ControlPeriods)
 %                     break;
 %                 end
 %             end
-
-            
+           
             CalcDynOptVars;
-            
             PreAlgo;
-            
 
             for n=UserNum  
-                Users{n}.Logbook(TimeInd+TD.User:TimeInd+TD.User+ControlPeriodsIt-1, [false(1,4), CostCats])=OptimalChargingEnergies(1:ControlPeriodsIt,:,n==UserNum);
+                Users{n}.Logbook(TimeInd+TD.User:TimeInd+TD.User+ControlPeriodsIt-1, [false(1,4), true(1,length(CostCats))])=OptimalChargingEnergies(1:ControlPeriodsIt,:,n==UserNum);
             end
         end
         
         %% Algo 2 optimisation
 
         LiveAlgo;
-        
+
         
         %%
            
