@@ -1,13 +1,11 @@
 %% Initialisation
-SC=[true; true; false];
-PVGridConvenientChargingLikelihoodMatrix1=single([0, 0.5, 0, 0.5; 0, 0, 0, 1; 0, 0, 0, 1]); % Matrix that defines with type of users use grid convenient charging (14a) and own a PV plant: [PV&14a, PV&~14a, ~PV&14a, ~PV&~14a]
-ResPoPriceFactor1=[0.4; 100000; 100000];
 
-for it=1:3
+SC=[true; false];
+CostCats=logical([1, 0, 0]);
+>>>>>>> 15208acbe363282e60c29330cc30842fc107c16c
+
+for it=1:2
     
-PVGridConvenientChargingLikelihoodMatrix=PVGridConvenientChargingLikelihoodMatrix1(it,:);
-ResPoPriceFactor=ResPoPriceFactor1(it);
-
 NumUsers=1000;
 Users=cell(NumUsers+1,1); % 5the main cell variable all user data is stored in
 Users{1}.SmartCharging=SC(it);
@@ -19,7 +17,6 @@ UsePVPredictions=true;
 UseIndividualEEGBonus=true;
 InitialiseUserNew=true;
 %DemoUsers=[9]%;,22,36,46,66,74,82,83,94,122,124,164,165,167,171,181,187,193,197,241,242,259,286,295,349,352,359,363,365,379,390,392,405,413,430,436,473,490,493,497,535,575,578,610,628,650,665,701,704,723,727,756,778,785,820,851,867,880,884,910,936,956,983,985,987,1002,1011,1019,1021,1045,1062,1075,1080,1083,1093,1113,1167,1168,1174,1182,1186,1190,1194,1198,1215,1217,1226,1232,1244,1284,1292,1298,1301,1319,1383,1390,1423,1426,1430,1436,14,68,92,100,119,130,218,246,270,315,317,408,438,442,451,460,563,568,580,588,589,595,608,614,656,661,667,673,693,703,738,742,744,767,777,807,819,869,878,924,937,943,972,1005,1025,1043,1064,1105,1124,1165,1178,1191,1192,1199,1216,1218,1270,1273,1305,1317,1331,1352,1370,1408,1427,1460,1463,1478,1481,1504,7,9,22,36,46,66,74,82,83,94,122,124,164,165,167,171,181,187,193,195,197,222,241,242,259,286,289,295,308,349];
-ConstantResPoPowerPeriods=4*Time.StepInd;%!!!!!!!!!!!!!!!!
 
 if ~InitialiseUserNew && isfile(strcat(Path.Simulation, "InitialisedUsers", Dl, "Users", num2str(NumUsers), ".mat"))
     load(strcat(Path.Simulation, "InitialisedUsers", Dl, "Users", num2str(NumUsers), ".mat"))
@@ -563,7 +560,7 @@ IMSYSInstallationCosts=0;
 if Users{1}.ApplyGridConvenientCharging
     IMSYSPrices=readmatrix(strcat(Path.Simulation, "IMSYS_Prices.csv"), 'NumHeaderLines', 1);
     for n=2:length(Users)
-        if Users{n}.NNEExtraBasePrice==-100
+        if Users{n}.NNEExtraBasePrice~=20
             Users{n}.NNEExtraBasePrice=IMSYSPrices(Users{n}.ConsumptionPrivateYear_kWh>=IMSYSPrices(:,1) & Users{n}.ConsumptionPrivateYear_kWh<IMSYSPrices(:,2),4)*100;
         end
         
@@ -629,8 +626,8 @@ if Users{1}.SmartCharging
         end
     end
     
-    TotalCostsSmart(1,5)=sum(Users{1}.ResPoOffers(:,2,:),'all') / (4*Time.StepInd) * ConstantResPoPowerPeriods; % [kW]
-    TotalCostsSmart(2,5)=-sum(Users{1}.ResPoOffers(:,1,:).*Users{1}.ResPoOffers(:,2,:),'all') / (4*Time.StepInd) * ConstantResPoPowerPeriods * 100; % [EUR/kW]*[kW]
+    TotalCostsSmart(1,5)=sum(Users{1}.ResPoOffers(:,2,:),'all') / (4*Time.StepInd) * Users{1}.ConstantResPoPowerPeriods; % [kW]
+    TotalCostsSmart(2,5)=-sum(Users{1}.ResPoOffers(:,1,:).*Users{1}.ResPoOffers(:,2,:),'all') / (4*Time.StepInd) * Users{1}.ConstantResPoPowerPeriods * 100; % [EUR/kW]*[kW]
     TotalCostsSmart(3,:)=TotalCostsSmart(2,:)./TotalCostsSmart(1,:);
     TotalCostsSmart(1,6)=sum(TotalCostsSmart(1,1:4));
     TotalCostsSmart(2,6)=sum(TotalCostsSmart(2,1:5),2);
