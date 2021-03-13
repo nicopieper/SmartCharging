@@ -13,7 +13,7 @@ if ismember(TimeInd, TimesOfResPoEval)
         % ResOfferLists4H are the offers of the competitors fetched from  the regelleistung.net data. columns 2-3 of cell-column 2 contain the offered energy price [EUR/MWh] and the allocated power [MW] for negative reserve energy.
         % ResEnOffers are the price offers [EUR/kWh] of the simulated aggregator. OfferedResPo covers the allocated power [kW] corresponding to the price
         % ResEnMOL [EUR/kW, kW]
-        ResEnMOL=[ResOfferLists4H{floor((TimeInd+TD.Main)/(4*Time.StepInd))+1,2}(:,2:3) .* [1/1000, 1000]; [ResEnOffers(floor(mod(TimeInd-TimesOfPreAlgo(1,1), 24*Time.StepInd)/(4*Time.StepInd))+1,1,PreAlgoCounter+1-double(ControlPeriodsIt==ControlPeriods)), OfferedResPo]]; % Merit-Order-List for the current Zeitscheibe. Includes offered prices in first column and allocated energy in second column. 
+        ResEnMOL=[ResOfferLists4H{floor((TimeInd+TD.Main-1)/(4*Time.StepInd))+1,2}(:,2:3) .* [1/1000, 1000]; [ResEnOffers(floor(mod(TimeInd-TimesOfPreAlgo(1,1), 24*Time.StepInd)/(4*Time.StepInd))+1,1,PreAlgoCounter+1-double(ControlPeriodsIt>ControlPeriods-4*Time.StepInd)), OfferedResPo]]; % Merit-Order-List for the current Zeitscheibe. Includes offered prices in first column and allocated energy in second column. 
         ResEnMOL=[ResEnMOL, [zeros(size(ResEnMOL,1)-1,1);1]];
         [~, SortedOrder]=sort(ResEnMOL(:,1),1,'ascend');
         ResEnMOL=ResEnMOL(SortedOrder,:);
