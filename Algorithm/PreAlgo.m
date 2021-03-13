@@ -2,6 +2,9 @@
 
 CostsSpotmarket=(CostsElectricityBase/100 + SpotmarktPricesCP/1000)*Users{1}.MwSt; % [EUR/kWh]
 CostsReserveMarket=(CostsElectricityBase/100 - ResEnOfferPrices - ResPoOfferPrices/(4*Time.StepInd))*Users{1}.MwSt; % [EUR/kWh]
+if ConstantResPoPowerPeriods<4*Time.StepInd
+    CostsReserveMarket=CostsReserveMarket+(rand(ControlPeriods, NumUsers)-0.5)/10000;
+end
 
 Costs=[CostsSpotmarket, CostsPV(end-ControlPeriodsIt+1:end,1,:), CostsReserveMarket(end-ControlPeriodsIt+1:end,1,:)]; % [EUR/kWh]
 %Costs=Costs(:,CostCats,:);
@@ -214,7 +217,7 @@ if ismember(TimeInd, TimesOfPreAlgo(1,:))
     LastResPoOffersSucessful4H(:,PreAlgoCounter+1)=LastResPoOffers(:,PreAlgoCounter+1); % [Wh]
     LastResPoOffersSucessful4H(ConsPeriods*ConstantResPoPowerPeriodsScaling+1:(ConsPeriods+6)*ConstantResPoPowerPeriodsScaling,PreAlgoCounter+1)=LastResPoOffersSucessful4H(ConsPeriods*ConstantResPoPowerPeriodsScaling+1:(ConsPeriods+6)*ConstantResPoPowerPeriodsScaling,PreAlgoCounter+1).*SuccessfulResPoOffers(:,PreAlgoCounter+1);
     
-    ResPoOffers(:,2,PreAlgoCounter+1)=sum(OptimalChargingEnergies((24-hour(TimeOfPreAlgo(1)))*Time.StepInd+1:ConstantResPoPowerPeriods:(24-hour(TimeOfPreAlgo(1))+24)*Time.StepInd,3,:)./ChargingEfficiencies, 3)/1000*4.*SuccessfulResPoOffers(:,PreAlgoCounter+1);
+    ResPoOffers(:,2,PreAlgoCounter+1)=sum(OptimalChargingEnergies((24-hour(TimeOfPreAlgo(1)))*Time.StepInd+1:ConstantResPoPowerPeriods:(24-hour(TimeOfPreAlgo(1))+24)*Time.StepInd,3,:)./ChargingEfficiencies, 3)/1000*Time.StepInd.*SuccessfulResPoOffers(:,PreAlgoCounter+1); % [kW]
 
 end
 

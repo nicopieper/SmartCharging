@@ -2,14 +2,15 @@
 
 SC=[true; false];
 CostCats=logical([1, 0, 0]);
->>>>>>> 15208acbe363282e60c29330cc30842fc107c16c
 
-for it=1:2
+for it=1:1
     
+PublicChargingThresholdBuffer=PublicChargingThresholdBuffer1(it);
+ConstantResPoPowerPeriods=ConstantResPoPowerPeriods1(it);
+
 NumUsers=1000;
 Users=cell(NumUsers+1,1); % 5the main cell variable all user data is stored in
-Users{1}.SmartCharging=SC(it);
-%Users{1}.SmartCharging=true;
+Users{1}.SmartCharging=true;
 UseParallel=true;
 UseParallelAvailability=false;
 UseSpotPredictions=true;
@@ -375,14 +376,13 @@ if ActivateWaitbar
     close(h);
 end
 
-if Users{1}.SmartCharging && SaveResults
+if Users{1}.SmartCharging && SaveResults && NumUsers>5000
     Users{1}.Time.Stamp=datetime('now');
     Users{1}.FileName=strcat(Path.Simulation, "Users_", datestr(Users{1}.Time.Stamp, "yyyymmdd-HHMM"), "_", Time.IntervalFile, "_", num2str(length(Users)-1), "_", num2str(Users{1}.SmartCharging), "_", ".mat");
     save(Users{1}.FileName, "Users", "-v7.3");
+
+    clearvars A ConsEnergyDemandTSA ConsEnergyDemandTSAIt Aeq b beq ConsSumPowerTSA ConseqEnergyCPA ConsSumPowerTSAIt ConseqEnergyCPAIt ConseqResPoOffer ConseqResPoOfferAIt ConseqMatchLastResPoOffers4HA ConseqMatchLastResPoOffers4HAIt Costf Costs OptimalChargingEnergies lb ub ConsPowerTSb PowerTS
 end
-
-clearvars A ConsEnergyDemandTSA ConsEnergyDemandTSAIt Aeq b beq ConsSumPowerTSA ConseqEnergyCPA ConsSumPowerTSAIt ConseqEnergyCPAIt ConseqResPoOffer ConseqResPoOfferAIt ConseqMatchLastResPoOffers4HA ConseqMatchLastResPoOffers4HAIt Costf Costs OptimalChargingEnergies lb ub ConsPowerTSb PowerTS
-
 
 
 for n=UserNum
@@ -429,29 +429,28 @@ if Users{1}.SmartCharging
     Users{1}.ResEnPriceFactor=ResEnPriceFactor;
     Users{1}.ConstantResPoPowerPeriodsScaling=ConstantResPoPowerPeriodsScaling;
     Users{1}.ConstantResPoPowerPeriods=ConstantResPoPowerPeriods;
+    Users{1}.PublicChargingThresholdBuffer=PublicChargingThresholdBuffer;
     
     disp(strcat(num2str(sum(LastResPoOffersSucessful4H(:,2:end)>0,'all')/sum(LastResPoOffers(:,2:end)>0,'all')*100), "% of all reserve power offers were successful"))
     
     Users{1}.ResEnVolumenFulfilled=0;
     for n=Users{1}.UserNum
-        Users{1}.ResEnVolumenFulfilled=Users{1}.ResEnVolumenFulfilled+sum(Users{n}.Logbook(:,7))/Users{n}.ChargingEfficiency/1000;
-    end
-    Users{1}.ResEnVolumenFulfilled=0;
-    for n=Users{1}.UserNum
-        Users{1}.ResEnVolumenFulfilled=Users{1}.ResEnVolumenFulfilled+sum(Users{n}.Logbook(:,7))/1000;
+        Users{1}.ResEnVolumenFulfilled=Users{1}.ResEnVolumenFulfilled+sum(Users{n}.Logbook(:,7))/Users{n}.ChargingEfficiency/1000; % [kWh]
     end
     
     toc(TSim)
     
-    Users{1}.ResEnVolumenAllocated=0;
+%    Users{1}.ResEnVolumenAllocated=0;
 %     for n=Users{1}.UserNum
 %         ResEnVolumenAllocated=ResEnVolumenAllocated+sum(Users{1}.ChargingMat{find(~cellfun(@isempty,Users{1}.ChargingMat(1:5,1)), 1, 'last' )}(96-24*4+1:96-24*4+96,3,n-1,:),'all')/Users{n}.ChargingEfficiency/1000;
 %     end
 
-    Users{1}.ResEnVolumenAllocated=sum(Users{1}.ChargingMat{find(~cellfun(@isempty,Users{1}.ChargingMat(1:5,1)), 1, 'last' )}(96-24*4+1:96-24*4+96,3,:,:),'all')/1000;
+    Users{1}.ResEnVolumenAllocated=sum(Users{1}.ResPoOffers(:,2,2:end),'all')*4/Users{1}.ConstantResPoPowerPeriodsScaling; % [kWh]
+
+    %Users{1}.ResEnVolumenAllocated=sum(Users{1}.ChargingMat{find(~cellfun(@isempty,Users{1}.ChargingMat(1:5,1)), 1, 'last' )}(96-24*4+1:96-24*4+96,3,:,:),'all')/1000;
 
 
-    disp(strcat(num2str(Users{1}.ResEnVolumenFulfilled/Users{1}.ResEnVolumenAllocated*100), "% of the succcessfully offered reserve energy was actually charged"))
+    disp(strcat(num2str(Users{1}.ResEnVolumenFulfilled/Users{1}.ResEnVolumenAllocated*100), "% of the successfully offered reserve energy was actually charged"))
 else
     Users{1}.ChargingMat=cell(1,2);
     Users{1}.ChargingMat{1}=zeros(96, 3, ceil(size(Users{UserNum(1)}.Logbook,1)/(24*Time.StepInd)));
@@ -560,13 +559,15 @@ IMSYSInstallationCosts=0;
 if Users{1}.ApplyGridConvenientCharging
     IMSYSPrices=readmatrix(strcat(Path.Simulation, "IMSYS_Prices.csv"), 'NumHeaderLines', 1);
     for n=2:length(Users)
-        if Users{n}.NNEExtraBasePrice~=20
+        if ~Users{n}.GridConvenientCharging
+            Users{n}.NNEExtraBasePrice=0;
+        elseif Users{n}.NNEExtraBasePrice~=20
             Users{n}.NNEExtraBasePrice=IMSYSPrices(Users{n}.ConsumptionPrivateYear_kWh>=IMSYSPrices(:,1) & Users{n}.ConsumptionPrivateYear_kWh<IMSYSPrices(:,2),4)*100;
         end
         
         NNEExtraBasePrice=NNEExtraBasePrice+Users{n}.NNEExtraBasePrice;
         NNEBonus=NNEBonus+Users{n}.NNEBonus;
-        IMSYSInstallationCosts=IMSYSInstallationCosts+Users{n}.IMSYSInstallationCosts;
+        IMSYSInstallationCosts=0;%IMSYSInstallationCosts+Users{n}.IMSYSInstallationCosts;
     end
 end
 
@@ -688,7 +689,10 @@ clearvars ResPoBlockedIndices ResPoBuffer ResPoOfferEqualiyMat1 ResPoOfferEquali
 clearvars SoC SoCNew SortedOrder SpotmarketPrices SpotmarktPricesCP StorageFile StoragePath SubIndices SumPower Temp TimeOfDayAheadMarketPriceRelease
 clearvars TimeOfPreAlgo TimeOfReserveMarketOffer TimesOfDayAheadMarketPriceRelease TimesOfPreAlgo TimesOfResPoEval TimeStepIndsNeededForCharging
 clearvars TSOResPoDemand ub VarCounter Costf Costs ChargingVehicle Costsf NNEBonus NNEExtraBasePrice IMSYSInstallationCosts IMSYSInstallationCostsMean
-clearvars UseIndividualEEGBonus UsePVPredictions UseSpotPredictions x1 BackwardsOrder FinishSimulation CleanUpWorkspace InitialiseUserNew %OwnOfferMOLPos 
+clearvars UseIndividualEEGBonus UsePVPredictions UseSpotPredictions x1 BackwardsOrder FinishSimulation CleanUpWorkspace InitialiseUserNew OwnOfferMOLPos 
+clearvars UseParallelAvailability UnsolvedProblems TimeIndVec SuccessfulResPoOffers SpotmarketPricesPred1 SpotmarktPricesCP SoCInit PVPowerReal
+clearvars PublicChargingThresholds_Wh PublicChargerDist ProvidedResEn MOLPos1 Logbooks1 Logbooks2 Logbooks4 LastResPoOffersSucessful4H LastResPoOffers ConstantResPoPowerPeriodsScaling
+clearvars GridConvenientChargingAvailabilityControlPeriod Exceeds EEGBonus DispatchedResEn DelRows3 Debugging Costf1 ConstantResPoPowerPeriods ChargingEfficiencies BatterySizes
 
 end
 

@@ -86,8 +86,8 @@ rng('default');
 rng(1);
 
 %if Users{1}.SmartCharging
-    Users{1}.PVGridConvenientChargingLikelihoodMatrix=single([0, 0.5, 0.35, 0.15]); % Matrix that defines with type of users use grid convenient charging (14a) and own a PV plant: [PV&14a, PV&~14a, ~PV&14a, ~PV&~14a]
-    Users{1}.PVGridConvenientChargingLikelihoodMatrix=single([0, 0, 0, 1]); % Matrix that defines with type of users use grid convenient charging (14a) and own a PV plant: [PV&14a, PV&~14a, ~PV&14a, ~PV&~14a]
+Users{1}.PVGridConvenientChargingLikelihoodMatrix=single([0, 0.5, 0.35, 0.15]); % Matrix that defines with type of users use grid convenient charging (14a) and own a PV plant: [PV&14a, PV&~14a, ~PV&14a, ~PV&~14a]
+    %Users{1}.PVGridConvenientChargingLikelihoodMatrix=single([0, 0, 0, 1]); % Matrix that defines with type of users use grid convenient charging (14a) and own a PV plant: [PV&14a, PV&~14a, ~PV&14a, ~PV&~14a]
 %else
 %    Users{1}.PVGridConvenientChargingLikelihoodMatrix=single([0, 0.5, 0.01, 0.49]); % Matrix that defines with type of users use grid convenient charging (14a) and own a PV plant: [PV&14a, PV&~14a, ~PV&14a, ~PV&~14a]
 %end
@@ -107,7 +107,7 @@ VCity=single(14); % [m/s] lower velocities indicate driving within the city, hen
 VHighway=single(27); % [m/s] higher velocities indicate driving on a highway, hence high consumption
 
 PVPlantPointer=1;
-Users{1}.PVGridConvenientChargingLikelihoodMatrix=cumsum(Users{1}.PVGridConvenientChargingLikelihoodMatrix(:)/sum(Users{1}.PVGridConvenientChargingLikelihoodMatrix,'all'));
+PVGridConvenientChargingLikelihoodMatrix=cumsum(Users{1}.PVGridConvenientChargingLikelihoodMatrix(:)/sum(Users{1}.PVGridConvenientChargingLikelihoodMatrix,'all'));
 VehicleSizes=[{'small'}; {'medium'}; {['large', 'transporter']}]; % determines which sizes shall be considered. In general, {'small'}; {'medium'}; {['large', 'transporter']}
 VehicleUtilisation=[{'company car'}]; % determines which vehicle utilisations shall be considered. In general, {'company car'}; {'fleet vehicle'}; {'undefined'}
 VehiclePointer=zeros(length(VehicleSizes),1); % the pointers that indicate which vehicle will be assigned next per vehicle size class
@@ -188,7 +188,7 @@ for n=2:NumUsers+1
     
     % Add a PV plant
     %if RandomNumbers(6,n-1)<=LikelihoodPV && AddPV 
-    if RandomNumbers(6,n-1)<=Users{1}.PVGridConvenientChargingLikelihoodMatrix(2) && AddPV 
+    if RandomNumbers(6,n-1)<=PVGridConvenientChargingLikelihoodMatrix(2) && AddPV 
         Users{n}.PVPlant=uint8(PVPlantPointer); % save the assigned PV plant number
         Users{n}.PVPlantExists=true; % and set this variable to true to indicate that this user owns a PV plant
         PVPlantPointer=mod(PVPlantPointer,length(PVPlants))+1; % increase pointer
@@ -211,7 +211,7 @@ for n=2:NumUsers+1
 %     if RandomNumbers(8,n-1)<=LikelihoodGridConvenientCharging
     Users{n}.NNEEnergyPriceGridConvenientCharging=DSOContractData(5,GridConvenientChargingProfile); % [ct/kWh] netto (without VAT). reduced NNE energy price due to the allowance for the DSO to manage the charging
     Users{n}.NNEEnergyPriceNotGridConvenientCharging=DSOContractData(3,GridConvenientChargingProfile); % [ct/kWh] netto (without VAT). normal NNE prices
-    if RandomNumbers(6,n-1)<=Users{1}.PVGridConvenientChargingLikelihoodMatrix(1) || (RandomNumbers(6,n-1)>Users{1}.PVGridConvenientChargingLikelihoodMatrix(2) & RandomNumbers(6,n-1)<=Users{1}.PVGridConvenientChargingLikelihoodMatrix(3))
+    if RandomNumbers(6,n-1)<=PVGridConvenientChargingLikelihoodMatrix(1) || (RandomNumbers(6,n-1)>PVGridConvenientChargingLikelihoodMatrix(2) & RandomNumbers(6,n-1)<=PVGridConvenientChargingLikelihoodMatrix(3))
         Users{n}.GridConvenientCharging=true;
         Users{n}.GridConvenientChargingAvailability=DSOContractData(7:end,GridConvenientChargingProfile);
         Users{n}.NNEExtraBasePrice=DSOContractData(4,GridConvenientChargingProfile)*100; % [ct/a] netto (without VAT) due to the extra electricity meter
@@ -271,8 +271,8 @@ disp(strcat("Users successfully initialised ", num2str(toc)))
 clearvars LikelihoodPV PVPlantPointer Consumption Velocities SizeNum VehiclePointer VehicleDatabase AddPV TemperatureMonths TemperatureTimeVec
 clearvars RandomNumbers n Model VehicleSizes MeanPrivateElectricityPrice NumTripDays PublicACChargingPrices PublicDCChargingPrices StorageFiles StorageInd
 clearvars TimeNoiseStdFac UsersTime VehicleProperties GridConvenientChargingProfile UsersTimeVecLogical VCity VHighway PublicChargingThresholdMean
-clearvars PrivateChargingThresholdMean LikelihoodGridConvenientCharging DSOContractData Users{1}.PVGridConvenientChargingLikelihoodMatrix
+clearvars PrivateChargingThresholdMean LikelihoodGridConvenientCharging DSOContractData PVGridConvenientChargingLikelihoodMatrix
 clearvars VehicleUtilisation PrivateElectricityPriceRandomDeviation PublicChargingThresholdRandomDeviation IMSYSInstallationCostsRandomDeviation
-clearvars InitialSoCRandomDeviation
+clearvars InitialSoCRandomDeviation PrivateChargingThresholdRandomDeviation
 clearvars Vehicles
 
