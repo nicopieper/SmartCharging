@@ -1,12 +1,10 @@
 %% Initialisation
 
-SC=[true; false];
-CostCats=logical([1, 0, 0]);
+PublicChargingThresholdBuffer1=[1.2];
 
-for it=1:1
+for it=1:6
     
 PublicChargingThresholdBuffer=PublicChargingThresholdBuffer1(it);
-ConstantResPoPowerPeriods=ConstantResPoPowerPeriods1(it);
 
 NumUsers=1000;
 Users=cell(NumUsers+1,1); % 5the main cell variable all user data is stored in

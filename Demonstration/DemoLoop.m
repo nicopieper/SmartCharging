@@ -6,12 +6,11 @@ for n=1:length(DemoPlots)
 end
 
 %% Update prediction plots
-
 if ismember(TimeInd, TimesOfPreAlgo)
     PreAlgoTime=find(hour(Users{1}.TimeOfPreAlgo)==hour(Time.Demo.Vec(TimeInd)));
 
     ForcastLength=min(ForecastIntervalInd-1, length(Time.Demo.Vec)-TimeInd);
-    for ForecastDuration=0:Time.Demo.StepIndForecast:min(ForecastIntervalInd-1, length(Time.Demo.Vec)-TimeInd)-(ForecastIntervalInd-size(Users{1}.ChargingMatSmart{PreAlgoTime,1},1))
+    for ForecastDuration=0:Time.Demo.StepIndForecast:min(ForecastIntervalInd-1, length(Time.Demo.Vec)-TimeInd)-(ForecastIntervalInd-size(Users{1}.ChargingMat{PreAlgoTime,1},1))
         
         EndCounter=max(EndCounter,TimeInd+ForecastDuration+Time.Demo.StepIndForecast-1);
         
@@ -21,7 +20,7 @@ if ismember(TimeInd, TimesOfPreAlgo)
             for k=1:length(DemoPlots{n}.Data)
                 
                 if isfield(DemoPlots{n}, 'DataMat') && size(DemoPlots{n}.DataMat,2)>=k && size(DemoPlots{n}.DataMat,1)>=PreAlgoTime && ~isempty(DemoPlots{n}.DataMat{PreAlgoTime,k})
-                    DemoPlots{n}.Data{k}(TimeInd+DemoPlots{n}.Time.TD{k}+ForecastDuration:TimeInd+DemoPlots{n}.Time.TD{k}+ForecastDuration+Time.Demo.StepIndForecast-1)=DemoPlots{n}.DataMat{PreAlgoTime,k}(ForecastDuration+1+(ForecastIntervalInd-size(Users{1}.ChargingMatSmart{PreAlgoTime,1},1)):ForecastDuration+(ForecastIntervalInd-size(Users{1}.ChargingMatSmart{PreAlgoTime,1},1))+Time.Demo.StepIndForecast,TimeInd+DemoPlots{n}.Time.TD{k});
+                    DemoPlots{n}.Data{k}(TimeInd+DemoPlots{n}.Time.TD{k}+ForecastDuration:TimeInd+DemoPlots{n}.Time.TD{k}+ForecastDuration+Time.Demo.StepIndForecast-1)=DemoPlots{n}.DataMat{PreAlgoTime,k}(ForecastDuration+1+(ForecastIntervalInd-size(Users{1}.ChargingMat{PreAlgoTime,1},1)):ForecastDuration+(ForecastIntervalInd-size(Users{1}.ChargingMat{PreAlgoTime,1},1))+Time.Demo.StepIndForecast,TimeInd+DemoPlots{n}.Time.TD{k});
 
                     if ForecastDuration<=ForcastLength-24*Time.Demo.StepInd || PreAlgoTime~=1
                         clearpoints(DemoPlots{n}.Fig{k})

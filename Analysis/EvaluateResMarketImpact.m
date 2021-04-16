@@ -6,8 +6,8 @@ if ~exist("Users", 'var')
 end
 
 TD.Main=find(ismember(Time.Vec,Users{1}.Time.Start),1)-1;
-ResPoOffers=[Users{1}.ResPoOffers(:,1,:)*1000, Users{1}.ResPoOffers(:,2,:)/1000]; % [�/MW, MW]
-ResEnOffers=Users{1}.ResEnOffers(:,1,:)*1000;  % [�/MWh]
+ResPoOffers=[Users{1}.ResPoOffers(:,1,:)*1000, Users{1}.ResPoOffers(:,2,:)/1000]; % [EUR/MW, MW]
+ResEnOffers=Users{1}.ResEnOffers(:,1,:)*1000;  % [EUR/MWh]
 
 ResPoCosts=[];
 ResEnCosts=[];
