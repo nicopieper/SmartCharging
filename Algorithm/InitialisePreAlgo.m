@@ -3,10 +3,10 @@
 ControlPeriods=96*2;
 CostCats=logical([1, 1, 1]);
 NumCostCats=length(CostCats);%sum(CostCats);
-%ConstantResPoPowerPeriods=4*Time.StepInd;
+ConstantResPoPowerPeriods=4*Time.StepInd;
 ResPoPriceFactor=[0.4]; %0.4
 ResEnPriceFactor=0.15;
-% PublicChargingThresholdBuffer=1.8; % A lower value performs slightly better (1.6 checked)
+%PublicChargingThresholdBuffer=1.8; % Best results with 1.2
 options = optimoptions('linprog','Algorithm','dual-simplex');
 options.Display = 'off';
 ResPoBuffer=1;

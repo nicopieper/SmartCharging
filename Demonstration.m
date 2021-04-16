@@ -16,24 +16,25 @@ tic
 n=1;
 DemoPlots{n}.Title=strcat("Dayahead auction price");
 DemoPlots{n}.LegendLocation="northwest";
+DemoPlots{n}.Ytickformat='%.0f';
 
 k=1;
 DemoPlots{n}.Data{k}=repelem(Smard.DayaheadRealH, 4);
 DemoPlots{n}.Time.Vec{k}=Time.Vec;
 DemoPlots{n}.Label{k}="Price";
-DemoPlots{n}.YLabel{k}="Price in �/MWh";
+DemoPlots{n}.YLabel{k}="Price in EUR/MWh";
 DemoPlots{n}.YMin{k}='dynamic';
 DemoPlots{n}.YMax{k}='dynamic';
 DemoPlots{n}.YAxis{k}=1;
 DemoPlots{n}.PlotColor{k}=k;
 
 k=2;
-DemoPlots{n}.Label{k}="Prediction LSQ";
-DemoPlots{n}.YLabel{k}="Price in �/MWh";
+DemoPlots{n}.Label{k}="Prediction LS";
+DemoPlots{n}.YLabel{k}="Price in EUR/MWh";
 if size(DemoPlots{n}.Data)<=1
     StoragePath=strcat(Path.Prediction, "DayaheadRealH", Dl);
     %[StorageFile, StoragePath]=uigetfile(StoragePath, strcat("Select ", DemoPlots{n}.Title, " ", DemoPlots{n}.Label{k}));
-    StorageFile="LSQ_20210119-1138_20180101-20200831_52h_80Preds_8hr.mat";
+    StorageFile="LSQ_20210202-1210_20180101-20200831_52h_232Preds_8hr.mat";
     load(strcat(StoragePath, StorageFile))
     DemoPlots{n}.Data{k}=repelem(Pred.Data, Time.StepInd/Pred.Time.StepPredInd);
     DemoPlots{n}.DataMat{1,k}=repelem(Pred.DataMat(:,find(Pred.Time.Pred>Pred.Time.EndTrain,1):end), Time.StepInd/Pred.Time.StepPredInd, Time.StepInd/Pred.Time.StepPredInd);
@@ -46,24 +47,24 @@ DemoPlots{n}.PlotColor{k}=k;
 
 k=3;
 DemoPlots{n}.Label{k}="Prediction NARXNET";
-DemoPlots{n}.YLabel{k}="Price in �/MWh";
+DemoPlots{n}.YLabel{k}="Price in EUR/MWh";
 if length(DemoPlots{n}.Data)<=2
     StoragePath=strcat(Path.Prediction, "DayaheadRealH", Dl);
     %[StorageFile, StoragePath]=uigetfile(StoragePath, strcat("Select ", DemoPlots{n}.Title, " ", DemoPlots{n}.Label{k}));
-    StorageFile="NARXNET_20210119-1036_20180901-20200831_52h_1Preds_8hr.mat";
+    StorageFile="NARXNET_20210202-1249_20180101-20200831_52h_78Preds_8hr.mat";
     load(strcat(StoragePath, StorageFile))
     DemoPlots{n}.Data{k}=repelem(Pred.Data, Time.StepInd/Pred.Time.StepPredInd);
     DemoPlots{n}.DataMat{1,k}=repelem(Pred.DataMat(:,find(Pred.Time.Pred>Pred.Time.EndTrain,1):end), Time.StepInd/Pred.Time.StepPredInd,Time.StepInd/Pred.Time.StepPredInd);
 end
 DemoPlots{n}.Time.Vec{k}=repelem(Pred.Time.Pred(find(Pred.Time.Pred>Pred.Time.EndTrain,1):end), Time.StepInd/Pred.Time.StepPredInd, Time.StepInd/Pred.Time.StepPredInd);
 
-if size(DemoPlots{n}.Data)<=2
-    StoragePath=strcat(Path.Prediction, "DayaheadRealH", Dl);
-    [StorageFile, StoragePath]=uigetfile(StoragePath, strcat("Select ", DemoPlots{n}.Title, " ", DemoPlots{n}.Label{k}));
-    StorageFile="NARXNET_20210119-1759_20180101-20200831_48h_1Preds_12hr.mat";
-    load(strcat(StoragePath, StorageFile))
-    DemoPlots{n}.DataMat{2,k}=repelem(Pred.DataMat(:,find(Pred.Time.Pred>Pred.Time.EndTrain,1):end), Time.StepInd/Pred.Time.StepPredInd, Time.StepInd/Pred.Time.StepPredInd);
-end
+% if size(DemoPlots{n}.Data)<=2
+%     StoragePath=strcat(Path.Prediction, "DayaheadRealH", Dl);
+%     [StorageFile, StoragePath]=uigetfile(StoragePath, strcat("Select ", DemoPlots{n}.Title, " ", DemoPlots{n}.Label{k}));
+%     StorageFile="NARXNET_20210119-1759_20180101-20200831_48h_1Preds_12hr.mat";
+%     load(strcat(StoragePath, StorageFile))
+%     DemoPlots{n}.DataMat{2,k}=repelem(Pred.DataMat(:,find(Pred.Time.Pred>Pred.Time.EndTrain,1):end), Time.StepInd/Pred.Time.StepPredInd, Time.StepInd/Pred.Time.StepPredInd);
+% end
 DemoPlots{n}.YMin{k}='dynamic';
 DemoPlots{n}.YMax{k}='dynamic';
 DemoPlots{n}.YAxis{k}=1;
@@ -75,17 +76,18 @@ DemoPlots{n}.PlotColor{k}=k;
 n=2;
 if ~exist("Users", "var")
     %StorageFile=uigetfile(Path.Simulation, "Select the user data"');
-    StorageFile="Users_20201223-0401_20180901-20200831_600_1_1.mat";
+    StorageFile="UsersSim20000FinListSingleDemo.mat";
     load(strcat(Path.Simulation, StorageFile))
 end
 
 DemoUser=2;
-while Users{DemoUser}.AverageMileageYear_km<22000 || Users{DemoUser}.AverageMileageYear_km>50000 || Users{DemoUser}.ACChargingPowerHomeCharging<4000 || sum(Users{DemoUser}.LogbookSmart(:,8)>0)/length(Users{DemoUser}.LogbookSource(:,4))>0.05 || sum(Users{DemoUser}.LogbookSmart(:,8)>0)/length(Users{DemoUser}.LogbookSource(:,4))<0.005  || ~Users{DemoUser}.PVPlantExists
+while Users{DemoUser}.AverageMileageYear_km<22000 || Users{DemoUser}.AverageMileageYear_km>50000 || Users{DemoUser}.ACChargingPowerHomeCharging<4000 || sum(Users{DemoUser}.Logbook(:,8)>0)/length(Users{DemoUser}.Logbook(:,4))>0.05 || sum(Users{DemoUser}.Logbook(:,8)>0)/length(Users{DemoUser}.Logbook(:,4))<0.005  || ~Users{DemoUser}.PVPlantExists
     DemoUser=DemoUser+1;
 end
 
 DemoPlots{n}.Title=strcat("PV power of user ", num2str(DemoUser));
 DemoPlots{n}.LegendLocation="northwest";
+DemoPlots{n}.Ytickformat='%.0f';
 
 k=1;
 DemoPlots{n}.Data{k}=double(PVPlants{Users{DemoUser}.PVPlant}.ProfileQH)/1000;
@@ -116,10 +118,11 @@ DemoPlots{n}.PlotColor{k}=k;
 n=3;
 DemoPlots{n}.Title=strcat("Vehicle properties of user ", num2str(DemoUser));
 DemoPlots{n}.LegendLocation="northeast";
+DemoPlots{n}.Ytickformat='%.0f';
 
 k=1;
-% DemoPlots{n}.Data{k}=double(Users{DemoUser}.LogbookSmart(:,9))/1000;
-DemoPlots{n}.Data{k}=double(Users{DemoUser}.LogbookSmart(:,9))/double(Users{DemoUser}.BatterySize)*100;
+% DemoPlots{n}.Data{k}=double(Users{DemoUser}.Logbook(:,9))/1000;
+DemoPlots{n}.Data{k}=double(Users{DemoUser}.Logbook(:,9))/double(Users{DemoUser}.BatterySize)*100;
 DemoPlots{n}.Time.Vec{k}=Users{1}.Time.Vec;
 DemoPlots{n}.Label{k}="SoC";
 DemoPlots{n}.YLabel{k}="SoC in %";
@@ -130,15 +133,15 @@ DemoPlots{n}.YAxis{k}=1;
 DemoPlots{n}.PlotColor{k}=k;
 
 k=2;
-DemandForecastMat=zeros(ForecastIntervalInd,length(Users{DemoUser}.LogbookSmart));
-for l=1:length(Users{DemoUser}.LogbookSmart)-ForecastIntervalInd
-    DemandForecastMat(:,l)=double(Users{DemoUser}.LogbookSmart(l:l+ForecastIntervalInd-1,4));
+DemandForecastMat=zeros(ForecastIntervalInd,length(Users{DemoUser}.Logbook));
+for l=1:length(Users{DemoUser}.Logbook)-ForecastIntervalInd
+    DemandForecastMat(:,l)=double(Users{DemoUser}.Logbook(l:l+ForecastIntervalInd-1,4));
 end
-Demand=double(Users{DemoUser}.LogbookSmart(:,4));
+Demand=double(Users{DemoUser}.Logbook(:,4));
 DemoPlots{n}.Data{k}=Demand/1000*4;
-DemoPlots{n}.DataSource{k}=Users{DemoUser}.LogbookSmart(:,4)/1000*4;
+DemoPlots{n}.DataSource{k}=Users{DemoUser}.Logbook(:,4)/1000*4;
 DemoPlots{n}.DataMat{k}=DemandForecastMat/1000*4;
-DemoPlots{n}.Time.Vec{k}=Users{1}.Time.Vec(1:length(Users{DemoUser}.LogbookSmart)-ForecastIntervalInd);
+DemoPlots{n}.Time.Vec{k}=Users{1}.Time.Vec(1:length(Users{DemoUser}.Logbook)-ForecastIntervalInd);
 DemoPlots{n}.Label{k}="Demand plan";
 DemoPlots{n}.YLabel{k}="Power in kW";
 DemoPlots{n}.YMin{k}=0.01;
@@ -147,17 +150,17 @@ DemoPlots{n}.YAxis{k}=2;
 DemoPlots{n}.PlotColor{k}=k;
 
 k=3;
-ChargingDemoUser=squeeze(sum(Users{1}.ChargingMatSmart{ChargingMatNumber,1}(:,:,DemoUser-1,:),2));
-ChargingDemoUserMat=[zeros(ForecastIntervalInd, Users{1}.ChargingMatSmart{ChargingMatNumber,2}),  repelem(ChargingDemoUser, 1, 24*Time.StepInd)];
-ChargingDemoUser=[zeros(Users{1}.ChargingMatSmart{ChargingMatNumber,2},1); reshape(ChargingDemoUser(1:96,:), [], 1)];
+ChargingDemoUser=squeeze(sum(Users{1}.ChargingMatDemoUsers{ChargingMatNumber,1}(:,:,DemoUser-1,:),2));
+ChargingDemoUserMat=[zeros(ForecastIntervalInd, Users{1}.ChargingMatDemoUsers{ChargingMatNumber,2}),  repelem(ChargingDemoUser, 1, 24*Time.StepInd)];
+ChargingDemoUser=[zeros(Users{1}.ChargingMatDemoUsers{ChargingMatNumber,2},1); reshape(ChargingDemoUser(1:96,:), [], 1)];
 ChargingDemoUserMat=cell(6,1);
 for l=1:6    
-    ChargingDemoUserMat{l}=repelem(squeeze(sum(Users{1}.ChargingMatSmart{l,1}(:,:,DemoUser-1,:),2)), 1,24*Time.StepInd,1)/1000*4;
+    ChargingDemoUserMat{l}=repelem(squeeze(sum(Users{1}.ChargingMatDemoUsers{l,1}(:,:,DemoUser-1,:),2)), 1,24*Time.StepInd,1)/1000*4;
 end   
 
 
 
-DemoPlots{n}.Data{k}=sum(Users{DemoUser}.LogbookSmart(:,5:7), 2)/1000*4;
+DemoPlots{n}.Data{k}=sum(Users{DemoUser}.Logbook(:,5:7), 2)/1000*4;
 for l=1:6
     DemoPlots{n}.DataMat{l,k}=[zeros(ForecastIntervalInd,96*floor(l/5)),[zeros(ForecastIntervalInd-size(ChargingDemoUserMat{l},1),size(ChargingDemoUserMat{l},2));squeeze(ChargingDemoUserMat{l})]];
 end
@@ -171,7 +174,7 @@ DemoPlots{n}.PlotColor{k}=k;
 
 
 k=4;
-DemoPlots{n}.Data{k}=sum(Users{DemoUser}.LogbookSmart(:,8), 2)/1000*4;
+DemoPlots{n}.Data{k}=sum(Users{DemoUser}.Logbook(:,8), 2)/1000*4;
 DemoPlots{n}.Time.Vec{k}=Users{1}.Time.Vec;
 DemoPlots{n}.Label{k}="Public charging";
 DemoPlots{n}.YLabel{k}="Power in kW";
@@ -186,12 +189,12 @@ DemoPlots{n}.PlotColor{k}=k;
 n=4;
 DemoPlots{n}.Title=strcat("Load curve of the fleet");
 DemoPlots{n}.LegendLocation="northwest";
+DemoPlots{n}.Ytickformat='%.0f';
 
-
-ChargingTypeLive=reshape(permute(squeeze(sum(Users{1}.ChargingMatSmart{7,1}(1:96,:,:,:),3)), [1,3,2]), [], Users{1}.NumCostCats)/1000*4;
+ChargingTypeLive=reshape(permute(Users{1}.ChargingMat{7,1}(1:96,:,:), [1,3,2]), [], Users{1}.NumCostCats)/1000/1000*4;
 ChargingTypeMat=cell(6,1);
 for l=1:6
-    ChargingTypeMat{l}=repelem(permute(squeeze(sum(Users{1}.ChargingMatSmart{l,1},3)),[1,3,2]), 1,24*Time.StepInd,1)/1000*4;
+    ChargingTypeMat{l}=repelem(permute(Users{1}.ChargingMat{l,1},[1,3,2]), 1,24*Time.StepInd,1)/1000/1000*4;
 end    
 
 k=1;
@@ -203,7 +206,7 @@ for l=1:6
 end
 DemoPlots{n}.Time.Vec{k}=Users{1}.Time.Vec;
 DemoPlots{n}.Label{k}="Spot market";
-DemoPlots{n}.YLabel{k}="Charging Power in kW";
+DemoPlots{n}.YLabel{k}="Charging Power in MW";
 DemoPlots{n}.YMin{k}=-1;
 DemoPlots{n}.YMax{k}='dynamic';
 DemoPlots{n}.YAxis{k}=1;
@@ -217,7 +220,7 @@ for l=1:6
 end
 DemoPlots{n}.Time.Vec{k}=Users{1}.Time.Vec;
 DemoPlots{n}.Label{k}="PV";
-DemoPlots{n}.YLabel{k}="Charging Power in kW";
+DemoPlots{n}.YLabel{k}="Charging Power in MW";
 DemoPlots{n}.YMin{k}=-1;
 DemoPlots{n}.YMax{k}='dynamic';
 DemoPlots{n}.YAxis{k}=1;
@@ -231,7 +234,7 @@ for l=1:6
 end
 DemoPlots{n}.Time.Vec{k}=Users{1}.Time.Vec;
 DemoPlots{n}.Label{k}="Reserve energy";
-DemoPlots{n}.YLabel{k}="Charging Power in kW";
+DemoPlots{n}.YLabel{k}="Charging Power in MW";
 DemoPlots{n}.YMin{k}=-1;
 DemoPlots{n}.YMax{k}='dynamic';
 DemoPlots{n}.YAxis{k}=1;

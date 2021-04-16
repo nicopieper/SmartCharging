@@ -14,7 +14,7 @@ UserPropertiesLabels=[...
     "Yearly mileage:",              strcat(num2str(Users{DemoUser}.AverageMileageYear_km), " km");
     "Battery size:",                strcat(num2str(single(Users{DemoUser}.BatterySize)/1000), " kWh");
     "Max. power private charging:", strcat(num2str(single(Users{DemoUser}.ACChargingPowerHomeCharging)/1000), " kW");
-    "§ 14a EnWG participation:",    "yes";
+    " 14a EnWG participation:",    "yes";
     "PV peak power:",               strcat(num2str(PVPlants{Users{DemoUser}.PVPlant}.PeakPower), " kW");
     "Home location:",               erase(PVPlants{Users{DemoUser}.PVPlant}.Location, '"')];
 if ~Users{DemoUser}.GridConvenientCharging
@@ -40,7 +40,7 @@ NumPlotsCol=ceil(sqrt(length(DemoPlots)));
 NumPlotsRow=ceil(length(DemoPlots)/NumPlotsCol);
 figure(11)
 for n=1:length(DemoPlots)
-    subplot(NumPlotsRow,NumPlotsCol,n)
+    fig{n}=subplot(NumPlotsRow,NumPlotsCol,n);
     cla reset
     title(strcat(DemoPlots{n}.Title, " at ", datestr(Time.Demo.Vec(TimeInd),'dd.mm.yyyy HH:MM')),'Interpreter','none')
     xlabel('Time')
@@ -78,5 +78,7 @@ for n=1:length(DemoPlots)
     xticks(Time.Demo.VecDateNum(TimeInd-24*Time.StepInd+1:48:end));
     xticklabels({datestr(Time.Demo.VecDateNum(TimeInd-24*Time.StepInd+1:48:end),'dd.mm HH:MM')});
     xlim([Time.Demo.VecDateNum(TimeInd-36*Time.StepInd+max(0,-ForecastIntervalInd+24*Time.StepInd+ForecastDuration+Time.StepInd)) Time.Demo.VecDateNum(EndCounter+3)]) % Create a moving plot 
+    ytickformat(DemoPlots{n}.Ytickformat);
+    fig{n}.YRuler.Exponent = 0;
     
 end
