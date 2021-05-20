@@ -1,4 +1,25 @@
+%% Description
+% This script is the base for all other scripts and must always be
+% started first! First it defines essential variables like the considered
+% time period for all data that is loaded from files. Then it defines the
+% paths of all relevant files that are loaded in other scripts. Afterwards 
+% variables needed for the forecasts and simulations. Finally the relevant
+% data from the electricity industry is loaded. That includes: Day ahead
+% spot market prices, national power generation and load data and their
+% predictions (source: Smard.de and energy-charts.de). PV plant data 
+% scrapped from the SMA sunny portal, consisting of plant parameters and 
+% generation data, as well as corresponding prediction data provided by 
+% meteoblue. Reserve market data including reserve power requests from
+% TSOs, reserve power offer prices and resever energy offer prices (source:
+% regelleistung.net).
+%
+% Depended scripts / folders
+%   Almost all other scripts require the variables of this script.
+
+%% Clear workspace
+
 clear
+
 
 %% Define time parameters
 
@@ -10,6 +31,11 @@ Time.Step=minutes(15);
 Time.StepMin=minutes(Time.Step);
 
 %% Set data processing options
+
+% if true the data of the sources are calculated completly new from the
+% source files. Otherwise the preprocessed data is loaded from mat files
+% which is much faster and sufficient if no changes were implemented in the
+% processing scripts
 
 ProcessDataNew.Smard=0; 
 ProcessDataNew.EC=0;
@@ -63,6 +89,7 @@ Range.TestInd=[find(Range.TestDate(1)==Time.Vec,1) find(dateshift(Range.TestDate
 
 
 %% Load electricity industry data
+
 GetSmardData;
 GetEnergyChartsData;
 GetSMAPlantData;
