@@ -52,10 +52,10 @@
 
 %% Initialisation
 
-NumUsers=10;                          % number of users considered
+NumUsers=1000;                          % number of users considered
 Users=cell(NumUsers+1,1);               % the main cell variable all user data is stored in
 Users{1}.SmartCharging=true;            % if true then the smart charging scenario is executed, else the base scenario
-UseParallel=false;                      % if true, in the smart charging scenario parallel computing is used
+UseParallel=true;                       % if true, in the smart charging scenario parallel computing is used
 UseParallelAvailability=false;          
 UseSpotPredictions=true;                % if true spot market predictions are used, else it is assumed that the aggregator knows the future market prices
 UsePVPredictions=true;                  % if true PV predictions are used, else it is assumed that the aggregator knows the future PV powers
