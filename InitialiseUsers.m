@@ -25,14 +25,14 @@
 %
 % Description of important variables
 %   NumUsers:           The number of users that will be initialised. (1,1)
-%   LikelihoodPV:       The likelihood that one users owns a PV plant.
-%                       (1,1)
-%   AddPV               Control variable to skip the assignment of PV
-%                       plants to the Users. Logical
 %   Users:              The cell array that covers all user data. The 
 %                       first cell contains processing information. Inside
 %                       the following cells, the user data is stored, 
 %                       each as a struct. cell (NumUsers+1,1)
+%   PVGridConvenientChargingLikelihoodMatrix:
+%                       Matrix that defines with type of users use grid 
+%                       convenient charging (14a) and own a PV plant: 
+%                       [PV&14a, PV&~14a, ~PV&14a, ~PV&~14a]                        
 %   VehicleSizes        The vehicle sizes that are accepted. In general,
 %                       the vehicles in Vehicles have four different sizes:
 %                       small, medium, large, transporter. VehicleSizes
@@ -73,7 +73,7 @@
 %                       Time.Vec. Therefore the months of Time.Vec are
 %                       matched with the first col of TemperatureMonths.
 %                       (M,1)
-%   UsersTime.VecLogical Indicates which entries of Vehicles logbook are
+%   UsersTimeVecLogical Indicates which entries of Vehicles logbook are
 %                       used within the given time interval set in
 %                       Initialisation. If the Vehicles were processed with
 %                       the same time interval, than all entries of this
@@ -85,18 +85,16 @@
 rng('default');
 rng(1);
 
-%if Users{1}.SmartCharging
-Users{1}.PVGridConvenientChargingLikelihoodMatrix=single([0, 0.5, 0.35, 0.15]); % Matrix that defines with type of users use grid convenient charging (14a) and own a PV plant: [PV&14a, PV&~14a, ~PV&14a, ~PV&~14a]
-    %Users{1}.PVGridConvenientChargingLikelihoodMatrix=single([0, 0, 0, 1]); % Matrix that defines with type of users use grid convenient charging (14a) and own a PV plant: [PV&14a, PV&~14a, ~PV&14a, ~PV&~14a]
-%else
-%    Users{1}.PVGridConvenientChargingLikelihoodMatrix=single([0, 0.5, 0.01, 0.49]); % Matrix that defines with type of users use grid convenient charging (14a) and own a PV plant: [PV&14a, PV&~14a, ~PV&14a, ~PV&~14a]
-%end
+if Users{1}.SmartCharging
+    Users{1}.PVGridConvenientChargingLikelihoodMatrix=single([0, 0.5, 0.35, 0.15]); % Matrix that defines with type of users use grid convenient charging (14a) and own a PV plant: [PV&14a, PV&~14a, ~PV&14a, ~PV&~14a]
+else
+    Users{1}.PVGridConvenientChargingLikelihoodMatrix=single([0, 0.5, 0.01, 0.49]); % Matrix that defines with type of users use grid convenient charging (14a) and own a PV plant: [PV&14a, PV&~14a, ~PV&14a, ~PV&~14a]
+end
 
 Users{1}.MwSt=1.19; % The VAT rate
 Users{1}.EEGBonus=single(9.17); %[ct/kWh] Bonus paid by the DSO to PV plant owner for supplying energy to the grid
 AddPV=true; % determines wheter PV plants shall be assigned to the users. In general true, only false for test purposes
 MeanPrivateElectricityPrice=single(31.81/Users{1}.MwSt - 2.92767 - 6.364); % [ct/kWh] average German electricity price in 2020 according to Strom-Report without VAT (19%), electricity production price (avg. Dayahead price was 3.7513 ct/kWh in 2019) and NNE energy price (avg. was 7.06 ct/kWh in 2019)
-%MeanPrivateElectricityPrice=single(31.81/Users{1}.MwSt - 7.75 - 2.92767); % [ct/kWh] average German electricity price in 2020 according to BDEW without VAT (19%), NNE price (base + energy avg. was 7.75 ct/kWh in 2020 excl. VAT) and electricity production price (avg. Dayahead price was 2.92767 ct/kWh in simulation interval)
 PublicACChargingPrices=single([29, 39]); % [ct/kWh]
 PublicDCChargingPrices=single([39, 49]); % [ct/kWh]
 IMSYSInstallationCostsMean=single(80000); % [ct] The costs for the installation of the IMSYS have to be paid by the wallbox owner.
@@ -168,8 +166,6 @@ InitialSoCRandomDeviation=TruncatedGaussian(0.1,[0.4 1]-0.7,[1,NumUsers]);
 for n=2:NumUsers+1
     
     % Selection of a car model
-    %RandomNumbers=rand(9,1); % get some random numbers that will be used during the initialsation of this user
-    %a(1:9,n-1)=RandomNumbers;
     Model=max((RandomNumbers(1,n-1)>=str2double(VehicleProperties(:,2))).*(1:size(VehicleProperties,1))'); % with respect to market share of the cars, pick one of them. a(1) is uniformly distributed between 0 and 1. find the first vehicle whichs cumulated market share value (in decimal) is large than a(1). the cumulated market share value of the first car is 0, the one of the next car represents the market share of the first vehicle. the number of the second car represents the cumulated share of the first two vehicles and so on
     Users{n}.ModelName=VehicleProperties(Model, 1); % the car name, e. g. "BMW i3s"
     Users{n}.ModelSize=VehicleProperties(Model, 3); % small, medium, large
@@ -208,7 +204,6 @@ for n=2:NumUsers+1
     
     % Selection of a grid convenient charging profile
     GridConvenientChargingProfile=max(single(RandomNumbers(8,n-1)>=(0:1/size(DSOContractData,2):1-1/size(DSOContractData,2))).*(1:size(DSOContractData,2)));
-%     if RandomNumbers(8,n-1)<=LikelihoodGridConvenientCharging
     Users{n}.NNEEnergyPriceGridConvenientCharging=DSOContractData(5,GridConvenientChargingProfile); % [ct/kWh] netto (without VAT). reduced NNE energy price due to the allowance for the DSO to manage the charging
     Users{n}.NNEEnergyPriceNotGridConvenientCharging=DSOContractData(3,GridConvenientChargingProfile); % [ct/kWh] netto (without VAT). normal NNE prices
     if RandomNumbers(6,n-1)<=PVGridConvenientChargingLikelihoodMatrix(1) || (RandomNumbers(6,n-1)>PVGridConvenientChargingLikelihoodMatrix(2) & RandomNumbers(6,n-1)<=PVGridConvenientChargingLikelihoodMatrix(3))

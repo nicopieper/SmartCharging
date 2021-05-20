@@ -215,7 +215,7 @@ for n=1:size(Folders,1) % iterate through the plants
                     LoadedSMAPlantData=str2double(strrep(erase(erase(string(LoadedSMAPlantData(2:end,:)),' '),'"'),',','.')); % convert from German decimal format "12,304" to English one "12.304"
                     LoadedSMAPlantData(isnan(LoadedSMAPlantData))=0;
 
-                    if length(LoadedSMAPlantData)==96 % if processing was sucessful there have to be exactly 96 values in one vector (96 quaterly hours of a day). 
+                    if length(LoadedSMAPlantData)==96 % if processing was successful there have to be exactly 96 values in one vector (96 quaterly hours of a day). 
                         LoadedSMAPlantDataNew=[LoadedSMAPlantDataNew; LoadedSMAPlantData];
                     else
                         Error=true;

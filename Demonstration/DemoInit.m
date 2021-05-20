@@ -1,3 +1,13 @@
+%% Description
+% This script creates and intialises the figures and plots used for the
+% demonstration. First the figure that show that demo uses characteristics
+% is created then the plot show the demonstration.
+%
+% Depended scripts / folders
+%   Initialisation.m        Needed for the execution of this script
+%   Demonstration.m         This script is called by Demonstration.m
+
+
 %% Define plot colors
 
 PlotColors= [0.0000, 0.4470, 0.7410; 0.8500, 0.3250, 0.0980;... 
@@ -7,7 +17,7 @@ PlotColors= [0.0000, 0.4470, 0.7410; 0.8500, 0.3250, 0.0980;...
              0, 1, 0               ; 0,      0,      1];     
 
 
-%% Set vehicle properties figure
+%% Set vehicle characteristics figure
 
 UserPropertiesLabels=[...
     "Vehicle model:",               Users{DemoUser}.ModelName;
