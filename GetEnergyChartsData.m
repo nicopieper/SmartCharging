@@ -3,7 +3,7 @@
 % when already stored, from a local path. Downloaded data is stored in 
 % files that cover one complete month of a subject. The subjects are 
 % Dayahead spotmarket price and several Intraday indices. In addition, data
-% trade for the balances with other countries and CO2 Emission Allowances 
+% for the trade balances with other countries and CO2 Emission Allowances 
 % can the loaded but this was not useful yet. Electricity generation data 
 % and the grid load can be loaded as well from the webpage but it is equal
 % to the data of smard.de
