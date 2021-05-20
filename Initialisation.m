@@ -44,8 +44,6 @@ ProcessDataNew.Regel=0;
 
 %% Set data paths
 
-Path.Database='C:\Users\YourPath\SmartCharging4EWEGo\';
-
 Path.Base=pwd;
 if ismember('\', pwd)
     Dl='\'; % Windows path delimiter
@@ -53,7 +51,6 @@ else
     Dl='/'; % Linux path delimiter
 end
 
-Path.Base=pwd;
 if strcmp(Path.Base(1:5), '/home')
     Path.Database='/home/ma-student/Seafile/SmartChargingDatabase/';
     Path.SMAPlant='/home/ma-student/Seafile/SMAPlantData/PlantData/';
