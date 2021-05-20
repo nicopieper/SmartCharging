@@ -29,7 +29,7 @@
 
 %% Set paths of the required files
 
-ChoseDataByDialogBox=false; % if true, the paths of the three files can be specified by a dialog box, else use the variables below
+ChoseDataByDialogBox=true; % if true, the paths of the three files can be specified by a dialog box, else use the variables below
 
 if ~ChoseDataByDialogBox
     SpotmarketPredictionPath=strcat(Path.Prediction, "DayaheadRealH", Dl); % path where the spotmarket data is stored
@@ -50,7 +50,7 @@ Time.Demo.StepIndForecast=8; % varying this variable changes the speed of the de
 
 TimeOfForecast=datetime(1,1,1,08,0,0,'TimeZone','Africa/Tunis'); % time of day when the forecast are calculated
 Time.Demo.Step=minutes(60);
-ForecastIntervalInd=48*Time.StepInd;
+ForecastIntervalInd=48*4;
 ChargingMatNumber=1;
 
 clearvars DemoPlots
