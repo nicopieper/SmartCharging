@@ -12,4 +12,4 @@ A demonstrator visualises the results of a smart charging demonstration using 20
 
 To start the demonstrator, open InitialisationDemonstrator.m and enter the path of the downloaded data from the seafile cloud. Run this script. Then Run the Demonstration.m script. Two figures appear. Figure 1 lists the characteristics of a demo user, who is part of the fleet comprising 20000 users. Figure 11 shows four plots. The first plot compares the spot market predictions to the real spot market prices. The second plot compares the predicted pv power of the demo user's plant to the real generated pv power. The third plot shows the demo user's energy demand through driving, charged energy and the resulting vehicle's SoC. Plot 4 four visualises the load profile of the fleet split into the three electricity sources.
 
-![alt text](https://github.com/nicopieper/SmartCharging/blob/SimulationExtendParallel/ReadmeImages/3Systemaufbau.svg?raw=true)
+![Image of the Demonstrator](https://github.com/nicopieper/SmartCharging/blob/SimulationExtendParallel/ReadmeImages/Demonstrator.svg?raw=true)
