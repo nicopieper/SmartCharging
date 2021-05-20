@@ -1,20 +1,66 @@
+%% Description
+% This script simulates the base or smart charging scenario dependend on 
+% the variable Users{1}.SmartCharging. Therefore, it uses the Users 
+% initialised in InitialiseUsers.m. After variable initialization and the 
+% loading of prediction data, the simulation starts over the defined 
+% simulation period. Hence, with each simulation step, the time is
+% increased by Time.Sim.Step minutes. Within each time step the driving and
+% charging bevahiour of each user is simulated. After the simulation the
+% simulation data is stored and evaluated. Load profiles are generated and
+% the charging costs are determined.
+%
+% Depended scripts / folders
+%   Initialisation          Needed for the execution of this script
+%   InitialiseUsers         Calls this script to create User profiles
+%   InitialisePreAlgo       Calls this script to initialise the algorithm 1
+%   InitialiseLiveAlgo      Calls this script to initialise the algorithm 2
+%   CalcDynOptVars          Calls this script to calculate variables that
+%                           change each Algo 1 interation
+%   CalcConsOptVars         Calls this script to calculate variables that 
+%                           only change after one day
+%   PreAlgo                 Calls this script to execute algorithm 1
+%   LiveAlgo                Calls this script to execute algorithm 2
+%
+% Description of important variables
+%   NumUsers:           The number of users that will be initialised. (1,1)
+%   Users:              The cell array that covers all user data. The 
+%                       first cell contains processing information. Inside
+%                       the following cells, the user data is stored, 
+%                       each as a struct. cell (NumUsers+1,1)
+%   Users{n}.Logbook    Matrix that covers all driving and charging
+%                       information of a user during the simulation. Column
+%                       description:
+%                       1   Vehicle state 
+%                           1==Driving
+%                           2==Parking anywhere
+%                           3==Parking at home charging point
+%                           4==connected to home charging point
+%                           5==charging at home charging point
+%                           6==charging at public AC charger
+%                           7==charging at public DC charger
+%                       2   Driven time in minutes
+%                       3   Driven distance in meters
+%                       4   Consumed energy in Wh
+%                       5   Energy charged from Spotmarket in Wh
+%                       6   Energy charged by PV electricity in Wh
+%                       7   Energy charged by reserve energy in Wh
+%                       8   Energy charged at public charging point in Wh
+%                       9   Energy in battery in Wh
+%                       Each row equals one iteration step covering 15
+%                       minutes.
+
+
 %% Initialisation
 
-PublicChargingThresholdBuffer1=[1.2];
-
-for it=1:6
-    
-PublicChargingThresholdBuffer=PublicChargingThresholdBuffer1(it);
-
-NumUsers=1000;
-Users=cell(NumUsers+1,1); % 5the main cell variable all user data is stored in
-Users{1}.SmartCharging=true;
-UseParallel=true;
-UseParallelAvailability=false;
-UseSpotPredictions=true;
-UsePVPredictions=true;
-UseIndividualEEGBonus=true;
-InitialiseUserNew=true;
+NumUsers=10;                          % number of users considered
+Users=cell(NumUsers+1,1);               % the main cell variable all user data is stored in
+Users{1}.SmartCharging=true;            % if true then the smart charging scenario is executed, else the base scenario
+UseParallel=false;                      % if true, in the smart charging scenario parallel computing is used
+UseParallelAvailability=false;          
+UseSpotPredictions=true;                % if true spot market predictions are used, else it is assumed that the aggregator knows the future market prices
+UsePVPredictions=true;                  % if true PV predictions are used, else it is assumed that the aggregator knows the future PV powers
+UseIndividualEEGBonus=true;             % if true PV electricity consumption costs are plant specific depending on the start of operation date of the plant (determines the EEG bonus)
+InitialiseUserNew=true;                 % if true User profiles are generated newly, else stored data is used
 %DemoUsers=[9]%;,22,36,46,66,74,82,83,94,122,124,164,165,167,171,181,187,193,197,241,242,259,286,295,349,352,359,363,365,379,390,392,405,413,430,436,473,490,493,497,535,575,578,610,628,650,665,701,704,723,727,756,778,785,820,851,867,880,884,910,936,956,983,985,987,1002,1011,1019,1021,1045,1062,1075,1080,1083,1093,1113,1167,1168,1174,1182,1186,1190,1194,1198,1215,1217,1226,1232,1244,1284,1292,1298,1301,1319,1383,1390,1423,1426,1430,1436,14,68,92,100,119,130,218,246,270,315,317,408,438,442,451,460,563,568,580,588,589,595,608,614,656,661,667,673,693,703,738,742,744,767,777,807,819,869,878,924,937,943,972,1005,1025,1043,1064,1105,1124,1165,1178,1191,1192,1199,1216,1218,1270,1273,1305,1317,1331,1352,1370,1408,1427,1460,1463,1478,1481,1504,7,9,22,36,46,66,74,82,83,94,122,124,164,165,167,171,181,187,193,195,197,222,241,242,259,286,289,295,308,349];
 
 if ~InitialiseUserNew && isfile(strcat(Path.Simulation, "InitialisedUsers", Dl, "Users", num2str(NumUsers), ".mat"))
@@ -22,19 +68,18 @@ if ~InitialiseUserNew && isfile(strcat(Path.Simulation, "InitialisedUsers", Dl, 
 else    
     InitialiseUsers;
 end
-ControlPeriods=96*2;
-UsePV=true;
-ApplyGridConvenientCharging=true;
+ControlPeriods=96*2;                    % number of time steps within one optimization period (2*96 = 2 days)
+UsePV=true;                             % User power of PV plants to charge the cars
+ApplyGridConvenientCharging=true;       % Apply the § 14a EnWG programme
 ActivateWaitbar=true;
 SaveResults=true;
 
-Debugging=0;
 FinishSimulation=1;
 CleanUpWorkspace=0;
 
 if Users{1}.SmartCharging
     if UseParallel
-        NumDecissionGroups=20;
+        NumDecissionGroups=NumUsers/50;         % in case of smart charging, the fleet is divided into subfleets, each of size 50
         gcp
     else
         NumDecissionGroups=1;
@@ -43,7 +88,7 @@ end
 
 
 if ~exist('PublicChargerDistribution', 'var')
-    PublicChargerDistribution=single(readmatrix(strcat(Path.Simulation, "PublicChargerProbability.xlsx")));
+    PublicChargerDistribution=single(readmatrix(strcat(Path.Simulation, "PublicChargerProbability.xlsx")));     % load a power probability distribution for charging at a public charging point
 end
 
 PublicChargerDist=[];
@@ -54,19 +99,17 @@ EnergyDemandLeft=zeros(NumUsers+1,1, 'single');
 delete(findall(0,'type','figure','tag','TMWWaitbar'));
 
 Time.Sim=Users{1}.Time;
-TD.Main=find(ismember(Time.Vec,Time.Sim.Start),1)-1;
-TD.User=find(ismember(Users{1}.Time.Vec,Time.Sim.Start),1)-1;
+TD.Main=find(ismember(Time.Vec,Time.Sim.Start),1)-1;            % Index Offset for all electricity market variables
+TD.User=find(ismember(Users{1}.Time.Vec,Time.Sim.Start),1)-1;   % Index Offset for the users
 
 UserNum=2:NumUsers+1;
 
 if ~isfield(Users{1}, "TotalCostsIt")
-    Users{1}.TotalCostsIt={};
+    Users{1}.TotalCostsIt={};               % Variable to store the energy costs of simulations
 end
 
    
 for n=UserNum
-    %Users{n}.Logbook=single(Users{n}.Logbook);
-    %Users{n}=rmfield(Users{n}, "LogbookSource");
     if ApplyGridConvenientCharging && Users{n}.GridConvenientCharging
         Users{n}.NNEEnergyPrice=Users{n}.NNEEnergyPriceGridConvenientCharging;
     else
@@ -82,9 +125,10 @@ end
 
 if Users{1}.SmartCharging
     TimeOfPreAlgo=[datetime(1,1,1,8,0,0,'TimeZone','Africa/Tunis'), datetime(1,1,1,12,0,0,'TimeZone','Africa/Tunis'), datetime(1,1,1,16,0,0,'TimeZone','Africa/Tunis'), datetime(1,1,1,20,0,0,'TimeZone','Africa/Tunis'), datetime(1,1,1,0,0,0,'TimeZone','Africa/Tunis'), datetime(1,1,1,4,0,0,'TimeZone','Africa/Tunis')];
-    TimeOfReserveMarketOffer=datetime(1,1,1,8,0,0,'TimeZone','Africa/Tunis');
-    TimeOfDayAheadMarketPriceRelease=datetime(1,1,1,13,0,0,'TimeZone','Africa/Tunis');
+    TimeOfReserveMarketOffer=datetime(1,1,1,8,0,0,'TimeZone','Africa/Tunis');            % GCT of Secondary reserve auction is 8 am
+    TimeOfDayAheadMarketPriceRelease=datetime(1,1,1,13,0,0,'TimeZone','Africa/Tunis');   % DayAhead market prices are published at 1 pm
 	ShiftInds=(hour(TimeOfPreAlgo(1))*Time.StepInd + minute(TimeOfPreAlgo(1))/minutes(Time.Step));
+    % Indices when algo 1 shall be executed
     TimesOfPreAlgo=[(hour(TimeOfPreAlgo(1))*Time.StepInd + minute(TimeOfPreAlgo(1))/60*Time.StepInd)+1:24*Time.StepInd:length(Time.Sim.VecInd);...
                     (hour(TimeOfPreAlgo(2))*Time.StepInd + minute(TimeOfPreAlgo(2))/60*Time.StepInd)+1:24*Time.StepInd:length(Time.Sim.VecInd);...
                     (hour(TimeOfPreAlgo(3))*Time.StepInd + minute(TimeOfPreAlgo(3))/60*Time.StepInd)+1:24*Time.StepInd:length(Time.Sim.VecInd);...
@@ -100,7 +144,7 @@ if Users{1}.SmartCharging
     TimesOfResPoEval=mod(16-hour(Time.Sim.Vec(1))*4 + minute(Time.Sim.Vec(1)),16)+1:ConstantResPoPowerPeriods:length(Time.Sim.VecInd);
     
     if UseSpotPredictions
-        if ~exist("SpotmarketPricesPred1", "var")
+        if ~exist("SpotmarketPricesPred1", "var")       % Load the spot market predictions
             %[StorageFile, StoragePath]=uigetfile(strcat(Path.Prediction, "DayaheadRealH", Dl), 'Select the first Spotmarket Prediction');
             StorageFile="LSQ_20210202-1210_20180101-20200831_52h_232Preds_8hr.mat";
             StoragePath=strcat(strcat(Path.Prediction, "DayaheadRealH", Dl));
@@ -144,15 +188,6 @@ end
 
 PreAlgoCounter=0;
 
-% MatlabRAM{1,1}=whos;
-% if strcmp(Dl, '/')
-%     CheckRAM;
-%     MatlabRAM{end,2}=RAM;
-%     MatlabRAM{end,3}=0;
-% end
-% disp(strcat("Matlab RAM: ", num2str(sum([MatlabRAM{end,1}.bytes])/1024/1024/1024)))
-% save("MatlabRAM.mat", "MatlabRAM", '-v7.3')
-
 %% Start Simulation
 
 TSim=tic;
@@ -162,7 +197,8 @@ TimeIndVec=zeros(Time.Sim.VecInd(end-ControlPeriods),10);
 for TimeInd=Time.Sim.VecInd(2:end-ControlPeriods)
               
     for n=UserNum
-        
+
+        % Both scenarios
         % Public charging: Only charge at public charging point if it is requiered due to low SoC
         if Users{n}.Logbook(TimeInd+TD.User-1,9)-Users{n}.Logbook(TimeInd+TD.User,4) < Users{n}.PublicChargingThreshold_Wh
             
@@ -170,16 +206,16 @@ for TimeInd=Time.Sim.VecInd(2:end-ControlPeriods)
             while k < length(Users{n}.Logbook) && ~ismember(Users{n}.Logbook(k,1), 3:5)
                 k=k+1;
             end
-            NextHomeStop=k;
+            NextHomeStop=k; % Index when the next stop at the private charging point occurs
             
-            ConsumptionTilNextHomeStop=sum(Users{n}.Logbook(TimeInd+TD.User:NextHomeStop,4)); % [Wh]
-            TripDistance=sum(Users{n}.Logbook(TimeInd+TD.User:NextHomeStop,3)); % [Wh]
+            ConsumptionTilNextHomeStop=sum(Users{n}.Logbook(TimeInd+TD.User:NextHomeStop,4)); % Energy consumed until the next stop at the private charging point occurs [Wh]
+            TripDistance=sum(Users{n}.Logbook(TimeInd+TD.User:NextHomeStop,3)); % Distance driven until the next stop at the private charging point occurs [m]
 
             PublicChargerPower=max((rand(1, 'single')>=PublicChargerDistribution(find(PublicChargerDistribution>TripDistance/1000,1),:)).*PublicChargerDistribution(1,:)); % [kW]
             PublicChargerDist(end+1)=PublicChargerPower;
             ChargingPower(n)=min([max([Users{n}.ACChargingPowerVehicle, Users{n}.DCChargingPowerVehicle]), PublicChargerPower])*Users{n}.ChargingEfficiency; % Actual ChargingPower at public charger in [kW]
             
-            EnergyDemandLeft(n)=single(min((Users{n}.PublicChargingThreshold*100 + 5+TruncatedGaussian(2,[1 10]-5,1))/100*Users{n}.BatterySize + ConsumptionTilNextHomeStop - Users{n}.Logbook(TimeInd+TD.User-1,9), Users{n}.BatterySize - Users{n}.Logbook(TimeInd+TD.User-1,9)));
+            EnergyDemandLeft(n)=single(min((Users{n}.PublicChargingThreshold*100 + 5+TruncatedGaussian(2,[1 10]-5,1))/100*Users{n}.BatterySize + ConsumptionTilNextHomeStop - Users{n}.Logbook(TimeInd+TD.User-1,9), Users{n}.BatterySize - Users{n}.Logbook(TimeInd+TD.User-1,9))); % Energy that will be charged at the public charging pint during this charging session [Wh]
             TimeStepIndsNeededForCharging=double(ceil(EnergyDemandLeft(n)/ChargingPower(n)*60/Time.StepMin)); % [Wh/W]
             
             if TimeStepIndsNeededForCharging>0
@@ -195,7 +231,7 @@ for TimeInd=Time.Sim.VecInd(2:end-ControlPeriods)
             end
         end
         
-        if EnergyDemandLeft(n)>0
+        if EnergyDemandLeft(n)>0 
             Users{n}.Logbook(TimeInd+TD.User,8)=min([EnergyDemandLeft(n), ChargingPower(n)*Time.StepMin/60, Users{n}.BatterySize-Users{n}.Logbook(TimeInd+TD.User-1,9)]); % Publicly charged energy during one Time.Step in [Wh]
             EnergyDemandLeft(n)=EnergyDemandLeft(n)-Users{n}.Logbook(TimeInd+TD.User,8); 
         end
@@ -204,7 +240,7 @@ for TimeInd=Time.Sim.VecInd(2:end-ControlPeriods)
 
     end
     
-    if ~Users{1}.SmartCharging
+    if ~Users{1}.SmartCharging              % Base scenario
         
         for n=UserNum
         
@@ -214,6 +250,7 @@ for TimeInd=Time.Sim.VecInd(2:end-ControlPeriods)
 
                 if Users{n}.Logbook(TimeInd+TD.User-1,1)<3
 
+                    % ChargingStrategy==1 is not used anymore
                     if Users{n}.ChargingStrategy==1 % Always connect car to charging point if Duration of parking is higher than MinimumPluginTime
                         ParkingDuration=(find(Users{n}.Logbook(TimeInd+TD.User:end,1)<3,1)-1)*Time.Step;
                         if ParkingDuration>Users{n}.MinimumPluginTime
@@ -245,23 +282,23 @@ for TimeInd=Time.Sim.VecInd(2:end-ControlPeriods)
 
 
             if Users{n}.Logbook(TimeInd+TD.User,1)==4 && Users{n}.Logbook(TimeInd+TD.User,9)<Users{n}.BatterySize && (~ApplyGridConvenientCharging || Users{n}.GridConvenientChargingAvailability(mod(TimeInd+TD.User-1, 24*Time.StepInd)+1)) % Charging starts always when the car is plugged in, until the Battery is fully charged
-                Users{n}.Logbook(TimeInd+TD.User,1)=5;
+                Users{n}.Logbook(TimeInd+TD.User,1)=5;  % vehicle is charging at its private charging point
                 ChargingEnergy=min((Time.StepMin-Users{n}.Logbook(TimeInd+TD.User,2))*Users{n}.ACChargingPowerHomeCharging/60, Users{n}.BatterySize-Users{n}.Logbook(TimeInd+TD.User-1,9)); %[Wh]
                 if UsePV && Users{n}.PVPlantExists
                     Users{n}.Logbook(TimeInd+TD.User,6)=min(single(PVPlants{Users{n}.PVPlant}.(PVPlants_Profile_Prediction)(TimeInd+TD.Main))/Users{n}.ChargingEfficiency, ChargingEnergy);
                 end
-                Users{n}.Logbook(TimeInd+TD.User,5)=ChargingEnergy-Users{n}.Logbook(TimeInd+TD.User,6);
+                Users{n}.Logbook(TimeInd+TD.User,5)=ChargingEnergy-Users{n}.Logbook(TimeInd+TD.User,6); % The energy consumed fromt the spotmarkt equals the difference between the energy that needs to be charged and that is charged by pv electricity
             end
 
 
-            if  Users{n}.Logbook(TimeInd+TD.User,9)<Users{n}.BatterySize && Users{n}.Logbook(TimeInd+TD.User,1)>=5
-                Users{n}.Logbook(TimeInd+TD.User,9)=Users{n}.Logbook(TimeInd+TD.User,9)+sum(Users{n}.Logbook(TimeInd+TD.User,5:7));
+            if  Users{n}.Logbook(TimeInd+TD.User,9)<Users{n}.BatterySize && Users{n}.Logbook(TimeInd+TD.User,1)>=5 % vehicle is charging at its private or a public charging point
+                Users{n}.Logbook(TimeInd+TD.User,9)=Users{n}.Logbook(TimeInd+TD.User,9)+sum(Users{n}.Logbook(TimeInd+TD.User,5:7));  % update the SoC
             end
         end
     
-    elseif TimeInd>=TimesOfPreAlgo(1,1)
+    elseif TimeInd>=TimesOfPreAlgo(1,1)     % Smart Charging scenario, if Algorithm 1 shall be executed this iteration
         
-        ControlPeriodsIt=ControlPeriods-mod(TimeInd-TimesOfPreAlgo(1,1),96);        
+        ControlPeriodsIt=ControlPeriods-mod(TimeInd-TimesOfPreAlgo(1,1),96);      % How many indices until 8 am of day d + 2? One index step equals 15 min  
         
         if ismember(TimeInd, TimesOfPreAlgo)
             
@@ -273,34 +310,20 @@ for TimeInd=Time.Sim.VecInd(2:end-ControlPeriods)
             
             if ismember(TimeInd, TimesOfPreAlgo(1,:))
 
-                PreAlgoCounter=PreAlgoCounter+1;
+                PreAlgoCounter=PreAlgoCounter+1;        % Counter for the number of times Algorithm 1 was executed
                 
                 if UseSpotPredictions
                     SpotmarktPricesCP=[SpotmarketPrices(TimeInd+TD.User:TimeInd+TD.User + 24*Time.StepInd-mod(TimeInd-1,24*Time.StepInd)-1 + (mod(TimeInd-1,24*Time.StepInd)-13*Time.StepInd > 0)*96); SpotmarketPricesPred1(TimeInd+TD.SpotmarketPricesPred1 + 24*Time.StepInd-mod(TimeInd-1,24*Time.StepInd)-1 + (mod(TimeInd-1,24*Time.StepInd)-13*Time.StepInd > 0)*96+1:TimeInd+TD.SpotmarketPricesPred1+ControlPeriodsIt-1)];
                 end
                 
-                CalcConsOptVars;
+                CalcConsOptVars;                        % Update variables that only change at 8 am
                 
             elseif UseSpotPredictions
                 SpotmarktPricesCP=[SpotmarketPrices(TimeInd+TD.User:TimeInd+TD.User + 24*Time.StepInd-mod(TimeInd-1,24*Time.StepInd)-1 + (mod(TimeInd-1,24*Time.StepInd)-13*Time.StepInd > 0)*96); SpotmarketPricesPred2(TimeInd+TD.SpotmarketPricesPred2 + 24*Time.StepInd-mod(TimeInd-1,24*Time.StepInd)-1 + (mod(TimeInd-1,24*Time.StepInd)-13*Time.StepInd > 0)*96+1:TimeInd+TD.SpotmarketPricesPred2+ControlPeriodsIt-1)];
             end
-
-%             MatlabRAM{end+1,1}=whos;
-%             disp(strcat("Matlab RAM: ", num2str(sum([MatlabRAM{end,1}.bytes])/1024/1024/1024)))
-%             if strcmp(Dl, '/')
-%                 CheckRAM;
-%                 MatlabRAM{end,2}=RAM;
-%                 MatlabRAM{end,3}=TimeInd;
-%                 save("MatlabRAM.mat", "MatlabRAM", '-v7.3')
-%                 if isa(RAM,'double') && sum(RAM(1:2,2))/1024/1024<10
-%                     disp(strcat("Simulation stopped to prevent running out of memory: ", num2str(RAM(1:2,2)'/1024/1024)))
-%                     FinishSimulation=0;
-%                     break;
-%                 end
-%             end
            
-            CalcDynOptVars;
-            PreAlgo;
+            CalcDynOptVars;                             % Update variables that change each iteration of algorithm 1
+            PreAlgo;                                    % Calculate optimal charging profiles (execute Algorithm 1)
 
             for n=UserNum  
                 Users{n}.Logbook(TimeInd+TD.User:TimeInd+TD.User+ControlPeriodsIt-1, [false(1,4), true(1,length(CostCats))])=OptimalChargingEnergies(1:ControlPeriodsIt,:,n==UserNum);
@@ -309,14 +332,14 @@ for TimeInd=Time.Sim.VecInd(2:end-ControlPeriods)
         
         %% Algo 2 optimisation
 
-        LiveAlgo;
+        LiveAlgo;                                       % Execute Algorithm 2
 
         
         %%
            
         for n=UserNum % Battery clipping: In case the battery would be overcharged, clip the energy
 
-            ChargedEnergy=min([Users{n}.BatterySize - (Users{n}.Logbook(TimeInd+TD.User-1, 9) - Users{n}.Logbook(TimeInd+TD.User, 4)), sum(Users{n}.Logbook(TimeInd+TD.User, 5:8))]);
+            ChargedEnergy=min([Users{n}.BatterySize - (Users{n}.Logbook(TimeInd+TD.User-1, 9) - Users{n}.Logbook(TimeInd+TD.User, 4)), sum(Users{n}.Logbook(TimeInd+TD.User, 5:8))]);  % Energy that was charged during this time step [Wh]
             Users{n}.Logbook(TimeInd+TD.User, 9)=Users{n}.Logbook(TimeInd+TD.User-1, 9)-Users{n}.Logbook(TimeInd+TD.User, 4) + ChargedEnergy;
             if ChargedEnergy==0 && Users{n}.Logbook(TimeInd+TD.User, 1)==5
                 Users{n}.Logbook(TimeInd+TD.User, 1)=4;
@@ -325,28 +348,10 @@ for TimeInd=Time.Sim.VecInd(2:end-ControlPeriods)
                 Users{n}.Logbook(TimeInd+TD.User, 5:8)=Users{n}.Logbook(TimeInd+TD.User, 5:8).*(ChargedEnergy/sum(Users{n}.Logbook(TimeInd+TD.User, 5:8)));
             end
 
-%             if ~(Users{n}.Logbook(TimeInd+TD.User,9)<(Users{n}.Logbook(TimeInd+TD.User-1,9)+sum(Users{n}.Logbook(TimeInd+TD.User,5:8)) - Users{n}.Logbook(TimeInd+TD.User,4))+3 && Users{n}.Logbook(TimeInd+TD.User,9)>(Users{n}.Logbook(TimeInd+TD.User-1,9)+sum(Users{n}.Logbook(TimeInd+TD.User,5:8)) - Users{n}.Logbook(TimeInd+TD.User,4))-3)
-%                 error("Wrong addition")
-%             end
-% 
-%             if Users{n}.Logbook(TimeInd+TD.User:TimeInd+TD.User+ControlPeriodsIt-1, 9)>Users{n}.BatterySize
-%                 2
-%             end
-
         end
         
     end    
-    
-%     if Users{1}.SmartCharging && SaveResults && mod(TimeInd, 96*10)==0 
-%         if isa(RAM,'double')
-%             disp(strcat(num2str(RAM(2)/1024/1024), "GB RAM left"))
-%         end
-%         Users{1}.Time.Stamp=datetime('now');
-%         FileName=strcat(Path.Simulation, "Workspace", datestr(Users{1}.Time.Stamp, "yyyymmdd-HHMM"), "_", Time.IntervalFile, "_", num2str(length(Users)-1), "_", num2str(Users{1}.SmartCharging), "_", ".mat");
-%         save(FileName, "-v7.3");
-%     end
-
-    
+  
     
     if ActivateWaitbar %&& mod(TimeInd+TD.User,1000)==0
         waitbar(TimeInd/length(Time.Sim.Vec), h, strcat("Simulate charging processes: ", num2str(round(TimeInd/length(Time.Sim.Vec)*1000)/10),"%"));
@@ -429,24 +434,16 @@ if Users{1}.SmartCharging
     Users{1}.ConstantResPoPowerPeriods=ConstantResPoPowerPeriods;
     Users{1}.PublicChargingThresholdBuffer=PublicChargingThresholdBuffer;
     
-    disp(strcat(num2str(sum(LastResPoOffersSucessful4H(:,2:end)>0,'all')/sum(LastResPoOffers(:,2:end)>0,'all')*100), "% of all reserve power offers were successful"))
+    disp(strcat(num2str(sum(LastResPoOffersSuccessful4H(:,2:end)>0,'all')/sum(LastResPoOffers(:,2:end)>0,'all')*100), "% of all reserve power offers were successful"))
     
     Users{1}.ResEnVolumenFulfilled=0;
     for n=Users{1}.UserNum
-        Users{1}.ResEnVolumenFulfilled=Users{1}.ResEnVolumenFulfilled+sum(Users{n}.Logbook(:,7))/Users{n}.ChargingEfficiency/1000; % [kWh]
+        Users{1}.ResEnVolumenFulfilled=Users{1}.ResEnVolumenFulfilled+sum(Users{n}.Logbook(:,7))/Users{n}.ChargingEfficiency/1000; % Amount of energy that was actually charged as reserve energy [kWh]
     end
     
     toc(TSim)
     
-%    Users{1}.ResEnVolumenAllocated=0;
-%     for n=Users{1}.UserNum
-%         ResEnVolumenAllocated=ResEnVolumenAllocated+sum(Users{1}.ChargingMat{find(~cellfun(@isempty,Users{1}.ChargingMat(1:5,1)), 1, 'last' )}(96-24*4+1:96-24*4+96,3,n-1,:),'all')/Users{n}.ChargingEfficiency/1000;
-%     end
-
-    Users{1}.ResEnVolumenAllocated=sum(Users{1}.ResPoOffers(:,2,2:end),'all')*4/Users{1}.ConstantResPoPowerPeriodsScaling; % [kWh]
-
-    %Users{1}.ResEnVolumenAllocated=sum(Users{1}.ChargingMat{find(~cellfun(@isempty,Users{1}.ChargingMat(1:5,1)), 1, 'last' )}(96-24*4+1:96-24*4+96,3,:,:),'all')/1000;
-
+    Users{1}.ResEnVolumenAllocated=sum(Users{1}.ResPoOffers(:,2,2:end),'all')*4/Users{1}.ConstantResPoPowerPeriodsScaling; % Amount of energy that was planned (all successful offers) to be charged as reserve energy [kWh]
 
     disp(strcat(num2str(Users{1}.ResEnVolumenFulfilled/Users{1}.ResEnVolumenAllocated*100), "% of the successfully offered reserve energy was actually charged"))
 else
@@ -462,19 +459,8 @@ Users=Users(cellfun(SimulatedUsers, Users));
 Users{1}.Time.Stamp=datetime('now');
 Users{1}.SimDuration=toc(TSim);
 
-% for n=2:length(Users)
-%     if isfield(Users{n}, 'Logbook')
-%         if ~Users{1}.SmartCharging
-%             Users{n}.Logbook=Users{n}.Logbook;
-%         else 
-%             Users{n}.Logbook=Users{n}.Logbook;
-%         end
-%         Users{n}=rmfield(Users{n}, 'Logbook');
-%     end
-% end
 
-
-%% Calculate Load Curves
+%% Calculate Load Profiles
 
 Users{1}.ChargingMat{end,1}=zeros([24*Time.StepInd, size(Users{1}.ChargingMat{1,1}, 2),size(Users{1}.ChargingMat{1,1}, 3)], 'single');
 for n=Users{1}.UserNum
@@ -482,13 +468,7 @@ for n=Users{1}.UserNum
 end
 Users{1}.ChargingMat{end,2}=96;
 
-%% Evaluate Load Curves
-
-% if Users{1}.Users{1}.SmartCharging
-%     ChargingMat=Users{1}.ChargingMat;
-% else
-%     ChargingMat=Users{1}.ChargingMatBase;
-% end
+%% Plot Load Profiles
 
 ChargingType=cell(size(Users{1}.ChargingMat,1),1);
 ChargingSum=cell(size(Users{1}.ChargingMat,1),1);
@@ -531,6 +511,8 @@ for k=find(~cellfun(@isempty,Users{1}.ChargingMat(:,1)))'
     legend(["All", "Spotmarket", "PV", "Secondary Reserve Energy"])
 
 end
+
+%%  Plot charging availability
 
 if Users{1}.SmartCharging
     figure(k+1)
@@ -689,10 +671,8 @@ clearvars TimeOfPreAlgo TimeOfReserveMarketOffer TimesOfDayAheadMarketPriceRelea
 clearvars TSOResPoDemand ub VarCounter Costf Costs ChargingVehicle Costsf NNEBonus NNEExtraBasePrice IMSYSInstallationCosts IMSYSInstallationCostsMean
 clearvars UseIndividualEEGBonus UsePVPredictions UseSpotPredictions x1 BackwardsOrder FinishSimulation CleanUpWorkspace InitialiseUserNew OwnOfferMOLPos 
 clearvars UseParallelAvailability UnsolvedProblems TimeIndVec SuccessfulResPoOffers SpotmarketPricesPred1 SpotmarktPricesCP SoCInit PVPowerReal
-clearvars PublicChargingThresholds_Wh PublicChargerDist ProvidedResEn MOLPos1 Logbooks1 Logbooks2 Logbooks4 LastResPoOffersSucessful4H LastResPoOffers ConstantResPoPowerPeriodsScaling
+clearvars PublicChargingThresholds_Wh PublicChargerDist ProvidedResEn MOLPos1 Logbooks1 Logbooks2 Logbooks4 LastResPoOffersSuccessful4H LastResPoOffers ConstantResPoPowerPeriodsScaling
 clearvars GridConvenientChargingAvailabilityControlPeriod Exceeds EEGBonus DispatchedResEn DelRows3 Debugging Costf1 ConstantResPoPowerPeriods ChargingEfficiencies BatterySizes
 
 end
 
-
-end

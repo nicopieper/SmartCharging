@@ -40,14 +40,14 @@ from tqdm import *
 
 StartSys=time.time() # measure the script's execution time
 DateStart=datetime(2020,5,1)
-DateEnd=datetime(2020,7,31)
+DateEnd=datetime(2020,6,30)
 MinPower="3"
 MaxPower="15"
-NumPlants=10
-NumPlantsSearch=20
+NumPlants=30
+NumPlantsSearch=100
 
 Dl='/'
-DataPath=r"C:/Users/YourPath/PlantData"
+DataPath=r"C:/Users/nicop/MATLAB/SmartCharging/GetSMAData/WebScraperDemo"
 DriverPath= "C:/Program Files (x86)/chromedriver.exe"
 
 
@@ -60,10 +60,10 @@ DriverPath= "C:/Program Files (x86)/chromedriver.exe"
 driver=webdriver.Chrome(DriverPath)
 driver.get("https://www.sunnyportal.de/Templates/PublicPagesPlantList.aspx")
 
-# driver.find_element_by_id("ctl00_ContentPlaceHolder1_CountryDropDownList").send_keys("Deutschland") # enter "Deutschland" in country edit field
+driver.find_element_by_id("ctl00_ContentPlaceHolder1_CountryDropDownList").send_keys("Deutschland") # enter "Deutschland" in country edit field
 driver.find_element_by_id("ctl00_ContentPlaceHolder1_FromPeakPowerNumTB_numTB").send_keys(MinPower) # enter MinPower in corresponding edit field
 driver.find_element_by_id("ctl00_ContentPlaceHolder1_ToPeakPowerNumTB_numTB").send_keys(MaxPower) # enter MaxPower in corresponding edit field
-driver.find_element_by_id("ctl00_ContentPlaceHolder1_CityFilterTextBox").send_keys("Basel")
+driver.find_element_by_id("ctl00_ContentPlaceHolder1_CityFilterTextBox").send_keys("") # --------------------------------------------------------------------------------------------------------
 driver.find_element_by_id("ctl00_ContentPlaceHolder1_FilterButton").click() # click the "Suchen" button
 
 PlantID=[]
@@ -77,7 +77,7 @@ if not ListOfUnsuitablePlants:
 IDList=[PropertiesList[i][0][3] for i in range(len(PropertiesList))]
 IDList.extend(ListOfUnsuitablePlants) # list with all unsuitable plants and those that do already exsist
 
-while len(PlantID)<NumPlantsSearch: # search for the number of NumPlantsSearch new plants 
+while len(PlantID)<NumPlantsSearch: # search for the number of NumPlantsSearch new plants
     Source=driver.page_source
     Source=Source[Source.find("Leistung (kWp)</a></td>"):Source.find("ctl00_ContentPlaceHolder1__dataGridPagerDown_PagerTable")]
 
@@ -94,7 +94,7 @@ while len(PlantID)<NumPlantsSearch: # search for the number of NumPlantsSearch n
     else:
         NextPageButton[0].click() # but mostly it will be clickable
         
-PlantBar = tqdm(total=len(PlantID), position=0) # a usual waitbar/progressbar
+PlantBar = tqdm(total=len(PlantID), position=0) # a usual waitbar/progressbar # --------------------------------------------------------------------------------------------------------
 
 for ID in PlantID: # iterate through each found ID    
     PlantBar.update()
@@ -105,7 +105,7 @@ for ID in PlantID: # iterate through each found ID
     if ID not in IDList: # should always be true as it was checked before --> may be deleted but it does not harm
 
         driver.get(str("https://www.sunnyportal.de/Templates/PublicPageOverview.aspx?plant=" + ID + "&splang=")) # open the plant's webpage as their URLs have a static pattern
-        try:
+        try: # --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
             Anlagensteckbrief=driver.find_elements_by_xpath('//*[@title="Anlagensteckbrief"]') # just continue considering this plant as suitable if there is a subpage called 'Anlagensteckbrief' as the information of this page is needed
             if len(Anlagensteckbrief)>0:
                 Anlagensteckbrief[0].click() # if this page exists, open it
@@ -165,7 +165,7 @@ for ID in PlantID: # iterate through each found ID
                     for k in range (len(ImageButtons)): # iterate through the found ImageButtons
 
                         ImageButtonNumber=ImageButtons[k].get_attribute("id")[ImageButtons[k].get_attribute("id").rfind('_')-1] # Find the number of the ImageButton before last underscore of its ID. Corresponds with button number. Sometimes Buttons miss a number then ImageButtonNumber=='e' which is not a problem
-                        
+                        # --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
                         if ImageButtonNumber in OpenButtons: # if the ImageButton has a corresponding OpenButton, then the OpenBUtton has the the same number. in this case click the OpenBUtton first
                             try:
                                 OpenButton=driver.find_element_by_xpath("//*[contains(@id, '" + ImageButtonNumber + '_OpenButtonsDivImg' + "')]") # find the corresponding OpenButton
@@ -192,7 +192,7 @@ for ID in PlantID: # iterate through each found ID
                         # print(time.time()-start)
 
                         driver.switch_to.window(driver.window_handles[1]) # after the ImageButton was clicked, a second window opens. switch to this window
-                        [NumberHeaderCells, PlantTable]=ParseValueTable(driver.page_source, datetime.today().strftime("%d.%m.%Y")) # this window covers data in a table. parse this table
+                        [NumberHeaderCells, PlantTable]=ParseValueTable(driver.page_source, datetime.today().strftime("%d.%m.%Y")) # this window covers data in a table. parse this table # --------------------------------------------------------------------------------------------------------
                         
                         if (len(PlantTable)>=96 and ("00:15" in PlantTable[0][0] or "00.15" in PlantTable[0][0])) and NumberHeaderCells==2: # check whether the table fulfils the conditions. only time intervals of 15 minutes and tables with one data column shall be considered
                             

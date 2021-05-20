@@ -1,3 +1,17 @@
+%% Description
+% This script caluclates the appropiate limits for the y axes of the plots.
+% Depending on DemoPlots{n}.YMin{k} / DemoPlots{n}.YMax{k}, the axes are 
+% set dynamically basing on the highest and lowest values during the next 
+% days or they are set constantly as defined by DemoPlots{n}.YMin{k} / 
+% DemoPlots{n}.YMax{k}.
+%
+% Depended scripts / folders
+%   Initialisation.m        Needed for the execution of this script
+%   Demonstration.m         This script is called by Demonstration.m
+
+
+%% Update Y axis min limit
+
 if ~strcmp(DemoPlots{n}.YMin{k}, 'dynamic')
     DemoPlots{n}.ymin{k}=DemoPlots{n}.YMin{k};
 else    
@@ -9,6 +23,9 @@ else
         DemoPlots{n}.ymin{k}=0;
     end
 end
+
+
+%% Update Y axis max limit
 
 if ~strcmp(DemoPlots{n}.YMax{k}, 'dynamic')
     DemoPlots{n}.ymax{k}=DemoPlots{n}.YMax{k};

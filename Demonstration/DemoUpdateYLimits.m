@@ -1,3 +1,13 @@
+%% Description
+% This script updates the Y axes limits
+%
+% Depended scripts / folders
+%   Initialisation.m        Needed for the execution of this script
+%   Demonstration.m         This script is called by Demonstration.m
+
+
+%% Update Y axes limits
+
 for l=DemoPlots{n}.Yaxes
     ymin=Inf;
     ymax=-Inf;
